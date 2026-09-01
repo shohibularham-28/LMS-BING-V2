@@ -309,7 +309,7 @@ const USERS = [
   { username: "niken", password: "nkn17", nama: "Niken Ayu Setyaningrum", kelas: "XI E1" },
   { username: "novita", password: "linyi123", nama: "Novita Dwi Anggraeni", kelas: "XI E1" },
   { username: "putri", password: "nanwy", nama: "Putri Diana", kelas: "XI E1" },
-  { username: "qianu", password: "qianu28", nama: "Qianu Almalik Fathir", kelas: "XI E1" },
+  { username: "qianu", password: "martabak432", nama: "Qianu Almalik Fathir", kelas: "XI E1" },
   { username: "regita", password: "220610", nama: "Regita Abelia Larasati", kelas: "XI E1" },
   { username: "rezky", password: "R3zky", nama: "Rezky Andika Seno Pratama", kelas: "XI E1" },
   { username: "rifda", password: "RIFDADANI18", nama: "Rifda Karima Putri", kelas: "XI E1" },
