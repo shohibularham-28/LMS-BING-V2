@@ -82,7 +82,8 @@ const DATA = {
       { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" }
     ],
     worksheets: [
-      { title: "Latihan Ulangan Harian — Describing People", meta: "Worksheet interaktif online", status: "open", url: "https://shohibularham-28.github.io/UH1BINGX/" }
+      { title: "Latihan Ulangan Harian — Describing People", meta: "Worksheet interaktif online", status: "open", url: "https://shohibularham-28.github.io/UH1BINGX/" },
+      { title: "Ulangan Harian 1 - Describing People", meta: "Worksheet interaktif online", status: "locked", url: "https://shohibularham-28.github.io/UH1-BING-X/", jadwalKelas: { "X I": "2026-09-07", "X J": "2026-09-09", "X K": "2026-09-08" } }
     ]
   },
   XI: {
