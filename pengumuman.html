@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengumuman & Nilai — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="user-card">
+        <div class="avatar" id="userAvatar">D</div>
+        <div class="name" id="sideName">—</div>
+        <span class="kelas-tag" id="sideClass">Kelas —</span>
+      </div>
+
+      <div class="nav-section-label">Menu Utama</div>
+      <a class="nav-item active" data-page="pengumuman" href="pengumuman.html">
+        <span class="icon">📣</span> Pengumuman &amp; Nilai
+      </a>
+      <a class="nav-item" data-page="materi" href="materi.html">
+        <span class="icon">📘</span> Materi
+      </a>
+      <a class="nav-item" data-page="worksheet" href="worksheet.html">
+        <span class="icon">📝</span> Worksheet
+      </a>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Keluar</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+          <div class="date" id="topDate"></div>
+        </div>
+        <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+      </div>
+
+      <div class="content">
+        <div class="page-header">
+          <div class="eyebrow">Update</div>
+          <h1>Pengumuman &amp; Nilai</h1>
+        </div>
+        <div id="ann-container"></div>
+        <div class="section-label">Rekap Nilai Terbaru</div>
+        <table class="grade-table" id="grade-table">
+          <thead>
+            <tr><th>Jenis Penilaian</th><th>Skor</th><th>Nilai Asli (Sebelum Penalti)</th><th>Predikat</th><th>Status</th></tr>
+          </thead>
+          <tbody id="grade-container"></tbody>
+        </table>
+        <div id="grade-empty-slot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/auth.js"></script>
+<script>
+const account = requireLogin();
+if(account){
+  const level = renderShell(account, 'pengumuman');
+  const d = DATA[level];
+
+  // Pengumuman
+  const annC = document.getElementById('ann-container');
+  const remedialAnn = getRemedialAnnouncement(account);
+  const kelasAnnouncements = d.announcements.filter(a => !a.kelas || a.kelas === account.kelas).slice().reverse();
+  const announcementsToShow = remedialAnn ? [remedialAnn, ...kelasAnnouncements] : kelasAnnouncements;
+  annC.innerHTML = announcementsToShow.length ? announcementsToShow.map(a => `
+    <div class="ann-card">
+      <div class="ann-date">${a.date}</div>
+      <h3>${a.title}</h3>
+      <p>${a.body}</p>
+    </div>
+  `).join('') : emptyState("Belum ada pengumuman", "Pengumuman terbaru akan muncul di sini.", "📣");
+
+  // Nilai
+  const gradeTable = document.getElementById('grade-table');
+  const gradeC = document.getElementById('grade-container');
+  const gradeEmptySlot = document.getElementById('grade-empty-slot');
+  const myGrades = d.grades.filter(g => !g.siswa || g.siswa === account.nama);
+  if(myGrades.length){
+    gradeTable.style.display = '';
+    gradeEmptySlot.innerHTML = '';
+    gradeC.innerHTML = myGrades.map(g => {
+      const isNumeric = typeof g.skor === 'number';
+      const statusCls = !isNumeric ? 'status-belum' : (g.skor < 75 ? 'status-remidi' : 'status-tuntas');
+      const statusTxt = !isNumeric ? 'Belum Mengerjakan' : (g.skor < 75 ? 'Remidi' : 'Tuntas');
+      return `
+      <tr>
+        <td>${g.jenis}</td>
+        <td>${g.skor}</td>
+        <td>${typeof g.skorAsli === 'number' ? g.skorAsli : '-'}</td>
+        <td><span class="score-pill ${isNumeric && g.skor >= 85 ? 'score-high' : 'score-mid'}">${g.predikat}</span></td>
+        <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
+      </tr>
+    `;
+    }).join('');
+  } else {
+    gradeTable.style.display = 'none';
+    gradeC.innerHTML = '';
+    gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Nilai yang sudah dinilai guru akan tampil di sini.", "📊");
+  }
+}
+</script>
+
+</body>
+</html>

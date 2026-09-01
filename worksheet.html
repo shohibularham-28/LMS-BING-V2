@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Worksheet — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="user-card">
+        <div class="avatar" id="userAvatar">D</div>
+        <div class="name" id="sideName">—</div>
+        <span class="kelas-tag" id="sideClass">Kelas —</span>
+      </div>
+
+      <div class="nav-section-label">Menu Utama</div>
+      <a class="nav-item" data-page="pengumuman" href="pengumuman.html">
+        <span class="icon">📣</span> Pengumuman &amp; Nilai
+      </a>
+      <a class="nav-item" data-page="materi" href="materi.html">
+        <span class="icon">📘</span> Materi
+      </a>
+      <a class="nav-item active" data-page="worksheet" href="worksheet.html">
+        <span class="icon">📝</span> Worksheet
+      </a>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Keluar</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+          <div class="date" id="topDate"></div>
+        </div>
+        <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+      </div>
+
+      <div class="content">
+        <div class="page-header">
+          <div class="eyebrow">Practice</div>
+          <h1>Worksheet</h1>
+        </div>
+        <div id="worksheet-container"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/auth.js"></script>
+<script>
+const account = requireLogin();
+if(account){
+  const level = renderShell(account, 'worksheet');
+  const d = DATA[level];
+
+  // Worksheet: embed "fractured" dibuka sebagai halaman terpisah (assets/worksheet-fractured.html) di tab baru.
+  const EMBED_MAP = { fractured: 'assets/worksheet-fractured.html' };
+
+  const wsC = document.getElementById('worksheet-container');
+  wsC.innerHTML = d.worksheets.length ? d.worksheets.map(w => {
+    const href = w.embed && EMBED_MAP[w.embed] ? EMBED_MAP[w.embed] : (w.url || '#');
+    return `
+    <div class="ws-card">
+      <div class="ws-info">
+        <h3>${w.title}</h3>
+        <div class="meta">${w.meta}</div>
+      </div>
+      <div class="ws-right">
+        <span class="ws-status ${w.status === 'open' ? 'status-open' : 'status-due'}">
+          ${w.status === 'open' ? 'Terbuka' : 'Segera Berakhir'}
+        </span>
+        <a class="btn-ws" href="${href}" target="_blank" rel="noopener">Kerjakan</a>
+      </div>
+    </div>
+  `;
+  }).join('') : emptyState("Belum ada worksheet", "Tugas dan latihan akan muncul di sini saat guru menerbitkannya.", "📝");
+}
+</script>
+
+</body>
+</html>
