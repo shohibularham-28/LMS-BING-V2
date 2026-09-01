@@ -202,7 +202,8 @@ const DATA = {
       { siswa: "Zadit Taqwa", jenis: "Ulangan Harian 1", skor: 46.15, predikat: "D" },
     ],
     materi: [
-      { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" }
+      { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" },
+      { tag: "Grammar", title: "English Grammar in Use", desc: "Buku referensi grammar bahasa Inggris lengkap, cocok untuk latihan mandiri dan pendalaman materi tata bahasa.", url: "https://drive.google.com/file/d/1VALzc6zddT9mBfjjrnV_sgBUTtzAKVPe/view?usp=sharing" }
     ],
     worksheets: [
       { title: "Simple Present & Continuous — Practice", meta: "Worksheet interaktif online", status: "open", url: "https://shohibularham-28.github.io/wssimpvscont/" },
