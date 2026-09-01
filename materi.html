@@ -75,7 +75,7 @@ if(account){
       <div class="tag">${m.tag}</div>
       <h3>${m.title}</h3>
       <p>${m.desc}</p>
-      <a class="dl" href="${m.embed && EMBED_MAP[m.embed] ? EMBED_MAP[m.embed] : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+      <a class="dl" href="${m.url ? m.url : (m.embed && EMBED_MAP[m.embed] ? EMBED_MAP[m.embed] : '#')}" target="_blank" rel="noopener">Buka Materi →</a>
     </div>
   `).join('') : emptyState("Belum ada materi", "Materi pembelajaran akan diunggah oleh guru di sini.", "📘");
 }
