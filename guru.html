@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Guru — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* Elemen tambahan khusus dashboard guru — dibuat agar selaras dengan gaya kartu/tabel yang sudah ada */
+  .level-tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .level-tab{
+    padding:9px 18px; border-radius:10px; border:1px solid rgba(0,0,0,0.1);
+    background:#fff; cursor:pointer; font-weight:600; font-size:14px; color:#555;
+  }
+  .level-tab.active{ background:#1f2937; color:#fff; border-color:#1f2937; }
+
+  .kelas-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .kelas-chip{
+    padding:7px 16px; border-radius:999px; border:1px solid rgba(0,0,0,0.12);
+    background:#fff; cursor:pointer; font-size:13.5px; font-weight:600; color:#555;
+  }
+  .kelas-chip.active{ background:#2563eb; color:#fff; border-color:#2563eb; }
+
+  .jenis-field{ margin-bottom:20px; max-width:420px; }
+  .jenis-field label{ display:block; font-size:13px; font-weight:600; color:#666; margin-bottom:6px; }
+  .jenis-field select{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,0.15);
+    font-size:14px; background:#fff;
+  }
+
+  .summary-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));
+    gap:12px; margin-bottom:22px;
+  }
+  .summary-card{
+    background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:14px;
+    padding:14px 16px;
+  }
+  .summary-card .val{ font-size:22px; font-weight:700; color:#1f2937; }
+  .summary-card .lbl{ font-size:12.5px; color:#888; margin-top:2px; }
+
+  .rank-cell{ font-weight:700; color:#9AA3B8; width:34px; }
+</style>
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="user-card">
+        <div class="avatar" id="userAvatar">G</div>
+        <div class="name" id="sideName">—</div>
+        <span class="kelas-tag">Guru</span>
+      </div>
+
+      <div class="nav-section-label">Menu Guru</div>
+      <a class="nav-item active" data-page="rekap" href="guru.html">
+        <span class="icon">📊</span> Rekap Nilai
+      </a>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doTeacherLogout()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Keluar</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+          <div class="date" id="topDate"></div>
+        </div>
+        <div class="level-pill">Dashboard Guru</div>
+      </div>
+
+      <div class="content">
+        <div class="page-header">
+          <div class="eyebrow">Dashboard Guru</div>
+          <h1>Rekap Nilai Siswa</h1>
+        </div>
+
+        <div class="level-tabs" id="levelTabs"></div>
+        <div class="kelas-chips" id="kelasChips"></div>
+
+        <div class="jenis-field">
+          <label for="jenisSelect">Jenis Penilaian</label>
+          <select id="jenisSelect"></select>
+        </div>
+
+        <div class="summary-grid" id="summaryGrid"></div>
+
+        <div class="section-label">Detail Nilai per Siswa</div>
+        <table class="grade-table" id="grade-table">
+          <thead>
+            <tr><th>#</th><th>Nama Siswa</th><th>Skor</th><th>Nilai Asli (Sebelum Penalti)</th><th>Predikat</th><th>Status</th></tr>
+          </thead>
+          <tbody id="grade-container"></tbody>
+        </table>
+        <div id="grade-empty-slot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/auth.js"></script>
+<script>
+const teacher = requireTeacherLogin();
+
+if(teacher){
+  document.getElementById('topName').textContent = teacher.nama;
+  document.getElementById('sideName').textContent = teacher.nama;
+  document.getElementById('userAvatar').textContent = teacher.nama.charAt(0).toUpperCase();
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  const state = { level: 'X', kelas: null, jenis: null };
+
+  function renderLevelTabs(){
+    const el = document.getElementById('levelTabs');
+    el.innerHTML = ['X', 'XI'].map(lv => `
+      <button type="button" class="level-tab ${state.level === lv ? 'active' : ''}" data-level="${lv}">Kelas ${lv}</button>
+    `).join('');
+    el.querySelectorAll('.level-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.level = btn.dataset.level;
+        const kelasList = getKelasListByLevel(state.level);
+        state.kelas = kelasList[0] || null;
+        renderLevelTabs();
+        renderKelasChips();
+        renderJenisOptions();
+        renderRekap();
+      });
+    });
+  }
+
+  function renderKelasChips(){
+    const el = document.getElementById('kelasChips');
+    const kelasList = getKelasListByLevel(state.level);
+    if(!state.kelas || !kelasList.includes(state.kelas)) state.kelas = kelasList[0] || null;
+
+    if(!kelasList.length){
+      el.innerHTML = '';
+      return;
+    }
+    el.innerHTML = kelasList.map(k => `
+      <button type="button" class="kelas-chip ${state.kelas === k ? 'active' : ''}" data-kelas="${k}">${k}</button>
+    `).join('');
+    el.querySelectorAll('.kelas-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.kelas = btn.dataset.kelas;
+        renderKelasChips();
+        renderJenisOptions();
+        renderRekap();
+      });
+    });
+  }
+
+  function renderJenisOptions(){
+    const select = document.getElementById('jenisSelect');
+    if(!state.kelas){
+      select.innerHTML = '<option value="">— Tidak ada data —</option>';
+      state.jenis = null;
+      return;
+    }
+    const jenisList = getJenisListForKelas(state.level, state.kelas);
+    if(!state.jenis || !jenisList.includes(state.jenis)) state.jenis = jenisList[0] || null;
+
+    if(!jenisList.length){
+      select.innerHTML = '<option value="">— Belum ada nilai untuk kelas ini —</option>';
+      return;
+    }
+    select.innerHTML = jenisList.map(j => `<option value="${j}" ${state.jenis === j ? 'selected' : ''}>${j}</option>`).join('');
+    select.onchange = () => {
+      state.jenis = select.value;
+      renderRekap();
+    };
+  }
+
+  function fmtSkor(v){
+    if(typeof v !== 'number') return v;
+    return Number.isInteger(v) ? v : v.toFixed(2);
+  }
+
+  function renderRekap(){
+    const summaryGrid = document.getElementById('summaryGrid');
+    const gradeTable = document.getElementById('grade-table');
+    const gradeC = document.getElementById('grade-container');
+    const gradeEmptySlot = document.getElementById('grade-empty-slot');
+
+    if(!state.kelas || !state.jenis){
+      summaryGrid.innerHTML = '';
+      gradeTable.style.display = 'none';
+      gradeC.innerHTML = '';
+      gradeEmptySlot.innerHTML = emptyState("Belum ada data nilai", "Pilih kelas lain atau tunggu data nilai diinput.", "📊");
+      return;
+    }
+
+    const { rows, summary } = getRekapNilai(state.level, state.kelas, state.jenis);
+
+    summaryGrid.innerHTML = `
+      <div class="summary-card"><div class="val">${summary.jumlahSiswa}</div><div class="lbl">Jumlah Siswa</div></div>
+      <div class="summary-card"><div class="val">${summary.rataRata !== null ? fmtSkor(summary.rataRata) : '-'}</div><div class="lbl">Rata-rata</div></div>
+      <div class="summary-card"><div class="val">${summary.tertinggi !== null ? fmtSkor(summary.tertinggi) : '-'}</div><div class="lbl">Tertinggi</div></div>
+      <div class="summary-card"><div class="val">${summary.terendah !== null ? fmtSkor(summary.terendah) : '-'}</div><div class="lbl">Terendah</div></div>
+      <div class="summary-card"><div class="val">${summary.tuntas}</div><div class="lbl">Tuntas (≥75)</div></div>
+      <div class="summary-card"><div class="val">${summary.remidi}</div><div class="lbl">Remidi (&lt;75)</div></div>
+      <div class="summary-card"><div class="val">${summary.belumMengerjakan}</div><div class="lbl">Belum Mengerjakan</div></div>
+    `;
+
+    if(rows.length){
+      gradeTable.style.display = '';
+      gradeEmptySlot.innerHTML = '';
+      gradeC.innerHTML = rows.map((r, i) => {
+        const isNumeric = typeof r.skor === 'number';
+        const statusCls = !isNumeric ? 'status-belum' : (r.skor < 75 ? 'status-remidi' : 'status-tuntas');
+        const statusTxt = !isNumeric ? 'Belum Mengerjakan' : (r.skor < 75 ? 'Remidi' : 'Tuntas');
+        return `
+        <tr>
+          <td class="rank-cell">${i + 1}</td>
+          <td>${r.nama}</td>
+          <td>${fmtSkor(r.skor)}</td>
+          <td>${r.skorAsli !== null ? fmtSkor(r.skorAsli) : '-'}</td>
+          <td><span class="score-pill ${isNumeric && r.skor >= 85 ? 'score-high' : 'score-mid'}">${r.predikat}</span></td>
+          <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
+        </tr>
+      `;
+      }).join('');
+    } else {
+      gradeTable.style.display = 'none';
+      gradeC.innerHTML = '';
+      gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Belum ada siswa yang memiliki nilai untuk jenis ini.", "📊");
+    }
+  }
+
+  // Inisialisasi
+  state.kelas = getKelasListByLevel(state.level)[0] || null;
+  renderLevelTabs();
+  renderKelasChips();
+  renderJenisOptions();
+  renderRekap();
+}
+</script>
+
+</body>
+</html>

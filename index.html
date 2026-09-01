@@ -86,6 +86,14 @@ function doLogin(){
   const kelas = document.getElementById('kelas').value;
   const err = document.getElementById('loginError');
 
+  // Login guru: cukup username & password, tidak perlu pilih kelas.
+  if(username.toLowerCase() === TEACHER.username && password === TEACHER.password){
+    err.style.display = 'none';
+    saveTeacherSession(username, password);
+    window.location.href = 'guru.html';
+    return;
+  }
+
   if(!username || !password || !kelas){
     err.textContent = "Mohon isi username, password, dan pilih kelas terlebih dahulu.";
     err.style.display = 'block';
@@ -110,6 +118,10 @@ document.getElementById('kelas').addEventListener('keyup', e => { if(e.key === '
 
 // Jika sudah login sebelumnya, langsung arahkan ke halaman utama.
 (function(){
+  if(getTeacherSessionAccount()){
+    window.location.href = 'guru.html';
+    return;
+  }
   if(getSessionAccount()){
     window.location.href = 'pengumuman.html';
   }
