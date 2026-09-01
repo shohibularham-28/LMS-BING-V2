@@ -1,54 +1,120 @@
-# English Learning Hub — LMS Sederhana
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
 
-Website LMS statis (login, pengumuman & nilai, materi, worksheet) yang bisa langsung di-hosting gratis lewat **GitHub Pages**.
+<div id="login-screen">
+  <div class="login-visual">
+    <div class="kicker">English Learning Hub</div>
+    <h1>Belajar bahasa Inggris jadi <span>lebih hidup.</span></h1>
+    <p>Akses materi, worksheet, dan nilai kamu kapan saja. Satu ruang belajar untuk seluruh kelas X dan XI.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="num">2</div><div class="lbl">Tingkat Kelas</div></div>
+      <div class="stat"><div class="num">6</div><div class="lbl">Rombel Aktif</div></div>
+      <div class="stat"><div class="num">3</div><div class="lbl">Fitur Belajar</div></div>
+    </div>
+  </div>
 
-## Struktur File
+  <div class="login-panel-wrap">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+      <h2>Masuk ke akunmu</h2>
+      <div class="sub">Isi data berikut untuk melanjutkan</div>
 
-```
-index.html          -> Halaman login (otomatis jadi halaman utama di GitHub Pages)
-pengumuman.html      -> Pengumuman & rekap nilai
-materi.html          -> Daftar materi pembelajaran
-worksheet.html       -> Daftar worksheet
-assets/
-  style.css          -> Semua styling (dipakai bersama semua halaman)
-  data.js            -> Data akun siswa (USERS) & konten (DATA)
-  auth.js            -> Logika login/sesi/logout
-  materi-tenses.html       -> Materi interaktif "16 Tenses"
-  worksheet-fractured.html -> Worksheet interaktif "Fractured Fairytale"
-```
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Nama depan kamu, mis. Cerrel">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="Masukkan password">
+          <button type="button" class="pw-toggle" id="pwToggle" onclick="togglePassword()" aria-label="Tampilkan password">
+            <svg id="pwIconEye" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="#9AA3B8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="#9AA3B8" stroke-width="1.6"/></svg>
+            <svg id="pwIconEyeOff" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="display:none"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke="#9AA3B8" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="#9AA3B8" stroke-width="1.6"/><path d="M2 2l20 20" stroke="#9AA3B8" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="kelas">Kelas</label>
+        <select id="kelas">
+          <option value="">— Pilih kelas —</option>
+          <optgroup label="Kelas X">
+            <option value="X I">X I</option>
+            <option value="X J">X J</option>
+            <option value="X K">X K</option>
+          </optgroup>
+          <optgroup label="Kelas XI">
+            <option value="XI D1">XI D1</option>
+            <option value="XI D2">XI D2</option>
+            <option value="XI E1">XI E1</option>
+          </optgroup>
+        </select>
+      </div>
+      <p class="login-error" id="loginError"></p>
+      <button class="btn-primary" onclick="doLogin()">Masuk ke Kelas</button>
+    </div>
+  </div>
+</div>
 
-## Cara Upload ke GitHub (lewat browser, tanpa install apa-apa)
+<script src="assets/data.js"></script>
+<script src="assets/auth.js"></script>
+<script>
+function togglePassword(){
+  const input = document.getElementById('password');
+  const eye = document.getElementById('pwIconEye');
+  const eyeOff = document.getElementById('pwIconEyeOff');
+  const btn = document.getElementById('pwToggle');
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  eye.style.display = showing ? '' : 'none';
+  eyeOff.style.display = showing ? 'none' : '';
+  btn.setAttribute('aria-label', showing ? 'Tampilkan password' : 'Sembunyikan password');
+}
 
-1. Buat akun GitHub jika belum punya: https://github.com/join
-2. Klik tombol **New repository** (ikon `+` di kanan atas → *New repository*).
-3. Isi **Repository name**, misal `english-class-lms`. Pilih **Public**. Klik **Create repository**.
-4. Di halaman repo yang baru dibuat, klik **uploading an existing file**.
-5. **Drag & drop seluruh isi folder ini** (bukan folder `lms`-nya, tapi isinya: `index.html`, `pengumuman.html`, `materi.html`, `worksheet.html`, dan folder `assets`) ke area upload.
-   - Pastikan struktur foldernya tetap terjaga — GitHub akan otomatis membuat folder `assets/` jika kamu drag foldernya langsung.
-6. Klik **Commit changes**.
+function doLogin(){
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const kelas = document.getElementById('kelas').value;
+  const err = document.getElementById('loginError');
 
-## Mengaktifkan GitHub Pages (supaya website bisa diakses online)
+  if(!username || !password || !kelas){
+    err.textContent = "Mohon isi username, password, dan pilih kelas terlebih dahulu.";
+    err.style.display = 'block';
+    return;
+  }
 
-1. Di halaman repo, klik tab **Settings**.
-2. Di menu kiri, klik **Pages**.
-3. Pada bagian **Build and deployment** → **Source**, pilih **Deploy from a branch**.
-4. Pada **Branch**, pilih `main` (atau `master`) dan folder `/ (root)`. Klik **Save**.
-5. Tunggu 1–2 menit, lalu refresh halaman. GitHub akan menampilkan URL situs, biasanya:
-   ```
-   https://<username-github-kamu>.github.io/<nama-repo>/
-   ```
-6. Buka URL tersebut — halaman login akan langsung muncul.
+  const account = USERS.find(u => u.username === username.toLowerCase() && u.password === password && u.kelas === kelas);
+  if(!account){
+    err.textContent = "Username, password, atau kelas tidak sesuai. Silakan periksa kembali.";
+    err.style.display = 'block';
+    return;
+  }
 
-## Cara Update Konten (nama siswa, nilai, pengumuman, materi, worksheet)
+  err.style.display = 'none';
+  saveSession(username, password, kelas);
+  window.location.href = 'pengumuman.html';
+}
 
-Semua data ada di **`assets/data.js`**:
-- `USERS` → daftar akun (username, password, nama, kelas) untuk login.
-- `DATA.X` dan `DATA.XI` → berisi `announcements` (pengumuman), `grades` (nilai), `materi`, dan `worksheets` per tingkat kelas.
+document.getElementById('username').addEventListener('keyup', e => { if(e.key === 'Enter') doLogin(); });
+document.getElementById('password').addEventListener('keyup', e => { if(e.key === 'Enter') doLogin(); });
+document.getElementById('kelas').addEventListener('keyup', e => { if(e.key === 'Enter') doLogin(); });
 
-Edit langsung file `assets/data.js` di GitHub (klik file → ikon pensil ✏️ "Edit this file") lalu **Commit changes**. Perubahan akan otomatis muncul di website setelah GitHub Pages selesai deploy ulang (biasanya < 1 menit).
+// Jika sudah login sebelumnya, langsung arahkan ke halaman utama.
+(function(){
+  if(getSessionAccount()){
+    window.location.href = 'pengumuman.html';
+  }
+})();
+</script>
 
-## Catatan
-
-- Website ini murni statis (HTML/CSS/JS), tidak butuh server backend atau database.
-- Sesi login disimpan di `localStorage` browser masing-masing siswa (bukan disinkronkan lintas perangkat).
-- Karena password disimpan langsung di `data.js`, **jangan gunakan data sensitif sungguhan** untuk keperluan produksi — cocok untuk kelas internal/latihan, bukan sistem keamanan tinggi.
+</body>
+</html>
