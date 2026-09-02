@@ -395,7 +395,7 @@ const USERS = [
   { username: "lasilaz", password: "sha426", nama: "Azila Gaeshani Abidah", kelas: "X J" },
   { username: "Barraaumarr777", password: "Barragbtng18", nama: "Barra Umara Zuskia Mahfud", kelas: "X J" },
   { username: "citra", password: "citrasukajuhoon", nama: "Citra Andhini Assyifani", kelas: "X J" },
-  { username: "Erinaoktaviani1211", password: "erina1210", nama: "Erina Oktaviani", kelas: "X J" },
+  { username: "erinaoktaviani1211", password: "Erina1210", nama: "Erina Oktaviani", kelas: "X J" },
   { username: "eeuuiiss", password: "eeuuiiss", nama: "Euis Oktaviani", kelas: "X J" },
   { username: "HanzzBaekk", password: "Rumahkebokura", nama: "Farhan Isnu Maulana", kelas: "X J" },
   { username: "fatihahramadani37", password: "113307", nama: "Fatihah Ramadani", kelas: "X J" },
