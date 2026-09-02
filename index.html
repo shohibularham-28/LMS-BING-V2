@@ -61,13 +61,24 @@
       </div>
       <p class="login-error" id="loginError"></p>
       <button class="btn-primary" onclick="doLogin()">Masuk ke Kelas</button>
+      <button type="button" class="btn-secondary" onclick="muatUlangData()" style="width:100%;margin-top:10px;background:transparent;border:1px solid #d8dce6;color:#5a6172;border-radius:10px;padding:11px;font-size:13px;cursor:pointer;">🔄 Muat Ulang Data</button>
     </div>
   </div>
 </div>
 
-<script src="assets/data.js?v=4"></script>
+<script>
+  (function(){
+    var v = localStorage.getItem('dataCacheVersion') || '4';
+    document.write('<script src="assets/data.js?v=' + v + '"><\/script>');
+  })();
+</script>
 <script src="assets/auth.js"></script>
 <script>
+function muatUlangData(){
+  localStorage.setItem('dataCacheVersion', Date.now().toString());
+  window.location.reload();
+}
+
 function togglePassword(){
   const input = document.getElementById('password');
   const eye = document.getElementById('pwIconEye');

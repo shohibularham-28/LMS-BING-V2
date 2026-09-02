@@ -58,7 +58,12 @@
   </div>
 </div>
 
-<script src="assets/data.js?v=4"></script>
+<script>
+  (function(){
+    var v = localStorage.getItem('dataCacheVersion') || '4';
+    document.write('<script src="assets/data.js?v=' + v + '"><\/script>');
+  })();
+</script>
 <script src="assets/auth.js"></script>
 <script>
 const account = requireLogin();
