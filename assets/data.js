@@ -410,7 +410,7 @@ const USERS = [
   { username: "linzz", password: "1111", nama: "Lintang Khalila Salsabila", kelas: "X J" },
   { username: "Phosphophyllite", password: "Harits78", nama: "Muhammad Harits Al Atsari", kelas: "X J" },
   { username: "mumud", password: "231720", nama: "Mutiara Wida Saeva", kelas: "X J" },
-  { username: "Nadif", password: "nadifa28", nama: "Nadifa Bilqis Heriana Putri", kelas: "X J" },
+  { username: "Nadif", password: "Nadifa28", nama: "Nadifa Bilqis Heriana Putri", kelas: "X J" },
   { username: "amania", password: "nairaamania13", nama: "Naira Amania Yusuf", kelas: "X J" },
   { username: "Paalllzzz", password: "200611", nama: "Naufal Barazaky Al Fajri", kelas: "X J" },
   { username: "nissa223", password: "elliaaa", nama: "Nisa Sholihah", kelas: "X J" },
