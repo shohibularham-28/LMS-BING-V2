@@ -71,8 +71,8 @@ if(account){
   const level = renderShell(account, 'materi');
   const d = DATA[level];
 
-  // Materi: embed "tenses" dibuka sebagai halaman terpisah (assets/materi-tenses.html) di tab baru.
-  const EMBED_MAP = { tenses: 'assets/materi-tenses.html' };
+  // Materi: embed "tenses"/"irregular_verbs" dibuka sebagai halaman terpisah di tab baru.
+  const EMBED_MAP = { tenses: 'assets/materi-tenses.html', irregular_verbs: 'assets/materi-irregular-verbs.html' };
 
   const materiC = document.getElementById('materi-container');
   materiC.innerHTML = d.materi.length ? d.materi.map(m => `
