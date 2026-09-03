@@ -161,19 +161,6 @@ body{
   font-size:13.5px;
   margin-bottom:28px;
 }
-.login-mascot{
-  display:flex;
-  justify-content:center;
-  margin:-6px 0 22px;
-}
-.login-mascot img{
-  width:120px;
-  height:120px;
-  object-fit:cover;
-  border-radius:20px;
-  box-shadow:0 14px 30px rgba(124,92,252,0.35), 0 0 0 3px var(--violet-soft);
-}
-
 .field{margin-bottom:18px;}
 .field label{
   display:block;
@@ -627,7 +614,5 @@ body{
   .topbar{padding:0 20px;}
   .content{padding:24px 20px;}
   .login-visual{display:none;}
-  .login-panel-wrap{width:100%; padding:24px 16px;}
-  .login-card{padding:34px 24px;}
-  .login-mascot img{width:104px; height:104px;}
+  .login-panel-wrap{width:100%;}
 }
