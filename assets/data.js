@@ -115,7 +115,8 @@ const DATA = {
       { siswa: "Zahwa Aina Chabib", jenis: "Latihan Ulangan Harian 1 - Describing People", skor: 69, skorAsli: 69, predikat: "D" },
     ],
     materi: [
-      { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" }
+      { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" },
+      { tag: "Grammar", title: "Irregular Verbs", desc: "Daftar kata kerja tidak beraturan (irregular verbs) lengkap dengan Base Form, Past Simple, Past Participle, dan artinya — dilengkapi fitur pencarian dan filter huruf.", embed: "irregular_verbs" }
     ],
     worksheets: [
       { title: "Latihan Ulangan Harian — Describing People", meta: "Worksheet interaktif online", status: "open", url: "https://shohibularham-28.github.io/UH1BINGX/" },
@@ -239,7 +240,8 @@ const DATA = {
     ],
     materi: [
       { tag: "Grammar", title: "16 Tenses — The Time Rail", desc: "Materi interaktif lengkap 16 tenses bahasa Inggris: present, past, dan future beserta rumus dan contoh.", embed: "tenses" },
-      { tag: "Grammar", title: "English Grammar in Use", desc: "Buku referensi grammar bahasa Inggris lengkap, cocok untuk latihan mandiri dan pendalaman materi tata bahasa.", url: "https://drive.google.com/file/d/1VALzc6zddT9mBfjjrnV_sgBUTtzAKVPe/view?usp=sharing" }
+      { tag: "Grammar", title: "English Grammar in Use", desc: "Buku referensi grammar bahasa Inggris lengkap, cocok untuk latihan mandiri dan pendalaman materi tata bahasa.", url: "https://drive.google.com/file/d/1VALzc6zddT9mBfjjrnV_sgBUTtzAKVPe/view?usp=sharing" },
+      { tag: "Grammar", title: "Irregular Verbs", desc: "Daftar kata kerja tidak beraturan (irregular verbs) lengkap dengan Base Form, Past Simple, Past Participle, dan artinya — dilengkapi fitur pencarian dan filter huruf.", embed: "irregular_verbs" }
     ],
     worksheets: [
       { title: "Simple Present & Continuous — Practice", meta: "Worksheet interaktif online", status: "open", url: "https://shohibularham-28.github.io/wssimpvscont/" },
