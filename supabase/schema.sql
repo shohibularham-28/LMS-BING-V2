@@ -103,8 +103,9 @@ alter table public.materi enable row level security;
 alter table public.worksheet enable row level security;
 alter table public.nilai enable row level security;
 
--- KELAS: semua user login boleh baca; hanya guru boleh tulis
-create policy "kelas_select" on public.kelas for select using (auth.uid() is not null);
+-- KELAS: siapa saja boleh baca (termasuk yang belum login, supaya dropdown kelas
+-- muncul di halaman "Daftar Akun Siswa" sebelum user punya sesi login); hanya guru boleh tulis
+create policy "kelas_select" on public.kelas for select using (true);
 create policy "kelas_insert_guru" on public.kelas for insert with check (public.is_guru());
 create policy "kelas_update_guru" on public.kelas for update using (public.is_guru());
 create policy "kelas_delete_guru" on public.kelas for delete using (public.is_guru());

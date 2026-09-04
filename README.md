@@ -56,7 +56,13 @@ Siswa juga bisa daftar sendiri lewat tab **Daftar Akun Siswa** di halaman login 
 ## 7. Materi & konten interaktif (tenses, irregular verbs, worksheet fractured)
 File `assets/materi-tenses.html`, `assets/materi-irregular-verbs.html`, dan `assets/worksheet-fractured.html` disalin apa adanya dari project lama (tidak berubah). Untuk memunculkannya di menu **Materi** siswa, tambahkan baris manual lewat Supabase Table Editor ke tabel `materi`, isi kolom `url` dengan `assets/materi-tenses.html` dst. (CRUD materi lewat dashboard guru belum dibuat di versi ini — bisa ditambahkan kalau diperlukan.)
 
-## 8. Deploy
+## 8. Siswa ganti password sendiri
+Siswa yang sudah login bisa ganti password sendiri lewat menu **⚙️ Pengaturan** di sidebar (`pengaturan.html`) — tidak perlu minta guru reset lagi. Password baru otomatis ikut tersimpan di kolom `password_plain`, jadi tetap konsisten dengan fitur "Lihat Password" di dashboard guru.
+
+## 9. Perbaikan: dropdown "Kelas" kosong di halaman Daftar Akun
+Kalau project Supabase kamu dibuat **sebelum** perbaikan ini dan dropdown kelas di tab "Daftar Akun Siswa" kosong/"Belum ada kelas tersedia", jalankan `MIGRASI_KELAS_PUBLIC.sql` sekali di SQL Editor. Penyebabnya: policy lama cuma izinkan baca tabel `kelas` untuk yang sudah login, padahal orang yang baru mau daftar akun belum punya sesi login sama sekali. Project baru yang pakai `supabase/schema.sql` versi ini sudah otomatis benar, tidak perlu migrasi tambahan.
+
+## 10. Deploy
 Karena ini masih situs statis (HTML+JS) yang manggil Supabase langsung dari browser, kamu bisa deploy persis seperti sebelumnya: GitHub Pages, Netlify, Vercel, dsb. Cukup push semua file (kecuali folder `supabase/functions`, yang di-deploy terpisah lewat Supabase CLI di langkah 3).
 
 ## Yang disederhanakan dari versi lama
