@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .auth-tabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .auth-tab{ flex:1; padding:10px; border-radius:10px; border:1px solid #d8dce6; background:#fff; cursor:pointer; font-weight:600; font-size:13.5px; color:#5a6172; }
+  .auth-tab.active{ background:#1f2937; color:#fff; border-color:#1f2937; }
+  .auth-panel{ display:none; }
+  .auth-panel.active{ display:block; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-visual">
+    <div class="kicker">English Learning Hub</div>
+    <h1>Belajar bahasa Inggris jadi <span>lebih hidup.</span></h1>
+    <p>Akses materi, worksheet, dan nilai kamu kapan saja. Satu ruang belajar untuk seluruh kelas X dan XI.</p>
+  </div>
+
+  <div class="login-panel-wrap">
+    <div class="login-card">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tabLogin">Masuk</button>
+        <button type="button" class="auth-tab" id="tabSignup">Daftar Akun Siswa</button>
+      </div>
+
+      <!-- ===== LOGIN ===== -->
+      <div class="auth-panel active" id="panelLogin">
+        <h2>Masuk ke akunmu</h2>
+        <div class="sub">Isi data berikut untuk melanjutkan</div>
+
+        <div class="field">
+          <label for="li-username">Username</label>
+          <input type="text" id="li-username" placeholder="Username kamu">
+        </div>
+        <div class="field">
+          <label for="li-password">Password</label>
+          <input type="password" id="li-password" placeholder="Masukkan password">
+        </div>
+
+        <p class="login-error" id="loginError"></p>
+        <button class="btn-primary" id="btnLogin">Masuk</button>
+      </div>
+
+      <!-- ===== SIGNUP (siswa) ===== -->
+      <div class="auth-panel" id="panelSignup">
+        <h2>Buat akun siswa</h2>
+        <div class="sub">Daftar sekali, langsung bisa dipakai untuk login</div>
+
+        <div class="field">
+          <label for="su-nama">Nama Lengkap</label>
+          <input type="text" id="su-nama" placeholder="Nama lengkap kamu">
+        </div>
+        <div class="field">
+          <label for="su-username">Username</label>
+          <input type="text" id="su-username" placeholder="Buat username (tanpa spasi)">
+        </div>
+        <div class="field">
+          <label for="su-password">Password</label>
+          <input type="password" id="su-password" placeholder="Buat password (min. 6 karakter)">
+        </div>
+        <div class="field">
+          <label for="su-kelas">Kelas</label>
+          <select id="su-kelas"><option value="">Memuat daftar kelas…</option></select>
+        </div>
+
+        <p class="login-error" id="signupError"></p>
+        <p class="login-error" id="signupSuccess" style="color:#1a8f4c;display:none;"></p>
+        <button class="btn-primary" id="btnSignup">Daftar &amp; Masuk</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const panelLogin = document.getElementById('panelLogin');
+  const panelSignup = document.getElementById('panelSignup');
+
+  tabLogin.addEventListener('click', () => {
+    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+    panelLogin.classList.add('active'); panelSignup.classList.remove('active');
+  });
+  tabSignup.addEventListener('click', () => {
+    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+    panelSignup.classList.add('active'); panelLogin.classList.remove('active');
+  });
+
+  // ---------- LOGIN ----------
+  async function doLoginSubmit() {
+    const username = document.getElementById('li-username').value.trim();
+    const password = document.getElementById('li-password').value;
+    const err = document.getElementById('loginError');
+    err.style.display = 'none';
+
+    if (!username || !password) {
+      err.textContent = "Mohon isi username dan password.";
+      err.style.display = 'block';
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: usernameToEmail(username),
+      password,
+    });
+
+    if (error) {
+      err.textContent = "Username atau password salah.";
+      err.style.display = 'block';
+      return;
+    }
+
+    const profile = await getProfile();
+    if (!profile) {
+      err.textContent = "Akun ditemukan tapi profil belum lengkap. Hubungi guru.";
+      err.style.display = 'block';
+      return;
+    }
+    window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
+  }
+  document.getElementById('btnLogin').addEventListener('click', doLoginSubmit);
+  ['li-username','li-password'].forEach(id => {
+    document.getElementById(id).addEventListener('keyup', e => { if (e.key === 'Enter') doLoginSubmit(); });
+  });
+
+  // ---------- SIGNUP ----------
+  async function loadKelasOptions() {
+    const sel = document.getElementById('su-kelas');
+    const { data, error } = await supabase.from('kelas').select('id, nama, level').order('nama');
+    if (error || !data || !data.length) {
+      sel.innerHTML = '<option value="">Belum ada kelas tersedia</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">— Pilih kelas —</option>' +
+      data.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`).join('');
+  }
+  loadKelasOptions();
+
+  async function doSignupSubmit() {
+    const nama = document.getElementById('su-nama').value.trim();
+    const username = document.getElementById('su-username').value.trim().toLowerCase();
+    const password = document.getElementById('su-password').value;
+    const kelasId = document.getElementById('su-kelas').value;
+    const err = document.getElementById('signupError');
+    const ok = document.getElementById('signupSuccess');
+    err.style.display = 'none'; ok.style.display = 'none';
+
+    if (!nama || !username || !password || !kelasId) {
+      err.textContent = "Mohon lengkapi semua data, termasuk pilih kelas.";
+      err.style.display = 'block';
+      return;
+    }
+    if (/\s/.test(username)) {
+      err.textContent = "Username tidak boleh mengandung spasi.";
+      err.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      err.textContent = "Password minimal 6 karakter.";
+      err.style.display = 'block';
+      return;
+    }
+
+    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
+      email: usernameToEmail(username),
+      password,
+    });
+
+    if (signUpErr) {
+      err.textContent = signUpErr.message.includes('already registered')
+        ? "Username sudah dipakai, coba username lain."
+        : "Gagal mendaftar: " + signUpErr.message;
+      err.style.display = 'block';
+      return;
+    }
+
+    // Kalau email confirmation masih aktif di project Supabase, tidak akan ada session di sini.
+    if (!signUpData.session) {
+      ok.textContent = "Akun dibuat. Silakan login di tab Masuk.";
+      ok.style.display = 'block';
+      // Tetap coba simpan profil (butuh RLS insert_self policy, yang berjalan meski belum ada session
+      // hanya jika confirm-email dimatikan; kalau tidak, guru perlu proses manual / matikan confirm-email).
+    }
+
+    const { error: profileErr } = await supabase.from('profiles').insert({
+      id: signUpData.user.id,
+      username,
+      nama,
+      role: 'siswa',
+      kelas_id: kelasId,
+    });
+
+    if (profileErr) {
+      err.textContent = "Akun dibuat tapi profil gagal disimpan: " + profileErr.message;
+      err.style.display = 'block';
+      return;
+    }
+
+    if (signUpData.session) {
+      window.location.href = 'pengumuman.html';
+    } else {
+      ok.textContent = "Pendaftaran berhasil! Silakan login lewat tab Masuk.";
+      ok.style.display = 'block';
+    }
+  }
+  document.getElementById('btnSignup').addEventListener('click', doSignupSubmit);
+
+  // Kalau sudah login, langsung arahkan ke halaman utama.
+  (async function () {
+    const profile = await getProfile();
+    if (profile) {
+      window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
+    }
+  })();
+</script>
+
+</body>
+</html>

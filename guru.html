@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Guru — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .level-tabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .level-tab{ padding:9px 18px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); background:#fff; cursor:pointer; font-weight:600; font-size:14px; color:#555; }
+  .level-tab.active{ background:#1f2937; color:#fff; border-color:#1f2937; }
+
+  .kelas-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .kelas-chip{ padding:7px 16px; border-radius:999px; border:1px solid rgba(0,0,0,0.12); background:#fff; cursor:pointer; font-size:13.5px; font-weight:600; color:#555; }
+  .kelas-chip.active{ background:#2563eb; color:#fff; border-color:#2563eb; }
+
+  .jenis-field, .form-field{ margin-bottom:16px; max-width:480px; }
+  .jenis-field label, .form-field label{ display:block; font-size:13px; font-weight:600; color:#666; margin-bottom:6px; }
+  .jenis-field select, .form-field select, .form-field input, .form-field textarea{
+    width:100%; padding:10px 12px; border-radius:10px; border:1px solid rgba(0,0,0,0.15); font-size:14px; background:#fff; font-family:inherit;
+  }
+  .form-field textarea{ min-height:120px; resize:vertical; font-family:monospace; font-size:13px; }
+  .form-row{ display:flex; gap:12px; flex-wrap:wrap; }
+  .form-row .form-field{ flex:1; min-width:180px; }
+
+  .summary-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-bottom:22px; }
+  .summary-card{ background:#fff; border:1px solid rgba(0,0,0,0.08); border-radius:14px; padding:14px 16px; }
+  .summary-card .val{ font-size:22px; font-weight:700; color:#1f2937; }
+  .summary-card .lbl{ font-size:12.5px; color:#888; margin-top:2px; }
+
+  .rank-cell{ font-weight:700; color:#9AA3B8; width:34px; }
+  .btn-secondary-sm{ padding:9px 16px; border-radius:10px; border:1px solid #d8dce6; background:#fff; color:#5a6172; font-size:13px; font-weight:600; cursor:pointer; }
+  .btn-danger-sm{ padding:6px 12px; border-radius:8px; border:1px solid #f2b8b8; background:#fff5f5; color:#c0392b; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .gs-section{ display:none; }
+  .gs-section.active{ display:block; }
+  .list-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border:1px solid rgba(0,0,0,0.08); border-radius:10px; margin-bottom:8px; background:#fff; }
+  .result-line{ padding:6px 0; font-size:13px; border-bottom:1px solid #f0f0f0; }
+  .result-ok{ color:#1a8f4c; }
+  .result-fail{ color:#c0392b; }
+  .hint{ font-size:12.5px; color:#888; margin-top:-8px; margin-bottom:16px; }
+  .nilai-input{ width:80px; padding:6px 8px; border-radius:6px; border:1px solid #d8dce6; }
+
+  .kelas-checklist{ display:flex; flex-wrap:wrap; gap:8px; }
+  .kelas-check-item{ display:flex; align-items:center; gap:7px; padding:8px 15px; border-radius:999px; border:1px solid rgba(0,0,0,0.12); background:#fff; font-size:13.5px; font-weight:600; color:#555; cursor:pointer; user-select:none; transition:all .15s; }
+  .kelas-check-item input{ margin:0; accent-color:#2563eb; }
+  .kelas-check-item.all{ border-color:#2563eb55; background:#eef4ff; color:#2563eb; }
+  .kelas-check-item:has(input:checked){ background:#2563eb; border-color:#2563eb; color:#fff; }
+  .kelas-check-item:has(input:disabled){ opacity:.4; cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="user-card">
+        <div class="avatar" id="userAvatar">G</div>
+        <div class="name" id="sideName">—</div>
+        <span class="kelas-tag">Guru</span>
+      </div>
+
+      <div class="nav-section-label">Menu Guru</div>
+      <a class="nav-item active" data-page="rekap" href="#">📊 Rekap Nilai</a>
+      <a class="nav-item" data-page="siswa" href="#">👥 Daftar Siswa</a>
+      <a class="nav-item" data-page="kelas" href="#">🏫 Kelola Kelas</a>
+      <a class="nav-item" data-page="akun" href="#">👥 Buat Akun Siswa</a>
+      <a class="nav-item" data-page="inputnilai" href="#">✍️ Input Nilai Massal</a>
+      <a class="nav-item" data-page="worksheet" href="#">📝 Kelola Worksheet</a>
+      <a class="nav-item" data-page="materi" href="#">📘 Kelola Materi</a>
+      <a class="nav-item" data-page="pengumuman" href="#">📣 Kelola Pengumuman</a>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Keluar</button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+          <div class="date" id="topDate"></div>
+        </div>
+        <div class="level-pill">Dashboard Guru</div>
+      </div>
+
+      <div class="content">
+
+        <!-- ===== REKAP NILAI ===== -->
+        <div class="gs-section active" id="section-rekap">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Rekap Nilai Siswa</h1></div>
+          <div class="level-tabs" id="levelTabs"></div>
+          <div class="kelas-chips" id="kelasChips"></div>
+          <div class="jenis-field"><label for="jenisSelect">Jenis Penilaian</label><select id="jenisSelect"></select></div>
+          <div class="summary-grid" id="summaryGrid"></div>
+          <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span>Detail Nilai per Siswa</span>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn-secondary-sm" id="btnDownloadRekap">⬇️ Download Rekap (CSV)</button>
+              <button class="btn-danger-sm" id="btnHapusSemuaNilai">🗑️ Hapus Semua Nilai</button>
+            </div>
+          </div>
+          <table class="grade-table" id="grade-table">
+            <thead><tr><th>#</th><th>Nama Siswa</th><th>Skor</th><th>Nilai Asli</th><th>Predikat</th><th>Keterangan</th><th>Status</th><th>Aksi</th></tr></thead>
+            <tbody id="grade-container"></tbody>
+          </table>
+          <div id="grade-empty-slot"></div>
+        </div>
+
+        <!-- ===== DAFTAR SISWA PER KELAS ===== -->
+        <div class="gs-section" id="section-siswa">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Daftar Siswa per Kelas</h1></div>
+          <div class="level-tabs" id="siswaLevelTabs"></div>
+          <div class="kelas-chips" id="siswaKelasChips"></div>
+          <div class="form-field" style="max-width:320px;">
+            <label>Cari Nama</label>
+            <input type="text" id="siswaSearchInput" placeholder="Ketik nama siswa...">
+          </div>
+          <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span id="siswaListLabel">Daftar Siswa</span>
+            <button class="btn-secondary-sm" id="btnDownloadSiswa">⬇️ Download Daftar Siswa (CSV)</button>
+          </div>
+          <div class="hint">Klik "👁️ Lihat" untuk menampilkan password siswa, atau "🔑 Reset" untuk membuatkan yang baru.</div>
+          <table class="grade-table" id="siswa-table">
+            <thead><tr><th>#</th><th>Nama Siswa</th><th>Username</th><th>Password</th><th>Aksi</th></tr></thead>
+            <tbody id="siswa-container"></tbody>
+          </table>
+          <div id="siswa-empty-slot"></div>
+        </div>
+
+        <!-- ===== KELOLA KELAS ===== -->
+        <div class="gs-section" id="section-kelas">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kelola Kelas</h1></div>
+          <div class="form-row">
+            <div class="form-field"><label>Nama Kelas</label><input type="text" id="kelasNamaInput" placeholder="mis. X L"></div>
+            <div class="form-field"><label>Tingkat</label><select id="kelasLevelInput"><option value="X">X</option><option value="XI">XI</option><option value="XII">XII</option></select></div>
+          </div>
+          <button class="btn-secondary-sm" id="btnTambahKelas">+ Tambah Kelas</button>
+          <p class="login-error" id="kelasError" style="display:none;"></p>
+          <div class="section-label" style="margin-top:24px;">Daftar Kelas</div>
+          <div id="kelasList">Memuat…</div>
+        </div>
+
+        <!-- ===== BUAT AKUN SISWA MASSAL ===== -->
+        <div class="gs-section" id="section-akun">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Buat Akun Siswa Secara Massal</h1></div>
+          <div class="form-field">
+            <label>Daftar Siswa (satu baris = satu siswa)</label>
+            <textarea id="akunTextarea" placeholder="Nama Lengkap, username, password, Nama Kelas
+Contoh:
+Budi Santoso, budi123, budipass1, X I
+Ani Wulandari, ani456, anipass2, X I"></textarea>
+          </div>
+          <div class="hint">Format tiap baris: <code>Nama Lengkap, username, password, Nama Kelas</code> — pastikan nama kelas persis sama seperti di menu Kelola Kelas.</div>
+          <button class="btn-secondary-sm" id="btnBuatAkun">Buat Semua Akun</button>
+          <div id="akunResult" style="margin-top:16px;"></div>
+        </div>
+
+        <!-- ===== INPUT NILAI MASSAL ===== -->
+        <div class="gs-section" id="section-inputnilai">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Input Nilai Massal</h1></div>
+          <div class="form-row">
+            <div class="form-field"><label>Kelas</label><select id="nilaiKelasSelect"></select></div>
+            <div class="form-field"><label>Jenis Penilaian</label><input type="text" id="nilaiJenisInput" placeholder="mis. Ulangan Harian 2"></div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+            <button class="btn-secondary-sm" id="btnMuatSiswaNilai">Muat Daftar Siswa</button>
+            <button class="btn-secondary-sm" id="btnDownloadFormatNilai">⬇️ Download Format Nilai (CSV)</button>
+            <button class="btn-secondary-sm" id="btnUploadNilaiCSV">⬆️ Upload Nilai dari CSV</button>
+            <input type="file" id="nilaiCsvFile" accept=".csv" style="display:none;">
+          </div>
+          <div class="hint">Alur cepat: 1) Pilih kelas &amp; jenis penilaian → 2) Download Format (kolom: Nama Lengkap, Kelas, Nilai, Nilai Sebelum Penalti, Predikat, Keterangan) → 3) Isi di Excel/Spreadsheet, JANGAN ubah kolom Nama Lengkap → 4) Muat Daftar Siswa → 5) Upload Nilai dari CSV untuk mengisi otomatis → 6) Cek lalu Simpan Semua Nilai.</div>
+          <p class="login-error" id="nilaiUploadMsg" style="display:none;"></p>
+          <div id="nilaiTableWrap" style="margin-top:8px;"></div>
+        </div>
+
+        <!-- ===== KELOLA WORKSHEET ===== -->
+        <div class="gs-section" id="section-worksheet">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kelola Worksheet</h1></div>
+          <div class="form-row">
+            <div class="form-field"><label>Judul</label><input type="text" id="wsJudulInput" placeholder="mis. Latihan Simple Past"></div>
+            <div class="form-field"><label>Tingkat</label><select id="wsTingkatSelect"><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>URL Worksheet</label><input type="text" id="wsUrlInput" placeholder="https://..."></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="wsMulaiInput"></div>
+            <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="wsDeadlineInput"></div>
+          </div>
+          <div class="hint">Kosongkan "Mulai Bisa Dibuka" kalau worksheet boleh langsung dikerjakan siswa sejak diterbitkan.</div>
+          <button class="btn-secondary-sm" id="btnTambahWorksheet">+ Tambahkan Worksheet</button>
+          <p class="login-error" id="wsError" style="display:none;"></p>
+          <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
+          <div id="worksheetList">Memuat…</div>
+        </div>
+
+        <!-- ===== KELOLA MATERI ===== -->
+        <div class="gs-section" id="section-materi">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kelola Materi</h1></div>
+          <div class="form-row">
+            <div class="form-field"><label>Judul Materi</label><input type="text" id="materiJudulInput" placeholder="mis. Simple Present Tense"></div>
+            <div class="form-field"><label>Tag</label><input type="text" id="materiTagInput" placeholder="mis. Grammar"></div>
+          </div>
+          <div class="form-field"><label>Deskripsi Singkat</label><input type="text" id="materiDeskripsiInput" placeholder="Deskripsi singkat materi ini"></div>
+          <div class="form-row">
+            <div class="form-field"><label>Link Materi (URL)</label><input type="text" id="materiUrlInput" placeholder="https://..."></div>
+            <div class="form-field"><label>Tingkat Tujuan</label><select id="materiTingkatSelect"><option value="">Semua Tingkat (Umum)</option><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+          </div>
+          <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambahkan Materi</button>
+          <p class="login-error" id="materiError" style="display:none;"></p>
+          <div class="section-label" style="margin-top:24px;">Materi Aktif</div>
+          <div id="materiList">Memuat…</div>
+        </div>
+
+        <!-- ===== KELOLA PENGUMUMAN ===== -->
+        <div class="gs-section" id="section-pengumuman">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kelola Pengumuman</h1></div>
+          <div class="form-field"><label>Judul</label><input type="text" id="annJudulInput" placeholder="mis. Libur Semester"></div>
+          <div class="form-field"><label>Isi Pengumuman</label><textarea id="annIsiInput" placeholder="Tulis isi pengumuman di sini..." style="font-family:inherit;"></textarea></div>
+          <div class="form-field">
+            <label>Kelas Tujuan (bisa pilih lebih dari satu)</label>
+            <div class="kelas-checklist" id="annKelasChecklist">Memuat…</div>
+          </div>
+          <button class="btn-secondary-sm" id="btnTambahPengumuman">+ Terbitkan Pengumuman</button>
+          <p class="login-error" id="annError" style="display:none;"></p>
+          <div class="section-label" style="margin-top:24px;">Pengumuman Terbit</div>
+          <div id="pengumumanList">Memuat…</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const teacher = await requireTeacherLogin();
+  if (!teacher) return;
+
+  document.getElementById('topName').textContent = teacher.nama;
+  document.getElementById('sideName').textContent = teacher.nama;
+  document.getElementById('userAvatar').textContent = teacher.nama.charAt(0).toUpperCase();
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  // ---------- Navigasi antar section ----------
+  document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
+    nav.addEventListener('click', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.gs-section').forEach(s => s.classList.remove('active'));
+      nav.classList.add('active');
+      document.getElementById('section-' + nav.dataset.page).classList.add('active');
+    });
+  });
+
+  // ---------- Data kelas (dipakai di beberapa section) ----------
+  let allKelas = [];
+  async function loadAllKelas() {
+    const { data } = await supabase.from('kelas').select('id, nama, level').order('nama');
+    allKelas = data || [];
+    return allKelas;
+  }
+
+  function fmtSkor(v) {
+    if (typeof v !== 'number') return v ?? '-';
+    return Number.isInteger(v) ? v : v.toFixed(2);
+  }
+
+  // =========================================================
+  // 1) REKAP NILAI
+  // =========================================================
+  const rekapState = { level: 'X', kelasId: null, jenis: null };
+
+  function renderLevelTabs() {
+    const el = document.getElementById('levelTabs');
+    el.innerHTML = ['X', 'XI', 'XII'].map(lv => `<button type="button" class="level-tab ${rekapState.level === lv ? 'active' : ''}" data-level="${lv}">Kelas ${lv}</button>`).join('');
+    el.querySelectorAll('.level-tab').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        rekapState.level = btn.dataset.level;
+        rekapState.kelasId = null;
+        renderLevelTabs();
+        await renderKelasChips();
+      });
+    });
+  }
+
+  async function renderKelasChips() {
+    const el = document.getElementById('kelasChips');
+    const list = allKelas.filter(k => k.level === rekapState.level);
+    if (!rekapState.kelasId || !list.some(k => k.id === rekapState.kelasId)) {
+      rekapState.kelasId = list[0] ? list[0].id : null;
+    }
+    el.innerHTML = list.map(k => `<button type="button" class="kelas-chip ${rekapState.kelasId === k.id ? 'active' : ''}" data-id="${k.id}">${esc(k.nama)}</button>`).join('');
+    el.querySelectorAll('.kelas-chip').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        rekapState.kelasId = btn.dataset.id;
+        await renderKelasChips();
+        await renderJenisOptions();
+      });
+    });
+    await renderJenisOptions();
+  }
+
+  async function renderJenisOptions() {
+    const select = document.getElementById('jenisSelect');
+    if (!rekapState.kelasId) {
+      select.innerHTML = '<option value="">— Tidak ada kelas —</option>';
+      rekapState.jenis = null;
+      renderRekap([]);
+      return;
+    }
+    const { data } = await supabase
+      .from('nilai')
+      .select('id, jenis, skor, skor_asli, predikat, keterangan, siswa:siswa_id ( nama )')
+      .in('siswa_id',
+        (await supabase.from('profiles').select('id').eq('kelas_id', rekapState.kelasId)).data?.map(p => p.id) || ['00000000-0000-0000-0000-000000000000']
+      );
+    const rows = data || [];
+    const jenisList = [...new Set(rows.map(r => r.jenis))];
+    if (!rekapState.jenis || !jenisList.includes(rekapState.jenis)) rekapState.jenis = jenisList[0] || null;
+
+    select.innerHTML = jenisList.length
+      ? jenisList.map(j => `<option value="${esc(j)}" ${rekapState.jenis === j ? 'selected' : ''}>${esc(j)}</option>`).join('')
+      : '<option value="">— Belum ada nilai untuk kelas ini —</option>';
+    select.onchange = () => { rekapState.jenis = select.value; renderRekap(rows); };
+    renderRekap(rows);
+  }
+
+  function renderRekap(allRows) {
+    const summaryGrid = document.getElementById('summaryGrid');
+    const gradeTable = document.getElementById('grade-table');
+    const gradeC = document.getElementById('grade-container');
+    const gradeEmptySlot = document.getElementById('grade-empty-slot');
+
+    if (!rekapState.kelasId || !rekapState.jenis) {
+      summaryGrid.innerHTML = '';
+      gradeTable.style.display = 'none';
+      gradeC.innerHTML = '';
+      gradeEmptySlot.innerHTML = emptyState("Belum ada data nilai", "Pilih kelas lain atau tunggu data nilai diinput.", "📊");
+      return;
+    }
+
+    const rows = (allRows || []).filter(r => r.jenis === rekapState.jenis).map(r => ({
+      id: r.id,
+      nama: r.siswa ? r.siswa.nama : '(tidak diketahui)',
+      skor: r.skor,
+      skorAsli: r.skor_asli,
+      predikat: r.predikat,
+      keterangan: r.keterangan,
+    })).sort((a, b) => {
+      const av = typeof a.skor === 'number' ? a.skor : -1;
+      const bv = typeof b.skor === 'number' ? b.skor : -1;
+      return bv - av;
+    });
+
+    const numeric = rows.filter(r => typeof r.skor === 'number').map(r => r.skor);
+    const summary = {
+      jumlahSiswa: rows.length,
+      belumMengerjakan: rows.length - numeric.length,
+      rataRata: numeric.length ? (numeric.reduce((a, b) => a + b, 0) / numeric.length) : null,
+      tertinggi: numeric.length ? Math.max(...numeric) : null,
+      terendah: numeric.length ? Math.min(...numeric) : null,
+      tuntas: numeric.filter(s => s >= 75).length,
+      remidi: numeric.filter(s => s < 75).length,
+    };
+
+    summaryGrid.innerHTML = `
+      <div class="summary-card"><div class="val">${summary.jumlahSiswa}</div><div class="lbl">Jumlah Siswa</div></div>
+      <div class="summary-card"><div class="val">${summary.rataRata !== null ? fmtSkor(summary.rataRata) : '-'}</div><div class="lbl">Rata-rata</div></div>
+      <div class="summary-card"><div class="val">${summary.tertinggi !== null ? fmtSkor(summary.tertinggi) : '-'}</div><div class="lbl">Tertinggi</div></div>
+      <div class="summary-card"><div class="val">${summary.terendah !== null ? fmtSkor(summary.terendah) : '-'}</div><div class="lbl">Terendah</div></div>
+      <div class="summary-card"><div class="val">${summary.tuntas}</div><div class="lbl">Tuntas (≥75)</div></div>
+      <div class="summary-card"><div class="val">${summary.remidi}</div><div class="lbl">Remidi (&lt;75)</div></div>
+      <div class="summary-card"><div class="val">${summary.belumMengerjakan}</div><div class="lbl">Belum Mengerjakan</div></div>
+    `;
+
+    currentRekapRows = rows;
+
+    if (rows.length) {
+      gradeTable.style.display = '';
+      gradeEmptySlot.innerHTML = '';
+      gradeC.innerHTML = rows.map((r, i) => {
+        const isNumeric = typeof r.skor === 'number';
+        const statusCls = !isNumeric ? 'status-belum' : (r.skor < 75 ? 'status-remidi' : 'status-tuntas');
+        const statusTxt = !isNumeric ? 'Belum Mengerjakan' : (r.skor < 75 ? 'Remidi' : 'Tuntas');
+        return `<tr>
+          <td class="rank-cell">${i + 1}</td>
+          <td>${esc(r.nama)}</td>
+          <td>${fmtSkor(r.skor)}</td>
+          <td>${typeof r.skorAsli === 'number' ? fmtSkor(r.skorAsli) : '-'}</td>
+          <td><span class="score-pill ${isNumeric && r.skor >= 85 ? 'score-high' : 'score-mid'}">${esc(r.predikat || '-')}</span></td>
+          <td style="max-width:220px;">${r.keterangan ? esc(r.keterangan) : '<span style="color:#c8cbd6;">-</span>'}</td>
+          <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
+          <td>${r.id ? `<button class="btn-danger-sm" data-id="${r.id}">Hapus</button>` : '-'}</td>
+        </tr>`;
+      }).join('');
+
+      gradeC.querySelectorAll('.btn-danger-sm').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Hapus nilai siswa ini? Tindakan ini tidak bisa dibatalkan.')) return;
+          const { error } = await supabase.from('nilai').delete().eq('id', btn.dataset.id);
+          if (error) { alert('Gagal menghapus nilai: ' + error.message); return; }
+          await renderJenisOptions();
+        });
+      });
+    } else {
+      gradeTable.style.display = 'none';
+      gradeC.innerHTML = '';
+      gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Belum ada siswa yang memiliki nilai untuk jenis ini.", "📊");
+    }
+
+    const btnHapusSemuaNilai = document.getElementById('btnHapusSemuaNilai');
+    btnHapusSemuaNilai.disabled = !rows.length;
+    btnHapusSemuaNilai.onclick = async () => {
+      const ids = rows.map(r => r.id).filter(Boolean);
+      if (!ids.length) { alert('Tidak ada nilai untuk dihapus.'); return; }
+      if (!confirm(`Hapus SEMUA nilai (${ids.length} siswa) untuk jenis penilaian "${rekapState.jenis}" di kelas ini? Tindakan ini tidak bisa dibatalkan.`)) return;
+      const { error } = await supabase.from('nilai').delete().in('id', ids);
+      if (error) { alert('Gagal menghapus semua nilai: ' + error.message); return; }
+      await renderJenisOptions();
+    };
+  }
+
+  // ---- Download rekap nilai (per kelas & jenis penilaian) sebagai CSV ----
+  let currentRekapRows = [];
+  document.getElementById('btnDownloadRekap').addEventListener('click', () => {
+    if (!rekapState.kelasId || !rekapState.jenis) { alert('Pilih kelas dan jenis penilaian dulu.'); return; }
+    if (!currentRekapRows.length) { alert('Belum ada data nilai untuk diunduh.'); return; }
+    const kelasNama = allKelas.find(k => k.id === rekapState.kelasId)?.nama || 'kelas';
+    const header = ['#', 'Nama Siswa', 'Skor', 'Nilai Asli', 'Predikat', 'Keterangan', 'Status'].join(',');
+    const rowsCsv = currentRekapRows.map((r, i) => {
+      const isNumeric = typeof r.skor === 'number';
+      const status = !isNumeric ? 'Belum Mengerjakan' : (r.skor < 75 ? 'Remidi' : 'Tuntas');
+      return [
+        i + 1,
+        csvField(r.nama),
+        csvField(fmtSkor(r.skor)),
+        csvField(typeof r.skorAsli === 'number' ? fmtSkor(r.skorAsli) : '-'),
+        csvField(r.predikat || '-'),
+        csvField(r.keterangan || '-'),
+        csvField(status),
+      ].join(',');
+    });
+    const csv = [header, ...rowsCsv].join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rekap-nilai-${kelasNama.replace(/\s+/g, '_')}-${rekapState.jenis.replace(/\s+/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // =========================================================
+  // 1b) DAFTAR SISWA PER KELAS
+  // =========================================================
+  const siswaState = { level: 'X', kelasId: null, search: '' };
+  let currentSiswaList = [];
+  let siswaLoadError = null;
+
+  function renderSiswaLevelTabs() {
+    const el = document.getElementById('siswaLevelTabs');
+    el.innerHTML = ['X', 'XI', 'XII'].map(lv => `<button type="button" class="level-tab ${siswaState.level === lv ? 'active' : ''}" data-level="${lv}">Kelas ${lv}</button>`).join('');
+    el.querySelectorAll('.level-tab').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        siswaState.level = btn.dataset.level;
+        siswaState.kelasId = null;
+        renderSiswaLevelTabs();
+        await renderSiswaKelasChips();
+      });
+    });
+  }
+
+  async function renderSiswaKelasChips() {
+    const el = document.getElementById('siswaKelasChips');
+    const list = allKelas.filter(k => k.level === siswaState.level);
+    if (!siswaState.kelasId || !list.some(k => k.id === siswaState.kelasId)) {
+      siswaState.kelasId = list[0] ? list[0].id : null;
+    }
+    el.innerHTML = list.map(k => `<button type="button" class="kelas-chip ${siswaState.kelasId === k.id ? 'active' : ''}" data-id="${k.id}">${esc(k.nama)}</button>`).join('');
+    el.querySelectorAll('.kelas-chip').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        siswaState.kelasId = btn.dataset.id;
+        await renderSiswaKelasChips();
+        await loadSiswaList();
+      });
+    });
+    await loadSiswaList();
+  }
+
+  async function loadSiswaList() {
+    const label = document.getElementById('siswaListLabel');
+    if (!siswaState.kelasId) {
+      currentSiswaList = [];
+      siswaLoadError = null;
+      label.textContent = 'Daftar Siswa';
+      renderSiswaTable();
+      return;
+    }
+    const kelasNama = allKelas.find(k => k.id === siswaState.kelasId)?.nama || '';
+    label.textContent = `Daftar Siswa — Kelas ${kelasNama}`;
+    const { data, error } = await supabase.from('profiles').select('id, nama, username, password_plain').eq('kelas_id', siswaState.kelasId).order('nama');
+    if (error) {
+      console.error('Gagal memuat daftar siswa:', error);
+      siswaLoadError = error.message;
+      currentSiswaList = [];
+    } else {
+      siswaLoadError = null;
+      currentSiswaList = data || [];
+    }
+    renderSiswaTable();
+  }
+
+  function generateRandomPassword() {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    let out = '';
+    for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  }
+
+  const shownPasswords = {}; // siswa_id -> true kalau lagi ditampilkan di layar (state UI saja)
+
+  function renderSiswaTable() {
+    const table = document.getElementById('siswa-table');
+    const body = document.getElementById('siswa-container');
+    const emptySlot = document.getElementById('siswa-empty-slot');
+    const q = siswaState.search.trim().toLowerCase();
+    const rows = q ? currentSiswaList.filter(s => s.nama.toLowerCase().includes(q)) : currentSiswaList;
+
+    if (!siswaState.kelasId) {
+      table.style.display = 'none';
+      body.innerHTML = '';
+      emptySlot.innerHTML = emptyState('Belum ada kelas', 'Tambahkan kelas dulu lewat menu Kelola Kelas.', '🏫');
+      return;
+    }
+
+    if (siswaLoadError) {
+      table.style.display = 'none';
+      body.innerHTML = '';
+      emptySlot.innerHTML = `<div class="login-error" style="display:block;">Gagal memuat daftar siswa: ${esc(siswaLoadError)}<br>Kemungkinan kolom <code>password_plain</code> belum ada di tabel <code>profiles</code> — jalankan migrasi di Supabase SQL Editor:<br><code>alter table public.profiles add column if not exists password_plain text;</code></div>`;
+      return;
+    }
+
+    if (rows.length) {
+      table.style.display = '';
+      emptySlot.innerHTML = '';
+      body.innerHTML = rows.map((s, i) => {
+        const isShown = shownPasswords[s.id];
+        const hasPassword = !!s.password_plain;
+        let passCell;
+        if (isShown && hasPassword) {
+          passCell = `<span style="font-family:monospace;font-weight:700;color:#1a8f4c;">${esc(s.password_plain)}</span>`;
+        } else if (!hasPassword) {
+          passCell = `<span style="color:#c8cbd6;" title="Akun ini dibuat sebelum fitur Lihat Password aktif. Reset password untuk mengisinya.">tidak tersedia</span>`;
+        } else {
+          passCell = `<span style="color:#c8cbd6;">••••••••</span>`;
+        }
+        return `
+        <tr>
+          <td class="rank-cell">${i + 1}</td>
+          <td>${esc(s.nama)}</td>
+          <td>${esc(s.username)}</td>
+          <td>${passCell}</td>
+          <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${hasPassword ? `<button class="btn-secondary-sm btn-toggle-pass" data-id="${s.id}">${isShown ? '🙈 Sembunyikan' : '👁️ Lihat'}</button>` : ''}
+            <button class="btn-secondary-sm btn-reset-pass" data-id="${s.id}" data-nama="${esc(s.nama)}">🔑 Reset</button>
+            <button class="btn-danger-sm btn-hapus-siswa" data-id="${s.id}" data-nama="${esc(s.nama)}">🗑️ Hapus</button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      body.querySelectorAll('.btn-toggle-pass').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const siswaId = btn.dataset.id;
+          shownPasswords[siswaId] = !shownPasswords[siswaId];
+          renderSiswaTable();
+        });
+      });
+
+      body.querySelectorAll('.btn-reset-pass').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const siswaId = btn.dataset.id;
+          const nama = btn.dataset.nama;
+          const usulan = generateRandomPassword();
+          const input = prompt(`Password baru untuk ${nama}\n(boleh diganti, minimal 6 karakter):`, usulan);
+          if (input === null) return; // dibatalkan
+          const newPassword = input.trim();
+          if (newPassword.length < 6) { alert('Password minimal 6 karakter.'); return; }
+
+          btn.disabled = true;
+          btn.textContent = 'Memproses…';
+          const { data, error } = await supabase.functions.invoke('reset-password', { body: { siswa_id: siswaId, password: newPassword } });
+          btn.disabled = false;
+          btn.textContent = '🔑 Reset';
+
+          if (error) { alert('Gagal memanggil fungsi: ' + error.message); return; }
+          if (data?.error) { alert(data.error); return; }
+
+          const s = currentSiswaList.find(x => x.id === siswaId);
+          if (s) s.password_plain = newPassword;
+          shownPasswords[siswaId] = true;
+          renderSiswaTable();
+        });
+      });
+
+      body.querySelectorAll('.btn-hapus-siswa').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const siswaId = btn.dataset.id;
+          const nama = btn.dataset.nama;
+          if (!confirm(`Hapus akun siswa "${nama}"?\nSemua nilai dan akun login siswa ini akan ikut terhapus permanen. Tindakan ini tidak bisa dibatalkan.`)) return;
+
+          btn.disabled = true;
+          btn.textContent = 'Menghapus…';
+          const { data, error } = await supabase.functions.invoke('delete-student', { body: { siswa_id: siswaId } });
+          btn.disabled = false;
+          btn.textContent = '🗑️ Hapus';
+
+          if (error) { alert('Gagal memanggil fungsi: ' + error.message); return; }
+          if (data?.error) { alert(data.error); return; }
+
+          currentSiswaList = currentSiswaList.filter(x => x.id !== siswaId);
+          delete shownPasswords[siswaId];
+          renderSiswaTable();
+        });
+      });
+    } else {
+      table.style.display = 'none';
+      body.innerHTML = '';
+      emptySlot.innerHTML = emptyState(
+        currentSiswaList.length ? 'Tidak ditemukan' : 'Belum ada siswa di kelas ini',
+        currentSiswaList.length ? 'Coba kata kunci pencarian lain.' : 'Tambahkan akun siswa dulu di menu Buat Akun Siswa.',
+        '👥'
+      );
+    }
+  }
+
+  document.getElementById('siswaSearchInput').addEventListener('input', (e) => {
+    siswaState.search = e.target.value;
+    renderSiswaTable();
+  });
+
+  document.getElementById('btnDownloadSiswa').addEventListener('click', () => {
+    if (!siswaState.kelasId) { alert('Pilih kelas dulu.'); return; }
+    const q = siswaState.search.trim().toLowerCase();
+    const rows = q ? currentSiswaList.filter(s => s.nama.toLowerCase().includes(q)) : currentSiswaList;
+    if (!rows.length) { alert('Belum ada siswa untuk diunduh.'); return; }
+    const kelasNama = allKelas.find(k => k.id === siswaState.kelasId)?.nama || 'kelas';
+    const header = ['#', 'Nama Siswa', 'Username'].join(',');
+    const rowsCsv = rows.map((s, i) => [i + 1, csvField(s.nama), csvField(s.username)].join(','));
+    const csv = [header, ...rowsCsv].join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `daftar-siswa-${kelasNama.replace(/\s+/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // =========================================================
+  // 2) KELOLA KELAS
+  // =========================================================
+  async function renderKelasList() {
+    const el = document.getElementById('kelasList');
+    await loadAllKelas();
+    el.innerHTML = allKelas.length ? allKelas.map(k => `
+      <div class="list-row">
+        <div><strong>${esc(k.nama)}</strong> <span style="color:#888;font-size:12.5px;">— Tingkat ${esc(k.level)}</span></div>
+        <button class="btn-danger-sm" data-id="${k.id}">Hapus</button>
+      </div>
+    `).join('') : emptyState("Belum ada kelas", "Tambahkan kelas pertama lewat form di atas.", "🏫");
+
+    el.querySelectorAll('.btn-danger-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus kelas ini? Siswa yang masih terdaftar di kelas ini perlu dipindah manual.')) return;
+        await supabase.from('kelas').delete().eq('id', btn.dataset.id);
+        await refreshAllKelasDependentUI();
+      });
+    });
+  }
+
+  document.getElementById('btnTambahKelas').addEventListener('click', async () => {
+    const nama = document.getElementById('kelasNamaInput').value.trim();
+    const level = document.getElementById('kelasLevelInput').value;
+    const err = document.getElementById('kelasError');
+    err.style.display = 'none';
+    if (!nama) { err.textContent = 'Nama kelas wajib diisi.'; err.style.display = 'block'; return; }
+
+    const { error } = await supabase.from('kelas').insert({ nama, level });
+    if (error) { err.textContent = 'Gagal menambah kelas: ' + error.message; err.style.display = 'block'; return; }
+    document.getElementById('kelasNamaInput').value = '';
+    await refreshAllKelasDependentUI();
+  });
+
+  // =========================================================
+  // 3) BUAT AKUN SISWA MASSAL (panggil Edge Function)
+  // =========================================================
+  document.getElementById('btnBuatAkun').addEventListener('click', async () => {
+    const raw = document.getElementById('akunTextarea').value;
+    const resultEl = document.getElementById('akunResult');
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    if (!lines.length) { resultEl.innerHTML = '<p class="login-error" style="display:block;">Belum ada data siswa yang dimasukkan.</p>'; return; }
+
+    const siswa = lines.map(line => {
+      const parts = line.split(',').map(p => p.trim());
+      return { nama: parts[0], username: parts[1], password: parts[2], kelas: parts[3] };
+    });
+
+    resultEl.innerHTML = 'Memproses ' + siswa.length + ' akun…';
+
+    const { data, error } = await supabase.functions.invoke('create-students', { body: { siswa } });
+    if (error) {
+      resultEl.innerHTML = `<p class="login-error" style="display:block;">Gagal memanggil fungsi: ${esc(error.message)}</p>`;
+      return;
+    }
+    if (data.error) {
+      resultEl.innerHTML = `<p class="login-error" style="display:block;">${esc(data.error)}</p>`;
+      return;
+    }
+    resultEl.innerHTML = data.results.map(r => `
+      <div class="result-line ${r.status === 'ok' ? 'result-ok' : 'result-fail'}">
+        ${r.status === 'ok' ? '✓' : '✗'} ${esc(r.username)} ${r.pesan ? '— ' + esc(r.pesan) : (r.status === 'ok' ? '— berhasil dibuat' : '')}
+      </div>
+    `).join('');
+  });
+
+  // =========================================================
+  // 4) INPUT NILAI MASSAL
+  // =========================================================
+  function fillKelasSelect(selectEl) {
+    selectEl.innerHTML = allKelas.length
+      ? allKelas.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`).join('')
+      : '<option value="">Belum ada kelas</option>';
+  }
+
+  let currentNilaiSiswa = [];
+  let nilaiWrapEl = null;
+
+  // Escape/quote a CSV field (handles commas, quotes, newlines in names).
+  function csvField(v) {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  // Minimal RFC4180-style CSV parser (handles quoted fields with commas).
+  function parseCsvText(text) {
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
+        } else { field += c; }
+      } else if (c === '"') { inQuotes = true; }
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') { /* skip */ }
+      else { field += c; }
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ''));
+  }
+
+  // ---- Download format CSV: Nama Lengkap,Kelas,Nilai,Nilai Sebelum Penalti,Predikat,Keterangan ----
+  document.getElementById('btnDownloadFormatNilai').addEventListener('click', async () => {
+    const kelasId = document.getElementById('nilaiKelasSelect').value;
+    if (!kelasId) { alert('Pilih kelas dulu sebelum download format.'); return; }
+    const { data: siswaList } = await supabase.from('profiles').select('nama').eq('kelas_id', kelasId).order('nama');
+    if (!siswaList || !siswaList.length) { alert('Belum ada siswa di kelas ini.'); return; }
+    const kelasNama = allKelas.find(k => k.id === kelasId)?.nama || 'kelas';
+    const header = ['Nama Lengkap', 'Kelas', 'Nilai', 'Nilai Sebelum Penalti', 'Predikat', 'Keterangan'].join(',');
+    const rows = siswaList.map(s => [csvField(s.nama), csvField(kelasNama), '', '', '', ''].join(','));
+    const csv = [header, ...rows].join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `format-nilai-${kelasNama.replace(/\s+/g, '_')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  // ---- Upload CSV: isi kolom Nilai/Nilai Sebelum Penalti/Predikat/Keterangan otomatis, dicocokkan lewat Nama Lengkap ----
+  document.getElementById('btnUploadNilaiCSV').addEventListener('click', () => {
+    document.getElementById('nilaiCsvFile').click();
+  });
+
+  document.getElementById('nilaiCsvFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const msg = document.getElementById('nilaiUploadMsg');
+    if (!file) return;
+    if (!currentNilaiSiswa.length || !nilaiWrapEl) {
+      msg.style.display = 'block'; msg.style.color = '#c0392b';
+      msg.textContent = 'Klik "Muat Daftar Siswa" dulu sebelum upload CSV.';
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const rows = parseCsvText(String(reader.result));
+      if (!rows.length) {
+        msg.style.display = 'block'; msg.style.color = '#c0392b';
+        msg.textContent = 'File CSV kosong atau tidak terbaca.';
+        return;
+      }
+      let startIdx = 0;
+      if (rows[0][0] && rows[0][0].trim().toLowerCase().includes('nama')) startIdx = 1;
+      const byNama = new Map(currentNilaiSiswa.map(s => [s.nama.trim().toLowerCase(), s]));
+      let filled = 0, notFound = 0;
+      for (let i = startIdx; i < rows.length; i++) {
+        const cols = rows[i];
+        const nama = (cols[0] || '').trim();
+        // cols[1] = Kelas (informasional, tidak dipakai untuk pencocokan)
+        const skor = cols[2] !== undefined ? cols[2].trim() : '';
+        const skorAsli = cols[3] !== undefined ? cols[3].trim() : '';
+        const predikat = cols[4] !== undefined ? cols[4].trim() : '';
+        const keterangan = cols[5] !== undefined ? cols[5].trim() : '';
+        const s = byNama.get(nama.toLowerCase());
+        if (!s) { if (nama) notFound++; continue; }
+        const skorInput = nilaiWrapEl.querySelector(`[data-siswa="${s.id}"]`);
+        const skorAsliInput = nilaiWrapEl.querySelector(`[data-skorasli="${s.id}"]`);
+        const predikatInput = nilaiWrapEl.querySelector(`[data-predikat="${s.id}"]`);
+        const keteranganInput = nilaiWrapEl.querySelector(`[data-keterangan="${s.id}"]`);
+        if (skorInput) skorInput.value = skor;
+        if (skorAsliInput) skorAsliInput.value = skorAsli;
+        if (predikatInput) predikatInput.value = predikat;
+        if (keteranganInput) keteranganInput.value = keterangan;
+        filled++;
+      }
+      msg.style.display = 'block';
+      msg.style.color = filled ? '#1a8f4c' : '#c0392b';
+      msg.textContent = filled
+        ? `Berhasil memuat ${filled} nilai dari file.` + (notFound ? ` ${notFound} baris tidak cocok dengan nama siswa di kelas ini.` : '') + ' Cek tabel lalu klik "Simpan Semua Nilai".'
+        : 'Tidak ada baris yang cocok dengan nama siswa di kelas ini. Pastikan kolom Nama Lengkap sama persis dengan data siswa.';
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('btnMuatSiswaNilai').addEventListener('click', async () => {
+    const kelasId = document.getElementById('nilaiKelasSelect').value;
+    const jenis = document.getElementById('nilaiJenisInput').value.trim();
+    const wrap = document.getElementById('nilaiTableWrap');
+    nilaiWrapEl = wrap;
+    if (!kelasId || !jenis) {
+      wrap.innerHTML = '<p class="login-error" style="display:block;">Pilih kelas dan isi jenis penilaian dulu.</p>';
+      return;
+    }
+    const { data: siswaList } = await supabase.from('profiles').select('id, nama').eq('kelas_id', kelasId).order('nama');
+    currentNilaiSiswa = siswaList || [];
+    if (!currentNilaiSiswa.length) {
+      wrap.innerHTML = emptyState('Belum ada siswa di kelas ini', 'Tambahkan akun siswa dulu di menu Buat Akun Siswa.', '👥');
+      return;
+    }
+
+    wrap.innerHTML = `
+      <table class="grade-table">
+        <thead><tr><th>Nama Siswa</th><th>Nilai</th><th>Nilai Sebelum Penalti</th><th>Predikat</th><th>Keterangan</th></tr></thead>
+        <tbody>
+          ${currentNilaiSiswa.map(s => `
+            <tr>
+              <td>${esc(s.nama)}</td>
+              <td><input type="number" class="nilai-input" data-siswa="${s.id}" min="0" max="100" step="0.01" placeholder="0-100"></td>
+              <td><input type="number" class="nilai-input" data-skorasli="${s.id}" min="0" max="100" step="0.01" placeholder="opsional"></td>
+              <td><input type="text" class="nilai-input" data-predikat="${s.id}" placeholder="A/B/C/D" style="width:60px;"></td>
+              <td><input type="text" class="nilai-input" data-keterangan="${s.id}" placeholder="opsional" style="width:160px;"></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      <button class="btn-secondary-sm" id="btnSimpanNilaiMassal" style="margin-top:14px;">Simpan Semua Nilai</button>
+      <p class="login-error" id="nilaiSaveMsg" style="display:none;margin-top:10px;"></p>
+    `;
+
+    document.getElementById('btnSimpanNilaiMassal').addEventListener('click', async () => {
+      const rows = currentNilaiSiswa.map(s => {
+        const skorRaw = wrap.querySelector(`[data-siswa="${s.id}"]`).value;
+        const skorAsliRaw = wrap.querySelector(`[data-skorasli="${s.id}"]`).value;
+        const predikat = wrap.querySelector(`[data-predikat="${s.id}"]`).value.trim();
+        const keterangan = wrap.querySelector(`[data-keterangan="${s.id}"]`).value.trim();
+        return {
+          siswa_id: s.id,
+          jenis,
+          skor: skorRaw === '' ? null : Number(skorRaw),
+          skor_asli: skorAsliRaw === '' ? null : Number(skorAsliRaw),
+          predikat: predikat || null,
+          keterangan: keterangan || null,
+        };
+      }).filter(r => r.skor !== null || r.skor_asli !== null || r.predikat !== null || r.keterangan !== null);
+
+      const msg = document.getElementById('nilaiSaveMsg');
+      if (!rows.length) {
+        msg.textContent = 'Isi minimal satu nilai sebelum menyimpan.';
+        msg.style.display = 'block';
+        return;
+      }
+      const { error } = await supabase.from('nilai').insert(rows);
+      msg.style.display = 'block';
+      msg.style.color = error ? '#c0392b' : '#1a8f4c';
+      msg.textContent = error ? 'Gagal menyimpan: ' + error.message : `Berhasil menyimpan nilai untuk ${rows.length} siswa.`;
+    });
+  });
+
+  // =========================================================
+  // 5) KELOLA WORKSHEET
+  // =========================================================
+  function fmtDateTimeID(iso) {
+    return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function renderWorksheetList() {
+    const el = document.getElementById('worksheetList');
+    const { data } = await supabase
+      .from('worksheet')
+      .select('id, judul, url, mulai, deadline, level, kelas:kelas_id ( nama )')
+      .order('created_at', { ascending: false });
+    const list = data || [];
+    const now = new Date();
+    el.innerHTML = list.length ? list.map(w => {
+      const belumMulai = w.mulai && new Date(w.mulai) > now;
+      const targetLabel = w.level ? `Tingkat ${w.level}` : (w.kelas ? w.kelas.nama : '?');
+      const metaBits = [esc(targetLabel)];
+      if (w.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(w.mulai));
+      if (w.deadline) metaBits.push('Deadline ' + w.deadline);
+      return `
+      <div class="list-row">
+        <div>
+          <strong>${esc(w.judul)}</strong> <span style="color:#888;font-size:12.5px;">— ${metaBits.join(' · ')}</span>
+          ${belumMulai ? '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>' : ''}
+          <div style="font-size:12px;color:#999;word-break:break-all;">${esc(w.url)}</div>
+        </div>
+        <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
+      </div>
+    `;
+    }).join('') : emptyState('Belum ada worksheet', 'Tambahkan worksheet pertama lewat form di atas.', '📝');
+
+    el.querySelectorAll('.btn-danger-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus worksheet ini?')) return;
+        await supabase.from('worksheet').delete().eq('id', btn.dataset.id);
+        await renderWorksheetList();
+      });
+    });
+  }
+
+  document.getElementById('btnTambahWorksheet').addEventListener('click', async () => {
+    const judul = document.getElementById('wsJudulInput').value.trim();
+    const url = document.getElementById('wsUrlInput').value.trim();
+    const level = document.getElementById('wsTingkatSelect').value;
+    const mulaiRaw = document.getElementById('wsMulaiInput').value;
+    const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
+    const deadline = document.getElementById('wsDeadlineInput').value || null;
+    const err = document.getElementById('wsError');
+    err.style.display = 'none';
+
+    if (!judul || !url || !level) {
+      err.textContent = 'Judul, URL, dan tingkat wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+    if (mulai && deadline && mulai.slice(0, 10) > deadline) {
+      err.textContent = 'Tanggal mulai tidak boleh setelah deadline.';
+      err.style.display = 'block';
+      return;
+    }
+    const { error } = await supabase.from('worksheet').insert({ judul, url, level, kelas_id: null, mulai, deadline });
+    if (error) { err.textContent = 'Gagal menambah worksheet: ' + error.message; err.style.display = 'block'; return; }
+
+    document.getElementById('wsJudulInput').value = '';
+    document.getElementById('wsUrlInput').value = '';
+    document.getElementById('wsMulaiInput').value = '';
+    document.getElementById('wsDeadlineInput').value = '';
+    await renderWorksheetList();
+  });
+
+  // =========================================================
+  // 6) KELOLA MATERI (link materi, muncul di dashboard siswa)
+  // =========================================================
+  function fillKelasSelectWithAll(selectEl) {
+    const opts = ['<option value="">Semua Kelas (Umum)</option>']
+      .concat(allKelas.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`));
+    selectEl.innerHTML = opts.join('');
+  }
+
+  // Checklist kelas untuk pengumuman: bisa pilih beberapa kelas sekaligus,
+  // atau centang "Semua Kelas" untuk broadcast ke semua kelas (kelas_id = null).
+  function renderAnnKelasChecklist() {
+    const el = document.getElementById('annKelasChecklist');
+    el.innerHTML = `
+      <label class="kelas-check-item all"><input type="checkbox" id="annKelasAll"><span>Semua Kelas (Umum)</span></label>
+      ${allKelas.map(k => `<label class="kelas-check-item"><input type="checkbox" class="ann-kelas-cb" value="${k.id}"><span>${esc(k.nama)}</span></label>`).join('')}
+    `;
+    const allCb = document.getElementById('annKelasAll');
+    allCb.addEventListener('change', () => {
+      el.querySelectorAll('.ann-kelas-cb').forEach(cb => {
+        cb.disabled = allCb.checked;
+        if (allCb.checked) cb.checked = false;
+      });
+    });
+  }
+
+  async function renderMateriList() {
+    const el = document.getElementById('materiList');
+    const { data } = await supabase
+      .from('materi')
+      .select('id, tag, judul, deskripsi, url, level, kelas:kelas_id ( nama )')
+      .order('created_at', { ascending: false });
+    const list = data || [];
+    el.innerHTML = list.length ? list.map(m => {
+      const targetLabel = m.level ? `Tingkat ${m.level}` : (m.kelas ? m.kelas.nama : 'Semua Tingkat');
+      return `
+      <div class="list-row" style="align-items:flex-start;">
+        <div>
+          <strong>${esc(m.judul)}</strong> <span style="color:#888;font-size:12.5px;">— ${esc(targetLabel)}${m.tag ? ' · ' + esc(m.tag) : ''}</span>
+          ${m.deskripsi ? `<div style="font-size:13px;color:#666;margin-top:4px;max-width:520px;">${esc(m.deskripsi)}</div>` : ''}
+          <div style="font-size:12px;color:#999;word-break:break-all;margin-top:2px;">${esc(m.url || '')}</div>
+        </div>
+        <button class="btn-danger-sm" data-id="${m.id}">Hapus</button>
+      </div>
+    `;
+    }).join('') : emptyState('Belum ada materi', 'Tambahkan materi pertama lewat form di atas.', '📘');
+
+    el.querySelectorAll('.btn-danger-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus materi ini?')) return;
+        await supabase.from('materi').delete().eq('id', btn.dataset.id);
+        await renderMateriList();
+      });
+    });
+  }
+
+  document.getElementById('btnTambahMateri').addEventListener('click', async () => {
+    const judul = document.getElementById('materiJudulInput').value.trim();
+    const tag = document.getElementById('materiTagInput').value.trim();
+    const deskripsi = document.getElementById('materiDeskripsiInput').value.trim();
+    const url = document.getElementById('materiUrlInput').value.trim();
+    const level = document.getElementById('materiTingkatSelect').value || null;
+    const err = document.getElementById('materiError');
+    err.style.display = 'none';
+
+    if (!judul || !url) {
+      err.textContent = 'Judul dan link materi wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+    const { error } = await supabase.from('materi').insert({
+      judul, tag: tag || null, deskripsi: deskripsi || null, url, kelas_id: null, level,
+    });
+    if (error) { err.textContent = 'Gagal menambah materi: ' + error.message; err.style.display = 'block'; return; }
+
+    document.getElementById('materiJudulInput').value = '';
+    document.getElementById('materiTagInput').value = '';
+    document.getElementById('materiDeskripsiInput').value = '';
+    document.getElementById('materiUrlInput').value = '';
+    document.getElementById('materiTingkatSelect').value = '';
+    await renderMateriList();
+  });
+
+  // =========================================================
+  // 7) KELOLA PENGUMUMAN
+  // =========================================================
+  async function renderPengumumanList() {
+    const el = document.getElementById('pengumumanList');
+    const { data } = await supabase
+      .from('pengumuman')
+      .select('id, judul, isi, created_at, kelas:kelas_id ( nama )')
+      .order('created_at', { ascending: false });
+    const list = data || [];
+
+    // Kirim ke beberapa kelas sekaligus disimpan sebagai beberapa baris (satu per kelas)
+    // dengan judul+isi+created_at yang sama persis — kelompokkan lagi jadi satu kartu.
+    const groups = [];
+    const byKey = new Map();
+    list.forEach(a => {
+      const key = a.judul + '|' + a.isi + '|' + a.created_at;
+      if (byKey.has(key)) {
+        byKey.get(key).kelasNames.push(a.kelas ? a.kelas.nama : null);
+        byKey.get(key).ids.push(a.id);
+      } else {
+        const g = { judul: a.judul, isi: a.isi, created_at: a.created_at, kelasNames: [a.kelas ? a.kelas.nama : null], ids: [a.id] };
+        byKey.set(key, g);
+        groups.push(g);
+      }
+    });
+
+    el.innerHTML = groups.length ? groups.map(g => {
+      const isSemua = g.kelasNames.includes(null);
+      const kelasLabel = isSemua ? 'Semua Kelas' : g.kelasNames.filter(Boolean).sort().join(', ');
+      return `
+      <div class="list-row" style="align-items:flex-start;">
+        <div>
+          <strong>${esc(g.judul)}</strong> <span style="color:#888;font-size:12.5px;">— ${esc(kelasLabel)} · ${new Date(g.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+          <div style="font-size:13px;color:#666;margin-top:4px;max-width:520px;">${linkify(g.isi)}</div>
+        </div>
+        <button class="btn-danger-sm" data-ids="${g.ids.join(',')}">Hapus</button>
+      </div>
+    `;
+    }).join('') : emptyState('Belum ada pengumuman', 'Terbitkan pengumuman pertama lewat form di atas.', '📣');
+
+    el.querySelectorAll('.btn-danger-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const ids = btn.dataset.ids.split(',');
+        if (!confirm(ids.length > 1 ? `Hapus pengumuman ini dari ${ids.length} kelas terkait?` : 'Hapus pengumuman ini?')) return;
+        await supabase.from('pengumuman').delete().in('id', ids);
+        await renderPengumumanList();
+      });
+    });
+  }
+
+  document.getElementById('btnTambahPengumuman').addEventListener('click', async () => {
+    const judul = document.getElementById('annJudulInput').value.trim();
+    const isi = document.getElementById('annIsiInput').value.trim();
+    const err = document.getElementById('annError');
+    err.style.display = 'none';
+
+    if (!judul || !isi) {
+      err.textContent = 'Judul dan isi pengumuman wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+
+    const allChecked = document.getElementById('annKelasAll').checked;
+    const selectedKelasIds = allChecked ? [] : [...document.querySelectorAll('.ann-kelas-cb:checked')].map(cb => cb.value);
+
+    if (!allChecked && !selectedKelasIds.length) {
+      err.textContent = 'Pilih minimal satu kelas, atau centang "Semua Kelas".';
+      err.style.display = 'block';
+      return;
+    }
+
+    const rows = allChecked
+      ? [{ judul, isi, kelas_id: null }]
+      : selectedKelasIds.map(id => ({ judul, isi, kelas_id: id }));
+
+    const { error } = await supabase.from('pengumuman').insert(rows);
+    if (error) { err.textContent = 'Gagal menerbitkan pengumuman: ' + error.message; err.style.display = 'block'; return; }
+
+    document.getElementById('annJudulInput').value = '';
+    document.getElementById('annIsiInput').value = '';
+    document.getElementById('annKelasAll').checked = false;
+    document.querySelectorAll('.ann-kelas-cb').forEach(cb => { cb.checked = false; cb.disabled = false; });
+    await renderPengumumanList();
+  });
+
+  // =========================================================
+  // Init
+  // =========================================================
+  async function refreshAllKelasDependentUI() {
+    await loadAllKelas();
+    await renderKelasChips();
+    await renderSiswaKelasChips();
+    fillKelasSelect(document.getElementById('nilaiKelasSelect'));
+    renderAnnKelasChecklist();
+    await renderKelasList();
+    await renderWorksheetList();
+    await renderMateriList();
+    await renderPengumumanList();
+  }
+
+  renderLevelTabs();
+  renderSiswaLevelTabs();
+  await refreshAllKelasDependentUI();
+})();
+</script>
+
+</body>
+</html>

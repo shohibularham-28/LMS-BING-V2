@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Irregular Verbs</title>
+<style>
+  :root{
+    --navy:#0a2540;
+    --navy-dark:#071a30;
+    --navy-light:#153a5f;
+    --card:#ffffff;
+    --accent:#0a2540;
+    --accent2:#1d4e8f;
+    --good:#1c7c4d;
+    --bad:#b3403a;
+    --text:#0a2540;
+    --muted:#5b6b7d;
+    --border:#dbe3ec;
+    --bg:#f4f7fb;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Roboto,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:16px;
+  }
+  .container{
+    max-width:960px;
+    margin:0 auto;
+  }
+  h1{
+    text-align:center;
+    font-size:24px;
+    margin-bottom:4px;
+    color:var(--navy);
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  p.subtitle{
+    text-align:center;
+    color:var(--muted);
+    margin-top:0;
+    margin-bottom:18px;
+    font-size:13px;
+    padding:0 8px;
+  }
+
+  /* ---------- Mode tabs ---------- */
+  .mode-tabs{
+    display:flex;
+    gap:8px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:6px;
+    margin-bottom:16px;
+    box-shadow:0 8px 24px rgba(10,37,64,.06);
+  }
+  .mode-tab{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:var(--muted);
+    font-size:14px;
+    font-weight:600;
+    padding:11px 8px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .15s ease,color .15s ease;
+  }
+  .mode-tab.active{
+    background:var(--navy);
+    color:#fff;
+  }
+
+  /* ---------- Controls (list mode) ---------- */
+  .controls{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:16px;
+    box-shadow:0 8px 24px rgba(10,37,64,.08);
+  }
+  .search-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 14px;
+    margin-bottom:12px;
+  }
+  .search-box input{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-size:16px;
+    min-width:0;
+  }
+  .search-box svg{flex-shrink:0;}
+  .letters{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .letter-btn{
+    border:1px solid var(--border);
+    background:#ffffff;
+    color:var(--muted);
+    width:34px;
+    height:34px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+    transition:all .15s ease;
+  }
+  .letter-btn:hover{
+    border-color:var(--navy);
+    color:var(--navy);
+  }
+  .letter-btn.active{
+    background:var(--navy);
+    color:#ffffff;
+    border-color:var(--navy);
+  }
+  .letter-btn.disabled{
+    opacity:.3;
+    cursor:not-allowed;
+    pointer-events:none;
+  }
+  .info-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+    font-size:13px;
+    color:var(--muted);
+    gap:8px;
+  }
+  .reset-btn{
+    background:none;
+    border:1px solid var(--border);
+    color:var(--muted);
+    padding:6px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:12px;
+    flex-shrink:0;
+  }
+  .reset-btn:hover{color:var(--navy);border-color:var(--navy);}
+
+  /* ---------- Verb grid: table on wide screens, cards on narrow ---------- */
+  .table-wrap{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 8px 24px rgba(10,37,64,.08);
+  }
+  .verb-head{
+    display:none;
+    background:var(--navy);
+    padding:12px 16px;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:#ffffff;
+  }
+  .verb-row{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:2px 12px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .verb-row:last-child{border-bottom:none;}
+  .verb-row:hover{background:#eef3f9;}
+  .cell{font-size:14px;}
+  .cell::before{
+    content:attr(data-label);
+    display:inline-block;
+    min-width:78px;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .v1{color:var(--navy);font-weight:700;}
+  .v2{color:var(--accent2);font-weight:700;}
+  .v3{color:#334e68;font-weight:700;}
+  .meaning{color:var(--muted);font-style:italic;}
+  .empty{
+    text-align:center;
+    padding:40px 16px;
+    color:var(--muted);
+  }
+
+  @media(min-width:680px){
+    .verb-head{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1.3fr;
+    }
+    .verb-row{
+      grid-template-columns:1fr 1fr 1fr 1.3fr;
+      align-items:center;
+      gap:8px;
+    }
+    .cell::before{display:none;}
+  }
+
+  /* ---------- Quiz mode ---------- */
+  .quiz-wrap{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px 18px 24px;
+    box-shadow:0 8px 24px rgba(10,37,64,.08);
+  }
+  .quiz-progress{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:13px;
+    color:var(--muted);
+    margin-bottom:14px;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .score-pill{
+    display:inline-flex;
+    gap:10px;
+    font-weight:600;
+  }
+  .score-pill .good{color:var(--good);}
+  .score-pill .bad{color:var(--bad);}
+  .progress-bar{
+    height:6px;
+    background:var(--bg);
+    border-radius:6px;
+    overflow:hidden;
+    margin-bottom:20px;
+  }
+  .progress-bar-fill{
+    height:100%;
+    background:var(--navy);
+    border-radius:6px;
+    transition:width .2s ease;
+  }
+  .flashcard{
+    background:var(--bg);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px 16px;
+    text-align:center;
+    min-height:150px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:6px;
+  }
+  .flash-label{
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    font-weight:600;
+  }
+  .flash-word{
+    font-size:30px;
+    font-weight:700;
+    color:var(--navy);
+    word-break:break-word;
+  }
+  .flash-meaning{
+    font-size:14px;
+    color:var(--muted);
+    font-style:italic;
+  }
+  .flash-answer{
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px dashed var(--border);
+    display:none;
+    gap:4px;
+    flex-direction:column;
+  }
+  .flash-answer.show{display:flex;}
+  .flash-answer-row{
+    font-size:20px;
+    font-weight:700;
+  }
+  .flash-answer-row .lbl{
+    font-size:11px;
+    text-transform:uppercase;
+    color:var(--muted);
+    font-weight:600;
+    margin-right:8px;
+  }
+  .quiz-actions{
+    margin-top:20px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .btn{
+    border:none;
+    border-radius:10px;
+    padding:14px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:opacity .15s ease,transform .1s ease;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-row{display:flex;gap:10px;}
+  .btn-good{flex:1;background:#e6f4ec;color:var(--good);}
+  .btn-bad{flex:1;background:#fbeae9;color:var(--bad);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+  .quiz-done{
+    text-align:center;
+    padding:16px 8px;
+  }
+  .quiz-done .big-score{
+    font-size:42px;
+    font-weight:700;
+    color:var(--navy);
+    margin:8px 0;
+  }
+  .quiz-done p{color:var(--muted);font-size:14px;}
+
+  .hidden{display:none !important;}
+
+  @media(max-width:420px){
+    .flash-word{font-size:26px;}
+    body{padding:12px;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Irregular Verbs</h1>
+  <p class="subtitle">Base Form &bull; Past Simple &bull; Past Participle &mdash; jelajahi daftarnya atau uji hafalanmu</p>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" id="tabList" onclick="setMode('list')">📖 Daftar Kata</button>
+    <button class="mode-tab" id="tabQuiz" onclick="setMode('quiz')">🎯 Latihan</button>
+  </div>
+
+  <!-- ===== LIST MODE ===== -->
+  <div id="listMode">
+    <div class="controls">
+      <div class="search-box">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b6b7d" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="Ketik kata (misal: go, went, pergi)...">
+      </div>
+      <div class="letters" id="letterFilters"></div>
+    </div>
+
+    <div class="info-row">
+      <span id="resultCount"></span>
+      <button class="reset-btn" onclick="resetFilters()">Reset Filter</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="verb-head">
+        <div>Base Form (V1)</div>
+        <div>Past Simple (V2)</div>
+        <div>Past Participle (V3)</div>
+        <div>Arti</div>
+      </div>
+      <div id="verbBody"></div>
+      <div class="empty" id="emptyState" style="display:none;">Tidak ada kata kerja yang cocok 😔</div>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ MODE ===== -->
+  <div id="quizMode" class="hidden">
+    <div class="quiz-wrap">
+      <div id="quizActive">
+        <div class="quiz-progress">
+          <span id="quizCount">Kata 1/163</span>
+          <span class="score-pill"><span class="good" id="scoreGood">✔ 0</span><span class="bad" id="scoreBad">✘ 0</span></span>
+        </div>
+        <div class="progress-bar"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+
+        <div class="flashcard">
+          <div class="flash-label">Base Form</div>
+          <div class="flash-word" id="quizWord">—</div>
+          <div class="flash-meaning" id="quizMeaning">—</div>
+          <div class="flash-answer" id="quizAnswer">
+            <div class="flash-answer-row"><span class="lbl">V2</span><span class="v2" id="quizV2">—</span></div>
+            <div class="flash-answer-row"><span class="lbl">V3</span><span class="v3" id="quizV3">—</span></div>
+          </div>
+        </div>
+
+        <div class="quiz-actions">
+          <button class="btn btn-primary" id="revealBtn" onclick="revealAnswer()">Lihat Jawaban</button>
+          <div class="btn-row hidden" id="judgeRow">
+            <button class="btn btn-bad" onclick="answerQuiz(false)">✘ Masih Salah</button>
+            <button class="btn btn-good" onclick="answerQuiz(true)">✔ Aku Benar</button>
+          </div>
+          <button class="btn btn-ghost" onclick="startQuiz()">🔄 Acak Ulang</button>
+        </div>
+      </div>
+
+      <div id="quizDone" class="quiz-done hidden">
+        <div class="flash-label">Latihan Selesai</div>
+        <div class="big-score" id="finalScore">0 / 0</div>
+        <p id="finalNote">Bagus, terus berlatih ya!</p>
+        <div class="quiz-actions">
+          <button class="btn btn-primary" onclick="startQuiz()">Ulangi Latihan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const verbs = [
+  ["arise","arose","arisen","muncul/timbul"],
+  ["awake","awoke","awoken","terbangun"],
+  ["be","was/were","been","adalah/menjadi"],
+  ["bear","bore","born/borne","melahirkan/menanggung"],
+  ["beat","beat","beaten","memukul/mengalahkan"],
+  ["become","became","become","menjadi"],
+  ["begin","began","begun","memulai"],
+  ["bend","bent","bent","membengkokkan"],
+  ["bet","bet","bet","bertaruh"],
+  ["bid","bid","bid","menawar"],
+  ["bind","bound","bound","mengikat"],
+  ["bite","bit","bitten","menggigit"],
+  ["bleed","bled","bled","berdarah"],
+  ["blow","blew","blown","meniup"],
+  ["break","broke","broken","memecahkan"],
+  ["breed","bred","bred","membiakkan"],
+  ["bring","brought","brought","membawa"],
+  ["broadcast","broadcast","broadcast","menyiarkan"],
+  ["build","built","built","membangun"],
+  ["burn","burnt/burned","burnt/burned","membakar"],
+  ["burst","burst","burst","meledak/pecah"],
+  ["buy","bought","bought","membeli"],
+  ["cast","cast","cast","melemparkan"],
+  ["catch","caught","caught","menangkap"],
+  ["choose","chose","chosen","memilih"],
+  ["cling","clung","clung","berpegang erat"],
+  ["come","came","come","datang"],
+  ["cost","cost","cost","berharga/berbiaya"],
+  ["creep","crept","crept","merayap"],
+  ["cut","cut","cut","memotong"],
+  ["deal","dealt","dealt","menangani/membagikan"],
+  ["dig","dug","dug","menggali"],
+  ["dive","dove/dived","dived","menyelam"],
+  ["do","did","done","melakukan"],
+  ["draw","drew","drawn","menggambar"],
+  ["dream","dreamt/dreamed","dreamt/dreamed","bermimpi"],
+  ["drink","drank","drunk","minum"],
+  ["drive","drove","driven","mengemudi"],
+  ["dwell","dwelt","dwelt","tinggal/berdiam"],
+  ["eat","ate","eaten","makan"],
+  ["fall","fell","fallen","jatuh"],
+  ["feed","fed","fed","memberi makan"],
+  ["feel","felt","felt","merasakan"],
+  ["fight","fought","fought","berkelahi"],
+  ["find","found","found","menemukan"],
+  ["fit","fit","fit","cocok/pas"],
+  ["flee","fled","fled","melarikan diri"],
+  ["fling","flung","flung","melemparkan (keras)"],
+  ["fly","flew","flown","terbang"],
+  ["forbid","forbade","forbidden","melarang"],
+  ["forecast","forecast","forecast","meramalkan"],
+  ["forget","forgot","forgotten","melupakan"],
+  ["forgive","forgave","forgiven","memaafkan"],
+  ["forsake","forsook","forsaken","meninggalkan/mengabaikan"],
+  ["freeze","froze","frozen","membeku"],
+  ["get","got","gotten/got","mendapatkan"],
+  ["give","gave","given","memberi"],
+  ["go","went","gone","pergi"],
+  ["grind","ground","ground","menggiling"],
+  ["grow","grew","grown","tumbuh"],
+  ["hang","hung","hung","menggantung"],
+  ["have","had","had","memiliki"],
+  ["hear","heard","heard","mendengar"],
+  ["hide","hid","hidden","menyembunyikan"],
+  ["hit","hit","hit","memukul"],
+  ["hold","held","held","memegang"],
+  ["hurt","hurt","hurt","melukai"],
+  ["keep","kept","kept","menyimpan"],
+  ["kneel","knelt","knelt","berlutut"],
+  ["knit","knit","knit","merajut"],
+  ["know","knew","known","mengetahui"],
+  ["lay","laid","laid","meletakkan"],
+  ["lead","led","led","memimpin"],
+  ["lean","leant/leaned","leant/leaned","bersandar"],
+  ["leap","leapt/leaped","leapt/leaped","melompat"],
+  ["learn","learnt/learned","learnt/learned","belajar"],
+  ["leave","left","left","meninggalkan"],
+  ["lend","lent","lent","meminjamkan"],
+  ["let","let","let","membiarkan"],
+  ["lie","lay","lain","berbaring"],
+  ["light","lit/lighted","lit/lighted","menyalakan"],
+  ["lose","lost","lost","kehilangan"],
+  ["make","made","made","membuat"],
+  ["mean","meant","meant","berarti"],
+  ["meet","met","met","bertemu"],
+  ["mistake","mistook","mistaken","salah mengira"],
+  ["mow","mowed","mown/mowed","memotong rumput"],
+  ["overcome","overcame","overcome","mengatasi"],
+  ["overtake","overtook","overtaken","menyusul/melampaui"],
+  ["pay","paid","paid","membayar"],
+  ["prove","proved","proven/proved","membuktikan"],
+  ["put","put","put","meletakkan"],
+  ["quit","quit","quit","berhenti"],
+  ["read","read","read","membaca"],
+  ["rid","rid","rid","membebaskan/menyingkirkan"],
+  ["ride","rode","ridden","mengendarai"],
+  ["ring","rang","rung","berdering"],
+  ["rise","rose","risen","bangkit"],
+  ["run","ran","run","berlari"],
+  ["saw","sawed","sawn/sawed","menggergaji"],
+  ["say","said","said","mengatakan"],
+  ["see","saw","seen","melihat"],
+  ["seek","sought","sought","mencari"],
+  ["sell","sold","sold","menjual"],
+  ["send","sent","sent","mengirim"],
+  ["set","set","set","mengatur/menetapkan"],
+  ["sew","sewed","sewn/sewed","menjahit"],
+  ["shake","shook","shaken","mengguncang"],
+  ["shave","shaved","shaven/shaved","mencukur"],
+  ["shear","sheared","shorn/sheared","mencukur (bulu)"],
+  ["shed","shed","shed","menumpahkan/merontokkan"],
+  ["shine","shone","shone","bersinar"],
+  ["shoot","shot","shot","menembak"],
+  ["show","showed","shown","menunjukkan"],
+  ["shrink","shrank","shrunk","menyusut"],
+  ["shut","shut","shut","menutup"],
+  ["sing","sang","sung","menyanyi"],
+  ["sink","sank","sunk","tenggelam"],
+  ["sit","sat","sat","duduk"],
+  ["slay","slew","slain","membunuh"],
+  ["sleep","slept","slept","tidur"],
+  ["slide","slid","slid","meluncur/tergelincir"],
+  ["sling","slung","slung","melemparkan"],
+  ["slink","slunk","slunk","mengendap-endap"],
+  ["slit","slit","slit","menyayat"],
+  ["smell","smelt/smelled","smelt/smelled","mencium bau"],
+  ["sow","sowed","sown/sowed","menabur"],
+  ["speak","spoke","spoken","berbicara"],
+  ["speed","sped/speeded","sped/speeded","mempercepat"],
+  ["spell","spelt/spelled","spelt/spelled","mengeja"],
+  ["spend","spent","spent","menghabiskan"],
+  ["spill","spilt/spilled","spilt/spilled","menumpahkan"],
+  ["spin","spun","spun","memutar"],
+  ["spit","spat/spit","spat/spit","meludah"],
+  ["split","split","split","membelah"],
+  ["spoil","spoilt/spoiled","spoilt/spoiled","merusak/memanjakan"],
+  ["spread","spread","spread","menyebarkan"],
+  ["spring","sprang","sprung","melompat/muncul"],
+  ["stand","stood","stood","berdiri"],
+  ["steal","stole","stolen","mencuri"],
+  ["stick","stuck","stuck","menempel"],
+  ["sting","stung","stung","menyengat"],
+  ["stink","stank","stunk","berbau busuk"],
+  ["stride","strode","stridden","melangkah lebar"],
+  ["strike","struck","struck","memukul/mogok"],
+  ["string","strung","strung","merangkai/memasang tali"],
+  ["strive","strove","striven","berjuang/berusaha"],
+  ["swear","swore","sworn","bersumpah"],
+  ["sweep","swept","swept","menyapu"],
+  ["swell","swelled","swollen/swelled","membengkak"],
+  ["swim","swam","swum","berenang"],
+  ["swing","swung","swung","mengayun"],
+  ["take","took","taken","mengambil"],
+  ["teach","taught","taught","mengajar"],
+  ["tear","tore","torn","merobek"],
+  ["tell","told","told","memberitahu"],
+  ["think","thought","thought","berpikir"],
+  ["thrive","throve/thrived","thriven/thrived","berkembang pesat"],
+  ["throw","threw","thrown","melempar"],
+  ["thrust","thrust","thrust","mendorong keras"],
+  ["tread","trod","trodden","menginjak"],
+  ["understand","understood","understood","memahami"],
+  ["undertake","undertook","undertaken","melaksanakan/menjalankan tugas"],
+  ["upset","upset","upset","mengganggu/membuat kesal"],
+  ["wake","woke","woken","bangun"],
+  ["wear","wore","worn","memakai"],
+  ["weave","wove","woven","menenun"],
+  ["wed","wed/wedded","wed/wedded","menikahi"],
+  ["weep","wept","wept","menangis"],
+  ["wet","wet/wetted","wet/wetted","membasahi"],
+  ["win","won","won","menang"],
+  ["wind","wound","wound","memutar/melilit"],
+  ["withdraw","withdrew","withdrawn","menarik diri/menarik uang"],
+  ["wring","wrung","wrung","memeras (kain)"],
+  ["write","wrote","written","menulis"]
+];
+
+/* ================= LIST MODE ================= */
+const verbBody = document.getElementById('verbBody');
+const searchInput = document.getElementById('searchInput');
+const letterFilters = document.getElementById('letterFilters');
+const resultCount = document.getElementById('resultCount');
+const emptyState = document.getElementById('emptyState');
+
+let activeLetter = null;
+
+const availableLetters = new Set(verbs.map(v => v[0][0].toUpperCase()));
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+alphabet.forEach(letter => {
+  const btn = document.createElement('button');
+  btn.className = 'letter-btn' + (availableLetters.has(letter) ? '' : ' disabled');
+  btn.textContent = letter;
+  btn.onclick = () => {
+    activeLetter = (activeLetter === letter) ? null : letter;
+    updateLetterButtons();
+    renderList();
+  };
+  btn.dataset.letter = letter;
+  letterFilters.appendChild(btn);
+});
+
+function updateLetterButtons(){
+  document.querySelectorAll('.letter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.letter === activeLetter);
+  });
+}
+
+function resetFilters(){
+  activeLetter = null;
+  searchInput.value = '';
+  updateLetterButtons();
+  renderList();
+}
+
+function renderList(){
+  const query = searchInput.value.trim().toLowerCase();
+
+  const filtered = verbs.filter(v => {
+    const matchesLetter = !activeLetter || v[0][0].toUpperCase() === activeLetter;
+    const matchesSearch = !query || v.some(field => field.toLowerCase().includes(query));
+    return matchesLetter && matchesSearch;
+  });
+
+  verbBody.innerHTML = '';
+  if(filtered.length === 0){
+    emptyState.style.display = 'block';
+  } else {
+    emptyState.style.display = 'none';
+    const frag = document.createDocumentFragment();
+    filtered.forEach(v => {
+      const row = document.createElement('div');
+      row.className = 'verb-row';
+      row.innerHTML = `
+        <div class="cell v1" data-label="V1">${v[0]}</div>
+        <div class="cell v2" data-label="V2">${v[1]}</div>
+        <div class="cell v3" data-label="V3">${v[2]}</div>
+        <div class="cell meaning" data-label="Arti">${v[3]}</div>
+      `;
+      frag.appendChild(row);
+    });
+    verbBody.appendChild(frag);
+  }
+
+  resultCount.textContent = `Menampilkan ${filtered.length} dari ${verbs.length} kata kerja` + (activeLetter ? ` — huruf "${activeLetter}"` : '');
+}
+
+searchInput.addEventListener('input', renderList);
+renderList();
+
+/* ================= MODE SWITCH ================= */
+function setMode(mode){
+  document.getElementById('tabList').classList.toggle('active', mode === 'list');
+  document.getElementById('tabQuiz').classList.toggle('active', mode === 'quiz');
+  document.getElementById('listMode').classList.toggle('hidden', mode !== 'list');
+  document.getElementById('quizMode').classList.toggle('hidden', mode !== 'quiz');
+  if(mode === 'quiz' && !quizStarted){
+    startQuiz();
+  }
+}
+
+/* ================= QUIZ MODE ================= */
+let quizOrder = [];
+let quizIndex = 0;
+let quizGood = 0;
+let quizBad = 0;
+let quizStarted = false;
+let revealed = false;
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz(){
+  quizOrder = shuffle(verbs);
+  quizIndex = 0;
+  quizGood = 0;
+  quizBad = 0;
+  quizStarted = true;
+  document.getElementById('quizActive').classList.remove('hidden');
+  document.getElementById('quizDone').classList.add('hidden');
+  showQuizCard();
+}
+
+function showQuizCard(){
+  const v = quizOrder[quizIndex];
+  document.getElementById('quizWord').textContent = v[0];
+  document.getElementById('quizMeaning').textContent = v[3];
+  document.getElementById('quizV2').textContent = v[1];
+  document.getElementById('quizV3').textContent = v[2];
+  document.getElementById('quizAnswer').classList.remove('show');
+  document.getElementById('revealBtn').classList.remove('hidden');
+  document.getElementById('judgeRow').classList.add('hidden');
+  document.getElementById('quizCount').textContent = `Kata ${quizIndex + 1}/${quizOrder.length}`;
+  document.getElementById('scoreGood').textContent = `✔ ${quizGood}`;
+  document.getElementById('scoreBad').textContent = `✘ ${quizBad}`;
+  document.getElementById('progressFill').style.width = `${(quizIndex / quizOrder.length) * 100}%`;
+  revealed = false;
+}
+
+function revealAnswer(){
+  document.getElementById('quizAnswer').classList.add('show');
+  document.getElementById('revealBtn').classList.add('hidden');
+  document.getElementById('judgeRow').classList.remove('hidden');
+  revealed = true;
+}
+
+function answerQuiz(isCorrect){
+  if(isCorrect) quizGood++; else quizBad++;
+  if(quizIndex < quizOrder.length - 1){
+    quizIndex++;
+    showQuizCard();
+  } else {
+    finishQuiz();
+  }
+}
+
+function finishQuiz(){
+  document.getElementById('quizActive').classList.add('hidden');
+  document.getElementById('quizDone').classList.remove('hidden');
+  document.getElementById('finalScore').textContent = `${quizGood} / ${quizOrder.length}`;
+  const pct = Math.round((quizGood / quizOrder.length) * 100);
+  let note = "Terus berlatih supaya makin hafal!";
+  if(pct >= 90) note = "Luar biasa! Hampir semua kamu hafal 🎉";
+  else if(pct >= 70) note = "Bagus, tinggal sedikit lagi!";
+  else if(pct >= 40) note = "Lumayan, coba ulangi lagi ya.";
+  document.getElementById('finalNote').textContent = note;
+}
+</script>
+</body>
+</html>
