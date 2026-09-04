@@ -169,6 +169,34 @@
     margin-top:6px;
   }
 
+  .timeline-wrap{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px 12px 10px;
+    margin:16px 0 4px;
+  }
+  .timeline-wrap svg{width:100%;height:auto;display:block;overflow:visible;}
+  .tl-zone{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    letter-spacing:.08em;
+    fill:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .tl-pivot-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:8px;
+    fill:var(--ink-soft);
+  }
+  .tl-caption{
+    text-align:center;
+    font-size:.78rem;
+    color:var(--ink-soft);
+    margin-top:8px;
+    font-style:italic;
+  }
+
   h2.section-title{
     font-family:'Inter',sans-serif;
     font-size:.72rem;
@@ -431,6 +459,145 @@ const GROUP_META = {
   future: {label:"Future", color:"var(--future)"}
 };
 
+/* Konfigurasi grafis timeline per tense.
+   category: habit | point | duration | perfect | perfect_duration
+   refX/startX/secondaryX: posisi X pada garis waktu (viewBox 640 lebar)
+   pivotX: jika ada, artinya tense ini dilihat dari "sudut pandang lampau" (past-future group) */
+const TIMELINE_META = {
+  "Simple Present Tense": {
+    category:"habit",
+    caption:"Kebiasaan & fakta umum — berulang di masa lalu, sekarang, dan nanti."
+  },
+  "Present Continuous Tense": {
+    category:"duration", refX:320,
+    caption:"Sedang berlangsung tepat pada saat ini."
+  },
+  "Present Perfect Tense": {
+    category:"perfect", startX:190, refX:320,
+    caption:"Selesai di masa lalu, tapi hasil/pengaruhnya masih terasa sekarang."
+  },
+  "Present Perfect Continuous": {
+    category:"perfect_duration", startX:170, refX:320,
+    caption:"Dimulai di masa lalu dan terus berlangsung sampai sekarang."
+  },
+  "Simple Past Tense": {
+    category:"point", refX:120,
+    caption:"Terjadi dan selesai sepenuhnya di masa lalu."
+  },
+  "Past Continuous Tense": {
+    category:"duration", refX:120,
+    caption:"Sedang berlangsung pada satu titik waktu tertentu di masa lalu."
+  },
+  "Past Perfect Tense": {
+    category:"perfect", startX:40, refX:150, secondaryX:230,
+    caption:'Selesai sebelum aksi lampau lain terjadi — "masa lalu dari masa lalu".'
+  },
+  "Past Perfect Continuous": {
+    category:"perfect_duration", startX:40, refX:150, secondaryX:230,
+    caption:"Sedang berlangsung sebelum aksi lampau lain terjadi."
+  },
+  "Simple Future Tense": {
+    category:"point", refX:520,
+    caption:"Akan terjadi pada suatu waktu di masa depan."
+  },
+  "Future Continuous Tense": {
+    category:"duration", refX:520,
+    caption:"Akan sedang berlangsung pada waktu tertentu di masa depan."
+  },
+  "Future Perfect Tense": {
+    category:"perfect", startX:420, refX:540,
+    caption:"Akan sudah selesai sebelum waktu tertentu di masa depan."
+  },
+  "Future Perfect Continuous": {
+    category:"perfect_duration", startX:400, refX:540,
+    caption:"Akan sudah berlangsung selama durasi tertentu hingga waktu itu tiba."
+  },
+  "Past Future Tense": {
+    category:"point", pivotX:150, refX:250,
+    caption:"Rencana/prediksi masa depan, tapi dilihat dari sudut pandang masa lalu."
+  },
+  "Past Future Continuous": {
+    category:"duration", pivotX:130, refX:230,
+    caption:"Sedang berlangsung, dilihat dari sudut pandang masa lalu."
+  },
+  "Past Future Perfect": {
+    category:"perfect", pivotX:90, startX:160, refX:270,
+    caption:"Sudah selesai sebelum suatu titik waktu, dilihat dari sudut pandang masa lalu (andaian)."
+  },
+  "Past Future Perfect Continuous": {
+    category:"perfect_duration", pivotX:80, startX:150, refX:270,
+    caption:"Sudah berlangsung hingga suatu titik waktu, dilihat dari sudut pandang masa lalu."
+  }
+};
+
+function renderTimeline(meta, idx){
+  if(!meta) return "";
+  const y = 95;
+  const markerId = `tlarrow${idx}`;
+  let marks = "";
+
+  if(meta.pivotX !== undefined){
+    const connectTo = meta.startX !== undefined ? meta.startX : meta.refX;
+    marks += `
+      <line x1="${meta.pivotX}" y1="70" x2="${meta.pivotX}" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <polygon points="${meta.pivotX-6},64 ${meta.pivotX+6},64 ${meta.pivotX},75" fill="var(--ink-soft)"/>
+      <text x="${meta.pivotX}" y="56" text-anchor="middle" class="tl-pivot-label">sudut pandang lampau</text>
+      <line x1="${meta.pivotX}" y1="${y}" x2="${connectTo}" y2="${y}" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="2 5"/>
+    `;
+  }
+
+  if(meta.category === "habit"){
+    marks += `
+      <line x1="80" y1="${y}" x2="560" y2="${y}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 7" opacity=".5"/>
+      <circle cx="80" cy="${y}" r="5" fill="var(--accent)" opacity=".55"/>
+      <circle cx="320" cy="${y}" r="7" fill="var(--accent)"/>
+      <circle cx="560" cy="${y}" r="5" fill="var(--accent)" opacity=".55"/>
+    `;
+  } else if(meta.category === "point"){
+    marks += `<circle cx="${meta.refX}" cy="${y}" r="7" fill="var(--accent)"/>`;
+  } else if(meta.category === "duration"){
+    marks += `
+      <line x1="${meta.refX-55}" y1="${y}" x2="${meta.refX+55}" y2="${y}" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="${meta.refX}" cy="${y}" r="4" fill="#fff"/>
+    `;
+  } else if(meta.category === "perfect" || meta.category === "perfect_duration"){
+    const width = meta.category === "perfect_duration" ? 7 : 4;
+    marks += `
+      <defs>
+        <marker id="${markerId}" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <line x1="${meta.startX}" y1="${y}" x2="${meta.refX-8}" y2="${y}" stroke="var(--accent)" stroke-width="${width}" stroke-linecap="round" marker-end="url(#${markerId})"/>
+    `;
+    if(meta.category === "perfect_duration"){
+      for(let x=meta.startX+14; x<meta.refX-10; x+=16){
+        marks += `<line x1="${x}" y1="${y-7}" x2="${x}" y2="${y+7}" stroke="#fff" stroke-width="2" opacity=".6"/>`;
+      }
+    }
+    if(meta.secondaryX !== undefined){
+      marks += `
+        <line x1="${meta.refX}" y1="${y}" x2="${meta.secondaryX}" y2="${y}" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="3 4"/>
+        <circle cx="${meta.secondaryX}" cy="${y}" r="5" fill="var(--ink-soft)"/>
+      `;
+    }
+  }
+
+  return `
+    <div class="timeline-wrap">
+      <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+        <line x1="20" y1="${y}" x2="620" y2="${y}" stroke="var(--line)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="320" y1="55" x2="320" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        ${marks}
+        <text x="120" y="150" text-anchor="middle" class="tl-zone">Lampau</text>
+        <text x="320" y="150" text-anchor="middle" class="tl-zone">Sekarang</text>
+        <text x="520" y="150" text-anchor="middle" class="tl-zone">Depan</text>
+      </svg>
+      <div class="tl-caption">${meta.caption}</div>
+    </div>
+  `;
+}
+
 const DATA = [
 {
   group:"present", title:"Simple Present Tense",
@@ -690,6 +857,8 @@ function renderPage(d, i){
     <div class="usage"><b>Kegunaan.</b> ${d.usage}
       <div class="adverbs">${d.adverbs}</div>
     </div>
+
+    ${renderTimeline(TIMELINE_META[d.title], i)}
 
     <h2 class="section-title">Rumus Verbal (Kata Kerja)</h2>
     <div class="formula-card">${d.verbal.map(labelRow).join("")}</div>
