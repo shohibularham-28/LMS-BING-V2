@@ -171,7 +171,7 @@ const DATA = {
       { siswa: "Alifia Friska Azhari", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 58.72, predikat: "D" },
       { siswa: "Andika Permana", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 71.54, predikat: "C" },
       { siswa: "Anggi Nur Safina", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 71.54, predikat: "C" },
-      { siswa: "Anna Altha Funnisa", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: "Belum Mengerjakan", predikat: "-" },
+      { siswa: "Anna Altha Funnisa", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: "82.00", predikat: "B" },
       { siswa: "Assyifa'u Zahra", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 99.74, predikat: "A" },
       { siswa: "Cahya Wahyuningtiyas", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 53.59, predikat: "D" },
       { siswa: "Citra Assifa Nur Aini", jenis: "Ulangan Harian 1 - Narrative Text Legend", skor: 66.41, predikat: "D" },
