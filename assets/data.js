@@ -453,6 +453,7 @@ const USERS = [
   { username: "paalllzzz", password: "200611", nama: "Naufal Barazaky Al Fajri", kelas: "X J" },
   { username: "nissa223", password: "elliaaa", nama: "Nisa Sholihah", kelas: "X J" },
   { username: "putrianjanix-j312", password: "258008312BYPUTRI", nama: "Putri Anjani", kelas: "X J" },
+  { username: "putrileticya", password: "putriLA", nama: "PUTRI LETICYA APRILLIANA", kelas: "X J" },
   { username: "whylin", password: "122638", nama: "Qumiy Fastabiqiy Tanaalinnal 'Izza", kelas: "X J" },
   { username: "amandaputr1", password: "amanda1122", nama: "Rizky Amanda Putri", kelas: "X J" },
   { username: "dyannn", password: "2813", nama: "Rohdiana Larasati Prihartini", kelas: "X J" },
