@@ -72,16 +72,43 @@
 
       <div class="nav-section-label">Menu Guru</div>
       <a class="nav-item active" data-page="rekap" href="#" title="Rekap Nilai"><span class="icon">📊</span> <span class="label">Rekap Nilai</span></a>
-      <a class="nav-item" data-page="persetujuan" href="#" title="Persetujuan Akun"><span class="icon">🆕</span> <span class="label">Persetujuan Akun</span> <span class="pending-badge" id="pendingBadge" style="display:none;"></span></a>
-      <a class="nav-item" data-page="siswa" href="#" title="Daftar Siswa"><span class="icon">👥</span> <span class="label">Daftar Siswa</span></a>
-      <a class="nav-item" data-page="kelas" href="#" title="Kelola Kelas"><span class="icon">🏫</span> <span class="label">Kelola Kelas</span></a>
-      <a class="nav-item" data-page="akun" href="#" title="Buat Akun Siswa"><span class="icon">👥</span> <span class="label">Buat Akun Siswa</span></a>
-      <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
-      <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
-      <a class="nav-item" data-page="hasilujian" href="#" title="Hasil Ujian"><span class="icon">🧾</span> <span class="label">Hasil Ujian</span></a>
-      <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
-      <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
-      <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
+
+      <div class="nav-group" data-group="siswa-akun">
+        <div class="nav-group-header" data-group-toggle title="Siswa & Akun">
+          <span class="icon">👥</span> <span class="label">Siswa &amp; Akun</span>
+          <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-page="siswa" href="#" title="Daftar Siswa"><span class="icon">👥</span> <span class="label">Daftar Siswa</span></a>
+          <a class="nav-item" data-page="akun" href="#" title="Buat Akun Siswa"><span class="icon">🧑‍🎓</span> <span class="label">Buat Akun Siswa</span></a>
+          <a class="nav-item" data-page="persetujuan" href="#" title="Persetujuan Akun"><span class="icon">🆕</span> <span class="label">Persetujuan Akun</span> <span class="pending-badge" id="pendingBadge" style="display:none;"></span></a>
+        </div>
+      </div>
+
+      <div class="nav-group" data-group="nilai-ujian">
+        <div class="nav-group-header" data-group-toggle title="Nilai & Ujian">
+          <span class="icon">✍️</span> <span class="label">Nilai &amp; Ujian</span>
+          <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
+          <a class="nav-item" data-page="hasilujian" href="#" title="Hasil Ujian"><span class="icon">🧾</span> <span class="label">Hasil Ujian</span></a>
+          <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
+        </div>
+      </div>
+
+      <div class="nav-group" data-group="kelola-konten">
+        <div class="nav-group-header" data-group-toggle title="Kelola Konten">
+          <span class="icon">📘</span> <span class="label">Kelola Konten</span>
+          <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-page="kelas" href="#" title="Kelola Kelas"><span class="icon">🏫</span> <span class="label">Kelola Kelas</span></a>
+          <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
+          <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
+          <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
+        </div>
+      </div>
 
       <div class="sidebar-footer">
         <button class="logout-btn" onclick="doLogout()" title="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span class="logout-label">Keluar</span></button>
@@ -339,6 +366,20 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
   initSidebarToggle();
   initNotifDropdown();
+  initNavGroups();
+
+  // ---------- Grup menu yang bisa expand/collapse ----------
+  function initNavGroups() {
+    document.querySelectorAll('.nav-group-header[data-group-toggle]').forEach(header => {
+      header.addEventListener('click', () => {
+        header.closest('.nav-group').classList.toggle('open');
+      });
+    });
+    // Buka otomatis grup yang berisi menu aktif saat halaman dimuat
+    const activeItem = document.querySelector('.nav-item.active');
+    const activeGroup = activeItem && activeItem.closest('.nav-group');
+    if (activeGroup) activeGroup.classList.add('open', 'has-active');
+  }
 
   // ---------- Navigasi antar section ----------
   document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
@@ -348,6 +389,10 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
       document.querySelectorAll('.gs-section').forEach(s => s.classList.remove('active'));
       nav.classList.add('active');
       document.getElementById('section-' + nav.dataset.page).classList.add('active');
+      // Tandai & buka grup yang memuat menu aktif
+      document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('has-active'));
+      const group = nav.closest('.nav-group');
+      if (group) group.classList.add('open', 'has-active');
     });
   });
 

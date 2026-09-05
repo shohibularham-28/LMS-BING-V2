@@ -331,6 +331,52 @@ body{
   font-weight:600;
 }
 
+/* ===================== SIDEBAR: GRUP MENU (expand/collapse) ===================== */
+.nav-group{margin-bottom:4px;}
+.nav-group-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink-dim);
+  transition:all .15s;
+  user-select:none;
+}
+.nav-group-header .icon{
+  width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.nav-group-header .label{flex:1;}
+.nav-group-header:hover{background:var(--panel); color:var(--ink);}
+.nav-group-chevron{width:14px; height:14px; flex-shrink:0; color:var(--ink-faint); transition:transform .2s ease;}
+.nav-group.open .nav-group-header{color:var(--ink);}
+.nav-group.open .nav-group-chevron{transform:rotate(180deg);}
+.nav-group.has-active .nav-group-header{color:var(--ink); font-weight:600;}
+
+.nav-group-items{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .22s ease;
+}
+.nav-group.open .nav-group-items{max-height:400px;}
+.nav-group-items .nav-item{
+  padding-left:34px;
+  font-size:13.5px;
+}
+.nav-group-items .nav-item .icon{width:18px; height:18px; font-size:13px;}
+
+/* Icon-only rail (desktop collapsed): ignore grouping, always show items */
+.shell.nav-collapsed .nav-group-header .label{display:none;}
+.shell.nav-collapsed .nav-group-chevron{display:none;}
+.shell.nav-collapsed .nav-group-header{justify-content:center; padding:12px 0;}
+.shell.nav-collapsed .nav-group-items{max-height:none !important;}
+.shell.nav-collapsed .nav-group-items .nav-item{padding-left:0;}
+
 .sidebar-footer{margin-top:auto;}
 .logout-btn{
   width:100%;
@@ -764,6 +810,14 @@ body{
   .shell.nav-collapsed .nav-item .label{display:inline;}
   .shell.nav-collapsed .logout-btn{padding:11px;}
   .shell.nav-collapsed .logout-btn .logout-label{display:inline;}
+
+  /* On mobile the drawer is always full-width, so groups behave normally (collapsible, not forced open) */
+  .shell.nav-collapsed .nav-group-header .label{display:block;}
+  .shell.nav-collapsed .nav-group-chevron{display:block;}
+  .shell.nav-collapsed .nav-group-header{justify-content:flex-start; padding:12px 14px;}
+  .shell.nav-collapsed .nav-group-items{max-height:0 !important;}
+  .shell.nav-collapsed .nav-group.open .nav-group-items{max-height:400px !important;}
+  .shell.nav-collapsed .nav-group-items .nav-item{padding-left:34px;}
 
   .sidebar-footer{margin-top:auto;}
   .logout-btn{width:100%;}
