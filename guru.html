@@ -93,7 +93,7 @@
       <div class="topbar">
         <div class="topbar-left">
           <button class="nav-toggle-btn" id="navToggle" type="button" aria-label="Buka/tutup menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-          <div>
+          <div class="topbar-userinfo">
             <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
             <div class="date" id="topDate"></div>
           </div>
@@ -1130,7 +1130,10 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
           ${belumMulai ? '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>' : ''}
           <div style="font-size:12px;color:#999;word-break:break-all;">${esc(w.url)}</div>
         </div>
-        <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          ${w.url ? `<a class="btn-secondary-sm" style="text-decoration:none;display:inline-block;white-space:nowrap;" href="${esc(w.url)}" target="_blank" rel="noopener">🔗 Buka</a>` : ''}
+          <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
+        </div>
       </div>
     `;
     }).join('') : emptyState('Belum ada worksheet', 'Tambahkan worksheet pertama lewat form di atas.', '📝');
@@ -1216,7 +1219,10 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
           ${m.deskripsi ? `<div style="font-size:13px;color:#666;margin-top:4px;max-width:520px;">${esc(m.deskripsi)}</div>` : ''}
           <div style="font-size:12px;color:#999;word-break:break-all;margin-top:2px;">${esc(m.url || '')}</div>
         </div>
-        <button class="btn-danger-sm" data-id="${m.id}">Hapus</button>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          ${m.url ? `<a class="btn-secondary-sm" style="text-decoration:none;display:inline-block;white-space:nowrap;" href="${esc(m.url)}" target="_blank" rel="noopener">🔗 Buka</a>` : ''}
+          <button class="btn-danger-sm" data-id="${m.id}">Hapus</button>
+        </div>
       </div>
     `;
     }).join('') : emptyState('Belum ada materi', 'Tambahkan materi pertama lewat form di atas.', '📘');
