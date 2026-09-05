@@ -827,6 +827,20 @@ body{
   .content{padding:24px 18px;}
   .login-visual{display:none;}
   .login-panel-wrap{width:100%;}
+
+  /* Balon notifikasi: di layar sempit, jangan menempel ke tombol lonceng (bisa kepotong
+     di luar layar). Sematkan ke viewport dengan jarak aman kiri-kanan supaya teksnya
+     selalu utuh terbaca, tidak peduli lebar layar ponsel. */
+  .notif-dropdown{
+    position:fixed;
+    top:76px;
+    left:12px;
+    right:12px;
+    width:auto;
+    max-width:none;
+    max-height:70vh;
+    z-index:200;
+  }
 }
 
 @media(max-width:600px){
