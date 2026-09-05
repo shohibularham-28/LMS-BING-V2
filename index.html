@@ -130,6 +130,12 @@
       err.style.display = 'block';
       return;
     }
+    if (profile.status === 'pending') {
+      await supabase.auth.signOut();
+      err.textContent = "Akun kamu masih menunggu persetujuan guru. Coba login lagi setelah disetujui.";
+      err.style.display = 'block';
+      return;
+    }
     window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
   }
   document.getElementById('btnLogin').addEventListener('click', doLoginSubmit);
@@ -202,6 +208,7 @@
       nama,
       role: 'siswa',
       kelas_id: kelasId,
+      status: 'pending',
     });
 
     if (profileErr) {
@@ -210,18 +217,23 @@
       return;
     }
 
+    // Akun siswa yang daftar mandiri wajib disetujui guru dulu sebelum bisa dipakai
+    // login, jadi sesi yang baru terbentuk (kalau ada) langsung diakhiri di sini.
     if (signUpData.session) {
-      window.location.href = 'pengumuman.html';
-    } else {
-      ok.textContent = "Pendaftaran berhasil! Silakan login lewat tab Masuk.";
-      ok.style.display = 'block';
+      await supabase.auth.signOut();
     }
+    ok.textContent = "Pendaftaran berhasil! Akun kamu perlu disetujui guru dulu sebelum bisa login. Hubungi guru, lalu login lewat tab Masuk setelah disetujui.";
+    ok.style.display = 'block';
   }
   document.getElementById('btnSignup').addEventListener('click', doSignupSubmit);
 
-  // Kalau sudah login, langsung arahkan ke halaman utama.
+  // Kalau sudah login (dan sudah disetujui), langsung arahkan ke halaman utama.
   (async function () {
     const profile = await getProfile();
+    if (profile && profile.status === 'pending') {
+      await supabase.auth.signOut();
+      return;
+    }
     if (profile) {
       window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
     }

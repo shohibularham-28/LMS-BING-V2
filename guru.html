@@ -46,6 +46,12 @@
   .kelas-check-item.all{ border-color:#2563eb55; background:#eef4ff; color:#2563eb; }
   .kelas-check-item:has(input:checked){ background:#2563eb; border-color:#2563eb; color:#fff; }
   .kelas-check-item:has(input:disabled){ opacity:.4; cursor:not-allowed; }
+
+  .pending-badge{ display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:#ff6b5e; color:#fff; font-size:11px; font-weight:700; margin-left:auto; }
+  .approve-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid rgba(0,0,0,0.08); border-radius:12px; margin-bottom:8px; background:#fff; }
+  .approve-row .meta{ font-size:12.5px; color:#888; margin-top:2px; }
+  .btn-approve-sm{ padding:8px 16px; border-radius:8px; border:1px solid rgba(26,143,76,0.3); background:#eafff2; color:#1a8f4c; font-size:13px; font-weight:700; cursor:pointer; }
+  .btn-approve-sm:hover{ background:#d8ffe6; }
 </style>
 </head>
 <body>
@@ -66,6 +72,7 @@
 
       <div class="nav-section-label">Menu Guru</div>
       <a class="nav-item active" data-page="rekap" href="#">📊 Rekap Nilai</a>
+      <a class="nav-item" data-page="persetujuan" href="#">🆕 Persetujuan Akun <span class="pending-badge" id="pendingBadge" style="display:none;"></span></a>
       <a class="nav-item" data-page="siswa" href="#">👥 Daftar Siswa</a>
       <a class="nav-item" data-page="kelas" href="#">🏫 Kelola Kelas</a>
       <a class="nav-item" data-page="akun" href="#">👥 Buat Akun Siswa</a>
@@ -85,7 +92,16 @@
           <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
           <div class="date" id="topDate"></div>
         </div>
-        <div class="level-pill">Dashboard Guru</div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Akun Menunggu Persetujuan</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill">Dashboard Guru</div>
+        </div>
       </div>
 
       <div class="content">
@@ -109,6 +125,17 @@
             <tbody id="grade-container"></tbody>
           </table>
           <div id="grade-empty-slot"></div>
+        </div>
+
+        <!-- ===== PERSETUJUAN AKUN BARU ===== -->
+        <div class="gs-section" id="section-persetujuan">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Persetujuan Akun Baru</h1></div>
+          <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <span id="persetujuanLabel">Menunggu Persetujuan</span>
+            <button class="btn-secondary-sm" id="btnSetujuiSemua" style="display:none;">✅ Setujui Semua</button>
+          </div>
+          <div class="hint">Siswa yang daftar sendiri lewat halaman login akan muncul di sini dan tidak bisa login sebelum kamu setujui.</div>
+          <div id="persetujuanList">Memuat…</div>
         </div>
 
         <!-- ===== DAFTAR SISWA PER KELAS ===== -->
@@ -249,6 +276,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   document.getElementById('sideName').textContent = teacher.nama;
   document.getElementById('userAvatar').textContent = teacher.nama.charAt(0).toUpperCase();
   document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  initNotifDropdown();
 
   // ---------- Navigasi antar section ----------
   document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
@@ -273,6 +301,117 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     if (typeof v !== 'number') return v ?? '-';
     return Number.isInteger(v) ? v : v.toFixed(2);
   }
+
+  // =========================================================
+  // PERSETUJUAN AKUN BARU (siswa daftar mandiri, status = pending)
+  // =========================================================
+  async function updatePendingBadge(count) {
+    const badge = document.getElementById('pendingBadge');
+    if (count > 0) {
+      badge.textContent = count;
+      badge.style.display = '';
+    } else {
+      badge.style.display = 'none';
+    }
+    setNotifDot(count);
+  }
+
+  function renderNotifDropdown(rows) {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    list.innerHTML = rows.length ? rows.map(s => `
+      <a class="notif-item" data-goto-persetujuan="1">
+        <div class="t">🆕 ${esc(s.nama)}</div>
+        <div class="d">Daftar sebagai siswa ${esc(s.kelas ? s.kelas.nama : '—')} · ${new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
+      </a>
+    `).join('') : '<div class="notif-empty">Tidak ada akun menunggu</div>';
+
+    list.querySelectorAll('[data-goto-persetujuan]').forEach(item => {
+      item.addEventListener('click', () => {
+        document.getElementById('notifDropdown').classList.remove('open');
+        document.querySelector('.nav-item[data-page="persetujuan"]').click();
+      });
+    });
+  }
+
+  async function renderPersetujuanList() {
+    const label = document.getElementById('persetujuanLabel');
+    const listEl = document.getElementById('persetujuanList');
+    const btnAll = document.getElementById('btnSetujuiSemua');
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, nama, username, created_at, kelas:kelas_id ( nama )')
+      .eq('role', 'siswa')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      listEl.innerHTML = `<div class="login-error" style="display:block;">Gagal memuat daftar: ${esc(error.message)}</div>`;
+      btnAll.style.display = 'none';
+      updatePendingBadge(0);
+      renderNotifDropdown([]);
+      return;
+    }
+
+    const rows = data || [];
+    label.textContent = rows.length ? `Menunggu Persetujuan (${rows.length})` : 'Menunggu Persetujuan';
+    btnAll.style.display = rows.length > 1 ? '' : 'none';
+    updatePendingBadge(rows.length);
+    renderNotifDropdown(rows);
+
+    if (!rows.length) {
+      listEl.innerHTML = emptyState('Tidak ada akun menunggu', 'Semua pendaftaran mandiri sudah diproses.', '✅');
+      return;
+    }
+
+    listEl.innerHTML = rows.map(s => `
+      <div class="approve-row">
+        <div>
+          <strong>${esc(s.nama)}</strong>
+          <div class="meta">Username: ${esc(s.username)} · Kelas: ${esc(s.kelas ? s.kelas.nama : '—')} · Daftar ${new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-approve-sm" data-id="${s.id}">✅ Setujui</button>
+          <button class="btn-danger-sm" data-id="${s.id}" data-nama="${esc(s.nama)}" data-reject="1">🗑️ Tolak</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.btn-approve-sm').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = 'Memproses…';
+        const { error: err } = await supabase.from('profiles').update({ status: 'approved' }).eq('id', btn.dataset.id);
+        if (err) { alert('Gagal menyetujui akun: ' + err.message); btn.disabled = false; btn.textContent = '✅ Setujui'; return; }
+        await renderPersetujuanList();
+      });
+    });
+
+    listEl.querySelectorAll('[data-reject="1"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Tolak dan hapus pendaftaran "${btn.dataset.nama}"? Akun ini belum bisa dipakai login sama sekali, jadi aman dihapus.`)) return;
+        btn.disabled = true;
+        btn.textContent = 'Menghapus…';
+        const { data, error: err } = await supabase.functions.invoke('delete-student', { body: { siswa_id: btn.dataset.id } });
+        if (err) { alert('Gagal memanggil fungsi: ' + err.message); btn.disabled = false; btn.textContent = '🗑️ Tolak'; return; }
+        if (data?.error) { alert(data.error); btn.disabled = false; btn.textContent = '🗑️ Tolak'; return; }
+        await renderPersetujuanList();
+      });
+    });
+  }
+
+  document.getElementById('btnSetujuiSemua').addEventListener('click', async () => {
+    const btn = document.getElementById('btnSetujuiSemua');
+    if (!confirm('Setujui semua akun yang sedang menunggu?')) return;
+    btn.disabled = true;
+    btn.textContent = 'Memproses…';
+    const { error: err } = await supabase.from('profiles').update({ status: 'approved' }).eq('role', 'siswa').eq('status', 'pending');
+    btn.disabled = false;
+    btn.textContent = '✅ Setujui Semua';
+    if (err) { alert('Gagal menyetujui semua akun: ' + err.message); return; }
+    await renderPersetujuanList();
+  });
 
   // =========================================================
   // 1) REKAP NILAI
@@ -1174,6 +1313,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
 
   renderLevelTabs();
   renderSiswaLevelTabs();
+  await renderPersetujuanList();
   await refreshAllKelasDependentUI();
 })();
 </script>

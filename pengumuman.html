@@ -49,7 +49,16 @@
           <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
           <div class="date" id="topDate"></div>
         </div>
-        <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        </div>
       </div>
 
       <div class="content">
@@ -81,6 +90,8 @@
   const profile = await requireLogin();
   if (!profile) return;
   renderShell(profile, 'pengumuman');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
 
   // Pengumuman: milik kelas ini atau untuk semua kelas
   const annC = document.getElementById('ann-container');
@@ -133,6 +144,9 @@
     gradeC.innerHTML = '';
     gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Nilai yang sudah dinilai guru akan tampil di sini.", "📊");
   }
+
+  // Siswa sudah melihat halaman ini, tandai pengumuman & nilai sebagai sudah dibaca.
+  await markUpdatesSeen(profile);
 })();
 </script>
 

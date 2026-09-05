@@ -62,7 +62,18 @@ Siswa yang sudah login bisa ganti password sendiri lewat menu **⚙️ Pengatura
 ## 9. Perbaikan: dropdown "Kelas" kosong di halaman Daftar Akun
 Kalau project Supabase kamu dibuat **sebelum** perbaikan ini dan dropdown kelas di tab "Daftar Akun Siswa" kosong/"Belum ada kelas tersedia", jalankan `MIGRASI_KELAS_PUBLIC.sql` sekali di SQL Editor. Penyebabnya: policy lama cuma izinkan baca tabel `kelas` untuk yang sudah login, padahal orang yang baru mau daftar akun belum punya sesi login sama sekali. Project baru yang pakai `supabase/schema.sql` versi ini sudah otomatis benar, tidak perlu migrasi tambahan.
 
-## 10. Deploy
+## 11. Persetujuan akun siswa yang daftar mandiri
+Siswa yang daftar sendiri lewat tombol "Daftar Akun Siswa" sekarang berstatus **menunggu persetujuan** dan belum bisa login sampai disetujui guru. Guru mengelola ini lewat menu baru **🆕 Persetujuan Akun** di dashboard (ada badge merah kalau ada yang menunggu) — bisa klik "✅ Setujui" per siswa, "✅ Setujui Semua" untuk semuanya sekaligus, atau "🗑️ Tolak" untuk menghapus pendaftaran yang tidak valid. Akun yang dibuat guru lewat menu "Buat Akun Siswa Massal" tetap langsung aktif (tidak perlu persetujuan).
+
+Kalau project Supabase kamu sudah jalan duluan, jalankan `MIGRASI_PERSETUJUAN_AKUN.sql` sekali di SQL Editor. Project baru yang pakai `supabase/schema.sql` versi ini sudah otomatis benar.
+
+## 13. Notifikasi lonceng 🔔
+- **Siswa**: lonceng di topbar (halaman Pengumuman, Materi, Worksheet, Pengaturan) menampilkan titik merah kalau ada pengumuman atau nilai baru sejak terakhir dia buka menu **Pengumuman & Nilai**. Klik lonceng untuk lihat daftar singkatnya; titik merah otomatis hilang begitu siswa membuka halaman Pengumuman & Nilai.
+- **Guru**: lonceng di topbar dashboard menampilkan jumlah akun siswa yang baru daftar mandiri dan menunggu persetujuan (sinkron dengan badge di menu 🆕 Persetujuan Akun). Klik salah satu item di dropdown untuk langsung lompat ke menu Persetujuan Akun.
+
+Kalau project Supabase kamu sudah jalan duluan, jalankan `MIGRASI_NOTIFIKASI.sql` sekali di SQL Editor (menambah kolom `last_seen_updates` di tabel `profiles`). Project baru yang pakai `supabase/schema.sql` versi ini sudah otomatis benar.
+
+## 14. Deploy
 Karena ini masih situs statis (HTML+JS) yang manggil Supabase langsung dari browser, kamu bisa deploy persis seperti sebelumnya: GitHub Pages, Netlify, Vercel, dsb. Cukup push semua file (kecuali folder `supabase/functions`, yang di-deploy terpisah lewat Supabase CLI di langkah 3).
 
 ## Yang disederhanakan dari versi lama

@@ -91,7 +91,16 @@
           <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
           <div class="date" id="topDate"></div>
         </div>
-        <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        </div>
       </div>
 
       <div class="content">
@@ -102,10 +111,21 @@
 
         <div class="settings-card">
           <h2>Informasi Akun</h2>
-          <div class="sub">Data akunmu saat ini</div>
-          <div class="info-row"><span class="lbl">Nama Lengkap</span><span class="val" id="infoNama">—</span></div>
-          <div class="info-row"><span class="lbl">Username</span><span class="val" id="infoUsername">—</span></div>
+          <div class="sub">Ubah nama atau username kamu sendiri</div>
+
+          <div class="field">
+            <label for="editNama">Nama Lengkap</label>
+            <input type="text" id="editNama" placeholder="Nama lengkap kamu">
+          </div>
+          <div class="field">
+            <label for="editUsername">Username</label>
+            <input type="text" id="editUsername" placeholder="Username (tanpa spasi)">
+          </div>
           <div class="info-row"><span class="lbl">Kelas</span><span class="val" id="infoKelas">—</span></div>
+
+          <p class="login-error" id="profileError" style="margin-top:14px;"></p>
+          <p class="settings-success" id="profileSuccess"></p>
+          <button class="btn-primary" id="btnSaveProfile">Simpan Perubahan</button>
         </div>
 
         <div class="settings-card">
@@ -138,10 +158,95 @@
   const profile = await requireLogin();
   if (!profile) return;
   renderShell(profile, 'pengaturan');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
 
-  document.getElementById('infoNama').textContent = profile.nama;
-  document.getElementById('infoUsername').textContent = profile.username;
+  const editNamaEl = document.getElementById('editNama');
+  const editUsernameEl = document.getElementById('editUsername');
+  editNamaEl.value = profile.nama;
+  editUsernameEl.value = profile.username;
   document.getElementById('infoKelas').textContent = profile.kelas ? profile.kelas.nama : '—';
+
+  const profileErr = document.getElementById('profileError');
+  const profileOk = document.getElementById('profileSuccess');
+  const btnProfile = document.getElementById('btnSaveProfile');
+
+  btnProfile.addEventListener('click', async () => {
+    const nama = editNamaEl.value.trim();
+    const username = editUsernameEl.value.trim().toLowerCase();
+    profileErr.style.display = 'none';
+    profileOk.style.display = 'none';
+
+    if (!nama || !username) {
+      profileErr.textContent = "Nama dan username tidak boleh kosong.";
+      profileErr.style.display = 'block';
+      return;
+    }
+    if (/\s/.test(username)) {
+      profileErr.textContent = "Username tidak boleh mengandung spasi.";
+      profileErr.style.display = 'block';
+      return;
+    }
+
+    btnProfile.disabled = true;
+    btnProfile.textContent = "Menyimpan…";
+    const usernameChanged = username !== profile.username;
+
+    if (usernameChanged) {
+      // Cek dulu apakah username baru sudah dipakai siswa/guru lain.
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .neq('id', profile.id)
+        .maybeSingle();
+      if (existing) {
+        profileErr.textContent = "Username sudah dipakai, coba username lain.";
+        profileErr.style.display = 'block';
+        btnProfile.disabled = false;
+        btnProfile.textContent = "Simpan Perubahan";
+        return;
+      }
+
+      // Username dipakai sebagai basis email login (lihat usernameToEmail di
+      // supabaseClient.js), jadi email akun auth-nya juga harus ikut diganti
+      // supaya login pakai username baru bisa berhasil.
+      const { error: emailErr } = await supabase.auth.updateUser({ email: usernameToEmail(username) });
+      if (emailErr) {
+        profileErr.textContent = "Gagal mengganti username: " + emailErr.message;
+        profileErr.style.display = 'block';
+        btnProfile.disabled = false;
+        btnProfile.textContent = "Simpan Perubahan";
+        return;
+      }
+    }
+
+    const { error: profileUpdateErr } = await supabase
+      .from('profiles')
+      .update({ nama, username })
+      .eq('id', profile.id);
+
+    if (profileUpdateErr) {
+      profileErr.textContent = "Gagal menyimpan perubahan: " + profileUpdateErr.message;
+      profileErr.style.display = 'block';
+      btnProfile.disabled = false;
+      btnProfile.textContent = "Simpan Perubahan";
+      return;
+    }
+
+    profile.nama = nama;
+    profile.username = username;
+    document.getElementById('topName').textContent = nama;
+    document.getElementById('sideName').textContent = nama;
+    document.getElementById('userAvatar').textContent = nama.charAt(0).toUpperCase();
+
+    profileOk.textContent = usernameChanged
+      ? "Perubahan disimpan. Mulai sekarang, login pakai username baru: " + username
+      : "Perubahan disimpan.";
+    profileOk.style.display = 'block';
+    btnProfile.disabled = false;
+    btnProfile.textContent = "Simpan Perubahan";
+  });
 
   const newPasswordEl = document.getElementById('newPassword');
   const confirmPasswordEl = document.getElementById('confirmPassword');

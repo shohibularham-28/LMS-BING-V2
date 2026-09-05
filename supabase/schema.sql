@@ -20,11 +20,15 @@ create table if not exists public.profiles (
   role text not null default 'siswa' check (role in ('siswa','guru')),
   kelas_id uuid references public.kelas(id),
   password_plain text, -- salinan password asli (plain text) khusus siswa, supaya guru bisa "Lihat Password". Diisi otomatis oleh Edge Function create-students & reset-password.
+  status text not null default 'approved' check (status in ('pending','approved')), -- 'pending' = daftar mandiri, menunggu disetujui guru. Akun dibuat guru (massal/Edge Function) langsung 'approved'.
+  last_seen_updates timestamptz not null default now(), -- kapan terakhir siswa buka halaman Pengumuman & Nilai (dipakai buat hitung notifikasi belum dibaca)
   created_at timestamptz default now()
 );
 
--- Kalau tabel profiles sudah ada dari versi sebelumnya, jalankan baris ini sekali di SQL Editor:
+-- Kalau tabel profiles sudah ada dari versi sebelumnya, jalankan baris-baris ini sekali di SQL Editor:
 alter table public.profiles add column if not exists password_plain text;
+alter table public.profiles add column if not exists status text not null default 'approved' check (status in ('pending','approved'));
+alter table public.profiles add column if not exists last_seen_updates timestamptz not null default now();
 
 -- ---------- PENGUMUMAN ----------
 create table if not exists public.pengumuman (
@@ -112,8 +116,10 @@ create policy "kelas_delete_guru" on public.kelas for delete using (public.is_gu
 
 -- PROFILES: lihat diri sendiri atau (jika guru) semua orang
 create policy "profiles_select" on public.profiles for select using (id = auth.uid() or public.is_guru());
--- daftar sendiri (signup siswa) — role dipaksa 'siswa', tidak boleh klaim jadi guru
-create policy "profiles_insert_self" on public.profiles for insert with check (id = auth.uid() and role = 'siswa');
+-- daftar sendiri (signup siswa) — role dipaksa 'siswa', tidak boleh klaim jadi guru,
+-- dan status dipaksa 'pending' supaya wajib disetujui guru dulu sebelum bisa dipakai login
+-- (siswa tidak bisa insert dirinya sendiri langsung sebagai 'approved').
+create policy "profiles_insert_self" on public.profiles for insert with check (id = auth.uid() and role = 'siswa' and status = 'pending');
 -- guru boleh insert siapa saja (dipakai Edge Function via service role, yang otomatis bypass RLS)
 create policy "profiles_update" on public.profiles for update using (id = auth.uid() or public.is_guru());
 create policy "profiles_delete_guru" on public.profiles for delete using (public.is_guru());
