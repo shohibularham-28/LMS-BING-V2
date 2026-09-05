@@ -5,10 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Guru — English Learning Hub</title>
 <link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   .level-tabs{ display:flex; gap:8px; margin-bottom:16px; }
   .level-tab{ padding:9px 18px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); background:#fff; cursor:pointer; font-weight:600; font-size:14px; color:#555; }
   .level-tab.active{ background:#1f2937; color:#fff; border-color:#1f2937; }
+
+  .mode-tabs{ display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+  .mode-tab{ padding:9px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.1); background:#fff; cursor:pointer; font-weight:600; font-size:13.5px; color:#555; }
+  .mode-tab.active{ background:#2563eb; color:#fff; border-color:#2563eb; }
+  .akun-mode-panel{ margin-bottom:8px; }
 
   .kelas-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
   .kelas-chip{ padding:7px 16px; border-radius:999px; border:1px solid rgba(0,0,0,0.12); background:#fff; cursor:pointer; font-size:13.5px; font-weight:600; color:#555; }
@@ -149,7 +155,7 @@
           <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <span>Detail Nilai per Siswa</span>
             <div style="display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="btn-secondary-sm" id="btnDownloadRekap">⬇️ Download Rekap (CSV)</button>
+              <button class="btn-secondary-sm" id="btnDownloadRekap">⬇️ Download Rekap (Excel)</button>
               <button class="btn-danger-sm" id="btnHapusSemuaNilai">🗑️ Hapus Semua Nilai</button>
             </div>
           </div>
@@ -182,7 +188,7 @@
           </div>
           <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
             <span id="siswaListLabel">Daftar Siswa</span>
-            <button class="btn-secondary-sm" id="btnDownloadSiswa">⬇️ Download Daftar Siswa (CSV)</button>
+            <button class="btn-secondary-sm" id="btnDownloadSiswa">⬇️ Download Daftar Siswa (Excel)</button>
           </div>
           <div class="hint">Klik "👁️ Lihat" untuk menampilkan password siswa, atau "🔑 Reset" untuk membuatkan yang baru.</div>
           <table class="grade-table" id="siswa-table">
@@ -207,16 +213,49 @@
 
         <!-- ===== BUAT AKUN SISWA MASSAL ===== -->
         <div class="gs-section" id="section-akun">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Buat Akun Siswa Secara Massal</h1></div>
-          <div class="form-field">
-            <label>Daftar Siswa (satu baris = satu siswa)</label>
-            <textarea id="akunTextarea" placeholder="Nama Lengkap, username, password, Nama Kelas
-Contoh:
-Budi Santoso, budi123, budipass1, X I
-Ani Wulandari, ani456, anipass2, X I"></textarea>
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Buat Akun Siswa</h1></div>
+
+          <div class="mode-tabs" id="akunModeTabs">
+            <button type="button" class="mode-tab active" data-mode="manual">✍️ Manual (tambah satu per satu)</button>
+            <button type="button" class="mode-tab" data-mode="csv">📄 Import Format Excel</button>
           </div>
-          <div class="hint">Format tiap baris: <code>Nama Lengkap, username, password, Nama Kelas</code> — pastikan nama kelas persis sama seperti di menu Kelola Kelas.</div>
-          <button class="btn-secondary-sm" id="btnBuatAkun">Buat Semua Akun</button>
+
+          <!-- MODE MANUAL: form per-siswa, tiap kolom terpisah (bukan digabung dalam satu baris teks) -->
+          <div class="akun-mode-panel" id="akunModeManual">
+            <div class="form-row">
+              <div class="form-field"><label>Nama Lengkap</label><input type="text" id="akunNamaInput" placeholder="mis. Budi Santoso"></div>
+              <div class="form-field"><label>Username</label><input type="text" id="akunUsernameInput" placeholder="mis. budi123"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-field"><label>Password</label><input type="text" id="akunPasswordInput" placeholder="mis. budipass1"></div>
+              <div class="form-field"><label>Nama Kelas</label><select id="akunKelasSelect"></select></div>
+            </div>
+            <button class="btn-secondary-sm" id="btnTambahKeDaftarAkun">+ Tambah ke Daftar</button>
+            <p class="login-error" id="akunManualError" style="display:none;"></p>
+          </div>
+
+          <!-- MODE EXCEL: download format kolom terpisah (Nama Lengkap | Username | Password | Nama Kelas), lalu upload -->
+          <div class="akun-mode-panel" id="akunModeCsv" style="display:none;">
+            <div class="hint">File Excel (.xlsx) wajib 1 kolom (cell) = 1 data: <code>Nama Lengkap | Username | Password | Nama Kelas</code>. Jangan menggabungkan beberapa data ke dalam satu cell. Isi lewat Excel/Spreadsheet lalu upload di sini.</div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+              <button class="btn-secondary-sm" id="btnDownloadFormatAkun">⬇️ Download Format Akun Siswa (Excel)</button>
+              <button class="btn-secondary-sm" id="btnUploadAkunCSV">⬆️ Upload Excel ke Daftar</button>
+              <input type="file" id="akunCsvFile" accept=".xlsx,.xls" style="display:none;">
+            </div>
+            <p class="login-error" id="akunCsvError" style="display:none;"></p>
+          </div>
+
+          <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:24px;">
+            <span>Daftar Siswa yang Akan Dibuat</span>
+            <button class="btn-secondary-sm" id="btnKosongkanDaftarAkun">🗑️ Kosongkan Daftar</button>
+          </div>
+          <table class="grade-table" id="akun-staging-table">
+            <thead><tr><th>#</th><th>Nama Lengkap</th><th>Username</th><th>Password</th><th>Nama Kelas</th><th>Aksi</th></tr></thead>
+            <tbody id="akun-staging-body"></tbody>
+          </table>
+          <div id="akun-staging-empty"></div>
+
+          <button class="btn-secondary-sm" id="btnBuatAkun" style="margin-top:16px;">✅ Buat Semua Akun (<span id="akunStagingCount">0</span>)</button>
           <div id="akunResult" style="margin-top:16px;"></div>
         </div>
 
@@ -229,11 +268,11 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
             <button class="btn-secondary-sm" id="btnMuatSiswaNilai">Muat Daftar Siswa</button>
-            <button class="btn-secondary-sm" id="btnDownloadFormatNilai">⬇️ Download Format Nilai (CSV)</button>
-            <button class="btn-secondary-sm" id="btnUploadNilaiCSV">⬆️ Upload Nilai dari CSV</button>
-            <input type="file" id="nilaiCsvFile" accept=".csv" style="display:none;">
+            <button class="btn-secondary-sm" id="btnDownloadFormatNilai">⬇️ Download Format Nilai (Excel)</button>
+            <button class="btn-secondary-sm" id="btnUploadNilaiCSV">⬆️ Upload Nilai dari Excel</button>
+            <input type="file" id="nilaiCsvFile" accept=".xlsx,.xls" style="display:none;">
           </div>
-          <div class="hint">Alur cepat: 1) Pilih kelas &amp; jenis penilaian → 2) Download Format (kolom: Nama Lengkap, Kelas, Nilai, Nilai Sebelum Penalti, Predikat, Keterangan) → 3) Isi di Excel/Spreadsheet, JANGAN ubah kolom Nama Lengkap → 4) Muat Daftar Siswa → 5) Upload Nilai dari CSV untuk mengisi otomatis → 6) Cek lalu Simpan Semua Nilai.</div>
+          <div class="hint">Alur cepat: 1) Pilih kelas &amp; jenis penilaian → 2) Download Format Excel (kolom: Nama Lengkap, Kelas, Nilai, Nilai Sebelum Penalti, Predikat, Keterangan — masing-masing kolom terpisah) → 3) Isi di Excel/Spreadsheet, JANGAN ubah kolom Nama Lengkap → 4) Muat Daftar Siswa → 5) Upload Nilai dari Excel untuk mengisi otomatis → 6) Cek lalu Simpan Semua Nilai.</div>
           <p class="login-error" id="nilaiUploadMsg" style="display:none;"></p>
           <div id="nilaiTableWrap" style="margin-top:8px;"></div>
         </div>
@@ -273,7 +312,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
               <select id="hasilUjianKelasSelect"><option value="">Semua Kelas</option></select>
             </div>
             <button class="btn-secondary-sm" id="btnMuatHasilUjian">Muat Hasil</button>
-            <button class="btn-secondary-sm" id="btnDownloadHasilUjian">⬇️ Download CSV</button>
+            <button class="btn-secondary-sm" id="btnDownloadHasilUjian">⬇️ Download Excel</button>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilUjian">🗑️ Hapus Semua</button>
           </div>
           <div class="table-responsive"><div id="hasilUjianTableWrap">Belum dimuat.</div></div>
@@ -309,7 +348,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
               </select>
             </div>
             <button class="btn-secondary-sm" id="btnMuatHasilWs">Muat Hasil</button>
-            <button class="btn-secondary-sm" id="btnDownloadHasilWs">⬇️ Download CSV</button>
+            <button class="btn-secondary-sm" id="btnDownloadHasilWs">⬇️ Download Excel</button>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilWs">🗑️ Hapus Semua</button>
           </div>
           <div class="table-responsive"><div id="hasilWsTableWrap">Belum dimuat.</div></div>
@@ -675,36 +714,27 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     };
   }
 
-  // ---- Download rekap nilai (per kelas & jenis penilaian) sebagai CSV ----
+  // ---- Download rekap nilai (per kelas & jenis penilaian) sebagai Excel ----
   let currentRekapRows = [];
   document.getElementById('btnDownloadRekap').addEventListener('click', () => {
     if (!rekapState.kelasId || !rekapState.jenis) { alert('Pilih kelas dan jenis penilaian dulu.'); return; }
     if (!currentRekapRows.length) { alert('Belum ada data nilai untuk diunduh.'); return; }
     const kelasNama = allKelas.find(k => k.id === rekapState.kelasId)?.nama || 'kelas';
-    const header = ['#', 'Nama Siswa', 'Skor', 'Nilai Asli', 'Predikat', 'Keterangan', 'Status'].join(',');
-    const rowsCsv = currentRekapRows.map((r, i) => {
+    const header = ['#', 'Nama Siswa', 'Skor', 'Nilai Asli', 'Predikat', 'Keterangan', 'Status'];
+    const rows = currentRekapRows.map((r, i) => {
       const isNumeric = typeof r.skor === 'number';
       const status = !isNumeric ? 'Belum Mengerjakan' : (r.skor < 75 ? 'Remidi' : 'Tuntas');
       return [
         i + 1,
-        csvField(r.nama),
-        csvField(fmtSkor(r.skor)),
-        csvField(typeof r.skorAsli === 'number' ? fmtSkor(r.skorAsli) : '-'),
-        csvField(r.predikat || '-'),
-        csvField(r.keterangan || '-'),
-        csvField(status),
-      ].join(',');
+        r.nama,
+        fmtSkor(r.skor),
+        typeof r.skorAsli === 'number' ? fmtSkor(r.skorAsli) : '-',
+        r.predikat || '-',
+        r.keterangan || '-',
+        status,
+      ];
     });
-    const csv = [header, ...rowsCsv].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `rekap-nilai-${kelasNama.replace(/\s+/g, '_')}-${rekapState.jenis.replace(/\s+/g, '_')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadXlsx(`rekap-nilai-${kelasNama.replace(/\s+/g, '_')}-${rekapState.jenis.replace(/\s+/g, '_')}.xlsx`, header, rows);
   });
 
   // =========================================================
@@ -901,18 +931,9 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     const rows = q ? currentSiswaList.filter(s => s.nama.toLowerCase().includes(q)) : currentSiswaList;
     if (!rows.length) { alert('Belum ada siswa untuk diunduh.'); return; }
     const kelasNama = allKelas.find(k => k.id === siswaState.kelasId)?.nama || 'kelas';
-    const header = ['#', 'Nama Siswa', 'Username'].join(',');
-    const rowsCsv = rows.map((s, i) => [i + 1, csvField(s.nama), csvField(s.username)].join(','));
-    const csv = [header, ...rowsCsv].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `daftar-siswa-${kelasNama.replace(/\s+/g, '_')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const header = ['#', 'Nama Siswa', 'Username'];
+    const dataRows = rows.map((s, i) => [i + 1, s.nama, s.username]);
+    downloadXlsx(`daftar-siswa-${kelasNama.replace(/\s+/g, '_')}.xlsx`, header, dataRows);
   });
 
   // =========================================================
@@ -951,22 +972,158 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   });
 
   // =========================================================
-  // 3) BUAT AKUN SISWA MASSAL (panggil Edge Function)
+  // 3) BUAT AKUN SISWA (manual satu-per-satu ATAU import CSV format kolom terpisah)
   // =========================================================
-  document.getElementById('btnBuatAkun').addEventListener('click', async () => {
-    const raw = document.getElementById('akunTextarea').value;
-    const resultEl = document.getElementById('akunResult');
-    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
-    if (!lines.length) { resultEl.innerHTML = '<p class="login-error" style="display:block;">Belum ada data siswa yang dimasukkan.</p>'; return; }
+  let akunStagingList = []; // { nama, username, password, kelas }
 
-    const siswa = lines.map(line => {
-      const parts = line.split(',').map(p => p.trim());
-      return { nama: parts[0], username: parts[1], password: parts[2], kelas: parts[3] };
+  // ---- Toggle mode Manual / CSV ----
+  document.getElementById('akunModeTabs').querySelectorAll('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('akunModeTabs').querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.dataset.mode;
+      document.getElementById('akunModeManual').style.display = mode === 'manual' ? '' : 'none';
+      document.getElementById('akunModeCsv').style.display = mode === 'csv' ? '' : 'none';
     });
+  });
 
-    resultEl.innerHTML = 'Memproses ' + siswa.length + ' akun…';
+  function renderAkunStagingTable() {
+    const table = document.getElementById('akun-staging-table');
+    const body = document.getElementById('akun-staging-body');
+    const emptySlot = document.getElementById('akun-staging-empty');
+    document.getElementById('akunStagingCount').textContent = akunStagingList.length;
 
-    const { data, error } = await supabase.functions.invoke('create-students', { body: { siswa } });
+    if (!akunStagingList.length) {
+      table.style.display = 'none';
+      body.innerHTML = '';
+      emptySlot.innerHTML = emptyState('Daftar masih kosong', 'Tambahkan siswa lewat form Manual atau upload Excel di atas.', '🧑‍🎓');
+      return;
+    }
+
+    table.style.display = '';
+    emptySlot.innerHTML = '';
+    body.innerHTML = akunStagingList.map((s, i) => `
+      <tr>
+        <td class="rank-cell">${i + 1}</td>
+        <td>${esc(s.nama)}</td>
+        <td>${esc(s.username)}</td>
+        <td style="font-family:monospace;">${esc(s.password)}</td>
+        <td>${esc(s.kelas)}</td>
+        <td><button class="btn-danger-sm btn-hapus-staging-akun" data-idx="${i}">🗑️ Hapus</button></td>
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('.btn-hapus-staging-akun').forEach(btn => {
+      btn.addEventListener('click', () => {
+        akunStagingList.splice(Number(btn.dataset.idx), 1);
+        renderAkunStagingTable();
+      });
+    });
+  }
+
+  document.getElementById('btnKosongkanDaftarAkun').addEventListener('click', () => {
+    if (!akunStagingList.length) return;
+    if (!confirm('Kosongkan seluruh daftar siswa yang belum dibuat akunnya?')) return;
+    akunStagingList = [];
+    renderAkunStagingTable();
+  });
+
+  // ---- Tambah satu siswa manual ke daftar (masing-masing field = data terpisah) ----
+  document.getElementById('btnTambahKeDaftarAkun').addEventListener('click', () => {
+    const err = document.getElementById('akunManualError');
+    err.style.display = 'none';
+    const nama = document.getElementById('akunNamaInput').value.trim();
+    const username = document.getElementById('akunUsernameInput').value.trim();
+    const password = document.getElementById('akunPasswordInput').value.trim();
+    const kelasSelect = document.getElementById('akunKelasSelect');
+    const kelas = kelasSelect.options[kelasSelect.selectedIndex]?.textContent || '';
+
+    if (!nama || !username || !password || !kelas) {
+      err.textContent = 'Nama Lengkap, Username, Password, dan Nama Kelas wajib diisi.';
+      err.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      err.textContent = 'Password minimal 6 karakter.';
+      err.style.display = 'block';
+      return;
+    }
+
+    akunStagingList.push({ nama, username, password, kelas });
+    renderAkunStagingTable();
+
+    document.getElementById('akunNamaInput').value = '';
+    document.getElementById('akunUsernameInput').value = '';
+    document.getElementById('akunPasswordInput').value = '';
+    document.getElementById('akunNamaInput').focus();
+  });
+
+  // ---- Download format Excel akun siswa: Nama Lengkap | Username | Password | Nama Kelas (1 cell = 1 data) ----
+  document.getElementById('btnDownloadFormatAkun').addEventListener('click', () => {
+    const header = ['Nama Lengkap', 'Username', 'Password', 'Nama Kelas'];
+    const contoh = ['Budi Santoso', 'budi123', 'budipass1', 'X I'];
+    downloadXlsx('format-akun-siswa.xlsx', header, [contoh]);
+  });
+
+  // ---- Upload Excel: setiap baris = satu siswa, tiap kolom (cell) dipetakan ke satu field ----
+  document.getElementById('btnUploadAkunCSV').addEventListener('click', () => {
+    document.getElementById('akunCsvFile').click();
+  });
+
+  document.getElementById('akunCsvFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const errEl = document.getElementById('akunCsvError');
+    errEl.style.display = 'none';
+    if (!file) return;
+
+    let rows;
+    try {
+      rows = await readXlsxRows(file);
+    } catch (err) {
+      errEl.textContent = 'Gagal membaca file: ' + err.message;
+      errEl.style.display = 'block';
+      e.target.value = '';
+      return;
+    }
+    if (!rows.length) {
+      errEl.textContent = 'File kosong atau tidak terbaca.';
+      errEl.style.display = 'block';
+      e.target.value = '';
+      return;
+    }
+    // Baris pertama dianggap header (kalau kolom pertamanya mengandung kata "nama"), dilewati.
+    const startIdx = (rows[0][0] && rows[0][0].toLowerCase().includes('nama')) ? 1 : 0;
+    const dataRows = rows.slice(startIdx);
+    let ditambahkan = 0;
+    const gagal = [];
+    dataRows.forEach((cols, idx) => {
+      const nama = (cols[0] || '').trim();
+      const username = (cols[1] || '').trim();
+      const password = (cols[2] || '').trim();
+      const kelas = (cols[3] || '').trim();
+      if (!nama || !username || !password || !kelas) {
+        gagal.push(idx + startIdx + 1);
+        return;
+      }
+      akunStagingList.push({ nama, username, password, kelas });
+      ditambahkan++;
+    });
+    renderAkunStagingTable();
+    if (gagal.length) {
+      errEl.textContent = `${ditambahkan} baris berhasil ditambahkan. Baris ${gagal.join(', ')} dilewati karena ada kolom yang kosong.`;
+      errEl.style.display = 'block';
+    }
+    e.target.value = '';
+  });
+
+  // ---- Kirim seluruh daftar staging ke Edge Function untuk dibuat akunnya ----
+  document.getElementById('btnBuatAkun').addEventListener('click', async () => {
+    const resultEl = document.getElementById('akunResult');
+    if (!akunStagingList.length) { resultEl.innerHTML = '<p class="login-error" style="display:block;">Daftar siswa masih kosong. Tambahkan lewat form Manual atau upload Excel dulu.</p>'; return; }
+
+    resultEl.innerHTML = 'Memproses ' + akunStagingList.length + ' akun…';
+
+    const { data, error } = await supabase.functions.invoke('create-students', { body: { siswa: akunStagingList } });
     if (error) {
       resultEl.innerHTML = `<p class="login-error" style="display:block;">Gagal memanggil fungsi: ${esc(error.message)}</p>`;
       return;
@@ -980,6 +1137,11 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
         ${r.status === 'ok' ? '✓' : '✗'} ${esc(r.username)} ${r.pesan ? '— ' + esc(r.pesan) : (r.status === 'ok' ? '— berhasil dibuat' : '')}
       </div>
     `).join('');
+
+    // Hapus dari staging hanya yang berhasil dibuat, biar yang gagal bisa diperbaiki & dicoba lagi.
+    const okUsernames = new Set(data.results.filter(r => r.status === 'ok').map(r => r.username));
+    akunStagingList = akunStagingList.filter(s => !okUsernames.has(s.username));
+    renderAkunStagingTable();
   });
 
   // =========================================================
@@ -994,108 +1156,107 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   let currentNilaiSiswa = [];
   let nilaiWrapEl = null;
 
-  // Escape/quote a CSV field (handles commas, quotes, newlines in names).
-  function csvField(v) {
-    const s = String(v ?? '');
-    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  // Buat & unduh file Excel (.xlsx) asli — setiap elemen array = satu cell, tidak akan pernah
+  // "nyatu" di satu kolom seperti CSV (yang gampang salah pisah kalau Excel memakai koma
+  // sebagai simbol desimal / titik koma sebagai pemisah kolom, umum di pengaturan Bahasa Indonesia).
+  function downloadXlsx(filename, header, rows) {
+    const wsData = [header, ...rows];
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Data');
+    XLSX.writeFile(wb, filename);
   }
 
-  // Minimal RFC4180-style CSV parser (handles quoted fields with commas).
-  function parseCsvText(text) {
-    const rows = [];
-    let row = [], field = '', inQuotes = false;
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      if (inQuotes) {
-        if (c === '"') {
-          if (text[i + 1] === '"') { field += '"'; i++; } else { inQuotes = false; }
-        } else { field += c; }
-      } else if (c === '"') { inQuotes = true; }
-      else if (c === ',') { row.push(field); field = ''; }
-      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-      else if (c === '\r') { /* skip */ }
-      else { field += c; }
-    }
-    if (field.length || row.length) { row.push(field); rows.push(row); }
-    return rows.filter(r => r.some(c => c.trim() !== ''));
+  // Baca file .xlsx yang diupload guru → array baris, tiap baris = array cell (string).
+  function readXlsxRows(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' })
+            .map(row => row.map(cell => String(cell ?? '').trim()));
+          resolve(rows.filter(r => r.some(c => c !== '')));
+        } catch (err) { reject(err); }
+      };
+      reader.onerror = () => reject(new Error('Gagal membaca file.'));
+      reader.readAsArrayBuffer(file);
+    });
   }
 
-  // ---- Download format CSV: Nama Lengkap,Kelas,Nilai,Nilai Sebelum Penalti,Predikat,Keterangan ----
+  // ---- Download format Excel: Nama Lengkap | Kelas | Nilai | Nilai Sebelum Penalti | Predikat | Keterangan ----
   document.getElementById('btnDownloadFormatNilai').addEventListener('click', async () => {
     const kelasId = document.getElementById('nilaiKelasSelect').value;
     if (!kelasId) { alert('Pilih kelas dulu sebelum download format.'); return; }
     const { data: siswaList } = await supabase.from('profiles').select('nama').eq('kelas_id', kelasId).order('nama');
     if (!siswaList || !siswaList.length) { alert('Belum ada siswa di kelas ini.'); return; }
     const kelasNama = allKelas.find(k => k.id === kelasId)?.nama || 'kelas';
-    const header = ['Nama Lengkap', 'Kelas', 'Nilai', 'Nilai Sebelum Penalti', 'Predikat', 'Keterangan'].join(',');
-    const rows = siswaList.map(s => [csvField(s.nama), csvField(kelasNama), '', '', '', ''].join(','));
-    const csv = [header, ...rows].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `format-nilai-${kelasNama.replace(/\s+/g, '_')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const header = ['Nama Lengkap', 'Kelas', 'Nilai', 'Nilai Sebelum Penalti', 'Predikat', 'Keterangan'];
+    const rows = siswaList.map(s => [s.nama, kelasNama, '', '', '', '']);
+    downloadXlsx(`format-nilai-${kelasNama.replace(/\s+/g, '_')}.xlsx`, header, rows);
   });
 
-  // ---- Upload CSV: isi kolom Nilai/Nilai Sebelum Penalti/Predikat/Keterangan otomatis, dicocokkan lewat Nama Lengkap ----
+  // ---- Upload Excel: isi kolom Nilai/Nilai Sebelum Penalti/Predikat/Keterangan otomatis, dicocokkan lewat Nama Lengkap ----
   document.getElementById('btnUploadNilaiCSV').addEventListener('click', () => {
     document.getElementById('nilaiCsvFile').click();
   });
 
-  document.getElementById('nilaiCsvFile').addEventListener('change', (e) => {
+  document.getElementById('nilaiCsvFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     const msg = document.getElementById('nilaiUploadMsg');
     if (!file) return;
     if (!currentNilaiSiswa.length || !nilaiWrapEl) {
       msg.style.display = 'block'; msg.style.color = '#c0392b';
-      msg.textContent = 'Klik "Muat Daftar Siswa" dulu sebelum upload CSV.';
+      msg.textContent = 'Klik "Muat Daftar Siswa" dulu sebelum upload file.';
       e.target.value = '';
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const rows = parseCsvText(String(reader.result));
-      if (!rows.length) {
-        msg.style.display = 'block'; msg.style.color = '#c0392b';
-        msg.textContent = 'File CSV kosong atau tidak terbaca.';
-        return;
-      }
-      let startIdx = 0;
-      if (rows[0][0] && rows[0][0].trim().toLowerCase().includes('nama')) startIdx = 1;
-      const byNama = new Map(currentNilaiSiswa.map(s => [s.nama.trim().toLowerCase(), s]));
-      let filled = 0, notFound = 0;
-      for (let i = startIdx; i < rows.length; i++) {
-        const cols = rows[i];
-        const nama = (cols[0] || '').trim();
-        // cols[1] = Kelas (informasional, tidak dipakai untuk pencocokan)
-        const skor = cols[2] !== undefined ? cols[2].trim() : '';
-        const skorAsli = cols[3] !== undefined ? cols[3].trim() : '';
-        const predikat = cols[4] !== undefined ? cols[4].trim() : '';
-        const keterangan = cols[5] !== undefined ? cols[5].trim() : '';
-        const s = byNama.get(nama.toLowerCase());
-        if (!s) { if (nama) notFound++; continue; }
-        const skorInput = nilaiWrapEl.querySelector(`[data-siswa="${s.id}"]`);
-        const skorAsliInput = nilaiWrapEl.querySelector(`[data-skorasli="${s.id}"]`);
-        const predikatInput = nilaiWrapEl.querySelector(`[data-predikat="${s.id}"]`);
-        const keteranganInput = nilaiWrapEl.querySelector(`[data-keterangan="${s.id}"]`);
-        if (skorInput) skorInput.value = skor;
-        if (skorAsliInput) skorAsliInput.value = skorAsli;
-        if (predikatInput) predikatInput.value = predikat;
-        if (keteranganInput) keteranganInput.value = keterangan;
-        filled++;
-      }
-      msg.style.display = 'block';
-      msg.style.color = filled ? '#1a8f4c' : '#c0392b';
-      msg.textContent = filled
-        ? `Berhasil memuat ${filled} nilai dari file.` + (notFound ? ` ${notFound} baris tidak cocok dengan nama siswa di kelas ini.` : '') + ' Cek tabel lalu klik "Simpan Semua Nilai".'
-        : 'Tidak ada baris yang cocok dengan nama siswa di kelas ini. Pastikan kolom Nama Lengkap sama persis dengan data siswa.';
+    let rows;
+    try {
+      rows = await readXlsxRows(file);
+    } catch (err) {
+      msg.style.display = 'block'; msg.style.color = '#c0392b';
+      msg.textContent = 'Gagal membaca file: ' + err.message;
       e.target.value = '';
-    };
-    reader.readAsText(file);
+      return;
+    }
+    if (!rows.length) {
+      msg.style.display = 'block'; msg.style.color = '#c0392b';
+      msg.textContent = 'File kosong atau tidak terbaca.';
+      e.target.value = '';
+      return;
+    }
+    let startIdx = 0;
+    if (rows[0][0] && rows[0][0].trim().toLowerCase().includes('nama')) startIdx = 1;
+    const byNama = new Map(currentNilaiSiswa.map(s => [s.nama.trim().toLowerCase(), s]));
+    let filled = 0, notFound = 0;
+    for (let i = startIdx; i < rows.length; i++) {
+      const cols = rows[i];
+      const nama = (cols[0] || '').trim();
+      // cols[1] = Kelas (informasional, tidak dipakai untuk pencocokan)
+      const skor = cols[2] !== undefined ? cols[2].trim() : '';
+      const skorAsli = cols[3] !== undefined ? cols[3].trim() : '';
+      const predikat = cols[4] !== undefined ? cols[4].trim() : '';
+      const keterangan = cols[5] !== undefined ? cols[5].trim() : '';
+      const s = byNama.get(nama.toLowerCase());
+      if (!s) { if (nama) notFound++; continue; }
+      const skorInput = nilaiWrapEl.querySelector(`[data-siswa="${s.id}"]`);
+      const skorAsliInput = nilaiWrapEl.querySelector(`[data-skorasli="${s.id}"]`);
+      const predikatInput = nilaiWrapEl.querySelector(`[data-predikat="${s.id}"]`);
+      const keteranganInput = nilaiWrapEl.querySelector(`[data-keterangan="${s.id}"]`);
+      if (skorInput) skorInput.value = skor;
+      if (skorAsliInput) skorAsliInput.value = skorAsli;
+      if (predikatInput) predikatInput.value = predikat;
+      if (keteranganInput) keteranganInput.value = keterangan;
+      filled++;
+    }
+    msg.style.display = 'block';
+    msg.style.color = filled ? '#1a8f4c' : '#c0392b';
+    msg.textContent = filled
+      ? `Berhasil memuat ${filled} nilai dari file.` + (notFound ? ` ${notFound} baris tidak cocok dengan nama siswa di kelas ini.` : '') + ' Cek tabel lalu klik "Simpan Semua Nilai".'
+      : 'Tidak ada baris yang cocok dengan nama siswa di kelas ini. Pastikan kolom Nama Lengkap sama persis dengan data siswa.';
+    e.target.value = '';
   });
 
   document.getElementById('btnMuatSiswaNilai').addEventListener('click', async () => {
@@ -1490,29 +1651,22 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     await loadHasilUjian();
   }
 
-  function downloadHasilUjianCsv() {
+  function downloadHasilUjianXlsx() {
     if (!currentHasilUjianRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Nama', 'Kelas', 'Slug Ujian', 'Nilai', 'Waktu Submit'].join(',');
+    const header = ['Nama', 'Kelas', 'Slug Ujian', 'Nilai', 'Waktu Submit'];
     const rows = currentHasilUjianRows.map(r => [
-      csvField(r.nama),
-      csvField(r.kelas),
-      csvField(r.ujian_slug),
-      csvField(r.nilai),
-      csvField(new Date(r.created_at).toLocaleString('id-ID'))
-    ].join(','));
-    const csv = [header, ...rows].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+      r.nama,
+      r.kelas,
+      r.ujian_slug,
+      r.nilai,
+      new Date(r.created_at).toLocaleString('id-ID')
+    ]);
     const slug = document.getElementById('hasilUjianSlugSelect').value || 'semua';
-    a.download = `hasil-ujian-${slug.replace(/\s+/g, '_')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadXlsx(`hasil-ujian-${slug.replace(/\s+/g, '_')}.xlsx`, header, rows);
   }
 
   document.getElementById('btnMuatHasilUjian').addEventListener('click', loadHasilUjian);
-  document.getElementById('btnDownloadHasilUjian').addEventListener('click', downloadHasilUjianCsv);
+  document.getElementById('btnDownloadHasilUjian').addEventListener('click', downloadHasilUjianXlsx);
   document.getElementById('btnHapusSemuaHasilUjian').addEventListener('click', hapusSemuaHasilUjian);
   loadHasilUjianSlugOptions();
   loadHasilUjianKelasOptions();
@@ -1611,33 +1765,26 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     await loadHasilWorksheet();
   }
 
-  function downloadHasilWsCsv() {
+  function downloadHasilWsXlsx() {
     if (!currentHasilWsRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Jenis', 'Nama/Kelompok', 'Anggota', 'Kelas', 'Slug Worksheet', 'Nilai', 'Nilai Maks', 'Status', 'Update Terakhir'].join(',');
+    const header = ['Jenis', 'Nama/Kelompok', 'Anggota', 'Kelas', 'Slug Worksheet', 'Nilai', 'Nilai Maks', 'Status', 'Update Terakhir'];
     const rows = currentHasilWsRows.map(r => [
-      csvField(r.jenis === 'kelompok' ? 'Kelompok' : 'Individu'),
-      csvField(r.nama),
-      csvField(r.anggota || '-'),
-      csvField(r.kelas),
-      csvField(r.worksheet_slug),
-      csvField(r.nilai ?? '-'),
-      csvField(r.nilai_maks ?? '-'),
-      csvField(r.status === 'selesai' ? 'Selesai' : 'Belum Selesai'),
-      csvField(new Date(r.updated_at || r.created_at).toLocaleString('id-ID'))
-    ].join(','));
-    const csv = [header, ...rows].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+      r.jenis === 'kelompok' ? 'Kelompok' : 'Individu',
+      r.nama,
+      r.anggota || '-',
+      r.kelas,
+      r.worksheet_slug,
+      r.nilai ?? '-',
+      r.nilai_maks ?? '-',
+      r.status === 'selesai' ? 'Selesai' : 'Belum Selesai',
+      new Date(r.updated_at || r.created_at).toLocaleString('id-ID')
+    ]);
     const slug = document.getElementById('hasilWsSlugSelect').value || 'semua';
-    a.download = `hasil-worksheet-${slug.replace(/\s+/g, '_')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadXlsx(`hasil-worksheet-${slug.replace(/\s+/g, '_')}.xlsx`, header, rows);
   }
 
   document.getElementById('btnMuatHasilWs').addEventListener('click', loadHasilWorksheet);
-  document.getElementById('btnDownloadHasilWs').addEventListener('click', downloadHasilWsCsv);
+  document.getElementById('btnDownloadHasilWs').addEventListener('click', downloadHasilWsXlsx);
   document.getElementById('btnHapusSemuaHasilWs').addEventListener('click', hapusSemuaHasilWs);
   loadHasilWsSlugOptions();
   loadHasilWsKelasOptions();
@@ -1650,6 +1797,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     await renderKelasChips();
     await renderSiswaKelasChips();
     fillKelasSelect(document.getElementById('nilaiKelasSelect'));
+    fillKelasSelect(document.getElementById('akunKelasSelect'));
     renderAnnKelasChecklist();
     await renderKelasList();
     await renderWorksheetList();
@@ -1659,6 +1807,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
 
   renderLevelTabs();
   renderSiswaLevelTabs();
+  renderAkunStagingTable();
   await renderPersetujuanList();
   await refreshAllKelasDependentUI();
 })();
