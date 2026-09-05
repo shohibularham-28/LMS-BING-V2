@@ -80,6 +80,7 @@
       <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
       <a class="nav-item" data-page="jawaban" href="#" title="Jawaban Worksheet"><span class="icon">📥</span> <span class="label">Jawaban Worksheet</span></a>
       <a class="nav-item" data-page="hasilujian" href="#" title="Hasil Ujian"><span class="icon">🧾</span> <span class="label">Hasil Ujian</span></a>
+      <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
       <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
       <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
 
@@ -271,6 +272,42 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilUjian">🗑️ Hapus Semua</button>
           </div>
           <div class="table-responsive"><div id="hasilUjianTableWrap">Belum dimuat.</div></div>
+        </div>
+
+        <!-- ===== HASIL WORKSHEET (Jenis/Nama/Anggota/Nilai/Status dari worksheet HTML mandiri) ===== -->
+        <div class="gs-section" id="section-hasilworksheet">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Hasil Worksheet</h1></div>
+          <div class="hint">Ini berisi jenis pengerjaan (individu/kelompok), nama (atau semua nama anggota kelompok), nilai (kalau ada), dan status pengerjaan yang dikirim dari worksheet HTML mandiri (siswa isi Kelas/Nama sendiri di halaman worksheet, tidak perlu login LMS).</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Slug Worksheet</label>
+              <select id="hasilWsSlugSelect"><option value="">Semua</option></select>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Kelas</label>
+              <select id="hasilWsKelasSelect"><option value="">Semua Kelas</option></select>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Jenis</label>
+              <select id="hasilWsJenisSelect">
+                <option value="">Semua</option>
+                <option value="individu">Individu</option>
+                <option value="kelompok">Kelompok</option>
+              </select>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Status</label>
+              <select id="hasilWsStatusSelect">
+                <option value="">Semua</option>
+                <option value="selesai">Selesai</option>
+                <option value="belum_selesai">Belum Selesai</option>
+              </select>
+            </div>
+            <button class="btn-secondary-sm" id="btnMuatHasilWs">Muat Hasil</button>
+            <button class="btn-secondary-sm" id="btnDownloadHasilWs">⬇️ Download CSV</button>
+            <button class="btn-danger-sm" id="btnHapusSemuaHasilWs">🗑️ Hapus Semua</button>
+          </div>
+          <div class="table-responsive"><div id="hasilWsTableWrap">Belum dimuat.</div></div>
         </div>
 
         <div class="gs-section" id="section-materi">
@@ -1568,6 +1605,131 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   document.getElementById('btnHapusSemuaHasilUjian').addEventListener('click', hapusSemuaHasilUjian);
   loadHasilUjianSlugOptions();
   loadHasilUjianKelasOptions();
+
+  // =========================================================
+  // HASIL WORKSHEET (Jenis/Nama/Anggota/Nilai/Status dari worksheet HTML mandiri)
+  // =========================================================
+  let currentHasilWsRows = [];
+
+  async function loadHasilWsSlugOptions() {
+    const { data } = await supabase.from('hasil_worksheet').select('worksheet_slug');
+    const slugs = [...new Set((data || []).map(r => r.worksheet_slug))].sort();
+    const sel = document.getElementById('hasilWsSlugSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Semua</option>' + slugs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    sel.value = current;
+  }
+
+  async function loadHasilWsKelasOptions() {
+    const { data } = await supabase.from('hasil_worksheet').select('kelas');
+    const kelasList = [...new Set((data || []).map(r => r.kelas).filter(Boolean))].sort();
+    const sel = document.getElementById('hasilWsKelasSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+    sel.value = current;
+  }
+
+  function statusBadge(status) {
+    return status === 'selesai'
+      ? '<span class="ws-status status-open">Selesai</span>'
+      : '<span class="ws-status status-due">Belum Selesai</span>';
+  }
+
+  async function loadHasilWorksheet() {
+    const wrap = document.getElementById('hasilWsTableWrap');
+    wrap.innerHTML = 'Memuat…';
+    const slug = document.getElementById('hasilWsSlugSelect').value;
+    const kelasFilter = document.getElementById('hasilWsKelasSelect').value;
+    const jenisFilter = document.getElementById('hasilWsJenisSelect').value;
+    const statusFilter = document.getElementById('hasilWsStatusSelect').value;
+
+    let query = supabase
+      .from('hasil_worksheet')
+      .select('id, worksheet_slug, jenis, nama, anggota, kelas, nilai, nilai_maks, status, created_at, updated_at')
+      .order('updated_at', { ascending: false });
+    if (slug) query = query.eq('worksheet_slug', slug);
+    if (kelasFilter) query = query.eq('kelas', kelasFilter);
+    if (jenisFilter) query = query.eq('jenis', jenisFilter);
+    if (statusFilter) query = query.eq('status', statusFilter);
+
+    const { data, error } = await query;
+    if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
+
+    currentHasilWsRows = data || [];
+    if (!currentHasilWsRows.length) {
+      wrap.innerHTML = emptyState('Belum ada hasil', 'Hasil worksheet mandiri akan muncul di sini setelah siswa mulai/submit.', '📝');
+      return;
+    }
+
+    wrap.innerHTML = `
+      <table class="grade-table">
+        <thead><tr><th>Jenis</th><th>Nama / Kelompok</th><th>Anggota</th><th>Kelas</th><th>Slug</th><th>Nilai</th><th>Status</th><th>Update Terakhir</th><th>Aksi</th></tr></thead>
+        <tbody>
+          ${currentHasilWsRows.map(r => `
+            <tr>
+              <td>${r.jenis === 'kelompok' ? 'Kelompok' : 'Individu'}</td>
+              <td>${esc(r.nama)}</td>
+              <td>${esc(r.anggota || '-')}</td>
+              <td>${esc(r.kelas)}</td>
+              <td>${esc(r.worksheet_slug)}</td>
+              <td>${(r.nilai ?? null) !== null ? (r.nilai + (r.nilai_maks != null ? ' / ' + r.nilai_maks : '')) : '-'}</td>
+              <td>${statusBadge(r.status)}</td>
+              <td>${new Date(r.updated_at || r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
+              <td><button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+
+    wrap.querySelectorAll('.btn-danger-sm[data-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus hasil worksheet ini?')) return;
+        const { error } = await supabase.from('hasil_worksheet').delete().eq('id', btn.dataset.id);
+        if (error) { alert('Gagal menghapus: ' + error.message); return; }
+        await loadHasilWorksheet();
+      });
+    });
+  }
+
+  async function hapusSemuaHasilWs() {
+    if (!currentHasilWsRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
+    if (!confirm(`Hapus ${currentHasilWsRows.length} hasil worksheet yang sedang ditampilkan (sesuai filter saat ini)? Tindakan ini tidak bisa dibatalkan.`)) return;
+    const ids = currentHasilWsRows.map(r => r.id);
+    const { error } = await supabase.from('hasil_worksheet').delete().in('id', ids);
+    if (error) { alert('Gagal menghapus: ' + error.message); return; }
+    await loadHasilWorksheet();
+  }
+
+  function downloadHasilWsCsv() {
+    if (!currentHasilWsRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
+    const header = ['Jenis', 'Nama/Kelompok', 'Anggota', 'Kelas', 'Slug Worksheet', 'Nilai', 'Nilai Maks', 'Status', 'Update Terakhir'].join(',');
+    const rows = currentHasilWsRows.map(r => [
+      csvField(r.jenis === 'kelompok' ? 'Kelompok' : 'Individu'),
+      csvField(r.nama),
+      csvField(r.anggota || '-'),
+      csvField(r.kelas),
+      csvField(r.worksheet_slug),
+      csvField(r.nilai ?? '-'),
+      csvField(r.nilai_maks ?? '-'),
+      csvField(r.status === 'selesai' ? 'Selesai' : 'Belum Selesai'),
+      csvField(new Date(r.updated_at || r.created_at).toLocaleString('id-ID'))
+    ].join(','));
+    const csv = [header, ...rows].join('\r\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const slug = document.getElementById('hasilWsSlugSelect').value || 'semua';
+    a.download = `hasil-worksheet-${slug.replace(/\s+/g, '_')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  document.getElementById('btnMuatHasilWs').addEventListener('click', loadHasilWorksheet);
+  document.getElementById('btnDownloadHasilWs').addEventListener('click', downloadHasilWsCsv);
+  document.getElementById('btnHapusSemuaHasilWs').addEventListener('click', hapusSemuaHasilWs);
+  loadHasilWsSlugOptions();
+  loadHasilWsKelasOptions();
 
   // =========================================================
   // Init
