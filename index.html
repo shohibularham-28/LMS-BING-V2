@@ -45,7 +45,10 @@
         </div>
         <div class="field">
           <label for="li-password">Password</label>
-          <input type="password" id="li-password" placeholder="Masukkan password">
+          <div class="pw-wrap">
+            <input type="password" id="li-password" placeholder="Masukkan password" autocomplete="current-password">
+            <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
+          </div>
         </div>
 
         <p class="login-error" id="loginError"></p>
@@ -67,7 +70,17 @@
         </div>
         <div class="field">
           <label for="su-password">Password</label>
-          <input type="password" id="su-password" placeholder="Buat password (min. 6 karakter)">
+          <div class="pw-wrap">
+            <input type="password" id="su-password" placeholder="Buat password (min. 6 karakter)" autocomplete="new-password">
+            <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="su-confirm-password">Konfirmasi Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="su-confirm-password" placeholder="Ulangi password kamu" autocomplete="new-password">
+            <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
+          </div>
         </div>
         <div class="field">
           <label for="su-kelas">Kelas</label>
@@ -90,6 +103,8 @@
   const tabSignup = document.getElementById('tabSignup');
   const panelLogin = document.getElementById('panelLogin');
   const panelSignup = document.getElementById('panelSignup');
+
+  initPasswordToggles();
 
   tabLogin.addEventListener('click', () => {
     tabLogin.classList.add('active'); tabSignup.classList.remove('active');
@@ -160,12 +175,13 @@
     const nama = document.getElementById('su-nama').value.trim();
     const username = document.getElementById('su-username').value.trim().toLowerCase();
     const password = document.getElementById('su-password').value;
+    const confirmPassword = document.getElementById('su-confirm-password').value;
     const kelasId = document.getElementById('su-kelas').value;
     const err = document.getElementById('signupError');
     const ok = document.getElementById('signupSuccess');
     err.style.display = 'none'; ok.style.display = 'none';
 
-    if (!nama || !username || !password || !kelasId) {
+    if (!nama || !username || !password || !confirmPassword || !kelasId) {
       err.textContent = "Mohon lengkapi semua data, termasuk pilih kelas.";
       err.style.display = 'block';
       return;
@@ -177,6 +193,11 @@
     }
     if (password.length < 6) {
       err.textContent = "Password minimal 6 karakter.";
+      err.style.display = 'block';
+      return;
+    }
+    if (password !== confirmPassword) {
+      err.textContent = "Konfirmasi password tidak sama dengan password.";
       err.style.display = 'block';
       return;
     }

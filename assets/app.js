@@ -79,6 +79,83 @@ function renderShell(profile, activePage) {
   return level;
 }
 
+// ===================== SIDEBAR: COLLAPSE (desktop) & DRAWER (mobile) =====================
+// Satu tombol (#navToggle) dipakai untuk dua perilaku berbeda tergantung lebar layar:
+// - Desktop (>900px): collapse/expand sidebar jadi mode ikon saja, preferensinya disimpan
+//   di localStorage supaya tetap sama tiap buka halaman baru.
+// - Mobile/tablet (<=900px): sidebar jadi drawer yang slide-in dari kiri, dengan backdrop
+//   yang bisa diklik untuk menutup.
+const NAV_COLLAPSE_KEY = "lms_nav_collapsed";
+const NAV_BREAKPOINT = 900;
+
+function applyNavState() {
+  const shell = document.querySelector(".shell");
+  if (!shell) return;
+  if (window.innerWidth <= NAV_BREAKPOINT) {
+    shell.classList.remove("nav-collapsed");
+  } else {
+    shell.classList.remove("nav-mobile-open");
+    const collapsed = localStorage.getItem(NAV_COLLAPSE_KEY) === "1";
+    shell.classList.toggle("nav-collapsed", collapsed);
+  }
+}
+
+function initSidebarToggle() {
+  const shell = document.querySelector(".shell");
+  const toggleBtn = document.getElementById("navToggle");
+  const backdrop = document.getElementById("sidebarBackdrop");
+  if (!shell || !toggleBtn) return;
+
+  applyNavState();
+
+  toggleBtn.addEventListener("click", () => {
+    if (window.innerWidth <= NAV_BREAKPOINT) {
+      shell.classList.toggle("nav-mobile-open");
+    } else {
+      const collapsed = shell.classList.toggle("nav-collapsed");
+      localStorage.setItem(NAV_COLLAPSE_KEY, collapsed ? "1" : "0");
+    }
+  });
+
+  if (backdrop) {
+    backdrop.addEventListener("click", () => shell.classList.remove("nav-mobile-open"));
+  }
+
+  // Menutup drawer otomatis begitu salah satu menu diklik di layar kecil.
+  document.querySelectorAll(".nav-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      if (window.innerWidth <= NAV_BREAKPOINT) shell.classList.remove("nav-mobile-open");
+    });
+  });
+
+  window.addEventListener("resize", applyNavState);
+}
+
+// ===================== TOGGLE LIHAT/SEMBUNYIKAN PASSWORD =====================
+// Dipakai bareng oleh semua field password yang dibungkus <div class="pw-wrap">
+// berisi <input> dan <button class="pw-toggle">.
+const EYE_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>';
+const EYE_OFF_ICON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.7 19.7 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a19.6 19.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+function initPasswordToggles(root) {
+  const scope = root || document;
+  scope.querySelectorAll(".pw-toggle").forEach((btn) => {
+    if (btn.dataset.pwBound) return;
+    btn.dataset.pwBound = "1";
+    btn.innerHTML = EYE_ICON;
+    btn.setAttribute("aria-label", "Tampilkan password");
+    btn.addEventListener("click", () => {
+      const wrap = btn.closest(".pw-wrap");
+      const input = wrap ? wrap.querySelector("input") : null;
+      if (!input) return;
+      const showing = input.type === "text";
+      input.type = showing ? "password" : "text";
+      btn.innerHTML = showing ? EYE_ICON : EYE_OFF_ICON;
+      btn.setAttribute("aria-label", showing ? "Tampilkan password" : "Sembunyikan password");
+    });
+  });
+}
+
 function emptyState(title, desc, icon) {
   return `
     <div class="empty-state">

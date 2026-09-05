@@ -71,26 +71,30 @@
       </div>
 
       <div class="nav-section-label">Menu Guru</div>
-      <a class="nav-item active" data-page="rekap" href="#">📊 Rekap Nilai</a>
-      <a class="nav-item" data-page="persetujuan" href="#">🆕 Persetujuan Akun <span class="pending-badge" id="pendingBadge" style="display:none;"></span></a>
-      <a class="nav-item" data-page="siswa" href="#">👥 Daftar Siswa</a>
-      <a class="nav-item" data-page="kelas" href="#">🏫 Kelola Kelas</a>
-      <a class="nav-item" data-page="akun" href="#">👥 Buat Akun Siswa</a>
-      <a class="nav-item" data-page="inputnilai" href="#">✍️ Input Nilai Massal</a>
-      <a class="nav-item" data-page="worksheet" href="#">📝 Kelola Worksheet</a>
-      <a class="nav-item" data-page="materi" href="#">📘 Kelola Materi</a>
-      <a class="nav-item" data-page="pengumuman" href="#">📣 Kelola Pengumuman</a>
+      <a class="nav-item active" data-page="rekap" href="#" title="Rekap Nilai"><span class="icon">📊</span> <span class="label">Rekap Nilai</span></a>
+      <a class="nav-item" data-page="persetujuan" href="#" title="Persetujuan Akun"><span class="icon">🆕</span> <span class="label">Persetujuan Akun</span> <span class="pending-badge" id="pendingBadge" style="display:none;"></span></a>
+      <a class="nav-item" data-page="siswa" href="#" title="Daftar Siswa"><span class="icon">👥</span> <span class="label">Daftar Siswa</span></a>
+      <a class="nav-item" data-page="kelas" href="#" title="Kelola Kelas"><span class="icon">🏫</span> <span class="label">Kelola Kelas</span></a>
+      <a class="nav-item" data-page="akun" href="#" title="Buat Akun Siswa"><span class="icon">👥</span> <span class="label">Buat Akun Siswa</span></a>
+      <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
+      <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
+      <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
+      <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
 
       <div class="sidebar-footer">
-        <button class="logout-btn" onclick="doLogout()"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Keluar</button>
+        <button class="logout-btn" onclick="doLogout()" title="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span class="logout-label">Keluar</span></button>
       </div>
     </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
     <div class="main">
       <div class="topbar">
-        <div>
-          <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
-          <div class="date" id="topDate"></div>
+        <div class="topbar-left">
+          <button class="nav-toggle-btn" id="navToggle" type="button" aria-label="Buka/tutup menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <div>
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
         </div>
         <div class="topbar-right">
           <div class="notif-wrap">
@@ -276,6 +280,7 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
   document.getElementById('sideName').textContent = teacher.nama;
   document.getElementById('userAvatar').textContent = teacher.nama.charAt(0).toUpperCase();
   document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  initSidebarToggle();
   initNotifDropdown();
 
   // ---------- Navigasi antar section ----------

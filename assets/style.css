@@ -249,6 +249,9 @@ body{
   position:sticky;
   top:0;
   height:100vh;
+  transition:width .2s ease, padding .2s ease, transform .25s ease;
+  overflow-x:hidden;
+  overflow-y:auto;
 }
 .sidebar .brand{
   display:flex; align-items:center; gap:10px;
@@ -348,6 +351,37 @@ body{
 }
 .logout-btn:hover{border-color:var(--coral); color:var(--coral);}
 
+/* ===================== SIDEBAR: COLLAPSE (desktop) & DRAWER (mobile) ===================== */
+.sidebar-backdrop{display:none;}
+
+.nav-item .label,
+.logout-btn .logout-label,
+.brand-name,
+.user-card .name,
+.user-card .kelas-tag{
+  white-space:nowrap;
+  transition:opacity .12s ease;
+}
+
+/* Collapsed = icon-only rail, desktop only */
+.shell.nav-collapsed .sidebar{width:84px; padding-left:16px; padding-right:16px;}
+.shell.nav-collapsed .brand{justify-content:center;}
+.shell.nav-collapsed .brand-name{display:none;}
+.shell.nav-collapsed .user-card{
+  padding:10px 0; background:transparent; border-color:transparent;
+  display:flex; flex-direction:column; align-items:center;
+}
+.shell.nav-collapsed .user-card .avatar{margin-bottom:0;}
+.shell.nav-collapsed .user-card .name,
+.shell.nav-collapsed .user-card .kelas-tag{display:none;}
+.shell.nav-collapsed .nav-section-label{display:none;}
+.shell.nav-collapsed .nav-item{justify-content:center; padding:12px 0;}
+.shell.nav-collapsed .nav-item .label{display:none;}
+.shell.nav-collapsed .nav-item .pending-badge{position:absolute; top:6px; right:14px; margin-left:0;}
+.shell.nav-collapsed .nav-item{position:relative;}
+.shell.nav-collapsed .logout-btn{padding:11px 0;}
+.shell.nav-collapsed .logout-btn .logout-label{display:none;}
+
 .main{flex:1; min-width:0;}
 .topbar{
   background:#fff;
@@ -384,6 +418,22 @@ body{
   font-weight:700;
   font-size:13px;
 }
+
+.topbar-left{display:flex; align-items:center; gap:16px; min-width:0;}
+.nav-toggle-btn{
+  width:40px; height:40px;
+  border-radius:12px;
+  border:1px solid #E7E9F2;
+  background:#fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  color:#1A1D29;
+  padding:0;
+  transition:background .15s;
+}
+.nav-toggle-btn:hover{background:#FAFBFE;}
+.nav-toggle-btn svg{width:19px; height:19px; display:block;}
 
 .topbar-right{display:flex; align-items:center; gap:14px;}
 .notif-wrap{position:relative;}
@@ -665,19 +715,47 @@ body{
 
 @media(max-width:900px){
   .shell{flex-direction:column;}
+
+  /* Sidebar becomes an off-canvas drawer, opened/closed with the nav toggle button */
   .sidebar{
-    width:100%; height:auto; position:relative;
-    flex-direction:row; align-items:center;
-    overflow-x:auto; padding:16px;
+    position:fixed;
+    top:0; left:0;
+    width:270px; max-width:82vw;
+    height:100vh;
+    flex-direction:column;
+    align-items:stretch;
+    padding:24px 18px;
+    transform:translateX(-100%);
+    z-index:1000;
+    box-shadow:24px 0 60px rgba(0,0,0,0.35);
   }
-  .user-card{display:none;}
-  .sidebar .brand{margin-bottom:0; margin-right:14px;}
-  .nav-section-label{display:none;}
-  .nav-item{white-space:nowrap; margin-bottom:0;}
-  .sidebar-footer{margin-top:0; margin-left:auto;}
-  .logout-btn{width:auto; padding:10px 16px;}
-  .topbar{padding:0 20px;}
-  .content{padding:24px 20px;}
+  .shell.nav-mobile-open .sidebar{transform:translateX(0);}
+  .shell.nav-mobile-open .sidebar-backdrop{
+    display:block;
+    position:fixed; inset:0;
+    background:rgba(8,10,16,0.5);
+    z-index:999;
+  }
+
+  /* Ignore the desktop icon-only collapse state on mobile — drawer is always full width */
+  .shell.nav-collapsed .sidebar{width:270px; max-width:82vw; padding:24px 18px;}
+  .shell.nav-collapsed .brand{justify-content:flex-start;}
+  .shell.nav-collapsed .brand-name{display:block;}
+  .shell.nav-collapsed .user-card{
+    display:block; padding:16px; background:var(--panel); border-color:var(--line);
+  }
+  .shell.nav-collapsed .user-card .name,
+  .shell.nav-collapsed .user-card .kelas-tag{display:block;}
+  .shell.nav-collapsed .nav-section-label{display:block;}
+  .shell.nav-collapsed .nav-item{justify-content:flex-start; padding:12px 14px;}
+  .shell.nav-collapsed .nav-item .label{display:inline;}
+  .shell.nav-collapsed .logout-btn{padding:11px;}
+  .shell.nav-collapsed .logout-btn .logout-label{display:inline;}
+
+  .sidebar-footer{margin-top:auto;}
+  .logout-btn{width:100%;}
+  .topbar{padding:0 18px;}
+  .content{padding:24px 18px;}
   .login-visual{display:none;}
   .login-panel-wrap{width:100%;}
 }
