@@ -387,25 +387,33 @@ body{
   background:#fff;
   border-bottom:1px solid #E7E9F2;
   padding:0 40px;
-  height:76px;
+  min-height:76px;
   display:flex;
   align-items:center;
   justify-content:space-between;
+  gap:12px;
   position:sticky;
   top:0;
   z-index:10;
 }
+.topbar-userinfo{min-width:0; overflow:hidden;}
 .topbar .greeting{
   font-family:'Space Grotesk', sans-serif;
   font-size:15px;
   font-weight:600;
   color:#1A1D29;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .topbar .greeting .wave{margin-right:6px;}
 .topbar .date{
   font-size:12.5px;
   color:#8A90A6;
   margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 .level-pill{
   display:flex;
@@ -417,9 +425,14 @@ body{
   border-radius:20px;
   font-weight:700;
   font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:44vw;
+  flex-shrink:0;
 }
 
-.topbar-left{display:flex; align-items:center; gap:16px; min-width:0;}
+.topbar-left{display:flex; align-items:center; gap:16px; min-width:0; flex:1 1 auto; overflow:hidden;}
 .nav-toggle-btn{
   width:40px; height:40px;
   border-radius:12px;
@@ -435,7 +448,7 @@ body{
 .nav-toggle-btn:hover{background:#FAFBFE;}
 .nav-toggle-btn svg{width:19px; height:19px; display:block;}
 
-.topbar-right{display:flex; align-items:center; gap:14px;}
+.topbar-right{display:flex; align-items:center; gap:14px; flex-shrink:0;}
 .notif-wrap{position:relative;}
 .notif-bell{
   width:40px; height:40px;
@@ -754,7 +767,9 @@ body{
 
   .sidebar-footer{margin-top:auto;}
   .logout-btn{width:100%;}
-  .topbar{padding:0 18px;}
+  .topbar{padding:0 18px; min-height:68px; gap:8px;}
+  .topbar-left{gap:10px;}
+  .topbar-right{gap:8px;}
   .content{padding:24px 18px;}
   .login-visual{display:none;}
   .login-panel-wrap{width:100%;}
@@ -764,4 +779,15 @@ body{
   .table-responsive .grade-table{min-width:560px;}
   .grade-table th{padding:10px 12px; font-size:10.5px;}
   .grade-table td{padding:11px 12px; font-size:13px;}
+
+  .topbar .greeting{font-size:13.5px;}
+  .topbar .date{font-size:11px;}
+  .level-pill{padding:7px 12px; font-size:12px; max-width:38vw;}
+  .notif-bell{width:36px; height:36px; font-size:15px;}
+  .nav-toggle-btn{width:36px; height:36px;}
+}
+
+@media(max-width:380px){
+  .topbar .date{display:none;}
+  .level-pill{max-width:32vw; padding:7px 10px;}
 }
