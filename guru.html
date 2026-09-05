@@ -78,7 +78,6 @@
       <a class="nav-item" data-page="akun" href="#" title="Buat Akun Siswa"><span class="icon">👥</span> <span class="label">Buat Akun Siswa</span></a>
       <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
       <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
-      <a class="nav-item" data-page="jawaban" href="#" title="Jawaban Worksheet"><span class="icon">📥</span> <span class="label">Jawaban Worksheet</span></a>
       <a class="nav-item" data-page="hasilujian" href="#" title="Hasil Ujian"><span class="icon">🧾</span> <span class="label">Hasil Ujian</span></a>
       <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
       <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
@@ -231,27 +230,6 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
           <p class="login-error" id="wsError" style="display:none;"></p>
           <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
           <div id="worksheetList">Memuat…</div>
-        </div>
-
-        <!-- ===== KELOLA MATERI ===== -->
-        <!-- ===== JAWABAN WORKSHEET (dari soal HTML terpisah) ===== -->
-        <div class="gs-section" id="section-jawaban">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Jawaban Worksheet</h1></div>
-          <div class="hint">Ini berisi jawaban yang dikirim siswa dari worksheet HTML terpisah (yang sudah dipasangi <code>worksheet-submit.js</code>).</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
-            <div class="form-field" style="margin-bottom:0;">
-              <label>Slug Worksheet</label>
-              <select id="jawabanSlugSelect"><option value="">Semua</option></select>
-            </div>
-            <div class="form-field" style="margin-bottom:0;">
-              <label>Kelas</label>
-              <select id="jawabanKelasSelect"><option value="">Semua Kelas</option></select>
-            </div>
-            <button class="btn-secondary-sm" id="btnMuatJawaban">Muat Jawaban</button>
-            <button class="btn-secondary-sm" id="btnDownloadJawaban">⬇️ Download CSV</button>
-            <button class="btn-danger-sm" id="btnHapusSemuaJawaban">🗑️ Hapus Semua</button>
-          </div>
-          <div class="table-responsive"><div id="jawabanTableWrap">Belum dimuat.</div></div>
         </div>
 
         <!-- ===== HASIL UJIAN (Nama/Kelas/Nilai dari soal ujian mandiri tanpa login) ===== -->
@@ -1385,118 +1363,6 @@ Ani Wulandari, ani456, anipass2, X I"></textarea>
     document.querySelectorAll('.ann-kelas-cb').forEach(cb => { cb.checked = false; cb.disabled = false; });
     await renderPengumumanList();
   });
-
-  // =========================================================
-  // JAWABAN WORKSHEET (dari soal HTML terpisah)
-  // =========================================================
-  let currentJawabanRows = [];
-
-  async function loadJawabanSlugOptions() {
-    const { data } = await supabase.from('jawaban_worksheet').select('worksheet_slug');
-    const slugs = [...new Set((data || []).map(r => r.worksheet_slug))].sort();
-    const sel = document.getElementById('jawabanSlugSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Semua</option>' + slugs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-    sel.value = current;
-  }
-
-  async function loadJawabanKelasOptions() {
-    const { data } = await supabase.from('kelas').select('nama').order('nama');
-    const sel = document.getElementById('jawabanKelasSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Semua Kelas</option>' + (data || []).map(k => `<option value="${esc(k.nama)}">${esc(k.nama)}</option>`).join('');
-    sel.value = current;
-  }
-
-  async function loadJawabanWorksheet() {
-    const wrap = document.getElementById('jawabanTableWrap');
-    wrap.innerHTML = 'Memuat…';
-    const slug = document.getElementById('jawabanSlugSelect').value;
-    const kelasFilter = document.getElementById('jawabanKelasSelect').value;
-
-    let query = supabase
-      .from('jawaban_worksheet')
-      .select('id, worksheet_slug, jawaban, skor, created_at, profiles(nama, username, kelas:kelas_id(nama))')
-      .order('created_at', { ascending: false });
-    if (slug) query = query.eq('worksheet_slug', slug);
-
-    const { data, error } = await query;
-    if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
-
-    let rows = data || [];
-    if (kelasFilter) rows = rows.filter(r => r.profiles && r.profiles.kelas && r.profiles.kelas.nama === kelasFilter);
-    currentJawabanRows = rows;
-
-    if (!currentJawabanRows.length) {
-      wrap.innerHTML = emptyState('Belum ada jawaban', 'Jawaban siswa dari worksheet HTML terpisah akan muncul di sini setelah mereka submit.', '📥');
-      return;
-    }
-
-    wrap.innerHTML = `
-      <table class="grade-table">
-        <thead><tr><th>Nama</th><th>Kelas</th><th>Slug</th><th>Jawaban</th><th>Skor</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
-        <tbody>
-          ${currentJawabanRows.map(r => `
-            <tr>
-              <td>${esc(r.profiles ? r.profiles.nama : '-')}</td>
-              <td>${esc(r.profiles && r.profiles.kelas ? r.profiles.kelas.nama : '-')}</td>
-              <td>${esc(r.worksheet_slug)}</td>
-              <td><pre style="white-space:pre-wrap;margin:0;font:inherit;max-width:320px;">${esc(JSON.stringify(r.jawaban))}</pre></td>
-              <td>${r.skor ?? '-'}</td>
-              <td>${new Date(r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
-              <td><button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
-
-    wrap.querySelectorAll('.btn-danger-sm[data-id]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Hapus jawaban ini?')) return;
-        const { error } = await supabase.from('jawaban_worksheet').delete().eq('id', btn.dataset.id);
-        if (error) { alert('Gagal menghapus: ' + error.message); return; }
-        await loadJawabanWorksheet();
-      });
-    });
-  }
-
-  async function hapusSemuaJawaban() {
-    if (!currentJawabanRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Jawaban" dulu.'); return; }
-    if (!confirm(`Hapus ${currentJawabanRows.length} jawaban yang sedang ditampilkan (sesuai filter saat ini)? Tindakan ini tidak bisa dibatalkan.`)) return;
-    const ids = currentJawabanRows.map(r => r.id);
-    const { error } = await supabase.from('jawaban_worksheet').delete().in('id', ids);
-    if (error) { alert('Gagal menghapus: ' + error.message); return; }
-    await loadJawabanWorksheet();
-  }
-
-  function downloadJawabanCsv() {
-    if (!currentJawabanRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Jawaban" dulu.'); return; }
-    const header = ['Nama', 'Kelas', 'Username', 'Slug Worksheet', 'Jawaban (JSON)', 'Skor', 'Waktu Submit'].join(',');
-    const rows = currentJawabanRows.map(r => [
-      csvField(r.profiles ? r.profiles.nama : '-'),
-      csvField(r.profiles && r.profiles.kelas ? r.profiles.kelas.nama : '-'),
-      csvField(r.profiles ? r.profiles.username : '-'),
-      csvField(r.worksheet_slug),
-      csvField(JSON.stringify(r.jawaban)),
-      csvField(r.skor ?? '-'),
-      csvField(new Date(r.created_at).toLocaleString('id-ID'))
-    ].join(','));
-    const csv = [header, ...rows].join('\r\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const slug = document.getElementById('jawabanSlugSelect').value || 'semua';
-    a.download = `jawaban-worksheet-${slug.replace(/\s+/g, '_')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  document.getElementById('btnMuatJawaban').addEventListener('click', loadJawabanWorksheet);
-  document.getElementById('btnDownloadJawaban').addEventListener('click', downloadJawabanCsv);
-  document.getElementById('btnHapusSemuaJawaban').addEventListener('click', hapusSemuaJawaban);
-  loadJawabanSlugOptions();
-  loadJawabanKelasOptions();
 
   // =========================================================
   // HASIL UJIAN (Nama/Kelas/Nilai dari soal ujian mandiri)
