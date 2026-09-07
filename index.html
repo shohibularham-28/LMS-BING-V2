@@ -29,11 +29,6 @@
         <div class="brand-name display">English Class</div>
       </div>
 
-      <div class="auth-tabs">
-        <button type="button" class="auth-tab active" id="tabLogin">Masuk</button>
-        <button type="button" class="auth-tab" id="tabSignup">Daftar Akun Siswa</button>
-      </div>
-
       <!-- ===== LOGIN ===== -->
       <div class="auth-panel active" id="panelLogin">
         <h2>Masuk ke akunmu</h2>
@@ -53,43 +48,11 @@
 
         <p class="login-error" id="loginError"></p>
         <button class="btn-primary" id="btnLogin">Masuk</button>
-      </div>
 
-      <!-- ===== SIGNUP (siswa) ===== -->
-      <div class="auth-panel" id="panelSignup">
-        <h2>Buat akun siswa</h2>
-        <div class="sub">Daftar sekali, langsung bisa dipakai untuk login</div>
-
-        <div class="field">
-          <label for="su-nama">Nama Lengkap</label>
-          <input type="text" id="su-nama" placeholder="Nama lengkap kamu">
-        </div>
-        <div class="field">
-          <label for="su-username">Username</label>
-          <input type="text" id="su-username" placeholder="Buat username (tanpa spasi)">
-        </div>
-        <div class="field">
-          <label for="su-password">Password</label>
-          <div class="pw-wrap">
-            <input type="password" id="su-password" placeholder="Buat password (min. 6 karakter)" autocomplete="new-password">
-            <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="su-confirm-password">Konfirmasi Password</label>
-          <div class="pw-wrap">
-            <input type="password" id="su-confirm-password" placeholder="Ulangi password kamu" autocomplete="new-password">
-            <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="su-kelas">Kelas</label>
-          <select id="su-kelas"><option value="">Memuat daftar kelas…</option></select>
-        </div>
-
-        <p class="login-error" id="signupError"></p>
-        <p class="login-error" id="signupSuccess" style="color:#1a8f4c;display:none;"></p>
-        <button class="btn-primary" id="btnSignup">Daftar &amp; Masuk</button>
+        <p class="login-note" style="margin-top:16px; font-size:12.5px; color:#5a6172; text-align:center; line-height:1.6;">
+          Belum punya akun? Akun dibuat oleh guru, tidak ada pendaftaran mandiri.<br>
+          Lupa password? Hubungi Mr. Hanif untuk minta password baru.
+        </p>
       </div>
     </div>
   </div>
@@ -99,21 +62,7 @@
 <script src="assets/supabaseClient.js"></script>
 <script src="assets/app.js"></script>
 <script>
-  const tabLogin = document.getElementById('tabLogin');
-  const tabSignup = document.getElementById('tabSignup');
-  const panelLogin = document.getElementById('panelLogin');
-  const panelSignup = document.getElementById('panelSignup');
-
   initPasswordToggles();
-
-  tabLogin.addEventListener('click', () => {
-    tabLogin.classList.add('active'); tabSignup.classList.remove('active');
-    panelLogin.classList.add('active'); panelSignup.classList.remove('active');
-  });
-  tabSignup.addEventListener('click', () => {
-    tabSignup.classList.add('active'); tabLogin.classList.remove('active');
-    panelSignup.classList.add('active'); panelLogin.classList.remove('active');
-  });
 
   // ---------- LOGIN ----------
   async function doLoginSubmit() {
@@ -157,96 +106,6 @@
   ['li-username','li-password'].forEach(id => {
     document.getElementById(id).addEventListener('keyup', e => { if (e.key === 'Enter') doLoginSubmit(); });
   });
-
-  // ---------- SIGNUP ----------
-  async function loadKelasOptions() {
-    const sel = document.getElementById('su-kelas');
-    const { data, error } = await supabase.from('kelas').select('id, nama, level').order('nama');
-    if (error || !data || !data.length) {
-      sel.innerHTML = '<option value="">Belum ada kelas tersedia</option>';
-      return;
-    }
-    sel.innerHTML = '<option value="">— Pilih kelas —</option>' +
-      data.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`).join('');
-  }
-  loadKelasOptions();
-
-  async function doSignupSubmit() {
-    const nama = document.getElementById('su-nama').value.trim();
-    const username = document.getElementById('su-username').value.trim().toLowerCase();
-    const password = document.getElementById('su-password').value;
-    const confirmPassword = document.getElementById('su-confirm-password').value;
-    const kelasId = document.getElementById('su-kelas').value;
-    const err = document.getElementById('signupError');
-    const ok = document.getElementById('signupSuccess');
-    err.style.display = 'none'; ok.style.display = 'none';
-
-    if (!nama || !username || !password || !confirmPassword || !kelasId) {
-      err.textContent = "Mohon lengkapi semua data, termasuk pilih kelas.";
-      err.style.display = 'block';
-      return;
-    }
-    if (/\s/.test(username)) {
-      err.textContent = "Username tidak boleh mengandung spasi.";
-      err.style.display = 'block';
-      return;
-    }
-    if (password.length < 6) {
-      err.textContent = "Password minimal 6 karakter.";
-      err.style.display = 'block';
-      return;
-    }
-    if (password !== confirmPassword) {
-      err.textContent = "Konfirmasi password tidak sama dengan password.";
-      err.style.display = 'block';
-      return;
-    }
-
-    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
-      email: usernameToEmail(username),
-      password,
-    });
-
-    if (signUpErr) {
-      err.textContent = signUpErr.message.includes('already registered')
-        ? "Username sudah dipakai, coba username lain."
-        : "Gagal mendaftar: " + signUpErr.message;
-      err.style.display = 'block';
-      return;
-    }
-
-    // Kalau email confirmation masih aktif di project Supabase, tidak akan ada session di sini.
-    if (!signUpData.session) {
-      ok.textContent = "Akun dibuat. Silakan login di tab Masuk.";
-      ok.style.display = 'block';
-      // Tetap coba simpan profil (butuh RLS insert_self policy, yang berjalan meski belum ada session
-      // hanya jika confirm-email dimatikan; kalau tidak, guru perlu proses manual / matikan confirm-email).
-    }
-
-    const { error: profileErr } = await supabase.from('profiles').insert({
-      id: signUpData.user.id,
-      username,
-      nama,
-      role: 'siswa',
-      kelas_id: kelasId,
-      status: 'pending',
-    });
-
-    if (profileErr) {
-      err.textContent = "Akun dibuat tapi profil gagal disimpan: " + profileErr.message;
-      err.style.display = 'block';
-      return;
-    }
-
-    // Akun siswa yang daftar mandiri wajib disetujui guru dulu sebelum bisa dipakai
-    // login, jadi sesi yang baru terbentuk (kalau ada) langsung diakhiri di sini.
-    if (signUpData.session) {
-      await supabase.auth.signOut();
-    }
-    ok.textContent = "Pendaftaran berhasil! Akun kamu perlu disetujui guru dulu sebelum bisa login. Hubungi guru, lalu login lewat tab Masuk setelah disetujui.";
-    ok.style.display = 'block';
-  }
-  document.getElementById('btnSignup').addEventListener('click', doSignupSubmit);
 
   // Kalau sudah login (dan sudah disetujui), langsung arahkan ke halaman utama.
   (async function () {
