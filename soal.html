@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="en" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="en">
+<title>LATIHAN SOAL BAHASA INGGRIS WAJIB - SMA NEGERI 1 SUMPIUH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1b22;
+    --paper:#f6f4ee;
+    --paper-card:#ffffff;
+    --line:#e4e1d6;
+    --muted:#7b7768;
+    --navy:#161a2e;
+    --cream:#f3ead9;
+    --good:#1f9d68;
+    --good-bg:#e7f6ee;
+    --bad:#d5473a;
+    --bad-bg:#fceceb;
+
+    --t1:#7c5cd6;
+    --t1-bg:#f2eefb;
+    --t2:#0e9488;
+    --t2-bg:#e9f7f5;
+    --t3:#c98a1f;
+    --t3-bg:#fbf1de;
+    --t4:#d1477a;
+    --t4-bg:#fbeaf1;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+    padding-bottom:96px;
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+  }
+  input, textarea, select{
+    -webkit-user-select:text;
+    -moz-user-select:text;
+    -ms-user-select:text;
+    user-select:text;
+  }
+  img{ -webkit-user-drag:none; pointer-events:none; }
+
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px;}
+
+  .cover{
+    background:var(--navy); color:var(--cream);
+    padding:40px 0 30px; border-bottom:6px solid var(--t1);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    letter-spacing:.14em; text-transform:uppercase; color:#a9a6c4; margin-bottom:10px;
+  }
+  .cover h1{
+    font-size:clamp(24px,4.2vw,32px); font-weight:600; line-height:1.18; max-width:640px;
+  }
+  .cover p.desc{ color:#c9c6da; max-width:560px; margin-top:12px; font-size:14.5px; }
+  .id-card{
+    margin-top:22px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
+    border-radius:14px; padding:16px 18px; display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  }
+  @media (max-width:520px){ .id-card{grid-template-columns:1fr;} }
+  .id-field label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:#a9a6c4; margin-bottom:6px;
+  }
+  .id-field input{
+    width:100%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; padding:10px 12px; color:#fff; font-size:16px; font-family:'Inter',sans-serif; outline:none;
+  }
+  .id-field input::placeholder{color:#8b88a3;}
+  .id-field input:focus{border-color:var(--t3);background:rgba(255,255,255,.13);}
+
+  .progress-shell{
+    position:sticky; top:0; z-index:30; background:var(--paper);
+    border-bottom:1px solid var(--line); padding:10px 0;
+  }
+  .progress-inner{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .progress-track{ flex:1 1 140px; height:8px; background:var(--line); border-radius:99px; overflow:hidden; min-width:100px; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--t1),var(--t4)); transition:width .3s ease; }
+  .progress-label{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--muted); white-space:nowrap; }
+  .palette-toggle{
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    background:#fff; border:1px solid var(--line); color:var(--ink);
+    padding:6px 12px; border-radius:99px; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease;
+    display:flex; align-items:center; gap:6px;
+  }
+  .palette-toggle:hover{background:#f3f1ea; border-color:#d7d3c4;}
+
+  .hide-bar-btn{
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    background:var(--navy); border:1px solid var(--navy); color:#fff;
+    padding:6px 12px; border-radius:99px; cursor:pointer;
+    transition:background .15s ease, opacity .15s ease;
+    display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0;
+  }
+  .hide-bar-btn:hover{background:#232849;}
+  .progress-shell.bar-hidden .progress-inner > *:not(.hide-bar-row),
+  .progress-shell.bar-hidden .palette-panel{ display:none !important; }
+  .progress-shell.bar-hidden .progress-inner{ justify-content:flex-end; }
+  .hide-bar-row{ display:flex; margin-left:auto; }
+  .progress-shell.bar-hidden{ padding:6px 0; }
+
+  .timer-badge{
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--ink);
+    background:#eef0fb; border:1px solid #c9cdf0; padding:6px 12px; border-radius:99px; white-space:nowrap;
+  }
+  .timer-badge.warn{background:var(--t3-bg); border-color:var(--t3); color:#7a4e0a;}
+  .timer-badge.danger{background:var(--bad-bg); border-color:var(--bad); color:var(--bad); animation:timerPulse 1s infinite;}
+  .timer-badge.paused{background:#fff3cd; border-color:#ffeeba; color:#856404;}
+  @keyframes timerPulse{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
+
+  .online-badge{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700;
+    padding:6px 12px; border-radius:99px; white-space:nowrap; display:flex; align-items:center; gap:6px;
+  }
+  .online-badge .online-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; flex:none; }
+  .online-badge.online{ background:var(--good-bg); border:1px solid var(--good); color:var(--good); }
+  .online-badge.online .online-dot{ background:var(--good); animation:onlinePulse 1.6s infinite; }
+  .online-badge.offline{ background:var(--bad-bg); border:1px solid var(--bad); color:var(--bad); }
+  .online-badge.offline .online-dot{ background:var(--bad); }
+  @keyframes onlinePulse{ 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+  .palette-panel{
+    display:none; background:var(--paper-card); border:1px solid var(--line); border-radius:12px;
+    padding:16px; margin-top:14px;
+  }
+  .palette-panel.open{display:block;}
+  .palette-legend{
+    display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--muted);
+    margin-bottom:12px; font-family:'JetBrains Mono',monospace;
+  }
+  .palette-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .legend-dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
+  .palette-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:8px; }
+  .pnum{
+    aspect-ratio:1; border-radius:8px; border:1.5px solid var(--line); background:#fff;
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--muted);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .1s ease;
+  }
+  .pnum:hover{transform:translateY(-1px);}
+  .pnum.pn-current{border-color:var(--navy); border-width:2px; color:var(--navy);}
+  .pnum.pn-answered{background:#eef0fb; border-color:#c9cdf0; color:var(--navy);}
+  .pnum.pn-correct{background:var(--good-bg); border-color:var(--good); color:var(--good);}
+  .pnum.pn-incorrect{background:var(--bad-bg); border-color:var(--bad); color:var(--bad);}
+
+  .results{
+    display:none; background:var(--paper-card); border:1px solid var(--line); border-radius:14px;
+    padding:24px 26px; margin:24px 0 6px; text-align:center;
+  }
+  .results.show{display:block;}
+  .results .score-big{ font-family:'Fraunces',serif; font-size:48px; font-weight:700; line-height:1; color:var(--navy); margin-bottom:6px; }
+  .results .score-sub{color:var(--muted); font-size:14px; margin-bottom:14px;}
+  .results .score-msg{ font-size:15px; font-weight:600; padding:9px 16px; border-radius:99px; display:inline-block; }
+  .submit-row{margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .submit-row .primary{padding:12px 22px; font-size:14.5px;}
+  .submit-row .primary:disabled{opacity:.55; cursor:not-allowed; transform:none;}
+  .send-note{font-family:'JetBrains Mono',monospace; font-size:12.5px; min-height:16px;}
+  .send-note.ok{color:var(--good);}
+  .send-note.err{color:var(--bad);}
+  .retry-send{border-color:var(--bad); color:var(--bad);}
+  .retry-send:hover{background:var(--bad-bg);}
+
+  .stage{margin-top:22px;}
+  .stage-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .genre-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+    padding:5px 11px; border-radius:99px; font-weight:600;
+  }
+  .stage-index{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--muted); }
+
+  .pin-toggle{
+    font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
+    background:#fff; border:1px solid var(--line); color:var(--ink);
+    padding:6px 11px; border-radius:99px; cursor:pointer;
+    display:flex; align-items:center; gap:5px; margin-left:auto; flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .pin-toggle:hover{background:#f3f1ea; border-color:#d7d3c4;}
+  .pin-toggle.active{background:var(--t1-bg); border-color:var(--t1); color:var(--t1);}
+  .pin-toggle .pin-ic{font-size:13px; line-height:1; transform:rotate(0deg); transition:transform .15s ease;}
+  .pin-toggle.active .pin-ic{transform:rotate(35deg);}
+
+  .pin-spacer{display:none;}
+
+  .stage.pin-mode{position:relative;}
+  .stage.pin-mode .passage{padding-bottom:54vh;}
+  .stage.pin-mode .q-card{
+    position:fixed; left:50%; bottom:0; transform:translateX(-50%);
+    width:calc(100% - 40px); max-width:780px; margin:0;
+    height:50vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    z-index:35; border-radius:16px 16px 0 0;
+    box-shadow:0 -10px 26px rgba(28,27,34,.18);
+    padding-bottom:26px;
+  }
+  @media (max-width:640px){
+    .stage.pin-mode .q-card{width:calc(100% - 20px); height:50vh;}
+    .stage.pin-mode .passage{padding-bottom:52vh;}
+  }
+
+  .passage{
+    background:var(--paper-card); border:1px solid var(--line); border-left-width:5px;
+    border-radius:10px; padding:20px 22px; margin-bottom:20px; font-size:14.5px;
+  }
+  .passage h3{font-size:17px; margin-bottom:10px; font-weight:600;}
+  .passage p{margin:0 0 11px; color:#33313c; text-align:justify; text-indent:1.5em;}
+  .passage p:last-child{margin-bottom:0;}
+  .passage .meta{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); margin-bottom:12px; letter-spacing:.03em;
+  }
+  .passage-img{
+    display:block; width:100%; max-width:420px; margin:0 auto; border-radius:8px;
+    border:1px solid var(--line);
+  }
+
+  .q-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px 22px; transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .q-card.correct{border-color:var(--good); box-shadow:0 0 0 1px var(--good);}
+  .q-card.incorrect{border-color:var(--bad); box-shadow:0 0 0 1px var(--bad);}
+
+  .q-top{display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap;}
+  .q-num{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px;
+    min-width:32px; height:32px; border-radius:99px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .q-prompt{font-size:16px; font-weight:600; padding-top:4px;}
+  .q-hint{ font-size:12px; color:var(--muted); font-style:italic; margin:-6px 0 12px 44px; }
+
+  .options{display:flex; flex-direction:column; gap:9px; margin-left:44px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 13px; border:1px solid var(--line); border-radius:8px;
+    cursor:pointer; font-size:14.5px; background:#fff; transition:background .15s ease, border-color .15s ease;
+  }
+  .opt:hover{background:#faf9f5;}
+  .opt input{margin-top:3px; accent-color:currentColor; flex-shrink:0;}
+  .opt.selected{background:#f1eefc; border-color:var(--t1);}
+  .opt.opt-correct{background:var(--good-bg); border-color:var(--good);}
+  .opt.opt-wrong{background:var(--bad-bg); border-color:var(--bad);}
+  .opt .tag{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.05em; font-weight:700; padding-left:8px;
+  }
+  .opt.opt-correct .tag{color:var(--good);}
+  .opt.opt-wrong .tag{color:var(--bad);}
+  .opt input:disabled{cursor:default;}
+  .opt.locked{cursor:default;}
+
+  @media (max-width:640px){
+    .wrap{padding:0 10px;}
+    .stage{margin-top:16px;}
+    .passage{padding:14px 12px; font-size:15.5px; line-height:1.6;}
+    .passage p{text-indent:1.2em;}
+    .passage h3{font-size:16.5px;}
+    .q-card{padding:16px 14px 18px;}
+    .q-top{gap:10px; margin-bottom:12px;}
+    .q-num{min-width:28px; height:28px; font-size:13px;}
+    .q-prompt{font-size:15.5px; line-height:1.42;}
+    .q-hint{margin-left:0; margin-top:2px; line-height:1.4;}
+    .options{margin-left:0; gap:8px;}
+    .opt{padding:11px 12px; font-size:15px; line-height:1.4; gap:9px;}
+    .matrix{margin-left:0;}
+    .match-box{margin-left:0;}
+    .answer-note{margin-left:0;}
+  }
+
+  .matrix{margin-left:44px; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .matrix table{width:100%; border-collapse:collapse; font-size:14px;}
+  .matrix th{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); background:#faf9f5; padding:9px 10px; text-align:center; border-bottom:1px solid var(--line);
+  }
+  .matrix th:first-child{text-align:left;}
+  .matrix td{padding:10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .matrix tr:last-child td{border-bottom:none;}
+  .matrix td.stmt{color:#33313c;}
+  .matrix td.pick{text-align:center; width:90px;}
+  .matrix td.pick.right-cell{background:var(--good-bg);}
+  .matrix td.pick.wrong-cell{background:var(--bad-bg);}
+  .matrix input{accent-color:currentColor;}
+
+  .match-box{margin-left:44px; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .match-box table{width:100%; border-collapse:collapse; font-size:14px;}
+  .match-box th{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); background:#faf9f5; padding:9px 10px; text-align:left; border-bottom:1px solid var(--line);
+  }
+  .match-box td{padding:10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .match-box tr:last-child td{border-bottom:none;}
+  .match-box td.word{color:#33313c; font-weight:600; width:150px;}
+  .match-box select{
+    width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-family:'Inter',sans-serif;
+    font-size:14px; background:#fff; color:var(--ink);
+  }
+  .match-box tr.right-row td.word{background:var(--good-bg);}
+  .match-box tr.wrong-row td.word{background:var(--bad-bg);}
+  .match-choices{margin:10px 0 0 44px; font-size:12.5px; color:var(--muted);}
+  .match-choices div{margin-bottom:2px;}
+
+  .answer-note{
+    margin:12px 0 0 44px; font-size:13px; padding:9px 12px; border-radius:8px;
+    background:var(--bad-bg); color:#8a2e26; display:none;
+  }
+  .answer-note.show{display:block;}
+  .answer-note b{color:var(--bad);}
+
+  .nav-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:40;
+    background:var(--navy); border-top:1px solid rgba(255,255,255,.1); padding:8px 0;
+  }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:nowrap; }
+  button.navbtn{
+    background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.2);
+    padding:9px 14px; border-radius:99px; font-size:13px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:600; transition:background .15s ease;
+    flex:1 1 0; text-align:center; white-space:nowrap;
+  }
+  button.navbtn:hover{background:rgba(255,255,255,.16);}
+  button.navbtn:disabled{opacity:.35; cursor:not-allowed;}
+  button.primary{
+    background:var(--t3); color:#241a05; border:none; font-weight:700;
+    padding:9px 14px; border-radius:99px; font-size:13px; cursor:pointer;
+    font-family:'Inter',sans-serif; transition:transform .12s ease, background .15s ease;
+    flex:1 1 0; white-space:nowrap;
+  }
+  button.primary:hover{transform:translateY(-1px); background:#dc9b28;}
+  button.primary:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+  button.ghost{
+    background:transparent; color:#c9c6da; border:1px solid rgba(255,255,255,.25);
+    padding:9px 12px; border-radius:99px; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+    flex:0 0 auto; white-space:nowrap;
+  }
+  button.ghost:hover{border-color:rgba(255,255,255,.5); color:#fff;}
+
+  @media (max-width:480px){
+    body{padding-bottom:70px;}
+    .nav-bar{padding:7px 0;}
+    .nav-inner{gap:5px;}
+    button.navbtn, button.primary, button.ghost{ padding:8px 6px; font-size:11.5px; }
+    button.ghost{flex:0 0 auto; padding:8px 9px;}
+  }
+
+  ::selection{background:var(--cream);}
+
+  .gate-screen{
+    position:fixed; inset:0; z-index:100; background:var(--navy);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .gate-card{
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); border-radius:16px;
+    padding:28px 26px; max-width:400px; width:100%; color:var(--cream);
+  }
+  .gate-card h1{ font-size:21px; font-weight:600; color:var(--cream); margin:6px 0 8px; line-height:1.3; }
+  .gate-card .desc{color:#c9c6da; font-size:14px; margin:0 0 18px;}
+  .gate-field{margin-bottom:14px;}
+  .gate-field label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:#a9a6c4; margin-bottom:6px;
+  }
+  .gate-field input, .gate-field select{
+    width:100%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; padding:10px 12px; color:#fff; font-size:16px; font-family:'Inter',sans-serif; outline:none;
+  }
+  .gate-field select option{ background: var(--navy); color: #fff; }
+  .gate-field input::placeholder{color:#8b88a3;}
+  .gate-field input:focus, .gate-field select:focus{border-color:var(--t3);background:rgba(255,255,255,.13);}
+
+  /* Confirmation Modal */
+  .confirm-modal{
+    position:fixed; inset:0; z-index:200; background:rgba(15, 18, 30, 0.75);
+    display:none; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter: blur(4px);
+  }
+  .confirm-modal.show{ display:flex; }
+  .confirm-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:16px;
+    padding:24px 26px; max-width:420px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);
+    text-align:center;
+  }
+  .confirm-card h2{ font-size:20px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+  .confirm-card p{ font-size:14.5px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+  .confirm-actions{ display:flex; gap:10px; justify-content:center; }
+  .confirm-actions button{ flex:1; padding:10px 16px; font-size:14px; border-radius:99px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
+  .btn-cancel{ background:var(--paper); border:1px solid var(--line); color:var(--ink); }
+  .btn-cancel:hover{ background:#e8e5dc; }
+  .btn-confirm{ background:var(--good); border:none; color:#fff; }
+  .btn-confirm:hover{ background:#198256; }
+
+  .gate-error{ color:#ff8c82; font-size:13px; min-height:18px; margin-bottom:6px; font-family:'JetBrains Mono',monospace; }
+  .gate-card .primary{width:100%; margin-top:6px;}
+  .gate-notice{ color:#c9c6da; font-size:12.5px; margin:-8px 0 16px; line-height:1.5; }
+  .gate-notice b{ color:#ff9f8f; }
+
+  /* Exam rules consent popup */
+  .rules-modal{
+    position:fixed; inset:0; z-index:400; background:rgba(15, 18, 30, 0.8);
+    display:none; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter: blur(4px);
+  }
+  .rules-modal.show{ display:flex; }
+  .rules-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:16px;
+    padding:26px 26px 22px; max-width:460px; width:100%;
+    box-shadow:0 20px 30px -5px rgba(0,0,0,.35);
+    text-align:left;
+  }
+  .rules-card .ricon{ font-size:34px; margin-bottom:8px; text-align:center; }
+  .rules-card h2{ font-size:19px; font-weight:700; color:var(--navy); margin-bottom:12px; text-align:center; }
+  .rules-card ul{ margin:0 0 16px; padding-left:20px; }
+  .rules-card li{ color:var(--ink); font-size:13.5px; line-height:1.6; margin-bottom:6px; }
+  .rules-card li b{ color:var(--bad); }
+  .rules-agree{
+    display:flex; align-items:flex-start; gap:9px; background:var(--bad-bg);
+    border:1px solid var(--bad); border-radius:10px; padding:10px 12px; margin-bottom:16px;
+    cursor:pointer;
+  }
+  .rules-agree input{ margin-top:3px; width:16px; height:16px; flex-shrink:0; accent-color:var(--bad); }
+  .rules-agree span{ font-size:13px; color:#4a3530; line-height:1.5; }
+  .rules-card button{
+    width:100%; padding:12px 16px; font-size:14.5px; font-weight:700; border-radius:99px;
+    border:none; cursor:pointer; font-family:'Inter',sans-serif;
+    background:var(--navy); color:#fff; transition:opacity .15s;
+  }
+  .rules-card button:disabled{ opacity:.4; cursor:not-allowed; }
+  .rules-card button:not(:disabled):hover{ opacity:.9; }
+
+  /* Violation / anti-cheat */
+  .violation-modal{
+    position:fixed; inset:0; z-index:300; background:rgba(140,20,20,.55);
+    display:none; align-items:center; justify-content:center; padding:20px;
+    backdrop-filter: blur(4px);
+  }
+  .violation-modal.show{ display:flex; }
+  .violation-card{
+    background:#fff; border:2px solid var(--bad); border-radius:16px;
+    padding:26px 24px; max-width:420px; width:100%; text-align:center;
+    box-shadow:0 20px 30px -5px rgba(0,0,0,.3);
+    animation:shake .4s ease;
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px);}
+    40%{transform:translateX(8px);} 60%{transform:translateX(-6px);} 80%{transform:translateX(6px);}
+  }
+  .violation-card .vicon{font-size:40px; margin-bottom:8px;}
+  .violation-card h2{ font-size:19px; font-weight:700; color:var(--bad); margin-bottom:8px; }
+  .violation-card p{ font-size:14px; color:#4a3530; margin-bottom:6px; line-height:1.5; }
+  .violation-card .vcount{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px;
+    color:var(--bad); background:var(--bad-bg); border-radius:8px; padding:6px 10px; display:inline-block; margin:8px 0 16px;
+  }
+  .violation-card button{
+    width:100%; padding:11px 16px; font-size:14.5px; border-radius:99px; font-weight:700;
+    cursor:pointer; font-family:'Inter',sans-serif; background:var(--bad); border:none; color:#fff;
+  }
+  .violation-card button:hover{background:#b8392e;}
+  .violation-card .violation-end-btn{
+    background:transparent; border:1px solid #d8b6b1; color:#8a5a53;
+    margin-top:8px; font-weight:600;
+  }
+  .violation-card .violation-end-btn:hover{ background:rgba(140,20,20,.08); }
+
+  .violation-badge{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700;
+    padding:6px 12px; border-radius:99px; white-space:nowrap;
+    background:var(--bad-bg); border:1px solid var(--bad); color:var(--bad);
+    display:none; align-items:center; gap:6px;
+  }
+  .violation-badge.show{ display:flex; }
+</style>
+</head>
+<body>
+
+<!-- Tidak ada halaman login/Nama/Kelas di sini: siswa sudah diautentikasi lewat
+     akun LMS (lihat requireLogin() di bagian bawah). Nama & Kelas otomatis
+     diambil dari profil akun mereka. -->
+<div id="gateScreen" class="gate-screen">
+  <div class="gate-card">
+    <div class="eyebrow" id="gateSchoolName">Memuat…</div>
+    <h1 id="gateTitle">Menyiapkan Soal…</h1>
+    <p class="desc" id="gateDesc">Mohon tunggu sebentar, soal sedang dimuat dari server.</p>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<!-- Popup Peraturan & Persetujuan Ujian (muncul setelah klik Start Exam) -->
+<div id="rulesModal" class="rules-modal">
+  <div class="rules-card">
+    <div class="ricon">⚠️</div>
+    <h2 id="rulesTitle">Peraturan Ujian — Harap Dibaca</h2>
+    <ul id="rulesListUl">
+      <li>Tetap dalam <b>mode fullscreen (layar penuh)</b> dan di tab ini selama ujian berlangsung.</li>
+      <li>Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm + popup peringatan</b>.</li>
+      <li>Setiap pelanggaran mengurangi <b><span id="rulesPenaltiPoin">2</span> poin</b> dari nilai akhir. Pelanggaran bersifat akumulatif — <b>tidak dihapus/diampuni</b>.</li>
+      <li>Ujian <b>TIDAK</b> akan otomatis dikirim karena pelanggaran — kamu tetap bisa lanjut mengerjakan, hanya saja nilai berkurang.</li>
+      <li>Jika keluar dari fullscreen, gunakan tombol <b>"⛶ Fullscreen"</b> di bagian atas untuk kembali.</li>
+    </ul>
+    <label class="rules-agree">
+      <input type="checkbox" id="rulesAgreeCheck">
+      <span>Saya telah membaca dan memahami peraturan di atas, dan saya setuju untuk mematuhinya selama ujian ini.</span>
+    </label>
+    <button type="button" id="rulesStartBtn" disabled>Mulai Ujian</button>
+  </div>
+</div>
+
+
+<!-- Modal Peringatan Pelanggaran (tab/aplikasi lain) -->
+<div id="violationModal" class="violation-modal">
+  <div class="violation-card">
+    <div class="vicon">⚠️</div>
+    <h2>Terdeteksi Pelanggaran!</h2>
+    <p id="violationMsg">Kamu meninggalkan layar ujian (berpindah tab/aplikasi, atau keluar dari fullscreen).</p>
+    <div class="vcount" id="violationCount">Pelanggaran 1 — Nilai -2</div>
+    <button type="button" id="violationOkBtn">Saya Mengerti — Kembali ke Ujian</button>
+    <button type="button" id="violationEndBtn" class="violation-end-btn">Sudahi Ujian</button>
+  </div>
+</div>
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-card">
+    <h2 id="confirmTitle">Konfirmasi Submit Ujian</h2>
+    <p id="confirmMsg">Apakah kamu yakin ingin mengirim jawabanmu? Jawaban tidak bisa diubah lagi setelah dikirim.</p>
+    <div class="confirm-actions">
+      <button type="button" class="btn-cancel" id="cancelSubmitBtn">Batal</button>
+      <button type="button" class="btn-confirm" id="confirmSubmitBtn">Ya, Kirim Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<div id="appMain" style="display:none;">
+
+<input type="hidden" id="stuName">
+<input type="hidden" id="stuClass">
+
+<div class="progress-shell">
+  <div class="wrap progress-inner">
+    <button type="button" class="palette-toggle" id="backToLoginBtn"><span>&larr; Worksheet</span></button>
+    <div class="online-badge online" id="onlineBadge"><span class="online-dot"></span>Online</div>
+    <div class="violation-badge" id="violationBadge">⚠️ 0 (-0)</div>
+    <button type="button" class="palette-toggle" id="fullscreenBtn" style="display:none;"><span>⛶ Layar Penuh</span></button>
+    <div class="timer-badge" id="timerBadge">90:00</div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 30 answered</div>
+    <button type="button" class="palette-toggle" id="paletteToggleBtn"><span>Show all numbers</span></button>
+    <button type="button" class="palette-toggle" id="manualFullscreenBtn"><span>⛶ Fullscreen</span></button>
+    <button type="button" class="hide-bar-btn hide-bar-row" id="hideBarBtn"><span>Hide Bar</span></button>
+  </div>
+  <div class="wrap">
+    <div class="palette-panel" id="palettePanel">
+      <div class="palette-legend">
+        <span><span class="legend-dot" style="background:#fff;border:1.5px solid var(--line);"></span>Not answered</span>
+        <span><span class="legend-dot" style="background:#eef0fb;border:1.5px solid #c9cdf0;"></span>Answered</span>
+      </div>
+      <div class="palette-grid" id="paletteGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="resultsBox" class="results">
+    <div class="score-big" id="scoreBig">0</div>
+    <div class="score-sub" id="scoreSub">Nilai Akhir (0-100)</div>
+    <div class="score-msg" id="scoreMsg">Well done!</div>
+    <div class="submit-row">
+      <div class="send-note" id="sendNote"></div>
+      <button class="ghost retry-send" id="retrySendBtn" type="button" style="display:none;">Try Sending Again</button>
+    </div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+</div>
+
+<div class="nav-bar">
+  <div class="wrap nav-inner">
+    <button class="ghost" id="resetBtn" type="button" style="display:none;">Reset</button>
+    <button class="navbtn" id="prevBtn" type="button">&larr; Prev</button>
+    <button class="navbtn" id="nextBtn" type="button">Next &rarr;</button>
+    <button class="primary" id="submitBtn" type="button">Submit</button>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+let DATA = []; // diisi otomatis dari tabel bank_soal saat halaman dimuat
+let currentProfile = null;
+let BANK_SOAL_ID = null;
+let WORKSHEET_ID = null;
+
+
+let FLAT = [];
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function buildFlat(){
+  FLAT = [];
+  const letters = ['A','B','C','D','E','F'];
+  DATA.forEach(section=>{
+    const qs = section.questions.slice();
+    qs.forEach(q=>{
+      const qCopy = Object.assign({}, q, {_section:section});
+      if(Array.isArray(q.options)){
+        if(q.type==='multi'){
+          // Shuffle the option order so the correct-answer keys aren't always
+          // in the same predictable spots, then relabel A/B/C/... to match.
+          const correctTexts = q.options.filter(o=>q.correct.includes(o.k)).map(o=>o.t);
+          const shuffled = shuffle(q.options.slice());
+          const relabeled = shuffled.map((o,i)=>({k:letters[i], t:o.t}));
+          qCopy.options = relabeled;
+          qCopy.correct = relabeled.filter(o=>correctTexts.includes(o.t)).map(o=>o.k);
+        } else {
+          qCopy.options = q.options.slice();
+        }
+      }
+      FLAT.push(qCopy);
+    });
+  });
+}
+
+let answers = {};
+let submitted = false;
+let currentIndex = 0;
+let paletteOpen = false;
+
+function isAnsweredQ(q){
+  if(q.type==='matrix'){
+    const a = answers[q.id]||{};
+    return Object.keys(a).length===q.statements.length;
+  }
+  if(q.type==='match'){
+    const a = answers[q.id]||{};
+    return Object.keys(a).length===q.items.length;
+  }
+  if(q.type==='multi'){
+    return !!(answers[q.id] && answers[q.id].length>0);
+  }
+  return !!answers[q.id];
+}
+
+function arraysEqual(a,b){
+  if(a.length!==b.length) return false;
+  const sa=[...a].sort(), sb=[...b].sort();
+  return sa.every((v,i)=>v===sb[i]);
+}
+
+function computeResult(q){
+  if(q.type==='single'){
+    const correct = answers[q.id]===q.correct;
+    return {correct, earned: correct?1:0, total:1};
+  }
+  if(q.type==='multi'){
+    const chosen = answers[q.id]||[];
+    const correct = arraysEqual(chosen, q.correct);
+    return {correct, earned: correct?1:0, total:1};
+  }
+  if(q.type==='matrix'){
+    const chosenMap = answers[q.id]||{};
+    let earned = 0;
+    const rowResults = q.statements.map((s,i)=>{
+      const ok = chosenMap[i]===s.correct;
+      if(ok) earned++;
+      return ok;
+    });
+    return {correct: earned===q.statements.length, earned, total:q.statements.length, rowResults};
+  }
+  if(q.type==='match'){
+    const chosenMap = answers[q.id]||{};
+    let earned = 0;
+    const rowResults = q.items.map((it,i)=>{
+      const ok = chosenMap[i]===it.correct;
+      if(ok) earned++;
+      return ok;
+    });
+    return {correct: earned===q.items.length, earned, total:q.items.length, rowResults};
+  }
+}
+
+const stage = document.getElementById('stage');
+let pinEnabled = false;
+
+function applyPinLayout(){
+  const card = stage.querySelector('.q-card');
+  const passageEl = stage.querySelector('.passage');
+  if(pinEnabled){
+    stage.classList.add('pin-mode');
+    const navBar = document.querySelector('.nav-bar');
+    const navH = navBar ? navBar.offsetHeight : 0;
+    if(card) card.style.bottom = navH+'px';
+    requestAnimationFrame(()=>{
+      if(card && passageEl){
+        passageEl.style.paddingBottom = (card.offsetHeight + navH + 20)+'px';
+      }
+    });
+  } else {
+    stage.classList.remove('pin-mode');
+    if(card) card.style.bottom = '';
+    if(passageEl) passageEl.style.paddingBottom = '';
+  }
+}
+window.addEventListener('resize', ()=>{ if(pinEnabled) applyPinLayout(); });
+
+function renderStage(){
+  const q = FLAT[currentIndex];
+  const section = q._section;
+  stage.innerHTML = '';
+  stage.style.setProperty('--sc', section.color);
+
+  const head = document.createElement('div');
+  head.className='stage-head';
+  head.innerHTML = `
+    <span class="genre-tag" style="background:${section.bg}; color:${section.color};">${section.tag}</span>
+    <span class="stage-index">Question ${currentIndex+1} of ${FLAT.length}</span>
+  `;
+  stage.appendChild(head);
+
+  const passage = document.createElement('div');
+  passage.className='passage';
+  passage.style.borderLeftColor = section.color;
+  passage.innerHTML = `
+    <div class="meta">${section.meta}</div>
+    <h3>${section.title}</h3>
+    ${section.image ? `<img src="${section.image}" alt="${section.title}" class="passage-img">` : ''}
+    ${section.passage ? section.passage.map(p=>`<p>${p}</p>`).join('') : ''}
+  `;
+  stage.appendChild(passage);
+
+  const card = document.createElement('div');
+  card.className='q-card';
+  card.id='card-'+q.id;
+
+  const top = document.createElement('div');
+  top.className='q-top';
+  top.innerHTML = `
+    <div class="q-num" style="background:${section.bg}; color:${section.color};">${currentIndex+1}</div>
+    <div class="q-prompt">${q.prompt}</div>
+    <button type="button" class="pin-toggle ${pinEnabled?'active':''}" id="pinToggleBtn">
+      <span class="pin-ic">&#128204;</span><span>${pinEnabled ? 'Pinned' : 'Pin'}</span>
+    </button>
+  `;
+  top.querySelector('#pinToggleBtn').addEventListener('click', ()=>{
+    pinEnabled = !pinEnabled;
+    applyPinLayout();
+    const btn = document.getElementById('pinToggleBtn');
+    btn.classList.toggle('active', pinEnabled);
+    btn.innerHTML = `<span class="pin-ic">&#128204;</span><span>${pinEnabled ? 'Pinned' : 'Pin'}</span>`;
+  });
+  card.appendChild(top);
+
+  if(q.hint){
+    const hint = document.createElement('div');
+    hint.className='q-hint';
+    hint.textContent = q.hint;
+    card.appendChild(hint);
+  }
+
+  if(q.type==='single'){
+    const opts = document.createElement('div');
+    opts.className='options';
+    q.options.forEach(o=>{
+      const lbl = document.createElement('label');
+      lbl.className='opt';
+      lbl.dataset.key=o.k;
+      const checked = answers[q.id]===o.k ? 'checked' : '';
+      lbl.innerHTML = `<input type="radio" name="${q.id}" value="${o.k}" ${checked}> <span>${o.t}</span> <span class="tag"></span>`;
+      if(answers[q.id]===o.k) lbl.classList.add('selected');
+      lbl.querySelector('input').addEventListener('change', ()=>{
+        answers[q.id]=o.k;
+        refreshOptionSelection(q, card);
+        updateProgress();
+        renderPalette();
+        saveState();
+      });
+      opts.appendChild(lbl);
+    });
+    card.appendChild(opts);
+  }
+
+  if(q.type==='multi'){
+    const opts = document.createElement('div');
+    opts.className='options';
+    q.options.forEach(o=>{
+      const lbl = document.createElement('label');
+      lbl.className='opt';
+      lbl.dataset.key=o.k;
+      const isChecked = (answers[q.id]||[]).includes(o.k);
+      lbl.innerHTML = `<input type="checkbox" name="${q.id}" value="${o.k}" ${isChecked?'checked':''}> <span>${o.t}</span> <span class="tag"></span>`;
+      if(isChecked) lbl.classList.add('selected');
+      lbl.querySelector('input').addEventListener('change', ()=>{
+        const cur = new Set(answers[q.id]||[]);
+        if(lbl.querySelector('input').checked) cur.add(o.k); else cur.delete(o.k);
+        answers[q.id]=Array.from(cur);
+        refreshOptionSelection(q, card);
+        updateProgress();
+        renderPalette();
+        saveState();
+      });
+      opts.appendChild(lbl);
+    });
+    card.appendChild(opts);
+  }
+
+  if(q.type==='matrix'){
+    const box = document.createElement('div');
+    box.className='matrix';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Statement</th><th>${q.cols[0]}</th><th>${q.cols[1]}</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    q.statements.forEach((s,i)=>{
+      const tr = document.createElement('tr');
+      const chosenVal = (answers[q.id]||{})[i];
+      tr.innerHTML = `
+        <td class="stmt">${i+1}. ${s.t}</td>
+        <td class="pick" data-col="${q.cols[0]}"><input type="radio" name="${q.id}-${i}" value="${q.cols[0]}" ${chosenVal===q.cols[0]?'checked':''}></td>
+        <td class="pick" data-col="${q.cols[1]}"><input type="radio" name="${q.id}-${i}" value="${q.cols[1]}" ${chosenVal===q.cols[1]?'checked':''}></td>
+      `;
+      tr.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('change', ()=>{
+          if(!answers[q.id]) answers[q.id]={};
+          answers[q.id][i]=inp.value;
+          updateProgress();
+          renderPalette();
+          saveState();
+        });
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    box.appendChild(table);
+    card.appendChild(box);
+  }
+
+  if(q.type==='match'){
+    const box = document.createElement('div');
+    box.className='match-box';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Word (Column A)</th><th>Meaning (Column B)</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    q.items.forEach((it,i)=>{
+      const tr = document.createElement('tr');
+      tr.dataset.row = i;
+      const chosenVal = (answers[q.id]||{})[i] || '';
+      const optionsHtml = `<option value="" ${chosenVal===''?'selected':''}>-- choose --</option>` +
+        q.choices.map(c=>`<option value="${c.k}" ${chosenVal===c.k?'selected':''}>${c.k}. ${c.t}</option>`).join('');
+      tr.innerHTML = `
+        <td class="word">${it.t}</td>
+        <td><select data-idx="${i}">${optionsHtml}</select></td>
+      `;
+      tr.querySelector('select').addEventListener('change', (e)=>{
+        if(!answers[q.id]) answers[q.id]={};
+        answers[q.id][i]=e.target.value;
+        updateProgress();
+        renderPalette();
+        saveState();
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    box.appendChild(table);
+    card.appendChild(box);
+  }
+
+  const note = document.createElement('div');
+  note.className='answer-note';
+  note.id='note-'+q.id;
+  card.appendChild(note);
+
+  stage.appendChild(card);
+
+  if(submitted){
+    applyGradingToCard(q, card, note);
+  }
+
+  applyPinLayout();
+  updateNavButtons();
+}
+
+function refreshOptionSelection(q, card){
+  card.querySelectorAll('.opt').forEach(lbl=>{
+    const key = lbl.dataset.key;
+    const sel = q.type==='multi' ? (answers[q.id]||[]).includes(key) : answers[q.id]===key;
+    lbl.classList.toggle('selected', !!sel && !submitted);
+  });
+}
+
+function applyGradingToCard(q, card, note){
+  // Lock the answers after submission, without revealing correct/incorrect results.
+  if(q.type==='single' || q.type==='multi'){
+    card.querySelectorAll('.opt').forEach(lbl=>{
+      lbl.querySelector('input').disabled = true;
+      lbl.classList.add('locked');
+    });
+  }
+
+  if(q.type==='matrix'){
+    const rows = card.querySelectorAll('.matrix tbody tr');
+    q.statements.forEach((s,i)=>{
+      const row = rows[i];
+      row.querySelectorAll('input').forEach(inp=>{ inp.disabled = true; });
+    });
+  }
+
+  if(q.type==='match'){
+    const rows = card.querySelectorAll('.match-box tbody tr');
+    q.items.forEach((it,i)=>{
+      const row = rows[i];
+      row.querySelector('select').disabled = true;
+    });
+  }
+}
+
+/* ---------- palette ---------- */
+const paletteGrid = document.getElementById('paletteGrid');
+function renderPalette(){
+  paletteGrid.innerHTML='';
+  FLAT.forEach((q,i)=>{
+    const btn = document.createElement('button');
+    btn.type='button';
+    btn.className='pnum';
+    btn.textContent = i+1;
+    if(i===currentIndex) btn.classList.add('pn-current');
+    if(isAnsweredQ(q)){
+      btn.classList.add('pn-answered');
+    }
+    btn.addEventListener('click', ()=>{
+      currentIndex = i;
+      renderStage();
+      renderPalette();
+      saveState();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+    paletteGrid.appendChild(btn);
+  });
+}
+
+document.getElementById('paletteToggleBtn').addEventListener('click', ()=>{
+  paletteOpen = !paletteOpen;
+  document.getElementById('palettePanel').classList.toggle('open', paletteOpen);
+});
+
+/* ---------- progress ---------- */
+function updateProgress(){
+  const answered = FLAT.filter(isAnsweredQ).length;
+  const pct = Math.round((answered/FLAT.length)*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent = `${answered} / ${FLAT.length} answered`;
+}
+
+/* ---------- nav buttons ---------- */
+function updateNavButtons(){
+  document.getElementById('prevBtn').disabled = currentIndex===0;
+  document.getElementById('nextBtn').disabled = currentIndex===FLAT.length-1;
+  const isLast = currentIndex===FLAT.length-1;
+  document.getElementById('submitBtn').style.display = isLast ? '' : 'none';
+}
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(currentIndex>0){ currentIndex--; renderStage(); renderPalette(); updateProgress(); saveState(); window.scrollTo({top:0, behavior:'smooth'}); }
+});
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(currentIndex<FLAT.length-1){ currentIndex++; renderStage(); renderPalette(); updateProgress(); saveState(); window.scrollTo({top:0, behavior:'smooth'}); }
+});
+
+/* ---------- grading + submit ---------- */
+function grade(auto){
+  const name = document.getElementById('stuName').value.trim();
+  const stuClass = document.getElementById('stuClass').value.trim();
+  if(!auto && (!name || !stuClass)){
+    const err = document.getElementById('gateError');
+    if(err) err.textContent = 'Please fill in Name and Class at the top before checking & submitting.';
+    window.scrollTo({top:0, behavior:'smooth'});
+    return;
+  }
+  if(submitted) return;
+
+  stopTimer();
+  submitted = true;
+  examActive = false;
+  updateFullscreenButton();
+  updateResetButton();
+  document.getElementById('violationModal').classList.remove('show');
+  if(isFullscreenActive()){
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if(exitFs) exitFs.call(document).catch(()=>{});
+  }
+  let earned=0, total=0;
+  FLAT.forEach(q=>{
+    const r = computeResult(q);
+    earned += r.earned;
+    total += r.total;
+  });
+
+  /* --- Perhitungan Nilai ---
+     Nilai Akhir = (total skor - penalti) / skor maksimal x 100
+     Penalti dikurangkan dari skor mentah dulu, baru hasilnya dibagi skor
+     maksimal dan dikonversi ke skala 0-100. Kalau PENALTI_AKTIF mati,
+     pelanggaran tetap tercatat (violationCount) tapi penalti = 0. */
+  const penalti = PENALTI_AKTIF ? (violationCount * VIOLATION_PENALTY) : 0;    // total poin potongan (skala skor mentah)
+  const skorSetelahPenalti = earned - penalti;            // total skor - penalti
+  const nilaiMentah = (skorSetelahPenalti / total) * 100; // dikonversi ke skala 0-100
+  const nilai = Math.max(0, Math.min(100, Math.round(nilaiMentah)));
+
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreSub = document.getElementById('scoreSub');
+  scoreBig.textContent = nilai;
+  scoreSub.textContent = 'Nilai Akhir (0-100)';
+
+  const msg = document.getElementById('scoreMsg');
+  msg.textContent = nilai > 75
+    ? '🎉 Selamat! Kamu meraih nilai yang sangat baik.'
+    : '💪 Tetap semangat! Terus berlatih supaya hasilnya lebih baik lagi.';
+  msg.style.color = nilai > 75 ? 'var(--good)' : 'var(--navy)';
+  msg.style.background = nilai > 75 ? 'var(--good-bg)' : '#eef0fb';
+
+  const resultsBox = document.getElementById('resultsBox');
+  resultsBox.classList.add('show');
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('timerBadge').textContent = 'Finished';
+  document.getElementById('timerBadge').classList.remove('warn','danger','paused');
+  renderStage();
+  renderPalette();
+  saveState();
+  resultsBox.scrollIntoView({behavior:'smooth', block:'start'});
+
+  attemptSend(name, stuClass, {nilai, earned, total, penalti, violationCount});
+}
+
+/* ---------- build a readable per-question answer report ---------- */
+function buildAnswerReport(){
+  const sorted = FLAT.slice().sort((a,b)=> a.no - b.no );
+  const lines = sorted.map(q=>{
+    const r = computeResult(q);
+    const mark = r.correct ? 'CORRECT' : 'WRONG';
+    let ansText;
+    if(q.type==='single'){
+      ansText = answers[q.id] || '-';
+    } else if(q.type==='multi'){
+      ansText = (answers[q.id]||[]).slice().sort().join(',') || '-';
+    } else if(q.type==='matrix'){
+      const chosenMap = answers[q.id]||{};
+      ansText = q.statements.map((s,i)=> `${i+1}:${chosenMap[i]||'-'}`).join(' | ');
+    } else if(q.type==='match'){
+      const chosenMap = answers[q.id]||{};
+      ansText = q.items.map((it,i)=> `${it.t}=${chosenMap[i]||'-'}`).join(' | ');
+    }
+    return `No.${q.no} [${mark}] ${ansText}`;
+  });
+  const header = PENALTI_AKTIF
+    ? `Pelanggaran tab/app: ${violationCount} (penalti: -${violationCount*VIOLATION_PENALTY} poin)`
+    : `Pelanggaran tab/app: ${violationCount} (penalti nonaktif, nilai tidak dipotong)`;
+  return header + '\n' + lines.join('\n');
+}
+
+/* ---------- send result to Supabase (muncul di dashboard guru) ----------
+   Memakai client `supabase` yang sama dengan halaman LMS lain
+   (dibuat oleh assets/supabaseClient.js), BUKAN client terpisah lagi.
+   Hasil dikirim ke tabel hasil_ujian_lms, terikat ke akun siswa yang
+   sedang login (currentProfile), bukan Nama/Kelas ketikan manual. */
+let pendingSend = null;
+
+function isReallyOnline(){
+  return new Promise(resolve=>{
+    if(!navigator.onLine){ resolve(false); return; }
+    let done = false;
+    const finish = (val)=>{ if(!done){ done = true; resolve(val); } };
+    const timer = setTimeout(()=>finish(false), 4000);
+    const img = new Image();
+    img.onload = ()=>{ clearTimeout(timer); finish(true); };
+    img.onerror = ()=>{ clearTimeout(timer); finish(true); };
+    img.src = 'https://www.google.com/favicon.ico?_=' + Date.now();
+  });
+}
+
+function attemptSend(name, stuClass, score){
+  const note = document.getElementById('sendNote');
+  const retryBtn = document.getElementById('retrySendBtn');
+  pendingSend = {name, stuClass, score};
+
+  note.textContent = 'Checking internet connection...';
+  note.className = 'send-note';
+  retryBtn.style.display = 'none';
+
+  isReallyOnline().then(online=>{
+    if(!online){
+      note.textContent = 'No internet connection. Your answers have NOT been sent.';
+      note.className = 'send-note err';
+      retryBtn.style.display = 'inline-block';
+      return;
+    }
+    sendResultToForm(pendingSend.name, pendingSend.stuClass, pendingSend.score);
+  });
+}
+
+document.getElementById('retrySendBtn').addEventListener('click', ()=>{
+  if(pendingSend){
+    attemptSend(pendingSend.name, pendingSend.stuClass, pendingSend.score);
+  }
+});
+
+function sendResultToForm(name, stuClass, score){
+  const note = document.getElementById('sendNote');
+  const retryBtn = document.getElementById('retrySendBtn');
+  const scoreText = score.penalti>0
+    ? `Nilai: ${score.nilai} (Skor mentah: ${score.earned}/${score.total}, Penalti: -${score.penalti} poin dari ${score.violationCount} pelanggaran)`
+    : `Nilai: ${score.nilai} (Skor: ${score.earned}/${score.total})`;
+
+  note.textContent = 'Mengirim hasil...';
+  note.className = 'send-note';
+
+  supabase.from('hasil_ujian_lms').insert({
+    bank_soal_id: BANK_SOAL_ID,
+    worksheet_id: WORKSHEET_ID,
+    profile_id: currentProfile ? currentProfile.id : null,
+    nama: name,
+    kelas: stuClass,
+    nilai: score.nilai,
+    skor_mentah: score.earned,
+    skor_total: score.total,
+    penalti: score.penalti,
+    pelanggaran: score.violationCount,
+    jawaban: buildAnswerReport()
+  }).then(({ error }) => {
+    if (error) {
+      console.error('Gagal mengirim hasil:', error);
+      note.textContent = 'Gagal mengirim hasil ke guru. Coba lagi.';
+      note.className = 'send-note err';
+      retryBtn.style.display = 'inline-block';
+      return;
+    }
+    pendingSend = null;
+    retryBtn.style.display = 'none';
+    note.textContent = 'Jawaban terkirim! Nilaimu sudah tercatat di akunmu.';
+    note.className = 'send-note ok';
+  });
+}
+
+function resetQuiz(){
+  answers = {};
+  submitted = false;
+  currentIndex = 0;
+  pendingSend = null;
+  violationCount = 0;
+  examActive = true;
+  updateViolationBadge();
+  updateResetButton();
+  document.getElementById('violationModal').classList.remove('show');
+  document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('sendNote').textContent = '';
+  document.getElementById('sendNote').className = 'send-note';
+  document.getElementById('retrySendBtn').style.display = 'none';
+  buildFlat();
+  renderStage();
+  renderPalette();
+  updateProgress();
+  requestExamFullscreen();
+  updateFullscreenButton();
+  startTimer(Date.now()+TIMER_MS);
+  saveState();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function openSubmitConfirm(titleHtml, msgHtml){
+  document.getElementById('confirmTitle').innerHTML = titleHtml;
+  document.getElementById('confirmMsg').innerHTML = msgHtml;
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  if(submitted) return;
+  const unanswered = FLAT.length - FLAT.filter(isAnsweredQ).length;
+  let msg;
+  if(unanswered > 0){
+    msg = `Kamu masih punya <b>${unanswered} soal yang belum dijawab</b>.<br>Apakah kamu yakin ingin mengirim jawabanmu sekarang?`;
+  } else {
+    msg = `Kamu sudah menjawab semua <b>${FLAT.length} soal</b>.<br>Apakah kamu yakin ingin mengirim jawabanmu sekarang?`;
+  }
+  openSubmitConfirm('Konfirmasi Submit Ujian', msg);
+});
+
+document.getElementById('violationEndBtn').addEventListener('click', ()=>{
+  document.getElementById('violationModal').classList.remove('show');
+  const penalty = PENALTI_AKTIF ? (violationCount * VIOLATION_PENALTY) : 0;
+  const penaltyText = PENALTI_AKTIF ? ` (potongan -${penalty} poin)` : ' (tidak ada potongan nilai)';
+  openSubmitConfirm(
+    'Konfirmasi Sudahi Ujian',
+    `Kamu sudah mendapat <b>${violationCount} pelanggaran</b>${penaltyText}.<br>Apakah kamu yakin ingin <b>mengakhiri ujian sekarang</b>? Jawaban yang sudah kamu isi akan langsung dikirim dan tidak bisa diubah lagi.`
+  );
+});
+
+document.getElementById('cancelSubmitBtn').addEventListener('click', ()=>{
+  document.getElementById('confirmModal').classList.remove('show');
+  if(isExamRunning() && !isFullscreenActive()){
+    requestExamFullscreen();
+  }
+});
+
+document.getElementById('confirmSubmitBtn').addEventListener('click', ()=>{
+  document.getElementById('confirmModal').classList.remove('show');
+  grade(false);
+});
+
+document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+
+/* ---------- anti copy-paste & anti-select ---------- */
+function isEditable(el){
+  return el && (el.tagName==='INPUT' || el.tagName==='TEXTAREA' || el.tagName==='SELECT' || el.isContentEditable);
+}
+['copy','cut','contextmenu','selectstart','dragstart'].forEach(evt=>{
+  document.addEventListener(evt, e=>{
+    if(isEditable(e.target)) return;
+    e.preventDefault();
+  });
+});
+document.addEventListener('keydown', e=>{
+  const k = (e.key || '').toLowerCase();
+  if(!k) return;
+  const blockedCombo = (e.ctrlKey||e.metaKey) && ['c','x','a','s','u','p'].includes(k);
+  if((blockedCombo && !isEditable(e.target)) || k==='f12'){
+    e.preventDefault();
+  }
+});
+
+/* ---------- proctoring: detect tab/app switching + fullscreen exit ----------
+   Fullscreen & deteksi pelanggaran SELALU aktif untuk semua soal (tidak
+   bisa dimatikan). Yang bisa diatur guru per-soal hanyalah PENALTI_AKTIF:
+   apakah pelanggaran yang terdeteksi ikut memotong nilai akhir atau tidak.
+   Diisi dari kolom bank_soal saat bootstrap (lihat di bawah). */
+let MAX_VIOLATIONS = 5;
+let VIOLATION_PENALTY = 2; // poin dikurangi per pelanggaran, dipakai HANYA kalau PENALTI_AKTIF true
+let PENALTI_AKTIF = true;
+let violationCount = 0;
+let lastViolationAt = 0;
+let examActive = false; // true once gate passed, false once submitted
+
+function isExamRunning(){
+  return examActive && !submitted;
+}
+
+function updateResetButton(){
+  const btn = document.getElementById('resetBtn');
+  if(btn) btn.style.display = submitted ? '' : 'none';
+}
+
+/* Web Audio beep alarm - no external file needed */
+let audioCtx = null;
+function playAlarm(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = audioCtx.currentTime;
+    [0, 0.35, 0.7].forEach(offset=>{
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(880, now+offset);
+      gain.gain.setValueAtTime(0.0001, now+offset);
+      gain.gain.exponentialRampToValueAtTime(0.25, now+offset+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+offset+0.28);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(now+offset);
+      osc.stop(now+offset+0.3);
+    });
+  }catch(err){ /* audio not available, ignore */ }
+}
+
+function requestExamFullscreen(){
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+  if(req){ req.call(el).catch(()=>{}); }
+}
+
+function exitAppFullscreen(){
+  const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+  if(exitFs){ exitFs.call(document).catch(()=>{}); }
+}
+
+function isFullscreenActive(){
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement);
+}
+
+function updateManualFullscreenButton(){
+  const btn = document.getElementById('manualFullscreenBtn');
+  if(!btn) return;
+  btn.querySelector('span').textContent = isFullscreenActive() ? '⛶ Exit Fullscreen' : '⛶ Fullscreen';
+}
+
+function updateViolationBadge(){
+  const badge = document.getElementById('violationBadge');
+  if(!badge) return;
+  if(violationCount>0){
+    badge.textContent = PENALTI_AKTIF
+      ? `⚠️ ${violationCount} (-${violationCount*VIOLATION_PENALTY})`
+      : `⚠️ ${violationCount}`;
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+function updateFullscreenButton(){
+  const btn = document.getElementById('fullscreenBtn');
+  if(!btn) return;
+  btn.style.display = (isExamRunning() && !isFullscreenActive()) ? '' : 'none';
+}
+
+function registerViolation(reason){
+  if(!isExamRunning()) return;
+  const now = Date.now();
+  if(now - lastViolationAt < 800) return; // debounce duplicate events (blur + visibilitychange firing together)
+  lastViolationAt = now;
+
+  violationCount++;
+  updateViolationBadge();
+  updateFullscreenButton();
+  playAlarm();
+  saveState();
+
+  const modal = document.getElementById('violationModal');
+  const msg = document.getElementById('violationMsg');
+  const countEl = document.getElementById('violationCount');
+  msg.textContent = PENALTI_AKTIF
+    ? `Terdeteksi: ${reason}. Ujian TIDAK otomatis dikirim, tapi ${VIOLATION_PENALTY} poin telah dikurangi dari nilaimu.`
+    : `Terdeteksi: ${reason}. Pelanggaran ini dicatat, tapi nilaimu TIDAK dikurangi.`;
+  countEl.textContent = PENALTI_AKTIF
+    ? `Pelanggaran ke-${violationCount} — Total pengurangan: -${violationCount*VIOLATION_PENALTY} poin`
+    : `Pelanggaran ke-${violationCount} — Tidak ada pengurangan nilai`;
+  modal.classList.add('show');
+}
+
+document.getElementById('violationOkBtn').addEventListener('click', ()=>{
+  document.getElementById('violationModal').classList.remove('show');
+  requestExamFullscreen();
+});
+
+document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
+  requestExamFullscreen();
+});
+
+document.getElementById('manualFullscreenBtn').addEventListener('click', ()=>{
+  if(isFullscreenActive()){
+    exitAppFullscreen();
+  } else {
+    requestExamFullscreen();
+  }
+});
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    registerViolation('kamu berpindah tab atau meminimalkan jendela');
+  }
+});
+
+window.addEventListener('blur', ()=>{
+  // Small delay so we don't fire this for our own modal/dialog interactions
+  setTimeout(()=>{
+    if(isExamRunning() && document.hidden===false && !document.hasFocus()){
+      registerViolation('kamu berpindah ke aplikasi lain');
+    }
+  }, 150);
+});
+
+['fullscreenchange','webkitfullscreenchange','msfullscreenchange'].forEach(evt=>{
+  document.addEventListener(evt, ()=>{
+    if(isExamRunning() && !isFullscreenActive()){
+      registerViolation('kamu keluar dari mode fullscreen');
+    }
+    updateFullscreenButton();
+    updateManualFullscreenButton();
+  });
+});
+
+/* ---------- persistence (localStorage) ---------- */
+let STORAGE_KEY = 'lms_soal_state';
+
+function saveState(){
+  try{
+    const state = {
+      name: document.getElementById('stuName').value,
+      cls: document.getElementById('stuClass').value,
+      gatePassed: true,
+      order: FLAT.map(q=>q.id),
+      answers: answers,
+      currentIndex: currentIndex,
+      submitted: submitted,
+      endAt: examEndAt,
+      remainingTimeMs: isTimerPaused ? remainingTimeMs : (examEndAt ? Math.max(0, examEndAt - Date.now()) : TIMER_MS),
+      isTimerPaused: isTimerPaused,
+      violationCount: violationCount
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){ /* localStorage unavailable, ignore */ }
+}
+
+function clearState(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const state = JSON.parse(raw);
+    if(!state || !state.gatePassed || !Array.isArray(state.order)) return null;
+
+    const byId = {};
+    FLAT.forEach(q=>{ byId[q.id]=q; });
+    const allIdsMatch = state.order.length===FLAT.length && state.order.every(id=>byId[id]);
+    if(!allIdsMatch) return null;
+
+    return state;
+  }catch(e){ return null; }
+}
+
+let TIMER_MINUTES = 90;
+let TIMER_MS = TIMER_MINUTES*60*1000;
+let timerInterval = null;
+let examEndAt = null;
+let remainingTimeMs = TIMER_MS;
+let isTimerPaused = false;
+
+function formatTime(ms){
+  if(ms<0) ms=0;
+  const totalSec = Math.floor(ms/1000);
+  const m = Math.floor(totalSec/60);
+  const s = totalSec%60;
+  return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+
+function renderTimerDisplay(ms){
+  const badge = document.getElementById('timerBadge');
+  if(!badge) return;
+  badge.classList.remove('warn','danger','paused');
+  if(isTimerPaused){
+    badge.textContent = formatTime(ms) + ' (PAUSED)';
+    badge.classList.add('paused');
+  } else {
+    badge.textContent = formatTime(ms);
+    if(ms<=2*60*1000) badge.classList.add('danger');
+    else if(ms<=10*60*1000) badge.classList.add('warn');
+  }
+}
+
+function stopTimer(){
+  if(timerInterval){ clearInterval(timerInterval); timerInterval=null; }
+}
+
+function tick(){
+  if(isTimerPaused) return;
+  const remaining = examEndAt - Date.now();
+  if(remaining<=0){
+    remainingTimeMs = 0;
+    renderTimerDisplay(0);
+    stopTimer();
+    if(!submitted){
+      grade(true);
+    }
+    return;
+  }
+  remainingTimeMs = remaining;
+  renderTimerDisplay(remaining);
+}
+
+function startTimer(endAt){
+  examEndAt = endAt;
+  remainingTimeMs = Math.max(0, examEndAt - Date.now());
+  stopTimer();
+  if(!navigator.onLine){
+    pauseTimer();
+  } else {
+    isTimerPaused = false;
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  }
+}
+
+function pauseTimer(){
+  if(submitted) return;
+  if(!isTimerPaused && examEndAt){
+    remainingTimeMs = Math.max(0, examEndAt - Date.now());
+  }
+  isTimerPaused = true;
+  stopTimer();
+  renderTimerDisplay(remainingTimeMs);
+}
+
+function resumeTimer(){
+  if(submitted) return;
+  if(isTimerPaused || !timerInterval){
+    isTimerPaused = false;
+    if(remainingTimeMs > 0){
+      startTimer(Date.now() + remainingTimeMs);
+    } else {
+      renderTimerDisplay(0);
+    }
+  }
+}
+
+function updateOnlineBadge(){
+  const badge = document.getElementById('onlineBadge');
+  if(!badge) return;
+  if(navigator.onLine){
+    badge.classList.remove('offline');
+    badge.classList.add('online');
+    badge.innerHTML = '<span class="online-dot"></span>Online';
+    if(examEndAt && !submitted && isTimerPaused){
+      resumeTimer();
+      saveState();
+    }
+  }else{
+    badge.classList.remove('online');
+    badge.classList.add('offline');
+    badge.innerHTML = '<span class="online-dot"></span>Offline';
+    if(examEndAt && !submitted){
+      pauseTimer();
+      saveState();
+    }
+  }
+}
+window.addEventListener('online', updateOnlineBadge);
+window.addEventListener('offline', updateOnlineBadge);
+
+/* ---------- init (versi LMS: tanpa gate Nama/Kelas manual) ---------- */
+function runInitAfterDataReady(){
+  buildFlat();
+
+  const saved = loadState();
+  if(saved){
+    FLAT = saved.order.map(id=>FLAT.find(q=>q.id===id));
+    answers = saved.answers || {};
+    currentIndex = Math.min(saved.currentIndex||0, FLAT.length-1);
+    submitted = !!saved.submitted;
+    violationCount = saved.violationCount || 0;
+    updateViolationBadge();
+    updateResetButton();
+    document.getElementById('gateScreen').style.display = 'none';
+    document.getElementById('appMain').style.display = 'block';
+
+    if(submitted){
+      let earnedR=0, totalR=0;
+      FLAT.forEach(q=>{
+        const r = computeResult(q);
+        earnedR += r.earned;
+        totalR += r.total;
+      });
+      const penaltiR = PENALTI_AKTIF ? (violationCount * VIOLATION_PENALTY) : 0;
+      const nilaiMentahR = ((earnedR - penaltiR) / totalR) * 100;
+      const nilaiR = Math.max(0, Math.min(100, Math.round(nilaiMentahR)));
+      document.getElementById('scoreBig').textContent = nilaiR;
+      document.getElementById('scoreSub').textContent = 'Nilai Akhir (0-100)';
+      const msg = document.getElementById('scoreMsg');
+      msg.textContent = nilaiR > 75
+        ? '🎉 Selamat! Kamu meraih nilai yang sangat baik.'
+        : '💪 Tetap semangat! Terus berlatih supaya hasilnya lebih baik lagi.';
+      msg.style.color = nilaiR > 75 ? 'var(--good)' : 'var(--navy)';
+      msg.style.background = nilaiR > 75 ? 'var(--good-bg)' : '#eef0fb';
+      document.getElementById('resultsBox').classList.add('show');
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('timerBadge').textContent = 'Finished';
+    } else {
+      examActive = true;
+      requestExamFullscreen();
+      updateFullscreenButton();
+      let rem = saved.remainingTimeMs;
+      if(rem === undefined && saved.endAt){
+        rem = saved.endAt - Date.now();
+      }
+      remainingTimeMs = Math.max(0, rem !== undefined ? rem : TIMER_MS);
+      if(remainingTimeMs <= 0){
+        renderTimerDisplay(0);
+        grade(true);
+      } else if(!navigator.onLine || saved.isTimerPaused){
+        isTimerPaused = true;
+        pauseTimer();
+      } else {
+        startTimer(Date.now() + remainingTimeMs);
+      }
+    }
+
+    renderStage();
+    renderPalette();
+    updateProgress();
+    updateOnlineBadge();
+    if(!saved.submitted && (remainingTimeMs <= 0)){
+      grade(true);
+    }
+  } else {
+    // Belum pernah mengerjakan sebelumnya di perangkat ini: langsung
+    // masuk ke layar soal (Nama/Kelas sudah otomatis terisi dari akun
+    // LMS) dan tampilkan popup Peraturan Ujian sebelum mulai.
+    document.getElementById('gateScreen').style.display = 'none';
+    document.getElementById('appMain').style.display = 'block';
+    renderStage();
+    renderPalette();
+    updateProgress();
+    updateOnlineBadge();
+    window.scrollTo({top:0});
+
+    const rulesModal = document.getElementById('rulesModal');
+    const rulesCheck = document.getElementById('rulesAgreeCheck');
+    const rulesBtn = document.getElementById('rulesStartBtn');
+    rulesCheck.checked = false;
+    rulesBtn.disabled = true;
+    rulesModal.classList.add('show');
+  }
+}
+
+function applyPenaltiUI(){
+  // Fullscreen & deteksi pelanggaran TETAP selalu tampil/aktif — hanya teks
+  // soal "poin yang dikurangi" dan perhitungan nilai yang berubah sesuai
+  // PENALTI_AKTIF (lihat grade() dan registerViolation()).
+  if(!PENALTI_AKTIF){
+    document.getElementById('rulesListUl').innerHTML = `
+      <li>Tetap dalam <b>mode fullscreen (layar penuh)</b> dan di tab ini selama ujian berlangsung.</li>
+      <li>Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm + popup peringatan</b>, dan tercatat sebagai pelanggaran.</li>
+      <li>Untuk soal ini, pelanggaran <b>TIDAK mengurangi nilai akhir</b> — hanya dicatat sebagai catatan bagi guru.</li>
+      <li>Ujian <b>TIDAK</b> akan otomatis dikirim karena pelanggaran — kamu tetap bisa lanjut mengerjakan.</li>
+      <li>Jika keluar dari fullscreen, gunakan tombol <b>"⛶ Fullscreen"</b> di bagian atas untuk kembali.</li>
+    `;
+  } else {
+    document.getElementById('rulesPenaltiPoin').textContent = VIOLATION_PENALTY;
+  }
+}
+
+function beginExamAfterConsent(){
+  document.getElementById('rulesModal').classList.remove('show');
+  examActive = true;
+  requestExamFullscreen();
+  updateFullscreenButton();
+  startTimer(Date.now()+TIMER_MS);
+  saveState();
+}
+
+document.getElementById('rulesAgreeCheck').addEventListener('change', function(){
+  document.getElementById('rulesStartBtn').disabled = !this.checked;
+});
+
+document.getElementById('rulesStartBtn').addEventListener('click', ()=>{
+  if(document.getElementById('rulesAgreeCheck').checked){
+    beginExamAfterConsent();
+  }
+});
+
+document.getElementById('backToLoginBtn').addEventListener('click', ()=>{
+  saveState();
+  window.location.href = 'worksheet.html';
+});
+
+document.getElementById('hideBarBtn').addEventListener('click', function(){
+  const shell = document.querySelector('.progress-shell');
+  const hidden = shell.classList.toggle('bar-hidden');
+  this.querySelector('span').textContent = hidden ? 'Show Bar' : 'Hide Bar';
+});
+
+/* ---------- bootstrap: login LMS + ambil soal dari Supabase ----------
+   Ini menggantikan gate Nama/Kelas manual di versi mandiri. Siswa WAJIB
+   sudah login lewat index.html (requireLogin mengurus redirect kalau
+   belum). Nama & Kelas diambil dari profil akun, dan soal diambil dari
+   tabel bank_soal sesuai ?id=... di URL (dibuat otomatis saat guru
+   meng-upload file .docx lewat dashboard guru). */
+function showFatalGateError(msg){
+  document.getElementById('gateTitle').textContent = 'Tidak Bisa Membuka Soal';
+  document.getElementById('gateDesc').textContent = '';
+  document.getElementById('gateError').textContent = msg;
+}
+
+(async function bootstrap(){
+  const profile = await requireLogin(); // redirect ke index.html kalau belum login
+  if(!profile) return;
+  currentProfile = profile;
+
+  const params = new URLSearchParams(window.location.search);
+  BANK_SOAL_ID = params.get('id');
+  if(!BANK_SOAL_ID){
+    showFatalGateError('Link soal tidak valid (parameter ?id= tidak ditemukan). Buka soal ini lewat menu Worksheet.');
+    return;
+  }
+
+  const { data: soalRow, error } = await supabase
+    .from('bank_soal')
+    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti')
+    .eq('id', BANK_SOAL_ID)
+    .single();
+
+  if(error || !soalRow){
+    showFatalGateError('Soal tidak ditemukan atau sudah dihapus guru.');
+    return;
+  }
+
+  DATA = soalRow.data || [];
+  if(!Array.isArray(DATA) || DATA.length===0){
+    showFatalGateError('Soal ini belum berisi butir soal yang valid.');
+    return;
+  }
+  TIMER_MINUTES = soalRow.durasi_menit || 90;
+  TIMER_MS = TIMER_MINUTES*60*1000;
+  remainingTimeMs = TIMER_MS;
+  WORKSHEET_ID = soalRow.worksheet_id || null;
+  PENALTI_AKTIF = soalRow.penalti_aktif !== false; // default aktif kalau kolom kosong/null
+  VIOLATION_PENALTY = (soalRow.poin_penalti===0 || soalRow.poin_penalti) ? soalRow.poin_penalti : 2;
+  applyPenaltiUI();
+  STORAGE_KEY = 'lms_soal_' + BANK_SOAL_ID + '_' + profile.id;
+
+  document.title = soalRow.judul || document.title;
+  document.getElementById('gateSchoolName').textContent = soalRow.judul || 'Soal';
+
+  // Nama & Kelas otomatis dari akun LMS — TIDAK ada input manual.
+  document.getElementById('stuName').value = profile.nama;
+  document.getElementById('stuClass').value = profile.kelas ? profile.kelas.nama : '-';
+
+  runInitAfterDataReady();
+})();
+
+</script>
+</body>
+</html>
