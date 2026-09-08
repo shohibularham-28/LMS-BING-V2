@@ -15,14 +15,15 @@ const SUPABASE_URL = "https://xxxxx.supabase.co";       // dari Project Settings
 const SUPABASE_ANON_KEY = "eyJhbGciOi...";                // "anon public" key, BUKAN service_role
 ```
 
-## 3. Deploy Edge Function (untuk fitur "Buat Akun Siswa Massal" & "Reset Password")
-Ini **wajib** — tanpa ini, tombol "Buat Semua Akun" di dashboard guru dan tombol "🔑 Reset Password" di menu Daftar Siswa tidak akan bekerja.
+## 3. Deploy Edge Function (untuk fitur "Buat Akun Siswa Massal", "Edit", "Ganti Password" & "Hapus" siswa)
+Ini **wajib** — tanpa ini, tombol "Buat Semua Akun" di dashboard guru dan tombol "✏️ Edit" / "🔑 Ganti Password" / "🗑️ Hapus" di menu Daftar Siswa tidak akan bekerja.
 
 ```bash
 npm install -g supabase
 supabase login
 supabase link --project-ref xxxxx        # project ref dari URL project kamu
 supabase functions deploy create-students
+supabase functions deploy update-student
 supabase functions deploy reset-password
 supabase functions deploy delete-student
 ```

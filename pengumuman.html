@@ -5,6 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pengumuman & Nilai — English Learning Hub</title>
 <link rel="stylesheet" href="assets/style.css">
+<style>
+  /* ===== Mobile bottom nav (menu siswa di bawah layar) ===== */
+  .mobile-bottom-nav{ display:none; }
+  @media (max-width: 768px){
+    .mobile-bottom-nav{
+      display:flex;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid #E7E9F2;
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      z-index:999;
+      box-shadow:0 -2px 12px rgba(20,20,40,0.07);
+    }
+    .mobile-bottom-nav a{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      padding:6px 2px;
+      text-decoration:none;
+      color:#8A90A3;
+      font-size:10.5px;
+      font-weight:600;
+      border-radius:10px;
+    }
+    .mobile-bottom-nav a .mbn-icon{ font-size:19px; line-height:1; }
+    .mobile-bottom-nav a.active{ color:#1f2937; background:#F1F2F6; }
+    #app-screen .content{ padding-bottom:80px; }
+  }
+</style>
 </head>
 <body>
 
@@ -85,6 +118,13 @@
     </div>
   </div>
 </div>
+
+<nav class="mobile-bottom-nav">
+  <a href="pengumuman.html" data-page="pengumuman" class="active"><span class="mbn-icon">📣</span>Pengumuman</a>
+  <a href="materi.html" data-page="materi"><span class="mbn-icon">📘</span>Materi</a>
+  <a href="worksheet.html" data-page="worksheet"><span class="mbn-icon">📝</span>Worksheet</a>
+  <a href="pengaturan.html" data-page="pengaturan"><span class="mbn-icon">⚙️</span>Akun</a>
+</nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabaseClient.js"></script>
