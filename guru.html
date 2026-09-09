@@ -98,6 +98,7 @@
         <div class="nav-group-items">
           <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
           <a class="nav-item" data-page="nilai" href="#" title="Nilai"><span class="icon">🧾</span> <span class="label">Nilai</span></a>
+          <a class="nav-item" data-page="sedangujian" href="#" title="Sedang Ujian"><span class="icon">🟢</span> <span class="label">Sedang Ujian</span></a>
           <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
         </div>
       </div>
@@ -354,6 +355,25 @@
 
           <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
           <div id="worksheetList">Memuat…</div>
+        </div>
+
+        <!-- ===== SEDANG UJIAN (monitoring live siapa yang sedang mengerjakan Bank Soal) ===== -->
+        <div class="gs-section" id="section-sedangujian">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Sedang Ujian</h1></div>
+          <div class="hint">Daftar siswa yang sedang mengerjakan soal dari <b>Bank Soal</b> saat ini, dihitung dari "ping" terakhir yang dikirim halaman soal siswa tiap ~20 detik. Otomatis refresh tiap 10 detik selama halaman ini dibuka. Ini terpisah dari menu "Nilai" (yang isinya nilai siswa yang SUDAH submit).</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Judul Soal</label>
+              <select id="sedangUjianJudulSelect"><option value="">Semua</option></select>
+            </div>
+            <div class="form-field" style="margin-bottom:0;">
+              <label>Kelas</label>
+              <select id="sedangUjianKelasSelect"><option value="">Semua Kelas</option></select>
+            </div>
+            <button class="btn-secondary-sm" id="btnMuatSedangUjian">Muat Sekarang</button>
+          </div>
+          <div class="summary-grid" id="sedangUjianSummary"></div>
+          <div class="table-responsive"><div id="sedangUjianTableWrap">Belum dimuat.</div></div>
         </div>
 
         <!-- ===== NILAI (gabungan Hasil Ujian HTML mandiri + Hasil Bank Soal LMS dalam satu tabel) ===== -->
@@ -2217,6 +2237,106 @@
   document.getElementById('btnHapusSemuaHasilWs').addEventListener('click', hapusSemuaHasilWs);
   loadHasilWsSlugOptions();
   loadHasilWsKelasOptions();
+
+  // =========================================================
+  // SEDANG UJIAN — monitoring live siapa yang sedang mengerjakan
+  // soal dari sesi_ujian (dipisah dari nilai yang sudah submit).
+  // =========================================================
+  const SEDANG_UJIAN_STALE_MS = 60000; // kalau ping terakhir > 1 menit, anggap "Tidak Merespon"
+  const SEDANG_UJIAN_REFRESH_MS = 10000; // auto refresh tiap 10 detik
+  let currentSedangUjianRows = [];
+
+  async function loadSedangUjianJudulOptions() {
+    const { data } = await supabase.from('bank_soal').select('id, judul').order('created_at', { ascending: false });
+    const sel = document.getElementById('sedangUjianJudulSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Semua</option>' +
+      (data || []).map(b => `<option value="${esc(b.id)}">${esc(b.judul)}</option>`).join('');
+    sel.value = current;
+  }
+
+  async function loadSedangUjianKelasOptions() {
+    const { data } = await supabase.from('sesi_ujian').select('kelas').eq('status', 'mengerjakan');
+    const kelasList = [...new Set((data || []).map(r => r.kelas).filter(Boolean))].sort();
+    const sel = document.getElementById('sedangUjianKelasSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+    sel.value = current;
+  }
+
+  function fmtDurasiSejak(iso) {
+    const ms = Date.now() - new Date(iso).getTime();
+    const menit = Math.floor(ms / 60000);
+    if (menit < 1) return 'Baru saja';
+    if (menit < 60) return `${menit} menit lalu`;
+    const jam = Math.floor(menit / 60);
+    return `${jam} jam ${menit % 60} menit lalu`;
+  }
+
+  async function loadSedangUjian() {
+    const wrap = document.getElementById('sedangUjianTableWrap');
+    const summary = document.getElementById('sedangUjianSummary');
+    const bankSoalId = document.getElementById('sedangUjianJudulSelect').value;
+    const kelasFilter = document.getElementById('sedangUjianKelasSelect').value;
+
+    let query = supabase
+      .from('sesi_ujian')
+      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, bank_soal:bank_soal_id ( judul )')
+      .eq('status', 'mengerjakan')
+      .order('started_at', { ascending: true });
+    if (bankSoalId) query = query.eq('bank_soal_id', bankSoalId);
+    if (kelasFilter) query = query.eq('kelas', kelasFilter);
+
+    const { data, error } = await query;
+    if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
+
+    currentSedangUjianRows = data || [];
+    const now = Date.now();
+    const aktif = currentSedangUjianRows.filter(r => (now - new Date(r.last_ping_at).getTime()) <= SEDANG_UJIAN_STALE_MS);
+    const tidakMerespon = currentSedangUjianRows.length - aktif.length;
+
+    summary.innerHTML = `
+      <div class="summary-card"><div class="val">${currentSedangUjianRows.length}</div><div class="lbl">Sedang Mengerjakan</div></div>
+      <div class="summary-card"><div class="val">${aktif.length}</div><div class="lbl">Aktif (ping < 1 menit)</div></div>
+      <div class="summary-card"><div class="val">${tidakMerespon}</div><div class="lbl">Tidak Merespon</div></div>
+    `;
+
+    if (!currentSedangUjianRows.length) {
+      wrap.innerHTML = emptyState('Tidak ada yang sedang ujian', 'Siswa yang sedang mengerjakan soal dari Bank Soal akan muncul di sini secara live.', '🟢');
+      return;
+    }
+
+    wrap.innerHTML = `
+      <table class="grade-table">
+        <thead><tr><th>Nama</th><th>Kelas</th><th>Judul Soal</th><th>Status</th><th>Pelanggaran</th><th>Mulai</th><th>Ping Terakhir</th></tr></thead>
+        <tbody>
+          ${currentSedangUjianRows.map(r => {
+            const stale = (now - new Date(r.last_ping_at).getTime()) > SEDANG_UJIAN_STALE_MS;
+            return `
+            <tr>
+              <td>${esc(r.nama)}</td>
+              <td>${esc(r.kelas)}</td>
+              <td>${esc(r.bank_soal ? r.bank_soal.judul : '(soal dihapus)')}</td>
+              <td>${stale ? '<span class="score-pill status-belum">Tidak Merespon</span>' : '<span class="score-pill status-tuntas">🟢 Aktif</span>'}</td>
+              <td>${r.pelanggaran || 0}</td>
+              <td>${fmtDurasiSejak(r.started_at)}</td>
+              <td>${fmtDurasiSejak(r.last_ping_at)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  document.getElementById('btnMuatSedangUjian').addEventListener('click', loadSedangUjian);
+  document.getElementById('sedangUjianJudulSelect').addEventListener('change', loadSedangUjian);
+  document.getElementById('sedangUjianKelasSelect').addEventListener('change', loadSedangUjian);
+  loadSedangUjianJudulOptions();
+  loadSedangUjianKelasOptions();
+  loadSedangUjian();
+  setInterval(() => {
+    loadSedangUjian();
+    loadSedangUjianKelasOptions();
+  }, SEDANG_UJIAN_REFRESH_MS);
 
   // =========================================================
   // NILAI — gabungan Hasil Ujian HTML Mandiri (hasil_ujian) +

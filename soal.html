@@ -610,6 +610,8 @@ let DATA = []; // diisi otomatis dari tabel bank_soal saat halaman dimuat
 let currentProfile = null;
 let BANK_SOAL_ID = null;
 let WORKSHEET_ID = null;
+let SESI_ID = null; // id baris di sesi_ujian, dipakai buat heartbeat & tandai selesai
+let sesiPingInterval = null;
 
 
 let FLAT = [];
@@ -1028,6 +1030,7 @@ function grade(auto){
   examActive = false;
   updateFullscreenButton();
   updateResetButton();
+  selesaikanSesiUjian();
   document.getElementById('violationModal').classList.remove('show');
   if(isFullscreenActive()){
     const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
@@ -1090,6 +1093,70 @@ function buildAnswerReport(){
     ? `Pelanggaran tab/app: ${violationCount} (penalti: -${violationCount*VIOLATION_PENALTY} poin)`
     : `Pelanggaran tab/app: ${violationCount} (penalti nonaktif, nilai tidak dipotong)`;
   return header + '\n' + lines.join('\n');
+}
+
+/* ---------- sesi_ujian: lapor ke guru siapa yang SEDANG mengerjakan ----------
+   Terpisah dari hasil_ujian_lms (yang baru terisi setelah submit). Baris di
+   sesi_ujian dibuat/diupdate begitu siswa mulai/melanjutkan ujian, lalu
+   di-"ping" berkala supaya dashboard guru tahu siswa masih aktif. Kalau
+   gagal (mis. offline), dibiarkan saja — ini fitur monitoring tambahan,
+   bukan bagian dari alur inti pengerjaan/penilaian, jadi tidak boleh
+   menghentikan ujian siswa kalau gagal.*/
+const SESI_PING_INTERVAL_MS = 20000; // kirim heartbeat tiap 20 detik
+
+async function mulaiSesiUjian(){
+  if(!currentProfile || !BANK_SOAL_ID) return;
+  try{
+    const stuClass = document.getElementById('stuClass').value.trim() || (currentProfile.kelas ? currentProfile.kelas.nama : '-');
+    const { data, error } = await supabase
+      .from('sesi_ujian')
+      .upsert({
+        bank_soal_id: BANK_SOAL_ID,
+        profile_id: currentProfile.id,
+        nama: currentProfile.nama,
+        kelas: stuClass,
+        status: 'mengerjakan',
+        pelanggaran: violationCount,
+        last_ping_at: new Date().toISOString()
+      }, { onConflict: 'bank_soal_id,profile_id' })
+      .select('id')
+      .single();
+    if(error){ console.warn('Gagal mencatat sesi ujian (diabaikan):', error.message); return; }
+    SESI_ID = data.id;
+    startSesiPing();
+  }catch(err){ console.warn('Gagal mencatat sesi ujian (diabaikan):', err); }
+}
+
+function startSesiPing(){
+  if(sesiPingInterval) clearInterval(sesiPingInterval);
+  sesiPingInterval = setInterval(pingSesiUjian, SESI_PING_INTERVAL_MS);
+}
+
+function stopSesiPing(){
+  if(sesiPingInterval){ clearInterval(sesiPingInterval); sesiPingInterval = null; }
+}
+
+async function pingSesiUjian(){
+  if(!SESI_ID || !isExamRunning()) return;
+  try{
+    await supabase.from('sesi_ujian').update({
+      status: 'mengerjakan',
+      pelanggaran: violationCount,
+      last_ping_at: new Date().toISOString()
+    }).eq('id', SESI_ID);
+  }catch(err){ /* koneksi bermasalah, biarkan — akan dicoba lagi di ping berikutnya */ }
+}
+
+async function selesaikanSesiUjian(){
+  stopSesiPing();
+  if(!SESI_ID) return;
+  try{
+    await supabase.from('sesi_ujian').update({
+      status: 'selesai',
+      pelanggaran: violationCount,
+      last_ping_at: new Date().toISOString()
+    }).eq('id', SESI_ID);
+  }catch(err){ /* diabaikan — hasil ujian tetap sudah terkirim lewat hasil_ujian_lms */ }
 }
 
 /* ---------- send result to Supabase (muncul di dashboard guru) ----------
@@ -1607,6 +1674,7 @@ function runInitAfterDataReady(){
       examActive = true;
       requestExamFullscreen();
       updateFullscreenButton();
+      mulaiSesiUjian();
       let rem = saved.remainingTimeMs;
       if(rem === undefined && saved.endAt){
         rem = saved.endAt - Date.now();
@@ -1675,6 +1743,7 @@ function beginExamAfterConsent(){
   updateFullscreenButton();
   startTimer(Date.now()+TIMER_MS);
   saveState();
+  mulaiSesiUjian();
 }
 
 document.getElementById('rulesAgreeCheck').addEventListener('change', function(){
