@@ -112,6 +112,25 @@
 }
 .btn-hapus-semua-chat:hover{ background:#FFE2DF; }
 .btn-hapus-semua-chat:disabled{ opacity:.5; cursor:not-allowed; }
+.btn-kirim-hadir{
+  background:var(--violet-soft); color:var(--violet); border:1px solid rgba(124,92,252,0.35); border-radius:10px;
+  padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; flex-shrink:0;
+}
+.btn-kirim-hadir:hover{ background:rgba(124,92,252,0.25); }
+.btn-kirim-hadir:disabled{ opacity:.5; cursor:not-allowed; }
+.hadir-chip-row{ align-self:center; max-width:92%; }
+.hadir-chip{
+  display:flex; align-items:center; gap:10px; padding:10px 16px; border-radius:16px;
+  background:#F5F2FF; border:1.5px dashed var(--violet); cursor:pointer; user-select:none;
+  transition:background .15s;
+}
+.hadir-chip:hover{ background:#EDE7FF; }
+.hadir-chip .hadir-icon{
+  width:34px; height:34px; flex-shrink:0; border-radius:50%; display:flex; align-items:center;
+  justify-content:center; font-size:17px; background:var(--violet); color:#fff;
+}
+.hadir-chip .hadir-text .t1{ font-size:13px; font-weight:700; color:#161927; }
+.hadir-chip .hadir-text .t2{ font-size:11.5px; color:#8A90A3; margin-top:1px; }
 .chat-input-bar{
   display:flex; gap:10px; padding:14px 16px; border-top:1px solid #E7E9F2; background:#fff;
 }
@@ -148,6 +167,7 @@
       <div class="nav-section-label">Menu Guru</div>
       <a class="nav-item active" data-page="rekap" href="#" title="Rekap Nilai"><span class="icon">📊</span> <span class="label">Rekap Nilai</span></a>
       <a class="nav-item" data-page="obrolan" href="#" title="Obrolan Kelas"><span class="icon">💬</span> <span class="label">Obrolan Kelas</span></a>
+      <a class="nav-item" data-page="kehadiran" href="#" title="Rekap Kehadiran"><span class="icon">🧾</span> <span class="label">Rekap Kehadiran</span></a>
 
       <div class="nav-group" data-group="siswa-akun">
         <div class="nav-group-header" data-group-toggle title="Siswa & Akun">
@@ -252,7 +272,10 @@
                 <h3 id="obrolanKelasNama">Pilih kelas</h3>
                 <div class="sub">Sebagai guru, pesanmu terlihat di semua kelas yang kamu pilih.</div>
               </div>
-              <button type="button" class="btn-hapus-semua-chat" id="obrolanHapusSemuaBtn" disabled>🗑 Hapus Semua Pesan</button>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-kirim-hadir" id="obrolanKirimHadirBtn" disabled>📋 Kirim Daftar Hadir</button>
+                <button type="button" class="btn-hapus-semua-chat" id="obrolanHapusSemuaBtn" disabled>🗑 Hapus Semua Pesan</button>
+              </div>
             </div>
             <div class="chat-body" id="obrolanBody"><div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div></div>
             <form class="chat-input-bar" id="obrolanForm">
@@ -260,6 +283,26 @@
               <button type="submit" id="obrolanSendBtn" disabled>Kirim</button>
             </form>
           </div>
+        </div>
+
+        <!-- ===== REKAP KEHADIRAN ===== -->
+        <div class="gs-section" id="section-kehadiran">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Rekap Kehadiran</h1></div>
+          <div class="hint">Rekap presensi yang dikirim lewat Obrolan Kelas (menu 📋 Kirim Daftar Hadir). Pilih kelas &amp; sesi presensi untuk melihat siapa yang sudah konfirmasi hadir.</div>
+          <div class="filter-select-row">
+            <div class="filter-select-field"><label for="kehadiranKelasSelect">Kelas</label><select id="kehadiranKelasSelect"></select></div>
+            <div class="filter-select-field" style="min-width:260px;"><label for="kehadiranSesiSelect">Sesi Presensi</label><select id="kehadiranSesiSelect"></select></div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+            <button class="btn-secondary-sm" id="btnDownloadKehadiran">⬇️ Download Rekap (Excel)</button>
+            <button class="btn-danger-sm" id="btnHapusSesiHadir">🗑️ Hapus Sesi Ini</button>
+          </div>
+          <div class="summary-grid" id="kehadiranSummaryGrid"></div>
+          <table class="grade-table" id="kehadiran-table">
+            <thead><tr><th>#</th><th>Nama Siswa</th><th>Status</th><th>Waktu Konfirmasi</th></tr></thead>
+            <tbody id="kehadiran-container"></tbody>
+          </table>
+          <div id="kehadiran-empty-slot"></div>
         </div>
 
         <!-- ===== PERSETUJUAN AKUN BARU ===== -->
@@ -2776,6 +2819,8 @@
     fillKelasSelect(document.getElementById('nilaiKelasSelect'));
     fillKelasSelect(document.getElementById('akunKelasSelect'));
     fillObrolanKelasSelect();
+    fillKehadiranKelasSelect();
+    await renderKehadiranSesiOptions();
     renderAnnKelasChecklist();
     await renderKelasList();
     await renderWorksheetList();
@@ -2828,6 +2873,20 @@
     rows.forEach(m => {
       if (obrolanKnownIds.has(m.id)) return;
       obrolanKnownIds.add(m.id);
+      if (m.tipe === 'hadir' && m.sesi_hadir_id) {
+        const row = document.createElement('div');
+        row.className = 'msg-row hadir-chip-row';
+        row.dataset.id = m.id;
+        row.innerHTML = `
+          <div class="hadir-chip" title="Lihat rekap presensi ini">
+            <div class="hadir-icon">📋</div>
+            <div class="hadir-text"><div class="t1">Presensi Kehadiran</div><div class="t2">Ketuk untuk lihat rekap</div></div>
+          </div>
+        `;
+        row.querySelector('.hadir-chip').addEventListener('click', () => gotoKehadiran(m.kelas_id || obrolanKelasId, m.sesi_hadir_id));
+        body.appendChild(row);
+        return;
+      }
       const mine = m.sender_id === teacher.id;
       const isGuru = m.sender_role === 'guru';
       const row = document.createElement('div');
@@ -2871,7 +2930,7 @@
     const body = document.getElementById('obrolanBody');
     const { data, error } = await supabase
       .from('pesan_kelas')
-      .select('id, sender_id, sender_nama, sender_role, isi, created_at, is_anonim')
+      .select('id, sender_id, sender_nama, sender_role, isi, created_at, is_anonim, tipe, sesi_hadir_id')
       .eq('kelas_id', obrolanKelasId)
       .order('created_at', { ascending: true })
       .limit(200);
@@ -2900,17 +2959,46 @@
     const input = document.getElementById('obrolanInput');
     const sendBtn = document.getElementById('obrolanSendBtn');
     const hapusSemuaBtn = document.getElementById('obrolanHapusSemuaBtn');
+    const kirimHadirBtn = document.getElementById('obrolanKirimHadirBtn');
     const kelasNama = document.getElementById('obrolanKelasNama');
     const opt = allKelas.find(k => k.id === obrolanKelasId);
     kelasNama.textContent = opt ? 'Kelas ' + opt.nama : 'Pilih kelas';
     if (!obrolanKelasId) {
       document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div>';
-      input.disabled = true; sendBtn.disabled = true; hapusSemuaBtn.disabled = true;
+      input.disabled = true; sendBtn.disabled = true; hapusSemuaBtn.disabled = true; kirimHadirBtn.disabled = true;
       return;
     }
-    input.disabled = false; sendBtn.disabled = false; hapusSemuaBtn.disabled = false;
+    input.disabled = false; sendBtn.disabled = false; hapusSemuaBtn.disabled = false; kirimHadirBtn.disabled = false;
     document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Memuat obrolan…</div>';
     loadObrolanMessages();
+  });
+
+  // ---- Kirim Daftar Hadir: buat sesi presensi baru + kirim "kartu" ke chat kelas ----
+  document.getElementById('obrolanKirimHadirBtn').addEventListener('click', async () => {
+    if (!obrolanKelasId) return;
+    const btn = document.getElementById('obrolanKirimHadirBtn');
+    const opt = allKelas.find(k => k.id === obrolanKelasId);
+    if (!confirm(`Kirim daftar hadir ke obrolan kelas ${opt ? opt.nama : 'ini'} sekarang?`)) return;
+    btn.disabled = true;
+    btn.textContent = 'Mengirim…';
+    const judul = 'Presensi ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const { data: sesi, error: sesiErr } = await supabase.from('sesi_hadir').insert({
+      kelas_id: obrolanKelasId, guru_id: teacher.id, guru_nama: teacher.nama, judul,
+    }).select('id').single();
+    if (sesiErr || !sesi) {
+      alert('Gagal membuat sesi presensi: ' + (sesiErr ? sesiErr.message : 'tidak diketahui'));
+      btn.disabled = false; btn.textContent = '📋 Kirim Daftar Hadir';
+      return;
+    }
+    const { error: pesanErr } = await supabase.from('pesan_kelas').insert({
+      kelas_id: obrolanKelasId, sender_id: teacher.id, sender_nama: teacher.nama, sender_role: 'guru',
+      isi: '📋 ' + judul + ' — klik ikon untuk konfirmasi kehadiran.',
+      tipe: 'hadir', sesi_hadir_id: sesi.id,
+    });
+    btn.disabled = false;
+    btn.textContent = '📋 Kirim Daftar Hadir';
+    if (pesanErr) { alert('Gagal mengirim daftar hadir ke chat: ' + pesanErr.message); return; }
+    await loadObrolanMessages();
   });
 
   document.getElementById('obrolanHapusSemuaBtn').addEventListener('click', async () => {
@@ -2966,6 +3054,155 @@
     const section = document.getElementById('section-obrolan');
     if (section && section.classList.contains('active') && obrolanKelasId) loadObrolanMessages();
   }, 6000);
+
+  // =========================================================
+  // REKAP KEHADIRAN — rekap sesi presensi yang dikirim lewat Obrolan Kelas
+  // =========================================================
+  const kehadiranState = { kelasId: null, sesiId: null };
+  let kehadiranSesiList = [];
+  let currentKehadiranRows = [];
+
+  function fillKehadiranKelasSelect() {
+    const sel = document.getElementById('kehadiranKelasSelect');
+    if (!sel) return;
+    const prev = kehadiranState.kelasId;
+    sel.innerHTML = allKelas.length
+      ? allKelas.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`).join('')
+      : '<option value="">Belum ada kelas</option>';
+    kehadiranState.kelasId = (prev && allKelas.some(k => k.id === prev)) ? prev : (allKelas[0] ? allKelas[0].id : null);
+    if (kehadiranState.kelasId) sel.value = kehadiranState.kelasId;
+  }
+
+  async function renderKehadiranSesiOptions() {
+    const sesiSel = document.getElementById('kehadiranSesiSelect');
+    if (!kehadiranState.kelasId) {
+      sesiSel.innerHTML = '<option value="">— Tidak ada kelas —</option>';
+      kehadiranState.sesiId = null;
+      kehadiranSesiList = [];
+      return renderKehadiranRekap();
+    }
+    const { data } = await supabase.from('sesi_hadir')
+      .select('id, judul, created_at')
+      .eq('kelas_id', kehadiranState.kelasId)
+      .order('created_at', { ascending: false });
+    kehadiranSesiList = data || [];
+    if (!kehadiranState.sesiId || !kehadiranSesiList.some(s => s.id === kehadiranState.sesiId)) {
+      kehadiranState.sesiId = kehadiranSesiList[0] ? kehadiranSesiList[0].id : null;
+    }
+    sesiSel.innerHTML = kehadiranSesiList.length
+      ? kehadiranSesiList.map(s => `<option value="${s.id}" ${kehadiranState.sesiId === s.id ? 'selected' : ''}>${esc(s.judul)} · ${obrolanFmtTime(s.created_at)}</option>`).join('')
+      : '<option value="">— Belum ada sesi presensi —</option>';
+    await renderKehadiranRekap();
+  }
+
+  async function renderKehadiranRekap() {
+    const summaryGrid = document.getElementById('kehadiranSummaryGrid');
+    const table = document.getElementById('kehadiran-table');
+    const container = document.getElementById('kehadiran-container');
+    const emptySlot = document.getElementById('kehadiran-empty-slot');
+    const btnDownload = document.getElementById('btnDownloadKehadiran');
+    const btnHapusSesi = document.getElementById('btnHapusSesiHadir');
+
+    if (!kehadiranState.kelasId || !kehadiranState.sesiId) {
+      summaryGrid.innerHTML = '';
+      table.style.display = 'none';
+      container.innerHTML = '';
+      currentKehadiranRows = [];
+      btnDownload.disabled = true; btnHapusSesi.disabled = true;
+      emptySlot.innerHTML = emptyState('Belum ada sesi presensi', 'Kirim daftar hadir dulu lewat menu Obrolan Kelas.', '🧾');
+      return;
+    }
+
+    const [siswaRes, hadirRes] = await Promise.all([
+      supabase.from('profiles').select('id, nama').eq('kelas_id', kehadiranState.kelasId).order('nama'),
+      supabase.from('kehadiran').select('siswa_id, waktu_konfirmasi').eq('sesi_id', kehadiranState.sesiId),
+    ]);
+    const hadirMap = new Map((hadirRes.data || []).map(h => [h.siswa_id, h.waktu_konfirmasi]));
+    const rows = (siswaRes.data || []).map(s => ({
+      nama: s.nama,
+      hadir: hadirMap.has(s.id),
+      waktu: hadirMap.get(s.id) || null,
+    })).sort((a, b) => (b.hadir - a.hadir) || a.nama.localeCompare(b.nama));
+
+    currentKehadiranRows = rows;
+    const jumlahHadir = rows.filter(r => r.hadir).length;
+    summaryGrid.innerHTML = `
+      <div class="summary-card"><div class="val">${rows.length}</div><div class="lbl">Jumlah Siswa</div></div>
+      <div class="summary-card"><div class="val">${jumlahHadir}</div><div class="lbl">Hadir</div></div>
+      <div class="summary-card"><div class="val">${rows.length - jumlahHadir}</div><div class="lbl">Belum Hadir</div></div>
+    `;
+    btnDownload.disabled = !rows.length;
+    btnHapusSesi.disabled = false;
+
+    if (rows.length) {
+      table.style.display = '';
+      emptySlot.innerHTML = '';
+      container.innerHTML = rows.map((r, i) => `
+        <tr>
+          <td class="rank-cell">${i + 1}</td>
+          <td>${esc(r.nama)}</td>
+          <td><span class="score-pill ${r.hadir ? 'status-tuntas' : 'status-belum'}">${r.hadir ? '✅ Hadir' : 'Belum Hadir'}</span></td>
+          <td>${r.waktu ? obrolanFmtTime(r.waktu) : '-'}</td>
+        </tr>
+      `).join('');
+    } else {
+      table.style.display = 'none';
+      container.innerHTML = '';
+      emptySlot.innerHTML = emptyState('Belum ada siswa', 'Kelas ini belum punya siswa terdaftar.', '🧾');
+    }
+  }
+
+  document.getElementById('kehadiranKelasSelect').addEventListener('change', (e) => {
+    kehadiranState.kelasId = e.target.value || null;
+    kehadiranState.sesiId = null;
+    renderKehadiranSesiOptions();
+  });
+  document.getElementById('kehadiranSesiSelect').addEventListener('change', (e) => {
+    kehadiranState.sesiId = e.target.value || null;
+    renderKehadiranRekap();
+  });
+
+  document.getElementById('btnDownloadKehadiran').addEventListener('click', () => {
+    if (!kehadiranState.sesiId || !currentKehadiranRows.length) { alert('Belum ada data kehadiran untuk diunduh.'); return; }
+    const kelasNama = allKelas.find(k => k.id === kehadiranState.kelasId)?.nama || 'kelas';
+    const sesi = kehadiranSesiList.find(s => s.id === kehadiranState.sesiId);
+    const header = ['#', 'Nama Siswa', 'Status', 'Waktu Konfirmasi'];
+    const rows = currentKehadiranRows.map((r, i) => [i + 1, r.nama, r.hadir ? 'Hadir' : 'Belum Hadir', r.waktu ? obrolanFmtTime(r.waktu) : '-']);
+    downloadXlsx(`rekap-kehadiran-${kelasNama.replace(/\s+/g, '_')}-${(sesi ? sesi.judul : 'sesi').replace(/\s+/g, '_')}.xlsx`, header, rows);
+  });
+
+  document.getElementById('btnHapusSesiHadir').addEventListener('click', async () => {
+    if (!kehadiranState.sesiId) return;
+    const sesi = kehadiranSesiList.find(s => s.id === kehadiranState.sesiId);
+    if (!confirm(`Hapus sesi presensi "${sesi ? sesi.judul : ''}" beserta seluruh data kehadirannya? Tindakan ini tidak bisa dibatalkan.`)) return;
+    const { error } = await supabase.from('sesi_hadir').delete().eq('id', kehadiranState.sesiId);
+    if (error) { alert('Gagal menghapus sesi presensi: ' + error.message); return; }
+    kehadiranState.sesiId = null;
+    await renderKehadiranSesiOptions();
+  });
+
+  // Dipanggil dari ikon "📋 Presensi Kehadiran" di Obrolan Kelas (guru) —
+  // langsung lompat ke menu Rekap Kehadiran dengan kelas & sesi yang sesuai.
+  async function gotoKehadiran(kelasId, sesiId) {
+    const nav = document.querySelector('.nav-item[data-page="kehadiran"]');
+    if (nav) gotoPage(nav);
+    kehadiranState.kelasId = kelasId;
+    const kelasSel = document.getElementById('kehadiranKelasSelect');
+    if (kelasSel && kelasId) kelasSel.value = kelasId;
+    kehadiranState.sesiId = sesiId || null;
+    await renderKehadiranSesiOptions();
+    const sesiSel = document.getElementById('kehadiranSesiSelect');
+    if (sesiSel && kehadiranState.sesiId) sesiSel.value = kehadiranState.sesiId;
+  }
+
+  // Link presensi juga berfungsi sebagai link sungguhan kalau dibuka guru:
+  // ?absen=<sesi_id> → langsung lompat ke Rekap Kehadiran sesi tersebut.
+  (async () => {
+    const absenParam = new URLSearchParams(window.location.search).get('absen');
+    if (!absenParam) return;
+    const { data: sesi } = await supabase.from('sesi_hadir').select('kelas_id').eq('id', absenParam).single();
+    if (sesi) await gotoKehadiran(sesi.kelas_id, absenParam);
+  })();
 
   renderLevelTabs();
   renderSiswaLevelTabs();

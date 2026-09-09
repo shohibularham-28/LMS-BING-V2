@@ -74,6 +74,15 @@ Kalau project Supabase kamu sudah jalan duluan, jalankan `MIGRASI_PERSETUJUAN_AK
 
 Kalau project Supabase kamu sudah jalan duluan, jalankan `MIGRASI_NOTIFIKASI.sql` sekali di SQL Editor (menambah kolom `last_seen_updates` di tabel `profiles`). Project baru yang pakai `supabase/schema.sql` versi ini sudah otomatis benar.
 
+## 15. Presensi / Kehadiran lewat Obrolan Kelas
+Di menu **💬 Obrolan Kelas**, setelah guru pilih kelas, ada tombol baru **📋 Kirim Daftar Hadir**. Klik tombol ini membuat 1 sesi presensi baru untuk kelas itu dan langsung mengirim "kartu" presensi ke room obrolan kelas tersebut — tampil sebagai **ikon** (bukan teks link biasa), jadi siswa cukup ketuk ikonnya, bukan lihat link mentah.
+
+- Siswa di kelas itu (dan hanya kelas itu) yang lihat ikon di obrolannya. Ketuk ikon → muncul konfirmasi "Ya, saya hadir sekarang" → sekali diklik, kehadirannya langsung tercatat (tidak bisa dobel konfirmasi untuk sesi yang sama).
+- Ikon otomatis berubah jadi ✅ hijau begitu siswa sudah konfirmasi.
+- Guru bisa lihat rekapnya di menu baru **🧾 Rekap Kehadiran** (pilih kelas + sesi presensi) — tabel siapa yang sudah/belum hadir beserta jam konfirmasinya, bisa didownload sebagai Excel, atau dihapus kalau sesi tsb salah kirim/testing. Ikon presensi di chat milik guru sendiri juga bisa diklik untuk lompat langsung ke rekap sesi itu.
+
+Jalankan `MIGRASI_KEHADIRAN.sql` sekali di Supabase SQL Editor (butuh `MIGRASI_OBROLAN_KELAS.sql` sudah pernah dijalankan lebih dulu). Ini menambah tabel `sesi_hadir` & `kehadiran`, plus kolom `tipe`/`sesi_hadir_id` di `pesan_kelas`.
+
 ## 14. Deploy
 Karena ini masih situs statis (HTML+JS) yang manggil Supabase langsung dari browser, kamu bisa deploy persis seperti sebelumnya: GitHub Pages, Netlify, Vercel, dsb. Cukup push semua file (kecuali folder `supabase/functions`, yang di-deploy terpisah lewat Supabase CLI di langkah 3).
 
