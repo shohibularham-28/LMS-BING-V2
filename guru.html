@@ -135,7 +135,7 @@
           <div class="notif-wrap">
             <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
             <div class="notif-dropdown" id="notifDropdown">
-              <div class="notif-header">Akun Menunggu Persetujuan</div>
+              <div class="notif-header">Notifikasi</div>
               <div id="notifList">Memuat…</div>
             </div>
           </div>
@@ -555,6 +555,93 @@
   // =========================================================
   // PERSETUJUAN AKUN BARU (siswa daftar mandiri, status = pending)
   // =========================================================
+  // =========================================================
+  // NOTIFIKASI GABUNGAN: akun menunggu persetujuan + nilai ujian baru masuk
+  // (dari hasil_ujian & hasil_ujian_lms), ditampilkan bareng di lonceng 🔔
+  // =========================================================
+  let pendingApprovalRows = [];
+  let nilaiBaruRows = [];
+  const NOTIF_POLL_MS = 30000; // cek notifikasi baru tiap 30 detik
+
+  function renderNotifDropdown() {
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const items = [
+      ...pendingApprovalRows.map(s => ({
+        icon: '🆕',
+        title: `${esc(s.nama)} daftar akun`,
+        desc: `Siswa ${esc(s.kelas ? s.kelas.nama : '—')}`,
+        created_at: s.created_at,
+        goto: 'persetujuan'
+      })),
+      ...nilaiBaruRows.map(n => ({
+        icon: '📊',
+        title: `Nilai masuk: ${esc(n.nama)}`,
+        desc: `${esc(n.judul || n.ujian_slug || 'Ujian')} · Nilai ${fmtSkor(n.nilai)}`,
+        created_at: n.created_at,
+        goto: 'nilai'
+      })),
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    list.innerHTML = items.length ? items.map(it => `
+      <a class="notif-item" data-goto-notif="${it.goto}">
+        <div class="t">${it.icon} ${it.title}</div>
+        <div class="d">${it.desc} · ${new Date(it.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
+      </a>
+    `).join('') : '<div class="notif-empty">Tidak ada notifikasi baru</div>';
+
+    list.querySelectorAll('[data-goto-notif]').forEach(item => {
+      item.addEventListener('click', () => {
+        document.getElementById('notifDropdown').classList.remove('open');
+        const nav = document.querySelector(`.nav-item[data-page="${item.dataset.gotoNotif}"]`);
+        if (nav) nav.click();
+      });
+    });
+  }
+
+  function refreshNotifDot() {
+    setNotifDot(pendingApprovalRows.length + nilaiBaruRows.length);
+    renderNotifDropdown();
+  }
+
+  // Ambil hasil ujian (dua sumber: HTML mandiri & Bank Soal LMS) yang masuk
+  // sejak terakhir guru buka lonceng notifikasi (profiles.last_seen_updates,
+  // kolom yang sama dipakai untuk notifikasi siswa).
+  async function loadNilaiMasukNotif() {
+    const since = teacher.last_seen_updates || '1970-01-01T00:00:00Z';
+    const [ujianRes, lmsRes] = await Promise.all([
+      supabase.from('hasil_ujian').select('id, ujian_slug, nama, kelas, nilai, created_at')
+        .gt('created_at', since).order('created_at', { ascending: false }).limit(30),
+      supabase.from('hasil_ujian_lms').select('id, nama, kelas, nilai, created_at, bank_soal:bank_soal_id ( judul )')
+        .gt('created_at', since).order('created_at', { ascending: false }).limit(30),
+    ]);
+    nilaiBaruRows = [
+      ...((ujianRes.data) || []),
+      ...((lmsRes.data) || []).map(r => ({ ...r, judul: r.bank_soal ? r.bank_soal.judul : null })),
+    ];
+    refreshNotifDot();
+  }
+
+  // Tandai semua nilai baru sudah dilihat begitu guru membuka lonceng —
+  // badge "akun menunggu" tetap ada (bukan berbasis waktu, tapi status
+  // pending yang masih nyata), hanya notif nilai yang dibersihkan.
+  async function markNilaiSeen() {
+    if (!nilaiBaruRows.length) return;
+    const now = new Date().toISOString();
+    await supabase.from('profiles').update({ last_seen_updates: now }).eq('id', teacher.id);
+    teacher.last_seen_updates = now;
+    nilaiBaruRows = [];
+    refreshNotifDot();
+  }
+  document.getElementById('notifBell').addEventListener('click', () => {
+    // Dropdown baru saja dibuka (initNotifDropdown yang toggle class-nya) —
+    // beri jeda kecil supaya class 'open' sempat ke-set sebelum dicek.
+    setTimeout(() => {
+      if (document.getElementById('notifDropdown').classList.contains('open')) markNilaiSeen();
+    }, 0);
+  });
+
+  // ---------- Akun Menunggu Persetujuan (badge angka di sidebar) ----------
   async function updatePendingBadge(count) {
     const badge = document.getElementById('pendingBadge');
     if (count > 0) {
@@ -563,25 +650,6 @@
     } else {
       badge.style.display = 'none';
     }
-    setNotifDot(count);
-  }
-
-  function renderNotifDropdown(rows) {
-    const list = document.getElementById('notifList');
-    if (!list) return;
-    list.innerHTML = rows.length ? rows.map(s => `
-      <a class="notif-item" data-goto-persetujuan="1">
-        <div class="t">🆕 ${esc(s.nama)}</div>
-        <div class="d">Daftar sebagai siswa ${esc(s.kelas ? s.kelas.nama : '—')} · ${new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
-      </a>
-    `).join('') : '<div class="notif-empty">Tidak ada akun menunggu</div>';
-
-    list.querySelectorAll('[data-goto-persetujuan]').forEach(item => {
-      item.addEventListener('click', () => {
-        document.getElementById('notifDropdown').classList.remove('open');
-        document.querySelector('.nav-item[data-page="persetujuan"]').click();
-      });
-    });
   }
 
   async function renderPersetujuanList() {
@@ -600,7 +668,8 @@
       listEl.innerHTML = `<div class="login-error" style="display:block;">Gagal memuat daftar: ${esc(error.message)}</div>`;
       btnAll.style.display = 'none';
       updatePendingBadge(0);
-      renderNotifDropdown([]);
+      pendingApprovalRows = [];
+      refreshNotifDot();
       return;
     }
 
@@ -608,7 +677,8 @@
     label.textContent = rows.length ? `Menunggu Persetujuan (${rows.length})` : 'Menunggu Persetujuan';
     btnAll.style.display = rows.length > 1 ? '' : 'none';
     updatePendingBadge(rows.length);
-    renderNotifDropdown(rows);
+    pendingApprovalRows = rows;
+    refreshNotifDot();
 
     if (!rows.length) {
       listEl.innerHTML = emptyState('Tidak ada akun menunggu', 'Semua pendaftaran mandiri sudah diproses.', '✅');
@@ -2567,6 +2637,11 @@
   renderSiswaLevelTabs();
   renderAkunStagingTable();
   await renderPersetujuanList();
+  await loadNilaiMasukNotif();
+  setInterval(() => {
+    renderPersetujuanList();
+    loadNilaiMasukNotif();
+  }, NOTIF_POLL_MS);
   await refreshAllKelasDependentUI();
 })();
 </script>
