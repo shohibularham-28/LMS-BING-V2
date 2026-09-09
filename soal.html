@@ -613,11 +613,34 @@ function shuffle(arr){
   }
   return arr;
 }
+/* Tampilkan nilai di layar hasil, ATAU sembunyikan (kalau guru mematikan
+   "Tampilkan nilai langsung") — nilai sesungguhnya tetap selalu terkirim
+   ke Supabase di attemptSend(), ini murni soal apa yang dilihat siswa. */
+function renderScoreDisplay(nilai){
+  const scoreBig = document.getElementById('scoreBig');
+  const scoreSub = document.getElementById('scoreSub');
+  const msg = document.getElementById('scoreMsg');
+  if(TAMPILKAN_NILAI_LANGSUNG){
+    scoreBig.textContent = nilai;
+    scoreSub.textContent = 'Nilai Akhir (0-100)';
+    msg.textContent = nilai > 75
+      ? '🎉 Selamat! Kamu meraih nilai yang sangat baik.'
+      : '💪 Tetap semangat! Terus berlatih supaya hasilnya lebih baik lagi.';
+    msg.style.color = nilai > 75 ? 'var(--good)' : 'var(--navy)';
+    msg.style.background = nilai > 75 ? 'var(--good-bg)' : '#eef0fb';
+  } else {
+    scoreBig.textContent = '✓';
+    scoreSub.textContent = 'Jawaban Terkirim';
+    msg.textContent = '📩 Jawabanmu sudah tersimpan. Nilai akan diumumkan oleh gurumu.';
+    msg.style.color = 'var(--navy)';
+    msg.style.background = '#eef0fb';
+  }
+}
 function buildFlat(){
   FLAT = [];
   const letters = ['A','B','C','D','E','F'];
   DATA.forEach(section=>{
-    const qs = section.questions.slice();
+    const qs = ACAK_SOAL ? shuffle(section.questions.slice()) : section.questions.slice();
     qs.forEach(q=>{
       const qCopy = Object.assign({}, q, {_section:section});
       if(Array.isArray(q.options)){
@@ -1020,17 +1043,7 @@ function grade(auto){
   const nilaiMentah = (skorSetelahPenalti / total) * 100; // dikonversi ke skala 0-100
   const nilai = Math.max(0, Math.min(100, Math.round(nilaiMentah)));
 
-  const scoreBig = document.getElementById('scoreBig');
-  const scoreSub = document.getElementById('scoreSub');
-  scoreBig.textContent = nilai;
-  scoreSub.textContent = 'Nilai Akhir (0-100)';
-
-  const msg = document.getElementById('scoreMsg');
-  msg.textContent = nilai > 75
-    ? '🎉 Selamat! Kamu meraih nilai yang sangat baik.'
-    : '💪 Tetap semangat! Terus berlatih supaya hasilnya lebih baik lagi.';
-  msg.style.color = nilai > 75 ? 'var(--good)' : 'var(--navy)';
-  msg.style.background = nilai > 75 ? 'var(--good-bg)' : '#eef0fb';
+  renderScoreDisplay(nilai);
 
   const resultsBox = document.getElementById('resultsBox');
   resultsBox.classList.add('show');
@@ -1250,6 +1263,8 @@ document.addEventListener('keydown', e=>{
 let MAX_VIOLATIONS = 5;
 let VIOLATION_PENALTY = 2; // poin dikurangi per pelanggaran, dipakai HANYA kalau PENALTI_AKTIF true
 let PENALTI_AKTIF = true;
+let ACAK_SOAL = false;              // diisi dari bank_soal.acak_soal saat bootstrap
+let TAMPILKAN_NILAI_LANGSUNG = true; // diisi dari bank_soal.tampilkan_nilai_langsung saat bootstrap
 let violationCount = 0;
 let lastViolationAt = 0;
 let examActive = false; // true once gate passed, false once submitted
@@ -1566,14 +1581,7 @@ function runInitAfterDataReady(){
       const penaltiR = PENALTI_AKTIF ? (violationCount * VIOLATION_PENALTY) : 0;
       const nilaiMentahR = ((earnedR - penaltiR) / totalR) * 100;
       const nilaiR = Math.max(0, Math.min(100, Math.round(nilaiMentahR)));
-      document.getElementById('scoreBig').textContent = nilaiR;
-      document.getElementById('scoreSub').textContent = 'Nilai Akhir (0-100)';
-      const msg = document.getElementById('scoreMsg');
-      msg.textContent = nilaiR > 75
-        ? '🎉 Selamat! Kamu meraih nilai yang sangat baik.'
-        : '💪 Tetap semangat! Terus berlatih supaya hasilnya lebih baik lagi.';
-      msg.style.color = nilaiR > 75 ? 'var(--good)' : 'var(--navy)';
-      msg.style.background = nilaiR > 75 ? 'var(--good-bg)' : '#eef0fb';
+      renderScoreDisplay(nilaiR);
       document.getElementById('resultsBox').classList.add('show');
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('timerBadge').textContent = 'Finished';
@@ -1698,7 +1706,7 @@ function showFatalGateError(msg){
 
   const { data: soalRow, error } = await supabase
     .from('bank_soal')
-    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti')
+    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung')
     .eq('id', BANK_SOAL_ID)
     .single();
 
@@ -1718,6 +1726,8 @@ function showFatalGateError(msg){
   WORKSHEET_ID = soalRow.worksheet_id || null;
   PENALTI_AKTIF = soalRow.penalti_aktif !== false; // default aktif kalau kolom kosong/null
   VIOLATION_PENALTY = (soalRow.poin_penalti===0 || soalRow.poin_penalti) ? soalRow.poin_penalti : 2;
+  ACAK_SOAL = soalRow.acak_soal === true;
+  TAMPILKAN_NILAI_LANGSUNG = soalRow.tampilkan_nilai_langsung !== false; // default tampil kalau kolom kosong/null
   applyPenaltiUI();
   STORAGE_KEY = 'lms_soal_' + BANK_SOAL_ID + '_' + profile.id;
 

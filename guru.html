@@ -323,6 +323,19 @@
               Potong nilai kalau siswa pindah tab / keluar fullscreen
             </label>
           </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="soalAcakCheckbox" style="width:auto;">
+              Acak urutan soal (tiap siswa dapat urutan berbeda, soal dalam 1 teks bacaan tetap dikelompokkan)
+            </label>
+          </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="soalTampilkanNilaiCheckbox" checked style="width:auto;">
+              Tampilkan nilai langsung ke siswa begitu selesai mengerjakan
+            </label>
+            <div class="hint" style="margin-top:4px;">Kalau dimatikan, siswa hanya lihat "Jawaban Terkirim" — nilai tetap tersimpan dan bisa kamu lihat/umumkan lewat menu "Hasil Bank Soal".</div>
+          </div>
           <div class="form-field">
             <label>File Soal (.docx)</label>
             <input type="file" id="soalDocxInput" accept=".docx">
@@ -1789,6 +1802,8 @@
     const durasiMenit = parseInt(document.getElementById('soalDurasiInput').value, 10) || 90;
     const penaltiAktif = document.getElementById('soalPenaltiCheckbox').checked;
     const poinPenalti = parseInt(document.getElementById('soalPoinPenaltiInput').value, 10) || 0;
+    const acakSoal = document.getElementById('soalAcakCheckbox').checked;
+    const tampilkanNilaiLangsung = document.getElementById('soalTampilkanNilaiCheckbox').checked;
     const file = document.getElementById('soalDocxInput').files[0];
 
     if (!judul) {
@@ -1802,13 +1817,15 @@
     btn.textContent = 'Menyimpan…';
     try {
       await simpanBankSoalDanWorksheet({
-        judul, tingkat, durasiMenit, penaltiAktif, poinPenalti,
+        judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
         data: soalParsedResult.data,
         guruId: teacher.id,
         namaFile: file ? file.name : null
       });
       document.getElementById('soalJudulInput').value = '';
       document.getElementById('soalDocxInput').value = '';
+      document.getElementById('soalAcakCheckbox').checked = false;
+      document.getElementById('soalTampilkanNilaiCheckbox').checked = true;
       resetSoalImportUI();
       await renderWorksheetList();
       alert('Soal berhasil disimpan dan worksheet diterbitkan.');

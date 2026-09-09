@@ -27,6 +27,12 @@ create table if not exists public.bank_soal (
 alter table public.bank_soal add column if not exists penalti_aktif boolean not null default true;
 alter table public.bank_soal add column if not exists poin_penalti numeric not null default 2;
 
+-- Pengaturan tambahan: acak urutan soal per siswa, dan apakah nilai langsung
+-- ditampilkan ke siswa begitu selesai mengerjakan atau ditahan dulu sampai
+-- guru "mengumumkan" (lihat Dashboard Guru > Hasil Bank Soal).
+alter table public.bank_soal add column if not exists acak_soal boolean not null default false;
+alter table public.bank_soal add column if not exists tampilkan_nilai_langsung boolean not null default true;
+
 -- Kalau kamu sempat menjalankan versi migrasi SEBELUMNYA yang memakai nama
 -- kolom "pengawasan_aktif" (versi awal fitur ini), pindahkan datanya lalu
 -- hapus kolom lama dengan menjalankan 2 baris di bawah ini SEKALI SAJA
