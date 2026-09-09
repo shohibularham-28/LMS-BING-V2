@@ -1707,13 +1707,29 @@ function showFatalGateError(msg){
 
   const { data: soalRow, error } = await supabase
     .from('bank_soal')
-    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung')
+    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, worksheet:worksheet_id ( mulai, deadline )')
     .eq('id', BANK_SOAL_ID)
     .single();
 
   if(error || !soalRow){
     showFatalGateError('Soal tidak ditemukan atau sudah dihapus guru.');
     return;
+  }
+
+  // ---------- cek jadwal (mulai / deadline) yang diatur guru ----------
+  const jadwal = soalRow.worksheet || null;
+  if(jadwal && jadwal.mulai && new Date(jadwal.mulai) > new Date()){
+    const mulaiTxt = new Date(jadwal.mulai).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    showFatalGateError(`Soal ini belum bisa dibuka. Mulai bisa dikerjakan: ${mulaiTxt}.`);
+    return;
+  }
+  if(jadwal && jadwal.deadline){
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if(jadwal.deadline < todayStr){
+      const deadlineTxt = new Date(jadwal.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      showFatalGateError(`Soal ini sudah melewati batas waktu pengerjaan (deadline: ${deadlineTxt}).`);
+      return;
+    }
   }
 
   DATA = soalRow.data || [];

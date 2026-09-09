@@ -336,6 +336,12 @@
             </label>
             <div class="hint" style="margin-top:4px;">Kalau dimatikan, siswa hanya lihat "Jawaban Terkirim" — nilai tetap tersimpan dan bisa kamu lihat/umumkan lewat menu "Hasil Bank Soal".</div>
           </div>
+          <div class="section-label" style="margin-top:20px; font-size:14px;">🗓️ Jadwal Ujian</div>
+          <div class="form-row">
+            <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="soalMulaiInput"></div>
+            <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="soalDeadlineInput"></div>
+          </div>
+          <div class="hint">Kosongkan kalau soal boleh langsung dikerjakan siswa sejak diterbitkan dan tidak ada batas waktu. Sebelum "Mulai" atau setelah "Deadline", siswa tidak bisa membuka soal ini — jadwal juga bisa diubah kapan saja lewat "Worksheet Aktif" di bawah.</div>
           <div class="form-field">
             <label>File Soal (.docx)</label>
             <input type="file" id="soalDocxInput" accept=".docx">
@@ -1673,6 +1679,15 @@
     return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
+  // Ubah ISO timestamp (mis. dari kolom "mulai") jadi value yang bisa dipakai
+  // <input type="datetime-local"> (format lokal "YYYY-MM-DDTHH:MM", bukan UTC).
+  function toDatetimeLocalValue(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   async function renderWorksheetList() {
     const el = document.getElementById('worksheetList');
     const { data } = await supabase
@@ -1681,22 +1696,42 @@
       .order('created_at', { ascending: false });
     const list = data || [];
     const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
     el.innerHTML = list.length ? list.map(w => {
       const belumMulai = w.mulai && new Date(w.mulai) > now;
+      const sudahTutup = w.deadline && w.deadline < todayStr;
       const targetLabel = w.level ? `Tingkat ${w.level}` : (w.kelas ? w.kelas.nama : '?');
       const metaBits = [esc(targetLabel)];
       if (w.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(w.mulai));
       if (w.deadline) metaBits.push('Deadline ' + w.deadline);
+      let statusPill = '';
+      if (belumMulai) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>';
+      else if (sudahTutup) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">Sudah Ditutup</span>';
       return `
-      <div class="list-row">
-        <div>
-          <strong>${esc(w.judul)}</strong> <span style="color:#888;font-size:12.5px;">— ${metaBits.join(' · ')}</span>
-          ${belumMulai ? '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>' : ''}
-          <div style="font-size:12px;color:#999;word-break:break-all;">${esc(w.url)}</div>
+      <div class="list-row" style="flex-direction:column; align-items:stretch;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
+          <div>
+            <strong>${esc(w.judul)}</strong> <span style="color:#888;font-size:12.5px;">— ${metaBits.join(' · ')}</span>
+            ${statusPill}
+            <div style="font-size:12px;color:#999;word-break:break-all;">${esc(w.url)}</div>
+          </div>
+          <div style="display:flex; gap:8px; flex-shrink:0;">
+            ${w.url ? `<a class="btn-secondary-sm" style="text-decoration:none;display:inline-block;white-space:nowrap;" href="${esc(w.url)}" target="_blank" rel="noopener">🔗 Buka</a>` : ''}
+            <button class="btn-secondary-sm" data-edit="${w.id}">🗓️ Jadwal</button>
+            <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
+          </div>
         </div>
-        <div style="display:flex; gap:8px; flex-shrink:0;">
-          ${w.url ? `<a class="btn-secondary-sm" style="text-decoration:none;display:inline-block;white-space:nowrap;" href="${esc(w.url)}" target="_blank" rel="noopener">🔗 Buka</a>` : ''}
-          <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
+        <div id="editJadwal-${w.id}" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed #ddd;">
+          <div class="form-row">
+            <div class="form-field"><label>Mulai Bisa Dibuka</label><input type="datetime-local" class="edit-mulai-input" data-id="${w.id}" value="${toDatetimeLocalValue(w.mulai)}"></div>
+            <div class="form-field"><label>Deadline</label><input type="date" class="edit-deadline-input" data-id="${w.id}" value="${w.deadline || ''}"></div>
+          </div>
+          <div class="hint" style="margin-top:-4px;">Kosongkan salah satu / keduanya untuk menghapus batasan tersebut.</div>
+          <p class="login-error" id="editJadwalErr-${w.id}" style="display:none;"></p>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-secondary-sm" data-save="${w.id}">💾 Simpan Jadwal</button>
+            <button class="btn-secondary-sm" data-cancel="${w.id}">Batal</button>
+          </div>
         </div>
       </div>
     `;
@@ -1706,6 +1741,46 @@
       btn.addEventListener('click', async () => {
         if (!confirm('Hapus worksheet ini?')) return;
         await supabase.from('worksheet').delete().eq('id', btn.dataset.id);
+        await renderWorksheetList();
+      });
+    });
+
+    el.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById('editJadwal-' + btn.dataset.edit);
+        if (panel) panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      });
+    });
+    el.querySelectorAll('[data-cancel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById('editJadwal-' + btn.dataset.cancel);
+        if (panel) panel.style.display = 'none';
+      });
+    });
+    el.querySelectorAll('[data-save]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.save;
+        const mulaiRaw = el.querySelector(`.edit-mulai-input[data-id="${id}"]`).value;
+        const deadlineRaw = el.querySelector(`.edit-deadline-input[data-id="${id}"]`).value;
+        const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
+        const deadline = deadlineRaw || null;
+        const errEl = document.getElementById('editJadwalErr-' + id);
+        errEl.style.display = 'none';
+        if (mulai && deadline && mulai.slice(0, 10) > deadline) {
+          errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.';
+          errEl.style.display = 'block';
+          return;
+        }
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan…';
+        const { error } = await supabase.from('worksheet').update({ mulai, deadline }).eq('id', id);
+        if (error) {
+          errEl.textContent = 'Gagal menyimpan: ' + error.message;
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = '💾 Simpan Jadwal';
+          return;
+        }
         await renderWorksheetList();
       });
     });
@@ -1805,10 +1880,18 @@
     const poinPenalti = parseInt(document.getElementById('soalPoinPenaltiInput').value, 10) || 0;
     const acakSoal = document.getElementById('soalAcakCheckbox').checked;
     const tampilkanNilaiLangsung = document.getElementById('soalTampilkanNilaiCheckbox').checked;
+    const soalMulaiRaw = document.getElementById('soalMulaiInput').value;
+    const mulai = soalMulaiRaw ? new Date(soalMulaiRaw).toISOString() : null;
+    const deadline = document.getElementById('soalDeadlineInput').value || null;
     const file = document.getElementById('soalDocxInput').files[0];
 
     if (!judul) {
       errEl.textContent = 'Judul wajib diisi.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (mulai && deadline && mulai.slice(0, 10) > deadline) {
+      errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.';
       errEl.style.display = 'block';
       return;
     }
@@ -1819,6 +1902,7 @@
     try {
       await simpanBankSoalDanWorksheet({
         judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
+        mulai, deadline,
         data: soalParsedResult.data,
         guruId: teacher.id,
         namaFile: file ? file.name : null
@@ -1827,6 +1911,8 @@
       document.getElementById('soalDocxInput').value = '';
       document.getElementById('soalAcakCheckbox').checked = false;
       document.getElementById('soalTampilkanNilaiCheckbox').checked = true;
+      document.getElementById('soalMulaiInput').value = '';
+      document.getElementById('soalDeadlineInput').value = '';
       resetSoalImportUI();
       await renderWorksheetList();
       alert('Soal berhasil disimpan dan worksheet diterbitkan.');
