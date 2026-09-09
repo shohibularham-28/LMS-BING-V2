@@ -193,8 +193,19 @@
         <div class="nav-group-items">
           <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
           <a class="nav-item" data-page="nilai" href="#" title="Nilai"><span class="icon">🧾</span> <span class="label">Nilai</span></a>
-          <a class="nav-item" data-page="sedangujian" href="#" title="Sedang Ujian"><span class="icon">🟢</span> <span class="label">Sedang Ujian</span></a>
           <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
+        </div>
+      </div>
+
+      <div class="nav-group" data-group="asesmen">
+        <div class="nav-group-header" data-group-toggle title="Asesmen">
+          <span class="icon">🧮</span> <span class="label">Asesmen</span>
+          <svg class="nav-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="nav-group-items">
+          <a class="nav-item" data-page="banksoal" href="#" title="Susun Soal"><span class="icon">✏️</span> <span class="label">Susun Soal</span></a>
+          <a class="nav-item" data-page="jadwalujian" href="#" title="Jadwal Ujian"><span class="icon">🗓️</span> <span class="label">Jadwal Ujian</span></a>
+          <a class="nav-item" data-page="sedangujian" href="#" title="Monitoring Ujian"><span class="icon">🟢</span> <span class="label">Monitoring Ujian</span></a>
         </div>
       </div>
 
@@ -206,8 +217,6 @@
         <div class="nav-group-items">
           <a class="nav-item" data-page="kelas" href="#" title="Kelola Kelas"><span class="icon">🏫</span> <span class="label">Kelola Kelas</span></a>
           <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
-          <a class="nav-item" data-page="banksoal" href="#" title="Bank Soal"><span class="icon">✏️</span> <span class="label">Bank Soal</span></a>
-          <a class="nav-item" data-page="jadwalujian" href="#" title="Jadwal Ujian"><span class="icon">🗓️</span> <span class="label">Jadwal Ujian</span></a>
           <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
           <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
         </div>
@@ -447,9 +456,9 @@
 
           <div class="section-label" style="margin-top:28px;">📄 Upload Soal dari Word (Bank Soal)</div>
           <div class="hint">
-            Upload soal .docx sekarang dilakukan di menu <b>Bank Soal</b>, dan tidak langsung terbit ke siswa —
+            Upload soal .docx sekarang dilakukan di menu <b>Asesmen → Susun Soal</b>, dan tidak langsung terbit ke siswa —
             soal hanya tersimpan dulu. Untuk benar-benar menerbitkannya ke siswa (atur tanggal, durasi, kelas
-            target, dll.), gunakan menu <b>Jadwal Ujian</b> setelah soalnya tersimpan di Bank Soal.
+            target, dll.), gunakan menu <b>Asesmen → Jadwal Ujian</b> setelah soalnya tersimpan.
           </div>
 
           <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
@@ -458,7 +467,7 @@
 
         <!-- ===== BANK SOAL (upload soal .docx + edit manual, BELUM terbit ke siswa) ===== -->
         <div class="gs-section" id="section-banksoal">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Bank Soal</h1></div>
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Susun Soal</h1></div>
           <div class="hint">
             Upload file <code>.docx</code> berisi soal yang mengikuti format <code>Template_Soal_Upload_LMS.docx</code>
             untuk disimpan ke Bank Soal — <b>soal TIDAK langsung terbit ke siswa</b>. Untuk menerbitkannya (atur
@@ -570,7 +579,7 @@
 
         <!-- ===== SEDANG UJIAN (monitoring live siapa yang sedang mengerjakan Bank Soal) ===== -->
         <div class="gs-section" id="section-sedangujian">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Sedang Ujian</h1></div>
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Monitoring Ujian</h1></div>
           <div class="hint">Daftar siswa yang sedang mengerjakan soal dari <b>Bank Soal</b> saat ini, dihitung dari "ping" terakhir yang dikirim halaman soal siswa tiap ~20 detik. Otomatis refresh tiap 10 detik selama halaman ini dibuka. Ini terpisah dari menu "Nilai" (yang isinya nilai siswa yang SUDAH submit).</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
             <div class="form-field" style="margin-bottom:0;">
