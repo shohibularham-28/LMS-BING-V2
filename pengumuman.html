@@ -104,19 +104,8 @@
           <h1>Pengumuman &amp; Nilai</h1>
         </div>
         <div id="ann-container">Memuat…</div>
-        <div class="section-label">Rekap Nilai Terbaru</div>
-        <div class="table-responsive">
-          <table class="grade-table" id="grade-table">
-            <thead>
-              <tr><th>Jenis Penilaian</th><th>Skor</th><th>Nilai Asli (Sebelum Penalti)</th><th>Predikat</th><th>Keterangan</th><th>Status</th></tr>
-            </thead>
-            <tbody id="grade-container"></tbody>
-          </table>
-        </div>
-        <div id="grade-empty-slot"></div>
 
-        <div class="section-label" style="margin-top:24px;">Nilai Ujian (Soal Upload Guru)</div>
-        <div class="hint">Ini nilai dari soal yang dikerjakan lewat menu Worksheet (bukan input nilai manual guru).</div>
+        <div class="section-label">Nilai Ujian (Soal Upload Guru)</div>
         <div class="table-responsive">
           <table class="grade-table" id="soal-grade-table">
             <thead>
@@ -166,41 +155,6 @@
       <p>${linkify(a.isi)}</p>
     </div>
   `).join('') : emptyState("Belum ada pengumuman", "Pengumuman terbaru akan muncul di sini.", "📣");
-
-  // Nilai milik siswa ini
-  const gradeTable = document.getElementById('grade-table');
-  const gradeC = document.getElementById('grade-container');
-  const gradeEmptySlot = document.getElementById('grade-empty-slot');
-  const { data: myGrades } = await supabase
-    .from('nilai')
-    .select('jenis, skor, skor_asli, predikat, keterangan')
-    .eq('siswa_id', profile.id)
-    .order('created_at', { ascending: false });
-
-  const grades = myGrades || [];
-  if (grades.length) {
-    gradeTable.style.display = '';
-    gradeEmptySlot.innerHTML = '';
-    gradeC.innerHTML = grades.map(g => {
-      const isNumeric = typeof g.skor === 'number';
-      const statusCls = !isNumeric ? 'status-belum' : (g.skor < 75 ? 'status-remidi' : 'status-tuntas');
-      const statusTxt = !isNumeric ? 'Belum Mengerjakan' : (g.skor < 75 ? 'Remidi' : 'Tuntas');
-      return `
-      <tr>
-        <td>${esc(g.jenis)}</td>
-        <td>${g.skor ?? '-'}</td>
-        <td>${typeof g.skor_asli === 'number' ? g.skor_asli : '-'}</td>
-        <td><span class="score-pill ${isNumeric && g.skor >= 85 ? 'score-high' : 'score-mid'}">${esc(g.predikat || '-')}</span></td>
-        <td>${g.keterangan ? esc(g.keterangan) : '-'}</td>
-        <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
-      </tr>
-    `;
-    }).join('');
-  } else {
-    gradeTable.style.display = 'none';
-    gradeC.innerHTML = '';
-    gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Nilai yang sudah dinilai guru akan tampil di sini.", "📊");
-  }
 
   // Nilai Ujian dari soal Upload Word (hasil_ujian_lms), milik siswa ini saja.
   const soalGradeTable = document.getElementById('soal-grade-table');
