@@ -247,13 +247,15 @@ function escSoal(str){
 /* ---------- 4) Simpan ke Supabase: bank_soal + worksheet ----------
    Dipanggil dari guru.html setelah guru menekan tombol "Simpan & Terbitkan".
    `supabase` di sini adalah client global yang sama dari assets/supabaseClient.js. */
-async function simpanBankSoalDanWorksheet({ judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, data, guruId, namaFile }){
+async function simpanBankSoalDanWorksheet({ judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung, data, guruId, namaFile }){
   const { data: bankRow, error: err1 } = await supabase
     .from('bank_soal')
     .insert({
       judul, guru_id: guruId, durasi_menit: durasiMenit || 90,
       penalti_aktif: penaltiAktif !== false,
       poin_penalti: (poinPenalti===0 || poinPenalti) ? poinPenalti : 2,
+      acak_soal: acakSoal === true,
+      tampilkan_nilai_langsung: tampilkanNilaiLangsung !== false,
       data, sumber_file: namaFile || null
     })
     .select('id')
