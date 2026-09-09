@@ -263,6 +263,7 @@
       const mine = m.sender_id === profile.id;
       const isGuru = m.sender_role === 'guru';
       const row = document.createElement('div');
+      row.dataset.id = m.id;
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru ? ' from-guru' : '');
       row.innerHTML = `
         <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${fmtTime(m.created_at)}${mine ? ' <button type="button" class="msg-del" title="Hapus pesan">🗑</button>' : ''}</div>
@@ -274,6 +275,15 @@
       body.appendChild(row);
     });
     if (firstLoad || wasNearBottom) body.scrollTop = body.scrollHeight;
+  }
+
+  function removeMessageRow(id){
+    const row = body.querySelector(`.msg-row[data-id="${id}"]`);
+    if (row) row.remove();
+    knownIds.delete(id);
+    if (!body.querySelector('.msg-row')) {
+      body.innerHTML = '<div class="chat-empty">Belum ada obrolan di kelas ini. Mulai obrolan pertama! 👋</div>';
+    }
   }
 
   async function loadMessages(){
@@ -299,6 +309,24 @@
     }
     firstLoad = false;
   }
+
+  // ===== Realtime: pesan baru/hapus muncul instan tanpa nunggu polling =====
+  supabase
+    .channel('pesan_kelas_' + KELAS_ID)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'pesan_kelas', filter: `kelas_id=eq.${KELAS_ID}`,
+    }, (payload) => {
+      const empty = body.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      appendMessages([payload.new]);
+      markObrolanSeen(profile);
+    })
+    .on('postgres_changes', {
+      event: 'DELETE', schema: 'public', table: 'pesan_kelas', filter: `kelas_id=eq.${KELAS_ID}`,
+    }, (payload) => {
+      removeMessageRow(payload.old.id);
+    })
+    .subscribe();
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -333,6 +361,10 @@
   });
 
   await loadMessages();
+  await markObrolanSeen(profile);
+  // Polling tetap jalan sebagai jaring pengaman kalau koneksi Realtime
+  // sempat putus (mis. reconnect wifi) — Realtime di atas yang bikin
+  // pesan baru muncul instan dalam kondisi normal.
   setInterval(loadMessages, 4000);
 })();
 </script>

@@ -615,6 +615,7 @@
     if (group) group.classList.add('open', 'has-active');
     // Simpan supaya tetap di page ini kalau halaman di-reload
     try { localStorage.setItem(GURU_PAGE_STORAGE_KEY, nav.dataset.page); } catch (e) {}
+    if (nav.dataset.page === 'obrolan') markPesanSeen();
   }
 
   document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
@@ -655,6 +656,7 @@
   // =========================================================
   let pendingApprovalRows = [];
   let nilaiBaruRows = [];
+  let pesanBaruRows = [];
   const NOTIF_POLL_MS = 30000; // cek notifikasi baru tiap 30 detik
 
   function renderNotifDropdown() {
@@ -675,10 +677,18 @@
         created_at: n.created_at,
         goto: 'nilai'
       })),
+      ...pesanBaruRows.map(m => ({
+        icon: '💬',
+        title: `${esc(m.sender_nama)} · Kelas ${esc(m.kelas ? m.kelas.nama : '—')}`,
+        desc: esc((m.isi || '').slice(0, 60)) + (m.isi && m.isi.length > 60 ? '…' : ''),
+        created_at: m.created_at,
+        goto: 'obrolan',
+        kelasId: m.kelas_id
+      })),
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     list.innerHTML = items.length ? items.map(it => `
-      <a class="notif-item" data-goto-notif="${it.goto}">
+      <a class="notif-item" data-goto-notif="${it.goto}"${it.kelasId ? ` data-kelas-id="${it.kelasId}"` : ''}>
         <div class="t">${it.icon} ${it.title}</div>
         <div class="d">${it.desc} · ${new Date(it.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
       </a>
@@ -689,12 +699,16 @@
         document.getElementById('notifDropdown').classList.remove('open');
         const nav = document.querySelector(`.nav-item[data-page="${item.dataset.gotoNotif}"]`);
         if (nav) nav.click();
+        if (item.dataset.kelasId) {
+          const sel = document.getElementById('obrolanKelasSelect');
+          if (sel) { sel.value = item.dataset.kelasId; sel.dispatchEvent(new Event('change')); }
+        }
       });
     });
   }
 
   function refreshNotifDot() {
-    setNotifDot(pendingApprovalRows.length + nilaiBaruRows.length);
+    setNotifDot(pendingApprovalRows.length + nilaiBaruRows.length + pesanBaruRows.length);
     renderNotifDropdown();
   }
 
@@ -716,6 +730,23 @@
     refreshNotifDot();
   }
 
+  // Ambil pesan obrolan kelas baru (dari kelas manapun) sejak terakhir guru
+  // buka lonceng notifikasi / halaman Obrolan Kelas — pakai watermark
+  // terpisah (last_seen_obrolan) supaya tidak ikut kehapus saat guru buka
+  // notif nilai/akun.
+  async function loadPesanBaruNotif() {
+    const since = teacher.last_seen_obrolan || '1970-01-01T00:00:00Z';
+    const { data } = await supabase
+      .from('pesan_kelas')
+      .select('id, kelas_id, sender_id, sender_nama, sender_role, isi, created_at, kelas:kelas_id ( nama )')
+      .neq('sender_id', teacher.id)
+      .gt('created_at', since)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    pesanBaruRows = data || [];
+    refreshNotifDot();
+  }
+
   // Tandai semua nilai baru sudah dilihat begitu guru membuka lonceng —
   // badge "akun menunggu" tetap ada (bukan berbasis waktu, tapi status
   // pending yang masih nyata), hanya notif nilai yang dibersihkan.
@@ -727,11 +758,35 @@
     nilaiBaruRows = [];
     refreshNotifDot();
   }
+
+  // Tandai semua notif pesan obrolan sudah dilihat.
+  async function markPesanSeen() {
+    if (!pesanBaruRows.length) return;
+    const now = new Date().toISOString();
+    await supabase.from('profiles').update({ last_seen_obrolan: now }).eq('id', teacher.id);
+    teacher.last_seen_obrolan = now;
+    pesanBaruRows = [];
+    refreshNotifDot();
+  }
+
+  // Realtime: begitu ada pesan baru masuk di kelas MANAPUN, badge lonceng
+  // langsung update tanpa nunggu polling 30 detik.
+  supabase
+    .channel('guru_notif_pesan_kelas')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'pesan_kelas' }, (payload) => {
+      if (payload.new && payload.new.sender_id === teacher.id) return;
+      loadPesanBaruNotif();
+    })
+    .subscribe();
+
   document.getElementById('notifBell').addEventListener('click', () => {
     // Dropdown baru saja dibuka (initNotifDropdown yang toggle class-nya) —
     // beri jeda kecil supaya class 'open' sempat ke-set sebelum dicek.
     setTimeout(() => {
-      if (document.getElementById('notifDropdown').classList.contains('open')) markNilaiSeen();
+      if (document.getElementById('notifDropdown').classList.contains('open')) {
+        markNilaiSeen();
+        markPesanSeen();
+      }
     }, 0);
   });
 
@@ -2734,6 +2789,7 @@
   let obrolanKelasId = '';
   let obrolanKnownIds = new Set();
   let obrolanFirstLoad = true;
+  let obrolanChannel = null;
 
   function fillObrolanKelasSelect() {
     const sel = document.getElementById('obrolanKelasSelect');
@@ -2749,16 +2805,21 @@
     return new Date(iso).toLocaleString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
   }
 
-  async function obrolanDeleteMessage(id, rowEl) {
-    if (!confirm('Hapus pesan ini? Tindakan ini tidak bisa dibatalkan.')) return;
-    const { error } = await supabase.from('pesan_kelas').delete().eq('id', id);
-    if (error) { alert('Gagal menghapus pesan: ' + error.message); return; }
-    obrolanKnownIds.delete(id);
-    rowEl.remove();
+  function obrolanRemoveRow(id) {
     const body = document.getElementById('obrolanBody');
+    const row = body.querySelector(`.msg-row[data-id="${id}"]`);
+    if (row) row.remove();
+    obrolanKnownIds.delete(id);
     if (!body.querySelector('.msg-row')) {
       body.innerHTML = '<div class="chat-empty">Belum ada obrolan di kelas ini.</div>';
     }
+  }
+
+  async function obrolanDeleteMessage(id) {
+    if (!confirm('Hapus pesan ini? Tindakan ini tidak bisa dibatalkan.')) return;
+    const { error } = await supabase.from('pesan_kelas').delete().eq('id', id);
+    if (error) { alert('Gagal menghapus pesan: ' + error.message); return; }
+    obrolanRemoveRow(id);
   }
 
   function obrolanAppend(rows) {
@@ -2770,15 +2831,39 @@
       const mine = m.sender_id === teacher.id;
       const isGuru = m.sender_role === 'guru';
       const row = document.createElement('div');
+      row.dataset.id = m.id;
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru && !mine ? ' from-guru' : '');
       row.innerHTML = `
         <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${obrolanFmtTime(m.created_at)} <button type="button" class="msg-del" title="Hapus pesan">🗑</button></div>
         <div class="msg-bubble">${esc(m.isi)}</div>
       `;
-      row.querySelector('.msg-del').addEventListener('click', () => obrolanDeleteMessage(m.id, row));
+      row.querySelector('.msg-del').addEventListener('click', () => obrolanDeleteMessage(m.id));
       body.appendChild(row);
     });
     if (obrolanFirstLoad || wasNearBottom) body.scrollTop = body.scrollHeight;
+  }
+
+  // Realtime: pesan baru/hapus di kelas yang sedang dibuka guru muncul instan.
+  // Disubscribe ulang tiap kali guru ganti kelas di dropdown.
+  function subscribeObrolanRealtime(kelasId) {
+    if (obrolanChannel) { supabase.removeChannel(obrolanChannel); obrolanChannel = null; }
+    if (!kelasId) return;
+    obrolanChannel = supabase
+      .channel('guru_pesan_kelas_' + kelasId)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'pesan_kelas', filter: `kelas_id=eq.${kelasId}`,
+      }, (payload) => {
+        const body = document.getElementById('obrolanBody');
+        const empty = body.querySelector('.chat-empty');
+        if (empty) empty.remove();
+        obrolanAppend([payload.new]);
+      })
+      .on('postgres_changes', {
+        event: 'DELETE', schema: 'public', table: 'pesan_kelas', filter: `kelas_id=eq.${kelasId}`,
+      }, (payload) => {
+        obrolanRemoveRow(payload.old.id);
+      })
+      .subscribe();
   }
 
   async function loadObrolanMessages() {
@@ -2811,6 +2896,7 @@
     obrolanKelasId = e.target.value;
     obrolanKnownIds = new Set();
     obrolanFirstLoad = true;
+    subscribeObrolanRealtime(obrolanKelasId);
     const input = document.getElementById('obrolanInput');
     const sendBtn = document.getElementById('obrolanSendBtn');
     const hapusSemuaBtn = document.getElementById('obrolanHapusSemuaBtn');
@@ -2879,16 +2965,18 @@
   setInterval(() => {
     const section = document.getElementById('section-obrolan');
     if (section && section.classList.contains('active') && obrolanKelasId) loadObrolanMessages();
-  }, 4000);
+  }, 6000);
 
   renderLevelTabs();
   renderSiswaLevelTabs();
   renderAkunStagingTable();
   await renderPersetujuanList();
   await loadNilaiMasukNotif();
+  await loadPesanBaruNotif();
   setInterval(() => {
     renderPersetujuanList();
     loadNilaiMasukNotif();
+    loadPesanBaruNotif();
   }, NOTIF_POLL_MS);
   await refreshAllKelasDependentUI();
 })();

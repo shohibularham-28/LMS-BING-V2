@@ -15,7 +15,7 @@ async function getProfile() {
   if (!user) return null;
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, nama, role, kelas_id, status, last_seen_updates, kelas:kelas_id ( id, nama, level )")
+    .select("id, username, nama, role, kelas_id, status, last_seen_updates, last_seen_obrolan, kelas:kelas_id ( id, nama, level )")
     .eq("id", user.id)
     .single();
   if (error || !data) return null;
@@ -76,7 +76,84 @@ function renderShell(profile, activePage) {
     n.classList.toggle("active", n.dataset.page === activePage);
   });
 
+  // Badge "pesan belum dibaca" di menu Obrolan Kelas — jalan di semua
+  // halaman siswa (bukan cuma obrolan.html) karena renderShell dipanggil
+  // di tiap halaman. Fire-and-forget, tidak menunda render halaman.
+  loadChatBadge(profile);
+  subscribeChatBadgeRealtime(profile);
+
   return level;
+}
+
+// ===================== BADGE OBROLAN KELAS (siswa) =====================
+// Menampilkan titik/angka notifikasi di menu "Obrolan Kelas" (sidebar +
+// bottom nav mobile) kalau ada pesan baru dari orang lain di kelasnya
+// sejak terakhir dia buka halaman obrolan (profiles.last_seen_obrolan).
+
+let _chatBadgeChannel = null;
+
+function setNavChatBadge(count) {
+  const targets = [
+    { el: document.querySelector('.sidebar .nav-item[data-page="obrolan"]'), top: '6px', right: '10px' },
+    { el: document.querySelector('.mobile-bottom-nav a[data-page="obrolan"]'), top: '0px', right: '16px' },
+  ];
+  targets.forEach(({ el, top, right }) => {
+    if (!el) return;
+    let badge = el.querySelector('.nav-chat-badge');
+    if (count > 0) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'nav-chat-badge';
+        badge.style.cssText = `position:absolute; top:${top}; right:${right}; min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:#ff6b5e; color:#fff; font-size:10px; font-weight:700; line-height:16px; text-align:center; box-shadow:0 0 0 2px #fff;`;
+        if (!el.style.position) el.style.position = 'relative';
+        el.appendChild(badge);
+      }
+      badge.textContent = count > 9 ? '9+' : String(count);
+    } else if (badge) {
+      badge.remove();
+    }
+  });
+}
+
+// Hitung ulang jumlah pesan belum dibaca dari server & update badge.
+async function loadChatBadge(profile) {
+  if (!profile || !profile.kelas_id) return;
+  const since = profile.last_seen_obrolan || '1970-01-01T00:00:00Z';
+  const { count, error } = await supabase
+    .from('pesan_kelas')
+    .select('id', { count: 'exact', head: true })
+    .eq('kelas_id', profile.kelas_id)
+    .neq('sender_id', profile.id)
+    .gt('created_at', since);
+  if (error) return;
+  setNavChatBadge(count || 0);
+}
+
+// Dengarkan pesan baru masuk lewat Supabase Realtime supaya badge muncul
+// instan (tanpa nunggu polling halaman lain). Aman kalau Realtime tidak
+// aktif di project — badge tetap ke-update saat pindah halaman biasa.
+function subscribeChatBadgeRealtime(profile) {
+  if (!profile || !profile.kelas_id || !window.supabase) return;
+  if (_chatBadgeChannel) return; // sudah ada listener aktif di halaman ini
+  _chatBadgeChannel = supabase
+    .channel('chat-badge-' + profile.id)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'pesan_kelas',
+      filter: `kelas_id=eq.${profile.kelas_id}`,
+    }, (payload) => {
+      if (payload.new && payload.new.sender_id === profile.id) return;
+      loadChatBadge(profile);
+    })
+    .subscribe();
+}
+
+// Tandai obrolan sudah dibaca (dipanggil dari obrolan.html). Membersihkan
+// badge di semua halaman begitu user selesai buka & scroll ke bawah.
+async function markObrolanSeen(profile) {
+  const now = new Date().toISOString();
+  await supabase.from('profiles').update({ last_seen_obrolan: now }).eq('id', profile.id);
+  profile.last_seen_obrolan = now;
+  setNavChatBadge(0);
 }
 
 // ===================== SIDEBAR: COLLAPSE (desktop) & DRAWER (mobile) =====================
