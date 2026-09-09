@@ -620,6 +620,7 @@
 let DATA = []; // diisi otomatis dari tabel bank_soal saat halaman dimuat
 let currentProfile = null;
 let BANK_SOAL_ID = null;
+let JADWAL_UJIAN_ID = null;
 let WORKSHEET_ID = null;
 let SESI_ID = null; // id baris di sesi_ujian, dipakai buat heartbeat & tandai selesai
 let sesiPingInterval = null;
@@ -1116,12 +1117,13 @@ function buildAnswerReport(){
 const SESI_PING_INTERVAL_MS = 20000; // kirim heartbeat tiap 20 detik
 
 async function mulaiSesiUjian(){
-  if(!currentProfile || !BANK_SOAL_ID) return;
+  if(!currentProfile || !JADWAL_UJIAN_ID) return;
   try{
     const stuClass = document.getElementById('stuClass').value.trim() || (currentProfile.kelas ? currentProfile.kelas.nama : '-');
     const { data, error } = await supabase
       .from('sesi_ujian')
       .upsert({
+        jadwal_ujian_id: JADWAL_UJIAN_ID,
         bank_soal_id: BANK_SOAL_ID,
         profile_id: currentProfile.id,
         nama: currentProfile.nama,
@@ -1131,7 +1133,7 @@ async function mulaiSesiUjian(){
         last_ping_at: new Date().toISOString(),
         force_exit: false,
         paused: false
-      }, { onConflict: 'bank_soal_id,profile_id' })
+      }, { onConflict: 'jadwal_ujian_id,profile_id' })
       .select('id')
       .single();
     if(error){ console.warn('Gagal mencatat sesi ujian (diabaikan):', error.message); return; }
@@ -1350,6 +1352,7 @@ function sendResultToForm(name, stuClass, score){
 
   supabase.from('hasil_ujian_lms').insert({
     bank_soal_id: BANK_SOAL_ID,
+    jadwal_ujian_id: JADWAL_UJIAN_ID,
     worksheet_id: WORKSHEET_ID,
     profile_id: currentProfile ? currentProfile.id : null,
     nama: name,
@@ -1920,57 +1923,80 @@ function showFatalGateError(msg){
   currentProfile = profile;
 
   const params = new URLSearchParams(window.location.search);
-  BANK_SOAL_ID = params.get('id');
-  if(!BANK_SOAL_ID){
-    showFatalGateError('Link soal tidak valid (parameter ?id= tidak ditemukan). Buka soal ini lewat menu Worksheet.');
+  JADWAL_UJIAN_ID = params.get('jadwal');
+  const legacyBankSoalId = params.get('id');
+
+  if(!JADWAL_UJIAN_ID && !legacyBankSoalId){
+    showFatalGateError('Link ujian tidak valid. Buka ujian ini lewat menu Worksheet.');
     return;
   }
 
-  const { data: soalRow, error } = await supabase
-    .from('bank_soal')
-    .select('id, judul, data, durasi_menit, worksheet_id, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, worksheet:worksheet_id ( mulai, deadline )')
-    .eq('id', BANK_SOAL_ID)
-    .single();
-
-  if(error || !soalRow){
-    showFatalGateError('Soal tidak ditemukan atau sudah dihapus guru.');
-    return;
-  }
-
-  // ---------- cek jadwal (mulai / deadline) yang diatur guru ----------
-  const jadwal = soalRow.worksheet || null;
-  if(jadwal && jadwal.mulai && new Date(jadwal.mulai) > new Date()){
-    const mulaiTxt = new Date(jadwal.mulai).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
-    showFatalGateError(`Soal ini belum bisa dibuka. Mulai bisa dikerjakan: ${mulaiTxt}.`);
-    return;
-  }
-  if(jadwal && jadwal.deadline){
-    const todayStr = new Date().toISOString().slice(0, 10);
-    if(jadwal.deadline < todayStr){
-      const deadlineTxt = new Date(jadwal.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
-      showFatalGateError(`Soal ini sudah melewati batas waktu pengerjaan (deadline: ${deadlineTxt}).`);
+  // ---------- link lama (soal.html?id=<bank_soal_id>) dari sebelum fitur Jadwal
+  // Ujian ada: cari jadwal_ujian hasil migrasi otomatis yang terkait bank_soal itu. ----------
+  if(!JADWAL_UJIAN_ID && legacyBankSoalId){
+    const { data: legacyRow } = await supabase
+      .from('bank_soal')
+      .select('legacy_jadwal_ujian_id')
+      .eq('id', legacyBankSoalId)
+      .single();
+    if(legacyRow && legacyRow.legacy_jadwal_ujian_id){
+      JADWAL_UJIAN_ID = legacyRow.legacy_jadwal_ujian_id;
+    } else {
+      showFatalGateError('Soal ini belum dijadwalkan oleh guru sebagai ujian. Hubungi gurumu.');
       return;
     }
   }
 
-  DATA = soalRow.data || [];
+  const { data: juRow, error } = await supabase
+    .from('jadwal_ujian')
+    .select('id, judul, mulai, deadline, durasi_menit, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, bank_soal:bank_soal_id ( id, data )')
+    .eq('id', JADWAL_UJIAN_ID)
+    .single();
+
+  if(error || !juRow){
+    showFatalGateError('Ujian tidak ditemukan atau sudah dihapus guru.');
+    return;
+  }
+
+  // ---------- cek jadwal (mulai / deadline) yang diatur guru ----------
+  if(juRow.mulai && new Date(juRow.mulai) > new Date()){
+    const mulaiTxt = new Date(juRow.mulai).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' });
+    showFatalGateError(`Ujian ini belum bisa dibuka. Mulai bisa dikerjakan: ${mulaiTxt}.`);
+    return;
+  }
+  if(juRow.deadline){
+    const todayStr = new Date().toISOString().slice(0, 10);
+    if(juRow.deadline < todayStr){
+      const deadlineTxt = new Date(juRow.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      showFatalGateError(`Ujian ini sudah melewati batas waktu pengerjaan (deadline: ${deadlineTxt}).`);
+      return;
+    }
+  }
+
+  if(!juRow.bank_soal){
+    showFatalGateError('Soal untuk ujian ini sudah dihapus guru dari Bank Soal.');
+    return;
+  }
+
+  DATA = juRow.bank_soal.data || [];
   if(!Array.isArray(DATA) || DATA.length===0){
     showFatalGateError('Soal ini belum berisi butir soal yang valid.');
     return;
   }
-  TIMER_MINUTES = soalRow.durasi_menit || 90;
+  BANK_SOAL_ID = juRow.bank_soal.id;
+  TIMER_MINUTES = juRow.durasi_menit || 90;
   TIMER_MS = TIMER_MINUTES*60*1000;
   remainingTimeMs = TIMER_MS;
-  WORKSHEET_ID = soalRow.worksheet_id || null;
-  PENALTI_AKTIF = soalRow.penalti_aktif !== false; // default aktif kalau kolom kosong/null
-  VIOLATION_PENALTY = (soalRow.poin_penalti===0 || soalRow.poin_penalti) ? soalRow.poin_penalti : 2;
-  ACAK_SOAL = soalRow.acak_soal === true;
-  TAMPILKAN_NILAI_LANGSUNG = soalRow.tampilkan_nilai_langsung !== false; // default tampil kalau kolom kosong/null
+  WORKSHEET_ID = null;
+  PENALTI_AKTIF = juRow.penalti_aktif !== false; // default aktif kalau kolom kosong/null
+  VIOLATION_PENALTY = (juRow.poin_penalti===0 || juRow.poin_penalti) ? juRow.poin_penalti : 2;
+  ACAK_SOAL = juRow.acak_soal === true;
+  TAMPILKAN_NILAI_LANGSUNG = juRow.tampilkan_nilai_langsung !== false; // default tampil kalau kolom kosong/null
   applyPenaltiUI();
-  STORAGE_KEY = 'lms_soal_' + BANK_SOAL_ID + '_' + profile.id;
+  STORAGE_KEY = 'lms_soal_' + JADWAL_UJIAN_ID + '_' + profile.id;
 
-  document.title = soalRow.judul || document.title;
-  document.getElementById('gateSchoolName').textContent = soalRow.judul || 'Soal';
+  document.title = juRow.judul || document.title;
+  document.getElementById('gateSchoolName').textContent = juRow.judul || 'Soal';
 
   // Nama & Kelas otomatis dari akun LMS — TIDAK ada input manual.
   document.getElementById('stuName').value = profile.nama;

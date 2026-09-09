@@ -113,7 +113,7 @@
         <div class="table-responsive">
           <table class="grade-table" id="soal-grade-table">
             <thead>
-              <tr><th>Sumber</th><th>Judul/Slug</th><th>Nilai</th><th>Waktu Submit</th><th>Status</th></tr>
+              <tr><th>Judul/Slug</th><th>Nilai</th><th>Waktu Submit</th><th>Status</th></tr>
             </thead>
             <tbody id="soal-grade-container"></tbody>
           </table>
@@ -162,13 +162,12 @@
   `).join('') : emptyState("Belum ada pengumuman", "Pengumuman terbaru akan muncul di sini.", "📣");
 
   // Nilai Ujian gabungan: Bank Soal (hasil_ujian_lms, milik akun ini lewat profile_id)
-  // + Ujian HTML Mandiri (hasil_ujian, dicocokkan lewat Nama karena soal ini diisi tanpa login)
-  // + Nilai Manual (tabel "nilai", diisi guru lewat menu "Input Nilai Massal" di dashboard guru).
+  // + Ujian HTML Mandiri (hasil_ujian, dicocokkan lewat Nama karena soal ini diisi tanpa login).
   const soalGradeTable = document.getElementById('soal-grade-table');
   const soalGradeC = document.getElementById('soal-grade-container');
   const soalGradeEmptySlot = document.getElementById('soal-grade-empty-slot');
 
-  const [{ data: mySoalResults }, { data: myUjianResults }, { data: myNilaiManual }] = await Promise.all([
+  const [{ data: mySoalResults }, { data: myUjianResults }] = await Promise.all([
     supabase
       .from('hasil_ujian_lms')
       .select('nilai, dipublikasikan, created_at, bank_soal:bank_soal_id ( judul )')
@@ -178,20 +177,14 @@
       .from('hasil_ujian')
       .select('ujian_slug, nilai, created_at')
       .ilike('nama', profile.nama)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('nilai')
-      .select('jenis, skor, predikat, keterangan, created_at')
-      .eq('siswa_id', profile.id)
       .order('created_at', { ascending: false })
   ]);
 
   const nilaiGabungan = [
     ...(mySoalResults || []).map(r => ({
-      sumber: 'Online',
+      sumber: 'Bank Soal',
       judul: r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
       nilai: r.nilai,
-      predikat: null,
       dipublikasikan: r.dipublikasikan,
       created_at: r.created_at
     })),
@@ -199,17 +192,7 @@
       sumber: 'Ujian Mandiri',
       judul: r.ujian_slug,
       nilai: r.nilai,
-      predikat: null,
       dipublikasikan: true, // ujian mandiri langsung tampil, tidak lewat proses terbitkan guru
-      created_at: r.created_at
-    })),
-    ...(myNilaiManual || []).map(r => ({
-      sumber: 'Manual',
-      judul: r.jenis || 'Nilai',
-      nilai: r.skor,
-      predikat: r.predikat,
-      keterangan: r.keterangan,
-      dipublikasikan: true, // nilai manual guru langsung tampil ke siswa begitu disimpan
       created_at: r.created_at
     }))
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -218,37 +201,25 @@
     soalGradeTable.style.display = '';
     soalGradeEmptySlot.innerHTML = '';
     soalGradeC.innerHTML = nilaiGabungan.map(r => {
-      const sumber = esc(r.sumber);
       const judul = esc(r.judul);
       const waktu = new Date(r.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
       if (!r.dipublikasikan) {
         return `
         <tr>
-          <td>${sumber}</td>
           <td>${judul}</td>
           <td>—</td>
           <td>${waktu}</td>
           <td><span class="score-pill status-belum">Menunggu Diumumkan Guru</span></td>
         </tr>`;
       }
-      // Nilai manual bisa saja hanya diisi predikat/keterangan tanpa skor angka —
-      // tampilkan predikat sebagai gantinya, dan lewati status Tuntas/Remidi kalau skor kosong.
-      const hasSkor = typeof r.nilai === 'number';
-      const nilaiText = hasSkor ? `<b>${r.nilai}</b>` : (r.predikat ? esc(r.predikat) : '—');
-      const statusCell = hasSkor
-        ? (() => {
-            const statusCls = r.nilai < 75 ? 'status-remidi' : 'status-tuntas';
-            const statusTxt = r.nilai < 75 ? 'Remidi' : 'Tuntas';
-            return `<span class="score-pill ${statusCls}">${statusTxt}</span>`;
-          })()
-        : '<span style="color:#c8cbd6;">-</span>';
+      const statusCls = r.nilai < 75 ? 'status-remidi' : 'status-tuntas';
+      const statusTxt = r.nilai < 75 ? 'Remidi' : 'Tuntas';
       return `
       <tr>
-        <td>${sumber}</td>
         <td>${judul}</td>
-        <td>${nilaiText}</td>
+        <td><b>${r.nilai}</b></td>
         <td>${waktu}</td>
-        <td>${statusCell}</td>
+        <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
       </tr>`;
     }).join('');
   } else {

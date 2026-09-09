@@ -206,7 +206,8 @@
         <div class="nav-group-items">
           <a class="nav-item" data-page="kelas" href="#" title="Kelola Kelas"><span class="icon">🏫</span> <span class="label">Kelola Kelas</span></a>
           <a class="nav-item" data-page="worksheet" href="#" title="Kelola Worksheet"><span class="icon">📝</span> <span class="label">Kelola Worksheet</span></a>
-          <a class="nav-item" data-page="banksoal" href="#" title="Edit Bank Soal"><span class="icon">✏️</span> <span class="label">Edit Bank Soal</span></a>
+          <a class="nav-item" data-page="banksoal" href="#" title="Bank Soal"><span class="icon">✏️</span> <span class="label">Bank Soal</span></a>
+          <a class="nav-item" data-page="jadwalujian" href="#" title="Jadwal Ujian"><span class="icon">🗓️</span> <span class="label">Jadwal Ujian</span></a>
           <a class="nav-item" data-page="materi" href="#" title="Kelola Materi"><span class="icon">📘</span> <span class="label">Kelola Materi</span></a>
           <a class="nav-item" data-page="pengumuman" href="#" title="Kelola Pengumuman"><span class="icon">📣</span> <span class="label">Kelola Pengumuman</span></a>
         </div>
@@ -446,94 +447,48 @@
 
           <div class="section-label" style="margin-top:28px;">📄 Upload Soal dari Word (Bank Soal)</div>
           <div class="hint">
-            Cara lain membuat worksheet: upload file <code>.docx</code> berisi soal yang mengikuti format
-            <code>Template_Soal_Upload_LMS.docx</code> — soal akan disimpan ke Bank Soal dan siswa mengerjakannya
-            langsung dari akun LMS mereka (tanpa isi Nama/Kelas manual).
+            Upload soal .docx sekarang dilakukan di menu <b>Bank Soal</b>, dan tidak langsung terbit ke siswa —
+            soal hanya tersimpan dulu. Untuk benar-benar menerbitkannya ke siswa (atur tanggal, durasi, kelas
+            target, dll.), gunakan menu <b>Jadwal Ujian</b> setelah soalnya tersimpan di Bank Soal.
+          </div>
+
+          <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
+          <div id="worksheetList">Memuat…</div>
+        </div>
+
+        <!-- ===== BANK SOAL (upload soal .docx + edit manual, BELUM terbit ke siswa) ===== -->
+        <div class="gs-section" id="section-banksoal">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Bank Soal</h1></div>
+          <div class="hint">
+            Upload file <code>.docx</code> berisi soal yang mengikuti format <code>Template_Soal_Upload_LMS.docx</code>
+            untuk disimpan ke Bank Soal — <b>soal TIDAK langsung terbit ke siswa</b>. Untuk menerbitkannya (atur
+            tanggal, durasi, tingkat/kelas target, penalti, acak soal, tampilkan nilai), buka menu
+            <b>🗓️ Jadwal Ujian</b> setelah soal ini tersimpan.
             <a href="Template_Soal_Upload_LMS.docx" target="_blank" rel="noopener">Unduh contoh template</a>.
           </div>
           <div class="form-row">
-            <div class="form-field"><label>Judul</label><input type="text" id="soalJudulInput" placeholder="mis. Ulangan Harian Descriptive Text"></div>
-            <div class="form-field"><label>Tingkat</label><select id="soalTingkatSelect"><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+            <div class="form-field" style="max-width:none;"><label>Judul Soal</label><input type="text" id="soalJudulInput" placeholder="mis. Ulangan Harian Descriptive Text"></div>
           </div>
-          <div class="form-row">
-            <div class="form-field"><label>Durasi (menit)</label><input type="number" id="soalDurasiInput" value="90" min="1"></div>
-            <div class="form-field"><label>Poin Potongan per Pelanggaran</label><input type="number" id="soalPoinPenaltiInput" value="2" min="0"></div>
-          </div>
-          <div class="form-field" style="max-width:none;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-              <input type="checkbox" id="soalPenaltiCheckbox" checked style="width:auto;">
-              Potong nilai kalau siswa pindah tab / keluar fullscreen
-            </label>
-          </div>
-          <div class="form-field" style="max-width:none;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-              <input type="checkbox" id="soalAcakCheckbox" style="width:auto;">
-              Acak urutan soal (tiap siswa dapat urutan berbeda, soal dalam 1 teks bacaan tetap dikelompokkan)
-            </label>
-          </div>
-          <div class="form-field" style="max-width:none;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-              <input type="checkbox" id="soalTampilkanNilaiCheckbox" checked style="width:auto;">
-              Tampilkan nilai langsung ke siswa begitu selesai mengerjakan
-            </label>
-            <div class="hint" style="margin-top:4px;">Kalau dimatikan, siswa hanya lihat "Jawaban Terkirim" — nilai tetap tersimpan dan bisa kamu lihat/umumkan lewat menu "Hasil Bank Soal".</div>
-          </div>
-          <div class="section-label" style="margin-top:20px; font-size:14px;">🗓️ Jadwal Ujian</div>
-          <div class="form-row">
-            <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="soalMulaiInput"></div>
-            <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="soalDeadlineInput"></div>
-          </div>
-          <div class="hint">Kosongkan kalau soal boleh langsung dikerjakan siswa sejak diterbitkan dan tidak ada batas waktu. Sebelum "Mulai" atau setelah "Deadline", siswa tidak bisa membuka soal ini — jadwal juga bisa diubah kapan saja lewat "Worksheet Aktif" di bawah.</div>
           <div class="form-field">
             <label>File Soal (.docx)</label>
             <input type="file" id="soalDocxInput" accept=".docx">
           </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button class="btn-secondary-sm" id="btnPratinjauSoal">🔍 Pratinjau</button>
-            <button class="btn-secondary-sm" id="btnSimpanSoal" disabled>💾 Simpan &amp; Terbitkan</button>
+            <button class="btn-secondary-sm" id="btnSimpanSoal" disabled>💾 Simpan ke Bank Soal</button>
           </div>
           <p class="login-error" id="soalImportError" style="display:none;"></p>
           <div id="soalImportPreview" style="margin-top:14px;"></div>
 
-          <div class="section-label" style="margin-top:24px;">Worksheet Aktif</div>
-          <div id="worksheetList">Memuat…</div>
-        </div>
-
-        <!-- ===== EDIT BANK SOAL (edit manual soal yang sudah diupload) ===== -->
-        <div class="gs-section" id="section-banksoal">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Edit Bank Soal</h1></div>
-          <div class="hint">Semua soal yang pernah diupload lewat "Kelola Worksheet → Upload Soal dari Word" bisa diedit manual di sini — ubah pertanyaan, opsi jawaban, kunci jawaban, teks bacaan, atau tambah/hapus soal — tanpa perlu upload ulang file Word.</div>
-
-          <div class="section-label" style="margin-top:20px;">Daftar Bank Soal</div>
-          <div id="bankSoalDaftar">Memuat…</div>
+          <div class="section-label" style="margin-top:28px;">Daftar Bank Soal</div>
+          <div class="hint">Soal yang sudah tersimpan di sini bisa diedit manual (ubah pertanyaan, opsi jawaban, kunci jawaban, teks bacaan, atau tambah/hapus soal) tanpa perlu upload ulang file Word. Untuk menerbitkan ke siswa, pergi ke menu <b>Jadwal Ujian</b>.</div>
+          <div id="bankSoalDaftar" style="margin-top:12px;">Memuat…</div>
 
           <div id="bankSoalEditorWrap" style="display:none; margin-top:26px;">
             <div class="section-label" id="bankSoalEditorTitle" style="margin-top:0;">Edit Soal</div>
 
             <div class="form-row">
-              <div class="form-field"><label>Judul</label><input type="text" id="bsJudulInput"></div>
-              <div class="form-field"><label>Durasi (menit)</label><input type="number" id="bsDurasiInput" min="1"></div>
-            </div>
-            <div class="form-row">
-              <div class="form-field"><label>Poin Potongan per Pelanggaran</label><input type="number" id="bsPoinPenaltiInput" min="0"></div>
-            </div>
-            <div class="form-field" style="max-width:none;">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                <input type="checkbox" id="bsPenaltiCheckbox" style="width:auto;">
-                Potong nilai kalau siswa pindah tab / keluar fullscreen
-              </label>
-            </div>
-            <div class="form-field" style="max-width:none;">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                <input type="checkbox" id="bsAcakCheckbox" style="width:auto;">
-                Acak urutan soal
-              </label>
-            </div>
-            <div class="form-field" style="max-width:none;">
-              <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                <input type="checkbox" id="bsTampilkanNilaiCheckbox" style="width:auto;">
-                Tampilkan nilai langsung ke siswa
-              </label>
+              <div class="form-field" style="max-width:none;"><label>Judul</label><input type="text" id="bsJudulInput"></div>
             </div>
 
             <div class="section-label" style="margin-top:22px; font-size:14px;">Isi Soal</div>
@@ -546,6 +501,71 @@
               <button class="btn-secondary-sm" id="btnBsBatal">Batal</button>
             </div>
           </div>
+        </div>
+
+        <!-- ===== JADWAL UJIAN (menerbitkan soal dari Bank Soal ke siswa) ===== -->
+        <div class="gs-section" id="section-jadwalujian">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Jadwal Ujian</h1></div>
+          <div class="hint">Terbitkan soal yang sudah tersimpan di <b>Bank Soal</b> menjadi ujian yang bisa dikerjakan siswa. Satu soal di Bank Soal bisa dipakai berulang kali untuk beberapa Jadwal Ujian yang berbeda.</div>
+
+          <div class="form-row">
+            <div class="form-field" style="max-width:none;"><label>Judul Ujian</label><input type="text" id="juJudulInput" placeholder="mis. Ulangan Harian Descriptive Text - Kelas X"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field" style="max-width:none;"><label>Pilih Soal (Bank Soal)</label><select id="juBankSoalSelect"></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-field"><label>Tingkat</label><select id="juTingkatSelect"><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+            <div class="form-field"><label>Durasi (menit)</label><input type="number" id="juDurasiInput" value="90" min="1"></div>
+          </div>
+
+          <div class="section-label" style="margin-top:18px; font-size:14px;">Target Peserta</div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:6px;">
+              <input type="radio" name="juTarget" id="juTargetSemua" value="semua" checked style="width:auto;"> Semua kelas di tingkat ini
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="radio" name="juTarget" id="juTargetTertentu" value="tertentu" style="width:auto;"> Kelas tertentu saja
+            </label>
+          </div>
+          <div id="juKelasCheckboxWrap" style="display:none; margin-top:8px; gap:14px; flex-wrap:wrap;"></div>
+
+          <div class="section-label" style="margin-top:18px; font-size:14px;">Pengaturan Ujian</div>
+          <div class="form-row">
+            <div class="form-field"><label>Poin Potongan per Pelanggaran</label><input type="number" id="juPoinPenaltiInput" value="2" min="0"></div>
+          </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="juPenaltiCheckbox" checked style="width:auto;">
+              Potong nilai kalau siswa pindah tab / keluar fullscreen
+            </label>
+          </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="juAcakCheckbox" style="width:auto;">
+              Acak urutan soal (tiap siswa dapat urutan berbeda, soal dalam 1 teks bacaan tetap dikelompokkan)
+            </label>
+          </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="juTampilkanNilaiCheckbox" checked style="width:auto;">
+              Tampilkan nilai langsung ke siswa begitu selesai mengerjakan
+            </label>
+            <div class="hint" style="margin-top:4px;">Kalau dimatikan, siswa hanya lihat "Jawaban Terkirim" — nilai tetap tersimpan dan bisa kamu lihat/umumkan lewat menu "Nilai".</div>
+          </div>
+
+          <div class="section-label" style="margin-top:18px; font-size:14px;">🗓️ Tanggal</div>
+          <div class="form-row">
+            <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="juMulaiInput"></div>
+            <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="juDeadlineInput"></div>
+          </div>
+          <div class="hint">Kosongkan kalau ujian boleh langsung dikerjakan siswa sejak diterbitkan dan tidak ada batas waktu.</div>
+
+          <button class="btn-secondary-sm" id="btnTerbitkanJadwalUjian" style="margin-top:10px;">📢 Terbitkan Jadwal Ujian</button>
+          <p class="login-error" id="juError" style="display:none;"></p>
+
+          <div class="section-label" style="margin-top:28px;">Daftar Jadwal Ujian</div>
+          <div id="jadwalUjianDaftar">Memuat…</div>
         </div>
 
         <!-- ===== SEDANG UJIAN (monitoring live siapa yang sedang mengerjakan Bank Soal) ===== -->
@@ -570,7 +590,7 @@
         <!-- ===== NILAI (gabungan Hasil Ujian HTML mandiri + Hasil Bank Soal LMS dalam satu tabel) ===== -->
         <div class="gs-section" id="section-nilai">
           <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Nilai</h1></div>
-          <div class="hint">Gabungan nilai dari <b>Ujian HTML Mandiri</b> (siswa isi Nama/Kelas manual, tanpa login LMS) dan <b>Bank Soal</b> (soal yang diupload lewat "Kelola Worksheet → Upload Soal dari Word", dikerjakan siswa lewat akun LMS). Semua tampil dalam satu tabel yang sama, dibedakan lewat kolom "Sumber".</div>
+          <div class="hint">Gabungan nilai dari <b>Ujian HTML Mandiri</b> (siswa isi Nama/Kelas manual, tanpa login LMS) dan <b>Bank Soal</b> (soal yang diterbitkan lewat menu "Jadwal Ujian", dikerjakan siswa lewat akun LMS). Semua tampil dalam satu tabel yang sama, dibedakan lewat kolom "Sumber".</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
             <div class="form-field" style="margin-bottom:0;">
               <label>Sumber</label>
@@ -2214,24 +2234,10 @@
       return;
     }
     const judul = document.getElementById('soalJudulInput').value.trim();
-    const tingkat = document.getElementById('soalTingkatSelect').value;
-    const durasiMenit = parseInt(document.getElementById('soalDurasiInput').value, 10) || 90;
-    const penaltiAktif = document.getElementById('soalPenaltiCheckbox').checked;
-    const poinPenalti = parseInt(document.getElementById('soalPoinPenaltiInput').value, 10) || 0;
-    const acakSoal = document.getElementById('soalAcakCheckbox').checked;
-    const tampilkanNilaiLangsung = document.getElementById('soalTampilkanNilaiCheckbox').checked;
-    const soalMulaiRaw = document.getElementById('soalMulaiInput').value;
-    const mulai = soalMulaiRaw ? new Date(soalMulaiRaw).toISOString() : null;
-    const deadline = document.getElementById('soalDeadlineInput').value || null;
     const file = document.getElementById('soalDocxInput').files[0];
 
     if (!judul) {
       errEl.textContent = 'Judul wajib diisi.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (mulai && deadline && mulai.slice(0, 10) > deadline) {
-      errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.';
       errEl.style.display = 'block';
       return;
     }
@@ -2240,27 +2246,23 @@
     btn.disabled = true;
     btn.textContent = 'Menyimpan…';
     try {
-      await simpanBankSoalDanWorksheet({
-        judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
-        mulai, deadline,
+      await simpanBankSoal({
+        judul,
         data: soalParsedResult.data,
         guruId: teacher.id,
         namaFile: file ? file.name : null
       });
       document.getElementById('soalJudulInput').value = '';
       document.getElementById('soalDocxInput').value = '';
-      document.getElementById('soalAcakCheckbox').checked = false;
-      document.getElementById('soalTampilkanNilaiCheckbox').checked = true;
-      document.getElementById('soalMulaiInput').value = '';
-      document.getElementById('soalDeadlineInput').value = '';
       resetSoalImportUI();
-      await renderWorksheetList();
-      alert('Soal berhasil disimpan dan worksheet diterbitkan.');
+      await renderBankSoalList();
+      await loadJuBankSoalOptions();
+      alert('Soal berhasil disimpan ke Bank Soal. Buka menu "Jadwal Ujian" untuk menerbitkannya ke siswa.');
     } catch (e) {
       errEl.textContent = 'Gagal menyimpan: ' + e.message;
       errEl.style.display = 'block';
     } finally {
-      btn.textContent = '💾 Simpan & Terbitkan';
+      btn.textContent = '💾 Simpan ke Bank Soal';
     }
   });
 
@@ -2278,19 +2280,18 @@
     const el = document.getElementById('bankSoalDaftar');
     const { data, error } = await supabase
       .from('bank_soal')
-      .select('id, judul, data, created_at, worksheet:worksheet_id ( level )')
+      .select('id, judul, data, created_at')
       .order('created_at', { ascending: false });
     if (error) { el.innerHTML = emptyState('Gagal memuat', error.message, '⚠️'); return; }
     const list = data || [];
     el.innerHTML = list.length ? list.map(b => {
       let jumlahTeks = 0, jumlahSoal = 0;
       (b.data || []).forEach(sec => { jumlahTeks++; jumlahSoal += (sec.questions || []).length; });
-      const tingkat = b.worksheet ? ('Tingkat ' + b.worksheet.level) : '';
       return `
       <div class="list-row">
         <div>
           <strong>${esc(b.judul)}</strong>
-          <span style="color:#888;font-size:12.5px;">— ${tingkat ? esc(tingkat) + ' · ' : ''}${jumlahTeks} teks bacaan · ${jumlahSoal} soal</span>
+          <span style="color:#888;font-size:12.5px;">— ${jumlahTeks} teks bacaan · ${jumlahSoal} soal</span>
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
           <button class="btn-secondary-sm" data-bs-edit="${b.id}">✏️ Edit Soal</button>
@@ -2298,17 +2299,18 @@
         </div>
       </div>
     `;
-    }).join('') : emptyState('Belum ada Bank Soal', 'Upload soal lewat "Kelola Worksheet → Upload Soal dari Word" dulu.', '📄');
+    }).join('') : emptyState('Belum ada Bank Soal', 'Upload soal dari file .docx lewat form di atas dulu.', '📄');
 
     el.querySelectorAll('[data-bs-edit]').forEach(btn => {
       btn.addEventListener('click', () => openBankSoalEditor(btn.dataset.bsEdit));
     });
     el.querySelectorAll('[data-bs-hapus]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Hapus soal ini beserta worksheet-nya? Nilai siswa yang sudah tersimpan tidak akan terhapus.')) return;
+        if (!confirm('Hapus soal ini dari Bank Soal? Kalau soal ini sedang dipakai di suatu Jadwal Ujian, jadwal itu akan kehilangan soalnya. Nilai siswa yang sudah tersimpan tidak akan terhapus.')) return;
         await supabase.from('bank_soal').delete().eq('id', btn.dataset.bsHapus);
         if (bsEditorState && bsEditorState.bankSoalId === btn.dataset.bsHapus) closeBankSoalEditor();
         await renderBankSoalList();
+        await loadJuBankSoalOptions();
       });
     });
   }
@@ -2327,19 +2329,9 @@
     bsEditorState = {
       bankSoalId: row.id,
       judul: row.judul,
-      durasiMenit: row.durasi_menit,
-      penaltiAktif: row.penalti_aktif,
-      poinPenalti: row.poin_penalti,
-      acakSoal: row.acak_soal,
-      tampilkanNilaiLangsung: row.tampilkan_nilai_langsung,
       data: JSON.parse(JSON.stringify(row.data || []))
     };
     document.getElementById('bsJudulInput').value = bsEditorState.judul || '';
-    document.getElementById('bsDurasiInput').value = bsEditorState.durasiMenit || 90;
-    document.getElementById('bsPoinPenaltiInput').value = bsEditorState.poinPenalti || 0;
-    document.getElementById('bsPenaltiCheckbox').checked = !!bsEditorState.penaltiAktif;
-    document.getElementById('bsAcakCheckbox').checked = !!bsEditorState.acakSoal;
-    document.getElementById('bsTampilkanNilaiCheckbox').checked = !!bsEditorState.tampilkanNilaiLangsung;
     document.getElementById('bankSoalEditorTitle').textContent = 'Edit Soal — ' + (bsEditorState.judul || '');
     document.getElementById('bankSoalEditorWrap').style.display = 'block';
     renderBsSections();
@@ -2569,24 +2561,145 @@
     btn.textContent = 'Menyimpan…';
     const { error } = await supabase.from('bank_soal').update({
       judul,
-      durasi_menit: parseInt(document.getElementById('bsDurasiInput').value, 10) || 90,
-      penalti_aktif: document.getElementById('bsPenaltiCheckbox').checked,
-      poin_penalti: parseInt(document.getElementById('bsPoinPenaltiInput').value, 10) || 0,
-      acak_soal: document.getElementById('bsAcakCheckbox').checked,
-      tampilkan_nilai_langsung: document.getElementById('bsTampilkanNilaiCheckbox').checked,
       data: bsEditorState.data
     }).eq('id', bsEditorState.bankSoalId);
     btn.disabled = false;
     btn.textContent = '💾 Simpan Perubahan';
     if (error) { errEl.textContent = 'Gagal menyimpan: ' + error.message; errEl.style.display = 'block'; return; }
 
-    // Judul worksheet terkait ikut disamakan supaya konsisten di daftar Worksheet Aktif.
-    await supabase.from('worksheet').update({ judul }).eq('url', 'soal.html?id=' + bsEditorState.bankSoalId);
-
+    // Judul jadwal ujian yang memakai soal ini TIDAK ikut diubah otomatis — judul
+    // ujian sengaja independen dari judul Bank Soal (bisa dipakai ulang beda nama).
     closeBankSoalEditor();
     await renderBankSoalList();
-    await renderWorksheetList();
+    await loadJuBankSoalOptions();
     alert('Perubahan soal berhasil disimpan.');
+  });
+
+  // =========================================================
+  // 5d) JADWAL UJIAN — terbitkan soal dari Bank Soal ke siswa
+  // =========================================================
+  async function loadJuBankSoalOptions() {
+    const { data } = await supabase.from('bank_soal').select('id, judul').order('created_at', { ascending: false });
+    const sel = document.getElementById('juBankSoalSelect');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">— Pilih soal dari Bank Soal —</option>' +
+      (data || []).map(b => `<option value="${esc(b.id)}">${esc(b.judul)}</option>`).join('');
+    sel.value = current;
+  }
+
+  function renderJuKelasCheckboxes() {
+    const wrap = document.getElementById('juKelasCheckboxWrap');
+    const tingkat = document.getElementById('juTingkatSelect').value;
+    const relevan = allKelas.filter(k => k.level === tingkat);
+    wrap.innerHTML = relevan.length
+      ? relevan.map(k => `<label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13.5px;"><input type="checkbox" class="ju-kelas-cb" value="${k.id}" style="width:auto;"> ${esc(k.nama)}</label>`).join('')
+      : '<span class="hint" style="margin:0;">Belum ada kelas untuk tingkat ini. Tambahkan dulu lewat "Kelola Kelas".</span>';
+  }
+
+  function toggleJuKelasWrap() {
+    const tertentu = document.getElementById('juTargetTertentu').checked;
+    document.getElementById('juKelasCheckboxWrap').style.display = tertentu ? 'flex' : 'none';
+    if (tertentu) renderJuKelasCheckboxes();
+  }
+  document.getElementById('juTargetSemua').addEventListener('change', toggleJuKelasWrap);
+  document.getElementById('juTargetTertentu').addEventListener('change', toggleJuKelasWrap);
+  document.getElementById('juTingkatSelect').addEventListener('change', () => {
+    if (document.getElementById('juTargetTertentu').checked) renderJuKelasCheckboxes();
+  });
+
+  async function renderJadwalUjianList() {
+    const el = document.getElementById('jadwalUjianDaftar');
+    const { data, error } = await supabase
+      .from('jadwal_ujian')
+      .select('id, judul, tingkat, target_tipe, mulai, deadline, bank_soal:bank_soal_id ( judul ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) )')
+      .order('created_at', { ascending: false });
+    if (error) { el.innerHTML = emptyState('Gagal memuat', error.message, '⚠️'); return; }
+    const list = data || [];
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10);
+    el.innerHTML = list.length ? list.map(j => {
+      const belumMulai = j.mulai && new Date(j.mulai) > now;
+      const sudahTutup = j.deadline && j.deadline < todayStr;
+      let statusPill = '<span class="score-pill status-tuntas">Terbuka</span>';
+      if (belumMulai) statusPill = '<span class="score-pill status-belum">Belum Dibuka</span>';
+      else if (sudahTutup) statusPill = '<span class="score-pill status-belum">Sudah Ditutup</span>';
+      const target = j.target_tipe === 'tertentu'
+        ? ('Kelas: ' + ((j.jadwal_ujian_kelas || []).map(x => x.kelas ? x.kelas.nama : '?').join(', ') || '-'))
+        : ('Semua kelas tingkat ' + j.tingkat);
+      const metaBits = [esc('Soal: ' + (j.bank_soal ? j.bank_soal.judul : '(soal dihapus)')), esc(target)];
+      if (j.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(j.mulai));
+      if (j.deadline) metaBits.push('Deadline ' + j.deadline);
+      return `
+      <div class="list-row">
+        <div>
+          <strong>${esc(j.judul)}</strong> ${statusPill}
+          <div style="color:#888;font-size:12.5px;">${metaBits.join(' · ')}</div>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <button class="btn-danger-sm" data-ju-hapus="${j.id}">Hapus</button>
+        </div>
+      </div>
+    `;
+    }).join('') : emptyState('Belum ada Jadwal Ujian', 'Pilih soal dari Bank Soal di atas lalu klik "Terbitkan Jadwal Ujian".', '🗓️');
+
+    el.querySelectorAll('[data-ju-hapus]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus jadwal ujian ini? Siswa tidak akan bisa membukanya lagi. Nilai yang sudah tersimpan tidak akan terhapus.')) return;
+        await supabase.from('jadwal_ujian').delete().eq('id', btn.dataset.juHapus);
+        await renderJadwalUjianList();
+      });
+    });
+  }
+
+  document.getElementById('btnTerbitkanJadwalUjian').addEventListener('click', async () => {
+    const errEl = document.getElementById('juError');
+    errEl.style.display = 'none';
+
+    const judul = document.getElementById('juJudulInput').value.trim();
+    const bankSoalId = document.getElementById('juBankSoalSelect').value;
+    const tingkat = document.getElementById('juTingkatSelect').value;
+    const durasiMenit = parseInt(document.getElementById('juDurasiInput').value, 10) || 90;
+    const targetTipe = document.getElementById('juTargetTertentu').checked ? 'tertentu' : 'semua';
+    const kelasIds = targetTipe === 'tertentu'
+      ? Array.from(document.querySelectorAll('.ju-kelas-cb:checked')).map(cb => cb.value)
+      : [];
+    const poinPenalti = parseInt(document.getElementById('juPoinPenaltiInput').value, 10) || 0;
+    const penaltiAktif = document.getElementById('juPenaltiCheckbox').checked;
+    const acakSoal = document.getElementById('juAcakCheckbox').checked;
+    const tampilkanNilaiLangsung = document.getElementById('juTampilkanNilaiCheckbox').checked;
+    const mulaiRaw = document.getElementById('juMulaiInput').value;
+    const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
+    const deadline = document.getElementById('juDeadlineInput').value || null;
+
+    if (!judul) { errEl.textContent = 'Judul ujian wajib diisi.'; errEl.style.display = 'block'; return; }
+    if (!bankSoalId) { errEl.textContent = 'Pilih soal dari Bank Soal dulu.'; errEl.style.display = 'block'; return; }
+    if (targetTipe === 'tertentu' && !kelasIds.length) { errEl.textContent = 'Pilih minimal satu kelas, atau pilih "Semua kelas di tingkat ini".'; errEl.style.display = 'block'; return; }
+    if (mulai && deadline && mulai.slice(0, 10) > deadline) { errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.'; errEl.style.display = 'block'; return; }
+
+    const btn = document.getElementById('btnTerbitkanJadwalUjian');
+    btn.disabled = true;
+    btn.textContent = 'Menerbitkan…';
+    try {
+      await simpanJadwalUjian({
+        judul, bankSoalId, guruId: teacher.id, tingkat, targetTipe, kelasIds,
+        durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
+        mulai, deadline
+      });
+      document.getElementById('juJudulInput').value = '';
+      document.getElementById('juBankSoalSelect').value = '';
+      document.getElementById('juMulaiInput').value = '';
+      document.getElementById('juDeadlineInput').value = '';
+      document.getElementById('juTargetSemua').checked = true;
+      toggleJuKelasWrap();
+      await renderJadwalUjianList();
+      alert('Jadwal Ujian berhasil diterbitkan. Siswa yang menjadi target sudah bisa melihatnya di menu Worksheet.');
+    } catch (e) {
+      errEl.textContent = 'Gagal menerbitkan: ' + e.message;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📢 Terbitkan Jadwal Ujian';
+    }
   });
 
   // =========================================================
@@ -2888,7 +3001,7 @@
   let currentSedangUjianRows = [];
 
   async function loadSedangUjianJudulOptions() {
-    const { data } = await supabase.from('bank_soal').select('id, judul').order('created_at', { ascending: false });
+    const { data } = await supabase.from('jadwal_ujian').select('id, judul').order('created_at', { ascending: false });
     const sel = document.getElementById('sedangUjianJudulSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">Semua</option>' +
@@ -2917,15 +3030,15 @@
   async function loadSedangUjian() {
     const wrap = document.getElementById('sedangUjianTableWrap');
     const summary = document.getElementById('sedangUjianSummary');
-    const bankSoalId = document.getElementById('sedangUjianJudulSelect').value;
+    const jadwalUjianId = document.getElementById('sedangUjianJudulSelect').value;
     const kelasFilter = document.getElementById('sedangUjianKelasSelect').value;
 
     let query = supabase
       .from('sesi_ujian')
-      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, paused, bank_soal:bank_soal_id ( judul )')
+      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, paused, jadwal_ujian:jadwal_ujian_id ( judul ), bank_soal:bank_soal_id ( judul )')
       .eq('status', 'mengerjakan')
       .order('started_at', { ascending: true });
-    if (bankSoalId) query = query.eq('bank_soal_id', bankSoalId);
+    if (jadwalUjianId) query = query.eq('jadwal_ujian_id', jadwalUjianId);
     if (kelasFilter) query = query.eq('kelas', kelasFilter);
 
     const { data, error } = await query;
@@ -2958,7 +3071,7 @@
             <tr>
               <td>${esc(r.nama)}</td>
               <td>${esc(r.kelas)}</td>
-              <td>${esc(r.bank_soal ? r.bank_soal.judul : '(soal dihapus)')}</td>
+              <td>${esc(r.jadwal_ujian ? r.jadwal_ujian.judul : (r.bank_soal ? r.bank_soal.judul : '(soal dihapus)'))}</td>
               <td>
                 ${stale ? '<span class="score-pill status-belum">Tidak Merespon</span>' : '<span class="score-pill status-tuntas">🟢 Aktif</span>'}
                 ${isPaused ? '<br><span class="score-pill status-belum">⏸ Dijeda</span>' : ''}
@@ -3058,7 +3171,7 @@
 
     if (sumberFilter !== 'ujian') {
       let qSoal = supabase.from('hasil_ujian_lms')
-        .select('id, bank_soal_id, nama, kelas, nilai, penalti, dipublikasikan, jawaban, created_at, bank_soal:bank_soal_id ( judul )')
+        .select('id, bank_soal_id, jadwal_ujian_id, nama, kelas, nilai, penalti, dipublikasikan, jawaban, created_at, bank_soal:bank_soal_id ( judul ), jadwal_ujian:jadwal_ujian_id ( judul )')
         .order('created_at', { ascending: false });
       if (kelasFilter) qSoal = qSoal.eq('kelas', kelasFilter);
       queries.push(qSoal.then(({ data, error }) => {
@@ -3066,7 +3179,7 @@
         return (data || []).map(r => ({
           _sumber: 'soal',
           id: r.id,
-          judul: r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
+          judul: r.jadwal_ujian ? r.jadwal_ujian.judul : (r.bank_soal ? r.bank_soal.judul : '(soal dihapus)'),
           nama: r.nama,
           kelas: r.kelas,
           nilai: r.nilai,
@@ -3204,6 +3317,8 @@
     await renderKelasList();
     await renderWorksheetList();
     await renderBankSoalList();
+    await loadJuBankSoalOptions();
+    await renderJadwalUjianList();
     await renderMateriList();
     await renderPengumumanList();
   }

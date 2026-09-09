@@ -244,39 +244,49 @@ function escSoal(str){
   return String(str||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
-/* ---------- 4) Simpan ke Supabase: bank_soal + worksheet ----------
-   Dipanggil dari guru.html setelah guru menekan tombol "Simpan & Terbitkan".
+/* ---------- 4) Simpan ke Supabase: bank_soal SAJA (belum terbit) ----------
+   Dipanggil dari guru.html (halaman "Bank Soal") setelah guru menekan tombol
+   "Simpan ke Bank Soal". TIDAK membuat worksheet/jadwal ujian apapun — soal
+   cuma tersimpan, siswa belum bisa melihatnya sama sekali sampai guru
+   membuat "Jadwal Ujian" terpisah lewat simpanJadwalUjian() di bawah.
    `supabase` di sini adalah client global yang sama dari assets/supabaseClient.js. */
-async function simpanBankSoalDanWorksheet({ judul, tingkat, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung, mulai, deadline, data, guruId, namaFile }){
-  const { data: bankRow, error: err1 } = await supabase
+async function simpanBankSoal({ judul, data, guruId, namaFile }){
+  const { data: bankRow, error } = await supabase
     .from('bank_soal')
+    .insert({ judul, guru_id: guruId, data, sumber_file: namaFile || null })
+    .select('id')
+    .single();
+  if(error) throw error;
+  return { bankSoalId: bankRow.id };
+}
+
+/* ---------- 5) Terbitkan: buat baris jadwal_ujian dari soal yang sudah
+   tersimpan di bank_soal ----------
+   Dipanggil dari halaman "Jadwal Ujian" saat guru menekan "Terbitkan Jadwal
+   Ujian". kelasIds diisi array id kelas HANYA kalau targetTipe === 'tertentu'. */
+async function simpanJadwalUjian({ judul, bankSoalId, guruId, tingkat, targetTipe, kelasIds, durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung, mulai, deadline }){
+  const { data: juRow, error: err1 } = await supabase
+    .from('jadwal_ujian')
     .insert({
-      judul, guru_id: guruId, durasi_menit: durasiMenit || 90,
+      judul, bank_soal_id: bankSoalId, guru_id: guruId, tingkat,
+      target_tipe: targetTipe === 'tertentu' ? 'tertentu' : 'semua',
+      durasi_menit: durasiMenit || 90,
       penalti_aktif: penaltiAktif !== false,
       poin_penalti: (poinPenalti===0 || poinPenalti) ? poinPenalti : 2,
       acak_soal: acakSoal === true,
       tampilkan_nilai_langsung: tampilkanNilaiLangsung !== false,
-      data, sumber_file: namaFile || null
-    })
-    .select('id')
-    .single();
-  if(err1) throw err1;
-
-  const { data: wsRow, error: err2 } = await supabase
-    .from('worksheet')
-    .insert({
-      judul, level: tingkat, kelas_id: null,
-      url: 'soal.html?id=' + bankRow.id,
       mulai: mulai || null,
       deadline: deadline || null
     })
     .select('id')
     .single();
-  if(err2) throw err2;
+  if(err1) throw err1;
 
-  // Kaitkan balik bank_soal.worksheet_id supaya soal.html tahu ke worksheet mana
-  // hasil ujiannya harus dicatat.
-  await supabase.from('bank_soal').update({ worksheet_id: wsRow.id }).eq('id', bankRow.id);
+  if(targetTipe === 'tertentu' && Array.isArray(kelasIds) && kelasIds.length){
+    const rows = kelasIds.map(kelasId => ({ jadwal_ujian_id: juRow.id, kelas_id: kelasId }));
+    const { error: err2 } = await supabase.from('jadwal_ujian_kelas').insert(rows);
+    if(err2) throw err2;
+  }
 
-  return { bankSoalId: bankRow.id, worksheetId: wsRow.id };
+  return { jadwalUjianId: juRow.id };
 }

@@ -135,15 +135,33 @@
 
   const wsC = document.getElementById('worksheet-container');
   const level = profile.kelas ? profile.kelas.level : getLevel(profile.kelas ? profile.kelas.nama : '');
-  const { data } = await supabase
-    .from('worksheet')
-    .select('judul, meta, url, mulai, deadline')
-    .or(`level.eq.${level},kelas_id.eq.${profile.kelas_id}`)
-    .order('created_at', { ascending: false });
 
-  const list = data || [];
+  const [wsRes, juRes] = await Promise.all([
+    supabase
+      .from('worksheet')
+      .select('judul, meta, url, mulai, deadline')
+      .or(`level.eq.${level},kelas_id.eq.${profile.kelas_id}`)
+      .order('created_at', { ascending: false }),
+    // RLS jadwal_ujian sudah otomatis membatasi hanya baris yang menyasar
+    // tingkat/kelas siswa ini (lihat fungsi public.ujian_terlihat_untukku).
+    supabase
+      .from('jadwal_ujian')
+      .select('id, judul, mulai, deadline')
+      .order('created_at', { ascending: false })
+  ]);
+
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
+
+  const worksheetItems = (wsRes.data || []).map(w => ({
+    tipe: 'worksheet', judul: w.judul, meta: w.meta || 'Worksheet interaktif online',
+    url: w.url, mulai: w.mulai, deadline: w.deadline
+  }));
+  const ujianItems = (juRes.data || []).map(j => ({
+    tipe: 'ujian', judul: j.judul, meta: 'Ujian',
+    url: 'soal.html?jadwal=' + j.id, mulai: j.mulai, deadline: j.deadline
+  }));
+  const list = [...worksheetItems, ...ujianItems];
 
   wsC.innerHTML = list.length ? list.map(w => {
     const notStarted = w.mulai && new Date(w.mulai) > now;
@@ -160,15 +178,18 @@
     const deadlineTxt = w.deadline
       ? new Date(w.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
       : null;
-    const metaBits = [esc(w.meta || 'Worksheet interaktif online')];
+    const badge = w.tipe === 'ujian' ? '🧪 ' : '📝 ';
+    const metaBits = [esc(badge + w.meta)];
     if (mulaiTxt) metaBits.push((notStarted ? 'Mulai: ' : 'Dibuka sejak: ') + mulaiTxt);
     if (deadlineTxt) metaBits.push('Deadline: ' + deadlineTxt);
 
     let btn;
     if (notStarted) {
-      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Worksheet ini belum bisa dibuka. Mulai: ${esc(mulaiTxt)}.');return false;">Kerjakan</a>`;
+      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ini belum bisa dibuka. Mulai: ${esc(mulaiTxt)}.');return false;">Kerjakan</a>`;
     } else if (closed) {
-      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Worksheet ini sudah melewati batas waktu.');return false;">Kerjakan</a>`;
+      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ini sudah melewati batas waktu.');return false;">Kerjakan</a>`;
+    } else if (w.tipe === 'ujian') {
+      btn = `<a class="btn-ws" href="${esc(w.url)}">Kerjakan</a>`;
     } else {
       btn = `<a class="btn-ws" href="${esc(w.url)}" target="_blank" rel="noopener">Kerjakan</a>`;
     }
@@ -185,7 +206,7 @@
       </div>
     </div>
   `;
-  }).join('') : emptyState("Belum ada worksheet", "Tugas dan latihan akan muncul di sini saat guru menerbitkannya.", "📝");
+  }).join('') : emptyState("Belum ada worksheet", "Tugas, latihan, dan ujian akan muncul di sini saat guru menerbitkannya.", "📝");
 })();
 </script>
 
