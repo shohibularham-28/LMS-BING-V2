@@ -474,6 +474,11 @@
     margin-top:8px; font-weight:600;
   }
   .violation-card .violation-end-btn:hover{ background:rgba(140,20,20,.08); }
+  .violation-card .violation-exit-btn{
+    background:transparent; border:1px solid #ccc; color:#777;
+    margin-top:8px; font-weight:600; font-size:13px;
+  }
+  .violation-card .violation-exit-btn:hover{ background:rgba(0,0,0,.05); }
 
   .violation-badge{
     font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700;
@@ -508,6 +513,7 @@
       <li>Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm + popup peringatan</b>.</li>
       <li>Setiap pelanggaran mengurangi <b><span id="rulesPenaltiPoin">2</span> poin</b> dari nilai akhir. Pelanggaran bersifat akumulatif — <b>tidak dihapus/diampuni</b>.</li>
       <li>Ujian <b>TIDAK</b> akan otomatis dikirim karena pelanggaran — kamu tetap bisa lanjut mengerjakan, hanya saja nilai berkurang.</li>
+      <li>Setiap kali pelanggaran terdeteksi, kamu akan diberi 3 pilihan: <b>kembali mengerjakan</b>, <b>sudahi &amp; kirim jawaban sekarang</b>, atau <b>keluar tanpa mengirim jawaban</b> (progres tetap tersimpan untuk dilanjutkan nanti).</li>
       <li>Jika keluar dari fullscreen, gunakan tombol <b>"⛶ Fullscreen"</b> di bagian atas untuk kembali.</li>
     </ul>
     <label class="rules-agree">
@@ -526,8 +532,9 @@
     <h2>Terdeteksi Pelanggaran!</h2>
     <p id="violationMsg">Kamu meninggalkan layar ujian (berpindah tab/aplikasi, atau keluar dari fullscreen).</p>
     <div class="vcount" id="violationCount">Pelanggaran 1 — Nilai -2</div>
-    <button type="button" id="violationOkBtn">Saya Mengerti — Kembali ke Ujian</button>
-    <button type="button" id="violationEndBtn" class="violation-end-btn">Sudahi Ujian</button>
+    <button type="button" id="violationOkBtn">Kembali ke Ujian</button>
+    <button type="button" id="violationEndBtn" class="violation-end-btn">Sudahi &amp; Submit Ujian</button>
+    <button type="button" id="violationExitBtn" class="violation-exit-btn">Keluar (Tanpa Kirim Jawaban)</button>
   </div>
 </div>
 <div id="confirmModal" class="confirm-modal">
@@ -1367,6 +1374,16 @@ function registerViolation(reason){
 document.getElementById('violationOkBtn').addEventListener('click', ()=>{
   document.getElementById('violationModal').classList.remove('show');
   requestExamFullscreen();
+});
+
+document.getElementById('violationExitBtn').addEventListener('click', ()=>{
+  document.getElementById('violationModal').classList.remove('show');
+  saveState();
+  if(isFullscreenActive()){
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if(exitFs) exitFs.call(document).catch(()=>{});
+  }
+  window.location.href = 'worksheet.html';
 });
 
 document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
