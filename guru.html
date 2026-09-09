@@ -57,6 +57,61 @@
   .approve-row .meta{ font-size:12.5px; color:#888; margin-top:2px; }
   .btn-approve-sm{ padding:8px 16px; border-radius:8px; border:1px solid rgba(26,143,76,0.3); background:#eafff2; color:#1a8f4c; font-size:13px; font-weight:700; cursor:pointer; }
   .btn-approve-sm:hover{ background:#d8ffe6; }
+
+/* ===== Obrolan Kelas ===== */
+.chat-card{
+  background:#fff;
+  border:1px solid #E7E9F2;
+  border-radius:16px;
+  display:flex;
+  flex-direction:column;
+  height:520px;
+  overflow:hidden;
+  margin-top:18px;
+}
+.chat-head{
+  padding:16px 20px;
+  border-bottom:1px solid #E7E9F2;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.chat-head h3{ margin:0; font-family:'Space Grotesk', sans-serif; font-size:16px; color:#161927; }
+.chat-head .sub{ font-size:12.5px; color:#8A90A3; margin-top:2px; }
+.chat-body{
+  flex:1; overflow-y:auto; padding:18px 20px;
+  display:flex; flex-direction:column; gap:10px;
+  background:#FAFBFD;
+}
+.chat-empty{ margin:auto; text-align:center; color:#8A90A3; font-size:13.5px; }
+.msg-row{ display:flex; flex-direction:column; max-width:78%; }
+.msg-row.me{ align-self:flex-end; align-items:flex-end; }
+.msg-row.other{ align-self:flex-start; align-items:flex-start; }
+.msg-meta{ font-size:11px; color:#9AA3B8; margin-bottom:3px; padding:0 4px; display:flex; gap:6px; align-items:center; }
+.msg-meta .role-tag{
+  font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px;
+  background:var(--violet-soft); color:var(--violet); text-transform:uppercase; letter-spacing:.4px;
+}
+.msg-bubble{
+  padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.5;
+  word-break:break-word; white-space:pre-wrap;
+}
+.msg-row.me .msg-bubble{ background:var(--violet); color:#fff; border-bottom-right-radius:4px; }
+.msg-row.other .msg-bubble{ background:#fff; border:1px solid #E7E9F2; color:#2b2f3a; border-bottom-left-radius:4px; }
+.msg-row.other.from-guru .msg-bubble{ border-color:var(--violet-soft); background:#F5F2FF; }
+.chat-input-bar{
+  display:flex; gap:10px; padding:14px 16px; border-top:1px solid #E7E9F2; background:#fff;
+}
+.chat-input-bar textarea{
+  flex:1; resize:none; border:1.5px solid #E7E9F2; border-radius:12px; padding:10px 14px;
+  font-family:inherit; font-size:14px; line-height:1.4; max-height:100px; min-height:42px;
+}
+.chat-input-bar textarea:focus{ outline:none; border-color:var(--violet); box-shadow:0 0 0 3px var(--violet-soft); }
+.chat-input-bar textarea:disabled{ background:#F5F6FA; cursor:not-allowed; }
+.chat-input-bar button{
+  background:var(--violet); color:#fff; border:none; border-radius:12px; padding:0 20px;
+  font-weight:600; font-size:14px; cursor:pointer; flex-shrink:0;
+}
+.chat-input-bar button:hover{ background:#6A4CE8; }
+.chat-input-bar button:disabled{ opacity:.5; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -77,6 +132,7 @@
 
       <div class="nav-section-label">Menu Guru</div>
       <a class="nav-item active" data-page="rekap" href="#" title="Rekap Nilai"><span class="icon">📊</span> <span class="label">Rekap Nilai</span></a>
+      <a class="nav-item" data-page="obrolan" href="#" title="Obrolan Kelas"><span class="icon">💬</span> <span class="label">Obrolan Kelas</span></a>
 
       <div class="nav-group" data-group="siswa-akun">
         <div class="nav-group-header" data-group-toggle title="Siswa & Akun">
@@ -166,6 +222,28 @@
             <tbody id="grade-container"></tbody>
           </table>
           <div id="grade-empty-slot"></div>
+        </div>
+
+        <!-- ===== OBROLAN KELAS ===== -->
+        <div class="gs-section" id="section-obrolan">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Obrolan Kelas</h1></div>
+          <div class="hint">Room obrolan terpisah untuk tiap kelas. Pilih kelas di bawah untuk melihat & mengirim pesan ke room kelas itu — siswa di kelas lain tidak bisa melihatnya.</div>
+          <div class="filter-select-row" style="max-width:320px;">
+            <div class="filter-select-field"><label for="obrolanKelasSelect">Kelas</label><select id="obrolanKelasSelect"></select></div>
+          </div>
+          <div class="chat-card">
+            <div class="chat-head">
+              <div>
+                <h3 id="obrolanKelasNama">Pilih kelas</h3>
+                <div class="sub">Sebagai guru, pesanmu terlihat di semua kelas yang kamu pilih.</div>
+              </div>
+            </div>
+            <div class="chat-body" id="obrolanBody"><div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div></div>
+            <form class="chat-input-bar" id="obrolanForm">
+              <textarea id="obrolanInput" placeholder="Tulis pesan…" maxlength="1000" rows="1" disabled></textarea>
+              <button type="submit" id="obrolanSendBtn" disabled>Kirim</button>
+            </form>
+          </div>
         </div>
 
         <!-- ===== PERSETUJUAN AKUN BARU ===== -->
@@ -2626,12 +2704,136 @@
     await renderSiswaKelasChips();
     fillKelasSelect(document.getElementById('nilaiKelasSelect'));
     fillKelasSelect(document.getElementById('akunKelasSelect'));
+    fillObrolanKelasSelect();
     renderAnnKelasChecklist();
     await renderKelasList();
     await renderWorksheetList();
     await renderMateriList();
     await renderPengumumanList();
   }
+
+  // =========================================================
+  // OBROLAN KELAS — room chat per kelas (guru bisa pilih kelas mana saja)
+  // =========================================================
+  let obrolanKelasId = '';
+  let obrolanKnownIds = new Set();
+  let obrolanFirstLoad = true;
+
+  function fillObrolanKelasSelect() {
+    const sel = document.getElementById('obrolanKelasSelect');
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = ['<option value="">Pilih kelas…</option>']
+      .concat(allKelas.map(k => `<option value="${k.id}">${esc(k.nama)}</option>`))
+      .join('');
+    if (prev && allKelas.some(k => k.id === prev)) sel.value = prev;
+  }
+
+  function obrolanFmtTime(iso){
+    return new Date(iso).toLocaleString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function obrolanAppend(rows) {
+    const body = document.getElementById('obrolanBody');
+    const wasNearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 80;
+    rows.forEach(m => {
+      if (obrolanKnownIds.has(m.id)) return;
+      obrolanKnownIds.add(m.id);
+      const mine = m.sender_id === teacher.id;
+      const isGuru = m.sender_role === 'guru';
+      const row = document.createElement('div');
+      row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru && !mine ? ' from-guru' : '');
+      row.innerHTML = `
+        <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''} · ${obrolanFmtTime(m.created_at)}</div>
+        <div class="msg-bubble">${esc(m.isi)}</div>
+      `;
+      body.appendChild(row);
+    });
+    if (obrolanFirstLoad || wasNearBottom) body.scrollTop = body.scrollHeight;
+  }
+
+  async function loadObrolanMessages() {
+    if (!obrolanKelasId) return;
+    const body = document.getElementById('obrolanBody');
+    const { data, error } = await supabase
+      .from('pesan_kelas')
+      .select('id, sender_id, sender_nama, sender_role, isi, created_at')
+      .eq('kelas_id', obrolanKelasId)
+      .order('created_at', { ascending: true })
+      .limit(200);
+
+    if (error) {
+      if (obrolanFirstLoad) body.innerHTML = `<div class="chat-empty">Gagal memuat obrolan: ${esc(error.message)}</div>`;
+      return;
+    }
+    const rows = data || [];
+    if (obrolanFirstLoad) {
+      body.innerHTML = rows.length ? '' : '<div class="chat-empty">Belum ada obrolan di kelas ini.</div>';
+    }
+    if (rows.length) {
+      const empty = body.querySelector('.chat-empty');
+      if (empty) empty.remove();
+      obrolanAppend(rows);
+    }
+    obrolanFirstLoad = false;
+  }
+
+  document.getElementById('obrolanKelasSelect').addEventListener('change', (e) => {
+    obrolanKelasId = e.target.value;
+    obrolanKnownIds = new Set();
+    obrolanFirstLoad = true;
+    const input = document.getElementById('obrolanInput');
+    const sendBtn = document.getElementById('obrolanSendBtn');
+    const kelasNama = document.getElementById('obrolanKelasNama');
+    const opt = allKelas.find(k => k.id === obrolanKelasId);
+    kelasNama.textContent = opt ? 'Kelas ' + opt.nama : 'Pilih kelas';
+    if (!obrolanKelasId) {
+      document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div>';
+      input.disabled = true; sendBtn.disabled = true;
+      return;
+    }
+    input.disabled = false; sendBtn.disabled = false;
+    document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Memuat obrolan…</div>';
+    loadObrolanMessages();
+  });
+
+  document.getElementById('obrolanForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!obrolanKelasId) return;
+    const input = document.getElementById('obrolanInput');
+    const sendBtn = document.getElementById('obrolanSendBtn');
+    const isi = input.value.trim();
+    if (!isi) return;
+    sendBtn.disabled = true;
+    const { error } = await supabase.from('pesan_kelas').insert({
+      kelas_id: obrolanKelasId,
+      sender_id: teacher.id,
+      sender_nama: teacher.nama,
+      sender_role: 'guru',
+      isi
+    });
+    sendBtn.disabled = false;
+    if (error) { alert('Gagal mengirim pesan: ' + error.message); return; }
+    input.value = '';
+    input.style.height = 'auto';
+    await loadObrolanMessages();
+  });
+
+  document.getElementById('obrolanInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById('obrolanForm').requestSubmit();
+    }
+  });
+  document.getElementById('obrolanInput').addEventListener('input', (e) => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
+  });
+
+  setInterval(() => {
+    const section = document.getElementById('section-obrolan');
+    if (section && section.classList.contains('active') && obrolanKelasId) loadObrolanMessages();
+  }, 4000);
 
   renderLevelTabs();
   renderSiswaLevelTabs();
