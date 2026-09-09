@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f2a44">
+<title>Materi — Fractured Fairy Tales (Part 1-9) | English</title>
+<style>
+:root{
+  --ink:#1a1e24; --paper:#f2f6f5; --card:#ffffff; --line:#dde5e2; --muted:#6e7a78;
+  --navy:#0f2a44; --navy2:#183e66; --cream:#d9ecfb;
+  --good:#1f9d68; --good-bg:#e7f6ee;
+  --bad:#d5473a; --bad-bg:#fceceb;
+  --amber:#d97706; --amber-bg:#fdf1de;
+  --purple:#6c4ab6; --purple-bg:#eee7fb;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+html,body{margin:0;padding:0;}
+body{background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;padding-bottom:40px;overflow-x:hidden;}
+h1,h2,h3{font-family:Georgia,'Times New Roman',serif;margin:0;}
+.wrap{max-width:760px;margin:0 auto;padding:0 18px;}
+a{color:inherit;}
+button, input, select{font-family:inherit;}
+
+/* ---------- GATE ---------- */
+.gate{position:fixed;inset:0;z-index:100;background:var(--navy);display:flex;align-items:center;justify-content:center;padding:22px;overflow-y:auto;}
+.gate-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:28px 24px;max-width:420px;width:100%;color:var(--cream);}
+.gate-card .eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#9fb8cf;margin-bottom:8px;}
+.gate-card h1{font-size:21px;font-weight:700;color:#fff;line-height:1.3;margin-bottom:6px;}
+.gate-card .sub{color:#b9cbdb;font-size:13.5px;margin-bottom:20px;}
+.gfield{margin-bottom:14px;}
+.gfield label{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#9fb8cf;margin-bottom:6px;}
+.gfield input,.gfield select{width:100%;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);border-radius:8px;padding:11px 12px;color:#fff;font-size:16px;font-family:inherit;outline:none;}
+.gfield select option{background:var(--navy);color:#fff;}
+.gfield input::placeholder{color:#8ba0b3;}
+.gfield input:focus,.gfield select:focus{border-color:var(--amber);background:rgba(255,255,255,.14);}
+.gate-err{color:#ff9d90;font-size:13px;min-height:18px;margin-bottom:4px;}
+.gbtn{width:100%;margin-top:6px;background:var(--amber);border:none;color:#241a05;font-weight:700;padding:12px 16px;border-radius:10px;font-size:15px;cursor:pointer;min-height:46px;}
+.gbtn:hover{background:#e2a53a;}
+.gate-note{font-size:12px;color:#8ba0b3;margin-top:14px;line-height:1.5;}
+.hide{display:none !important;}
+.autonote{background:rgba(31,157,104,.15);border:1px solid rgba(31,157,104,.4);color:#bdeed4;font-size:12.5px;border-radius:10px;padding:10px 12px;margin-bottom:16px;line-height:1.5;}
+.autonote b{color:#fff;}
+.autonote .switchlink{display:inline-block;margin-top:4px;color:#8fe3c0;text-decoration:underline;cursor:pointer;font-size:12px;}
+.checking{font-size:12px;color:#8ba0b3;margin-bottom:14px;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;}
+.topbar{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;padding:12px 0;padding-top:calc(12px + env(safe-area-inset-top));}
+.topbar-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.who{font-size:12px;color:#b9cbdb;}
+.who b{color:#fff;}
+.progress-track{flex:1 1 100px;height:7px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden;min-width:70px;}
+.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#5aa8ff,#8fe3c0);transition:width .35s ease;}
+.progress-label{font-size:11.5px;color:#b9cbdb;white-space:nowrap;}
+
+.hero{background:var(--navy);color:var(--cream);padding:22px 0 26px;border-bottom:5px solid var(--amber);}
+.hero .tag{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#9fb8cf;margin-bottom:8px;}
+.hero h1{font-size:clamp(21px,5.5vw,27px);color:#fff;font-weight:700;line-height:1.28;}
+.hero p{color:#b9cbdb;font-size:13.5px;margin-top:8px;max-width:520px;}
+
+/* ---------- PART LIST ---------- */
+.partlist{margin:20px 0;display:flex;flex-direction:column;gap:10px;}
+.pitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
+.pitem:active{border-color:#b9c7c4;}
+.pbadge{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;background:#eef0fb;color:var(--navy);}
+.pbadge.done{background:var(--good-bg);color:var(--good);}
+.pinfo{flex:1;min-width:0;}
+.pinfo .ptitle{font-weight:700;font-size:14.5px;}
+.pinfo .pmeta{font-size:12px;color:var(--muted);margin-top:2px;}
+.pstatus{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+.pstatus.open{background:var(--amber-bg);color:#8a5a10;}
+.pstatus.done{background:var(--good-bg);color:var(--good);}
+
+/* ---------- PART VIEW ---------- */
+.partview{display:none;margin:20px 0 40px;}
+.partview.show{display:block;}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--navy);font-weight:600;cursor:pointer;margin-bottom:14px;background:none;border:none;padding:0;font-family:inherit;}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 20px 22px;margin-bottom:16px;}
+.card h2{font-size:19px;margin-bottom:10px;color:var(--navy);}
+.card h3{font-size:15px;margin:16px 0 8px;color:var(--navy);}
+.card p{margin:0 0 11px;color:#33313c;font-size:14.5px;}
+.card p:last-child{margin-bottom:0;}
+.card ul,.card ol{margin:0 0 12px;padding-left:20px;}
+.card li{margin-bottom:6px;color:#33313c;font-size:14.5px;}
+.tagline{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--navy);color:#fff;margin-bottom:10px;}
+.example-box{background:#f7f9f8;border-left:4px solid var(--navy);border-radius:8px;padding:12px 14px;margin:12px 0;font-size:13.5px;}
+.example-box b{color:var(--navy);}
+.note-amber{background:var(--amber-bg);border-left:4px solid var(--amber);border-radius:8px;padding:12px 14px;margin:12px 0;font-size:13.5px;color:#7a4e0a;}
+.note-amber b{color:#8a5a10;}
+.note-purple{background:var(--purple-bg);border-left:4px solid var(--purple);border-radius:8px;padding:12px 14px;margin:12px 0;font-size:13.5px;color:#3f2e6b;}
+.note-purple b{color:var(--purple);}
+.center-quote{text-align:center;font-style:italic;font-weight:700;color:var(--amber);font-size:17px;margin:14px 0;}
+
+.twrap{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid var(--line);-webkit-overflow-scrolling:touch;}
+table{width:100%;min-width:480px;border-collapse:collapse;font-size:13px;}
+th,td{border-bottom:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:top;}
+th{background:var(--navy);color:#fff;font-size:12.5px;white-space:nowrap;}
+tr:nth-child(even) td{background:#f7f9f8;}
+
+.readbtn{width:100%;background:var(--navy);color:#fff;border:none;padding:13px 16px;border-radius:10px;font-size:14.5px;font-weight:700;cursor:pointer;margin-top:6px;min-height:46px;}
+.readbtn:hover{background:var(--navy2);}
+.readbtn.done{background:var(--good);}
+
+/* ---------- SUBMIT CARD ---------- */
+.submitcard{margin:24px 0 40px;}
+.submitcard .card{text-align:center;padding:26px 22px;}
+.submitcard .scoreicon{font-size:38px;}
+.submitcard h2{margin:8px 0 6px;}
+.submitcard p{color:var(--muted);font-size:13.5px;}
+.sendbtn{background:var(--amber);color:#241a05;border:none;padding:13px 22px;border-radius:10px;font-size:14.5px;font-weight:700;cursor:pointer;margin-top:14px;min-height:46px;min-width:220px;}
+.sendbtn:hover{background:#e2a53a;}
+.sendbtn:disabled{opacity:.5;cursor:not-allowed;}
+.sendstatus{font-size:13px;margin-top:12px;min-height:18px;}
+.sendstatus.ok{color:var(--good);font-weight:600;}
+.sendstatus.err{color:var(--bad);font-weight:600;}
+.readhint{font-size:12px;color:var(--muted);margin-top:10px;}
+
+/* ---------- CODE MODAL ---------- */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,42,68,.6);z-index:90;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:#fff;border-radius:16px;padding:24px 22px;max-width:360px;width:100%;text-align:center;}
+.modal-box .micon{font-size:34px;margin-bottom:6px;}
+.modal-box h3{font-size:17px;color:var(--navy);margin-bottom:6px;}
+.modal-box p{font-size:13px;color:var(--muted);margin:0 0 16px;}
+.modal-box input{width:100%;text-align:center;letter-spacing:.15em;text-transform:uppercase;font-weight:700;font-size:18px;padding:12px;border:1.5px solid var(--line);border-radius:10px;margin-bottom:8px;}
+.modal-box input:focus{outline:none;border-color:var(--navy);}
+.modal-msg{font-size:12.5px;min-height:16px;margin-bottom:10px;}
+.modal-msg.err{color:var(--bad);font-weight:600;}
+.modal-btnrow{display:flex;gap:10px;}
+.modal-btnrow button{flex:1;padding:11px;border-radius:9px;border:none;font-weight:700;font-size:13.5px;cursor:pointer;min-height:44px;}
+.mcancel{background:#eee;color:#555;}
+.mconfirm{background:var(--navy);color:#fff;}
+.mconfirm:disabled{opacity:.5;cursor:not-allowed;}
+
+@media (max-width:520px){
+  .wrap{padding:0 12px;}
+  .card{padding:16px 14px 18px;}
+  .gate-card{padding:22px 18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ GATE: IDENTITAS ============ -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="eyebrow">Materi Bahasa Inggris</div>
+    <h1>Fractured Fairy Tales<br>Part 1&ndash;9</h1>
+    <p class="sub">Baca materi berikut sampai selesai (9 bagian). Setelah selesai, kamu akan diminta memasukkan kode konfirmasi dari gurumu untuk mengirim hasil ke guru.</p>
+
+    <div class="autonote" id="autoNote" style="display:none;"></div>
+
+    <div class="gfield">
+      <label for="gJenis">Jenis Pengerjaan</label>
+      <select id="gJenis">
+        <option value="individu">Individu</option>
+        <option value="kelompok">Kelompok</option>
+      </select>
+    </div>
+    <div class="gfield" id="gNamaIndividuWrap">
+      <label for="gNama">Nama Lengkap</label>
+      <input id="gNama" type="text" placeholder="Tulis nama lengkap sesuai rapor" autocomplete="off">
+    </div>
+    <div class="gfield hide" id="gNamaKelompokWrap">
+      <label for="gNamaKelompok">Nama Kelompok</label>
+      <input id="gNamaKelompok" type="text" placeholder="mis. Kelompok 1 / The Explorers" autocomplete="off">
+    </div>
+    <div class="gfield hide" id="gAnggotaWrap">
+      <label for="gAnggota">Nama Anggota (pisahkan koma)</label>
+      <input id="gAnggota" type="text" placeholder="mis. Ani, Budi, Citra" autocomplete="off">
+    </div>
+    <div class="gfield">
+      <label for="gKelas">Kelas</label>
+      <input id="gKelas" type="text" placeholder="mis. VIII A / X-I" autocomplete="off">
+    </div>
+
+    <div class="gate-err" id="gErr"></div>
+    <button class="gbtn" id="gStart" type="button">Mulai Belajar</button>
+    <p class="gate-note" id="gateNote">Progres disimpan selama halaman ini terbuka. Jangan tutup/refresh tab sebelum selesai mengirim hasil di akhir.</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app">
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="who">👤 <b id="whoName">&mdash;</b> · <b id="whoClass">&mdash;</b></div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-label" id="progLabel">0 / 9 bagian dibaca</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="wrap">
+      <div class="tag">English Learning Hub · Narrative Text</div>
+      <h1>🪄 Fractured Fairy Tales</h1>
+      <p>Modul ini terdiri dari 9 bagian materi. Buka dan baca setiap bagian secara berurutan, lalu kirim hasil belajarmu di akhir menggunakan kode konfirmasi dari gurumu.</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="partlistWrap">
+      <div class="partlist" id="partlist"></div>
+    </div>
+
+    <div class="partview" id="partview"></div>
+
+    <div class="submitcard" id="submitcard">
+      <div class="card">
+        <div class="scoreicon">📮</div>
+        <h2>Kirim Hasil Belajar</h2>
+        <p>Nama: <b id="subName"></b> · Kelas: <b id="subClass"></b><br>
+        Bagian dibaca: <b id="subCount">0</b> / 9</p>
+        <button class="sendbtn" id="openCodeBtn" type="button">✅ Selesai &amp; Kirim</button>
+        <div class="sendstatus" id="sendStatus"></div>
+        <p class="readhint" id="readHint">Bacalah kesembilan bagian materi terlebih dahulu sebelum mengirim.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: KODE KONFIRMASI ============ -->
+<div class="modal-overlay" id="codeModal">
+  <div class="modal-box">
+    <div class="micon">🔑</div>
+    <h3>Kode Konfirmasi Guru</h3>
+    <p>Masukkan kode yang diberikan gurumu di kelas untuk mengonfirmasi bahwa kamu benar-benar sudah membaca materi ini.</p>
+    <input id="codeInput" maxlength="10" placeholder="Masukkan kode" autocomplete="off" autocapitalize="characters">
+    <div class="modal-msg" id="codeMsg"></div>
+    <div class="modal-btnrow">
+      <button class="mcancel" type="button" id="codeCancelBtn">Batal</button>
+      <button class="mconfirm" type="button" id="codeConfirmBtn">Konfirmasi</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   AMBIL NAMA & KELAS OTOMATIS DARI SESI LOGIN LMS (kalau ada)
+   -----------------------------------------------------------------
+   Kalau file ini dibuka dari domain/situs yang SAMA dengan LMS-mu
+   (misalnya diklik lewat menu "Materi" di materi.html, atau file ini
+   diunggah jadi sibling index.html/materi.html), Supabase Auth akan
+   otomatis menemukan sesi login siswa yang tersimpan di localStorage
+   browser tersebut — TIDAK perlu login ulang di halaman ini.
+   Kalau tidak ada sesi (mis. link dibuka lepas tanpa login, atau di
+   domain lain), halaman otomatis kembali ke form isian manual seperti
+   biasa — tidak ada yang rusak.
+===================================================================== */
+const PROJECT_URL = "https://sviftypadyorgalehzxh.supabase.co";
+const ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+
+// Dibungkus try/catch dengan sengaja: kalau CDN Supabase gagal dimuat
+// (offline, diblokir firewall sekolah, dsb), fitur auto-login ini harus
+// GAGAL DENGAN AMAN tanpa merusak sisa halaman (baca materi & kirim
+// hasil tetap harus berfungsi walau tanpa auto-login).
+let sbAuth = null;
+try{
+  if(typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function'){
+    sbAuth = window.supabase.createClient(PROJECT_URL, ANON_KEY);
+  }
+}catch(e){
+  console.log('Supabase client untuk auto-login gagal dibuat, lanjut pakai form manual.', e);
+}
+
+let autoProfile = null; // { nama, kelas } kalau berhasil dideteksi
+
+async function detectLoginSession(){
+  if(!sbAuth) return null;
+  try{
+    const { data: { user } } = await sbAuth.auth.getUser();
+    if(!user) return null;
+    const { data, error } = await sbAuth
+      .from('profiles')
+      .select('nama, role, status, kelas:kelas_id ( nama )')
+      .eq('id', user.id)
+      .single();
+    if(error || !data) return null;
+    if(data.role !== 'siswa') return null;   // guru tidak dipakai di sini
+    if(data.status === 'pending') return null;
+    return { nama: data.nama, kelas: data.kelas ? data.kelas.nama : '' };
+  }catch(e){
+    console.log('Tidak ada sesi login LMS terdeteksi, pakai form manual.', e);
+    return null;
+  }
+}
+
+function applyAutoProfile(profile){
+  autoProfile = profile;
+  document.getElementById('gNama').value = profile.nama;
+  document.getElementById('gKelas').value = profile.kelas;
+  const note = document.getElementById('autoNote');
+  note.style.display = 'block';
+  note.innerHTML = `✓ Masuk otomatis sebagai <b>${escapeHtml(profile.nama)}</b> (${escapeHtml(profile.kelas || '—')}) dari akun LMS kamu.<br><span class="switchlink" id="switchManualLink">Bukan kamu? Isi manual</span>`;
+  document.getElementById('switchManualLink').addEventListener('click', () => {
+    autoProfile = null;
+    document.getElementById('gNama').value = '';
+    document.getElementById('gKelas').value = '';
+    note.style.display = 'none';
+  });
+}
+
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+(async function initAutoLogin(){
+  try{
+    const checkEl = document.createElement('div');
+    checkEl.className = 'checking';
+    checkEl.textContent = 'Memeriksa sesi login LMS…';
+    const gateCard = document.querySelector('.gate-card');
+    gateCard.insertBefore(checkEl, document.getElementById('autoNote'));
+
+    const profile = await detectLoginSession();
+    checkEl.remove();
+    if(profile && profile.nama){
+      applyAutoProfile(profile);
+    }
+  }catch(e){
+    console.log('Auto-login dilewati, form manual tetap tersedia.', e);
+  }
+})();
+
+/* =====================================================================
+   PENGIRIMAN HASIL KE LMS-BING-V2 (Supabase)
+   -----------------------------------------------------------------
+   Halaman ini terhubung ke tabel public.hasil_worksheet pada project
+   Supabase LMS-BING-V2 yang sama, dibaca oleh menu "Hasil Worksheet"
+   di guru.html (lihat MIGRASI_HASIL_WORKSHEET.sql). Tabel ini menerima
+   INSERT tanpa login siswa, jadi begitu siswa memasukkan kode
+   konfirmasi yang benar dan menekan "Konfirmasi", hasilnya langsung
+   muncul di menu "Hasil Worksheet" pada guru.html.
+
+   Kode konfirmasi (CONFIRM_CODE) sengaja disimpan di sisi klien
+   (mudah dilihat lewat "View Source") — fungsinya bukan sebagai kunci
+   keamanan, melainkan sebagai bukti kehadiran/partisipasi: guru
+   membacakan kode ini secara lisan di kelas, sehingga hanya siswa
+   yang benar-benar mengikuti pelajaran yang bisa mengirim hasil.
+
+   Ganti CONFIRM_CODE tiap kali dipakai ulang di kelas lain supaya
+   siswa tidak asal mencontek kode dari teman kelas sebelumnya.
+===================================================================== */
+const CONFIG = {
+  SUBMIT_URL: "https://sviftypadyorgalehzxh.supabase.co/rest/v1/hasil_worksheet",
+  SUBMIT_APIKEY: "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC",
+  SUBMIT_SLUG: "materi-fractured-fairy-tales-part1-9", // muncul sebagai kolom "Slug" & filter di menu "Hasil Worksheet" guru.html
+  CONFIRM_CODE: "FT10"
+};
+
+/* Bagian 2 s.d. 8 (index 1-7) wajib dibaca minimal 1,5 menit (90 detik)
+   sebelum tombol "Tandai Sudah Dibaca & Kembali" bisa ditekan. */
+const MIN_READ_SECONDS = 90;
+const MIN_READ_PART_INDEXES = [1,2,3,4,5,6,7]; // Part 2..Part 8
+let readTimerInterval = null;
+
+/* ============ DATA MATERI (PART 1-9) ============ */
+const PARTS = [
+{
+  tag:'PART 1 OF 9', title:'Learning Objectives',
+  meta:'Tujuan pembelajaran · ± 2 menit baca',
+  html:`
+    <span class="tagline">Part 1 of 9</span>
+    <h2>Learning Objectives</h2>
+    <p>By the end of this lesson, students will be able to:</p>
+    <ol>
+      <li>Explain the meaning of a "fractured fairy tale" in their own words.</li>
+      <li>Identify the elements that make a fairy tale "fractured" (point of view, setting, character, plot, or ending changes).</li>
+      <li>Compare a traditional fairy tale with its fractured version.</li>
+      <li>Analyze the generic structure (orientation, complication, resolution) of a fractured fairy tale text.</li>
+      <li>Create a short original fractured fairy tale using at least two fracturing techniques.</li>
+      <li>Use descriptive and narrative vocabulary correctly in retelling or rewriting a story.</li>
+    </ol>
+    <div class="note-amber"><b>Tip:</b> Baca tujuan ini dulu supaya kamu tahu apa yang harus kamu kuasai setelah mempelajari materi ini.</div>
+  `
+},
+{
+  tag:'PART 2 OF 9', title:'Recap: Traditional Fairy Tale',
+  meta:'Mengingat kembali · ± 4 menit baca',
+  html:`
+    <span class="tagline">Part 2 of 9</span>
+    <h2>Recap: What Is a Traditional Fairy Tale?</h2>
+    <p>Before we "fracture" a story, we must remember what a normal (traditional) fairy tale looks like. A traditional fairy tale is a short story, usually for children, that contains magic, imaginary creatures, and a clear lesson or moral.</p>
+    <h3>Typical Features of a Traditional Fairy Tale</h3>
+    <ul>
+      <li>Begins with an opening formula such as "Once upon a time&hellip;"</li>
+      <li>Has a clear hero/heroine and a clear villain.</li>
+      <li>Includes magical elements (fairies, talking animals, spells, magic objects).</li>
+      <li>Follows a predictable plot: problem &rarr; struggle &rarr; happy ending.</li>
+      <li>Ends with a closing formula such as "&hellip;and they lived happily ever after."</li>
+      <li>Teaches a moral lesson (kindness is rewarded, greed is punished, etc.).</li>
+    </ul>
+    <h3>Familiar Examples</h3>
+    <ul>
+      <li>Cinderella</li>
+      <li>Little Red Riding Hood</li>
+      <li>The Three Little Pigs</li>
+      <li>Snow White</li>
+      <li>Jack and the Beanstalk</li>
+    </ul>
+    <div class="note-amber"><b>Discussion:</b> Bisakah kamu menceritakan kembali satu dongeng tradisional dalam 3 kalimat? Siapa pahlawannya, siapa penjahatnya, dan bagaimana akhirnya?</div>
+  `
+},
+{
+  tag:'PART 3 OF 9', title:'What Is a Fractured Fairy Tale?',
+  meta:'Definisi inti · ± 4 menit baca',
+  html:`
+    <span class="tagline">Part 3 of 9</span>
+    <h2>What Is a Fractured Fairy Tale?</h2>
+    <p>A fractured fairy tale is a traditional fairy tale that has been retold with a twist. The word "fractured" means "broken," so a fractured fairy tale is a story whose familiar pattern has been broken on purpose &mdash; by changing the point of view, the setting, the characters, the plot, or the ending.</p>
+    <div class="center-quote">&ldquo;Same bones, different body.&rdquo;</div>
+    <p>In other words, the reader still recognizes the original story, but something important has been changed to create humor, surprise, a new moral lesson, or a fresh perspective.</p>
+    <h3>Why Do Writers Fracture Fairy Tales?</h3>
+    <ul>
+      <li>To entertain readers with humor and surprise.</li>
+      <li>To show a story from a new or unheard point of view (for example, the wolf's side of the story).</li>
+      <li>To challenge stereotypes (for example, a princess who saves herself).</li>
+      <li>To teach a different or updated moral lesson.</li>
+      <li>To practice creative writing and critical thinking skills.</li>
+    </ul>
+    <div class="note-purple"><b>Key Term:</b> FRACTURE (verb) &mdash; to break something into pieces, or to change a well-known story in a creative and unexpected way.</div>
+  `
+},
+{
+  tag:'PART 4 OF 9', title:'Key Characteristics',
+  meta:'5 ciri utama · ± 4 menit baca',
+  html:`
+    <span class="tagline">Part 4 of 9</span>
+    <h2>Key Characteristics of Fractured Fairy Tales</h2>
+    <p>A story can be called a fractured fairy tale when it shows most of the following characteristics:</p>
+    <h3>1. A Recognizable Source Story</h3>
+    <p>The reader can still tell which original fairy tale the story is based on.</p>
+    <h3>2. At Least One Major Change</h3>
+    <p>Something important is different: the narrator, the setting, the character's personality, the sequence of events, or the ending.</p>
+    <h3>3. Humor, Irony, or Surprise</h3>
+    <p>Many fractured fairy tales use jokes, sarcasm, or unexpected twists to entertain the reader.</p>
+    <h3>4. A New or Twisted Moral</h3>
+    <p>The lesson of the story may be updated, reversed, or made more modern.</p>
+    <h3>5. Playing with the Reader's Expectations</h3>
+    <p>The story deliberately breaks the "rules" the reader expects from a traditional fairy tale.</p>
+    <div class="note-amber"><b>Quick Check:</b> Bacalah dua kutipan pembuka cerita. Mana yang merupakan fractured fairy tale, dan dari mana kamu tahu?</div>
+  `
+},
+{
+  tag:'PART 5 OF 9', title:'Techniques of Fracturing',
+  meta:'7 teknik + contoh · ± 6 menit baca',
+  html:`
+    <span class="tagline">Part 5 of 9</span>
+    <h2>Common Techniques for "Fracturing" a Story</h2>
+    <p>Writers usually use one or more of the following techniques to transform a traditional fairy tale into a fractured one:</p>
+    <div class="twrap"><table>
+      <tr><th>Technique</th><th>What It Means</th><th>Example</th></tr>
+      <tr><td>Change of Point of View</td><td>Telling the story from a different character's perspective, often the villain.</td><td>The wolf explains he only wanted to borrow sugar in "The True Story of the 3 Little Pigs."</td></tr>
+      <tr><td>Change of Setting</td><td>Moving the story to a new time or place.</td><td>Cinderella set in a modern high school.</td></tr>
+      <tr><td>Change of Character</td><td>Giving characters new personalities, genders, or roles.</td><td>A princess who rescues the prince instead of waiting to be rescued.</td></tr>
+      <tr><td>Change of Plot Sequence</td><td>Altering the order of events or adding new events.</td><td>The story starts at the "happily ever after" and works backward.</td></tr>
+      <tr><td>Change of Ending</td><td>Giving the story a different, often unexpected, conclusion.</td><td>The prince and Cinderella decide they are better as friends.</td></tr>
+      <tr><td>Change of Tone/Style</td><td>Using humor, sarcasm, or a modern voice instead of a classic tone.</td><td>Fairy tale characters texting each other on smartphones.</td></tr>
+      <tr><td>Change of Moral</td><td>Updating or reversing the story's lesson.</td><td>"Beauty is not the most important thing" instead of focusing on outer beauty.</td></tr>
+    </table></div>
+    <div class="note-amber"><b>Try This:</b> Pilih satu dongeng tradisional, lalu coba terapkan dua teknik berbeda dari tabel di atas untuk mengubahnya.</div>
+  `
+},
+{
+  tag:'PART 6 OF 9', title:'Generic Structure',
+  meta:'Struktur teks naratif · ± 5 menit baca',
+  html:`
+    <span class="tagline">Part 6 of 9</span>
+    <h2>Generic Structure of a Fractured Fairy Tale</h2>
+    <p>Because a fractured fairy tale is still a type of narrative text, it usually follows the same generic structure as other narratives, even though the content is twisted.</p>
+    <div class="twrap"><table>
+      <tr><th>Structure</th><th>Purpose</th><th>In a Fractured Fairy Tale</th></tr>
+      <tr><td>Orientation</td><td>Introduces the characters, setting, and time.</td><td>May introduce a familiar character in an unfamiliar setting or role.</td></tr>
+      <tr><td>Complication</td><td>Presents the problem or conflict.</td><td>The problem may be caused by an unexpected character or a twisted situation.</td></tr>
+      <tr><td>Resolution</td><td>Shows how the problem is solved.</td><td>The solution is often surprising, humorous, or different from the original tale.</td></tr>
+      <tr><td>Re-orientation / Coda (optional)</td><td>Closes the story and states the moral or lesson.</td><td>Often presents a new, updated, or ironic moral.</td></tr>
+    </table></div>
+    <div class="note-purple"><b>Language Feature Reminder:</b> Fractured fairy tales still use narrative language features: past tense, time connectives (once, then, suddenly, finally), and action verbs &mdash; but the vocabulary and tone can be modernized or humorous.</div>
+  `
+},
+{
+  tag:'PART 7 OF 9', title:'Traditional vs Fractured',
+  meta:'Tabel perbandingan · ± 4 menit baca',
+  html:`
+    <span class="tagline">Part 7 of 9</span>
+    <h2>Traditional vs. Fractured Fairy Tale</h2>
+    <p>Use this comparison to clearly see the difference between the two forms.</p>
+    <div class="twrap"><table>
+      <tr><th>Traditional Fairy Tale</th><th>Fractured Fairy Tale</th></tr>
+      <tr><td>Follows a predictable, well-known plot.</td><td>Breaks the reader's expectations with a twist.</td></tr>
+      <tr><td>Clear hero and clear villain.</td><td>Roles may be reversed, blended, or questioned.</td></tr>
+      <tr><td>Formal, classic opening ("Once upon a time&hellip;").</td><td>May use a modern, humorous, or unusual opening.</td></tr>
+      <tr><td>One fixed point of view (usually third person narrator).</td><td>May use a new or unexpected point of view.</td></tr>
+      <tr><td>Clear, traditional moral lesson.</td><td>May present a new, ironic, or reversed moral.</td></tr>
+      <tr><td>Ends predictably ("&hellip;happily ever after").</td><td>Ending can be surprising, funny, or open.</td></tr>
+    </table></div>
+  `
+},
+{
+  tag:'PART 8 OF 9', title:'Famous Examples',
+  meta:'5 judul terkenal · ± 5 menit baca',
+  html:`
+    <span class="tagline">Part 8 of 9</span>
+    <h2>Famous Examples of Fractured Fairy Tales</h2>
+    <p>These well-known titles are great models for reading and discussion:</p>
+    <div class="twrap"><table>
+      <tr><th>Title</th><th>Based On</th><th>The Twist</th></tr>
+      <tr><td>The True Story of the 3 Little Pigs (Jon Scieszka)</td><td>The Three Little Pigs</td><td>Told from the wolf's point of view; he claims it was all a misunderstanding.</td></tr>
+      <tr><td>The Paper Bag Princess (Robert Munsch)</td><td>Classic princess rescue tales</td><td>The princess rescues the prince herself, then decides not to marry him.</td></tr>
+      <tr><td>Cinder Edna (Ellen Jackson)</td><td>Cinderella</td><td>A practical, hardworking neighbor of Cinderella who solves her own problems.</td></tr>
+      <tr><td>Shrek (film, based on William Steig's book)</td><td>Classic "prince rescues princess" tales</td><td>The "ugly" ogre is the hero, and the princess is not a typical damsel in distress.</td></tr>
+      <tr><td>The Frog Prince, Continued (Jon Scieszka)</td><td>The Frog Prince</td><td>Shows what happens after "happily ever after," when married life isn't perfect.</td></tr>
+    </table></div>
+    <div class="note-amber"><b>Classroom Idea:</b> Jika memungkinkan, baca atau tonton cuplikan singkat salah satu contoh di atas, lalu cari tahu teknik fracturing mana (lihat Part 5) yang digunakan.</div>
+  `
+},
+{
+  tag:'PART 9 OF 9', title:'Key Vocabulary',
+  meta:'10 kosakata penting · ± 3 menit baca',
+  html:`
+    <span class="tagline">Part 9 of 9</span>
+    <h2>Key Vocabulary</h2>
+    <p>Learn these words before analyzing or writing your own fractured fairy tale.</p>
+    <div class="twrap"><table>
+      <tr><th>Word</th><th>Meaning</th></tr>
+      <tr><td>Fracture (v.)</td><td>To break or crack something; here, to creatively change a well-known story.</td></tr>
+      <tr><td>Twist</td><td>An unexpected change in the plot.</td></tr>
+      <tr><td>Point of view</td><td>The perspective from which a story is told (who is "telling" it).</td></tr>
+      <tr><td>Narrator</td><td>The person or character who tells the story.</td></tr>
+      <tr><td>Villain</td><td>The "bad" character who causes the conflict.</td></tr>
+      <tr><td>Protagonist</td><td>The main character of the story.</td></tr>
+      <tr><td>Moral</td><td>The lesson that a story teaches.</td></tr>
+      <tr><td>Parody</td><td>A humorous imitation of another work, often exaggerating its features.</td></tr>
+      <tr><td>Irony</td><td>A situation where the result is the opposite of what is expected.</td></tr>
+      <tr><td>Adaptation</td><td>A new version of an original story, changed for a new purpose or audience.</td></tr>
+    </table></div>
+    <div class="note-purple"><b>Selamat!</b> Kamu sudah menyelesaikan semua 9 bagian materi. Kembali ke daftar bagian, lalu tekan tombol "Selesai &amp; Kirim" di bagian paling bawah halaman.</div>
+  `
+}
+];
+
+/* ============ STATE ============ */
+let student = { jenis:'individu', name:'', anggota:'', kelas:'' };
+let partDone = new Array(PARTS.length).fill(false);
+let currentPartIdx = -1;
+
+/* ============ GATE LOGIC ============ */
+const jenisSel = document.getElementById('gJenis');
+jenisSel.addEventListener('change', () => {
+  const isKelompok = jenisSel.value === 'kelompok';
+  document.getElementById('gNamaIndividuWrap').classList.toggle('hide', isKelompok);
+  document.getElementById('gNamaKelompokWrap').classList.toggle('hide', !isKelompok);
+  document.getElementById('gAnggotaWrap').classList.toggle('hide', !isKelompok);
+});
+
+document.getElementById('gStart').addEventListener('click', () => {
+  const errEl = document.getElementById('gErr');
+  const isKelompok = jenisSel.value === 'kelompok';
+  const kelas = document.getElementById('gKelas').value.trim();
+  let nama = '', anggota = '';
+
+  if(isKelompok){
+    nama = document.getElementById('gNamaKelompok').value.trim();
+    anggota = document.getElementById('gAnggota').value.trim();
+    if(!nama){ errEl.textContent = 'Isi nama kelompok terlebih dahulu.'; return; }
+    if(!anggota){ errEl.textContent = 'Isi nama-nama anggota kelompok.'; return; }
+  } else {
+    nama = document.getElementById('gNama').value.trim();
+    if(!nama){ errEl.textContent = 'Isi nama lengkap terlebih dahulu.'; return; }
+  }
+  if(!kelas){ errEl.textContent = 'Isi kelas terlebih dahulu.'; return; }
+
+  errEl.textContent = '';
+  student = { jenis: isKelompok ? 'kelompok' : 'individu', name: nama, anggota: isKelompok ? anggota : '', kelas };
+
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('whoName').textContent = nama;
+  document.getElementById('whoClass').textContent = kelas;
+  document.getElementById('subName').textContent = nama;
+  document.getElementById('subClass').textContent = kelas;
+
+  renderPartList();
+});
+
+/* ============ RENDER PART LIST ============ */
+function renderPartList(){
+  const list = document.getElementById('partlist');
+  list.innerHTML = PARTS.map((p, i) => {
+    const done = partDone[i];
+    return `
+      <div class="pitem" data-idx="${i}">
+        <div class="pbadge ${done ? 'done' : ''}">${done ? '✓' : (i+1)}</div>
+        <div class="pinfo">
+          <div class="ptitle">${p.title}</div>
+          <div class="pmeta">${p.meta}</div>
+        </div>
+        <div class="pstatus ${done ? 'done' : 'open'}">${done ? 'Selesai' : 'Baca'}</div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('.pitem').forEach(el => {
+    el.addEventListener('click', () => openPart(parseInt(el.dataset.idx, 10)));
+  });
+
+  updateProgress();
+}
+
+function updateProgress(){
+  const doneCount = partDone.filter(Boolean).length;
+  document.getElementById('progFill').style.width = (doneCount / PARTS.length * 100) + '%';
+  document.getElementById('progLabel').textContent = `${doneCount} / ${PARTS.length} bagian dibaca`;
+  document.getElementById('subCount').textContent = doneCount;
+
+  const openBtn = document.getElementById('openCodeBtn');
+  const readHint = document.getElementById('readHint');
+  if(doneCount === PARTS.length){
+    openBtn.disabled = false;
+    readHint.textContent = 'Semua bagian sudah dibaca. Kamu siap mengirim hasil!';
+  } else {
+    openBtn.disabled = true;
+    readHint.textContent = `Bacalah kesembilan bagian materi terlebih dahulu sebelum mengirim (${doneCount}/${PARTS.length}).`;
+  }
+}
+
+/* ============ OPEN PART (READING) ============ */
+function clearReadTimer(){
+  if(readTimerInterval){
+    clearInterval(readTimerInterval);
+    readTimerInterval = null;
+  }
+}
+
+function formatCountdownLabel(remaining){
+  return `⏳ Baca dulu (${remaining} detik)…`;
+}
+
+function openPart(idx){
+  currentPartIdx = idx;
+  const p = PARTS[idx];
+  document.getElementById('submitcard').style.display = 'none';
+  document.getElementById('partlistWrap').style.display = 'none';
+  const view = document.getElementById('partview');
+  view.classList.add('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+
+  const alreadyDone = partDone[idx];
+  const needsTimer = !alreadyDone && MIN_READ_PART_INDEXES.includes(idx);
+
+  view.innerHTML = `
+    <button class="backlink" id="backBtn">&larr; Kembali ke daftar bagian</button>
+    <div class="card">${p.html}</div>
+    <button class="readbtn ${alreadyDone ? 'done' : ''}" id="markDoneBtn" ${needsTimer ? 'disabled' : ''}>${alreadyDone ? '✓ Sudah Ditandai Selesai' : (needsTimer ? formatCountdownLabel(MIN_READ_SECONDS) : 'Tandai Sudah Dibaca & Kembali')}</button>
+    ${needsTimer ? '<p class="readhint" id="readTimerHint">Tombol akan aktif otomatis setelah kamu membaca bagian ini selama minimal 1,5 menit.</p>' : ''}
+  `;
+
+  document.getElementById('backBtn').addEventListener('click', backToList);
+
+  clearReadTimer();
+
+  const markBtn = document.getElementById('markDoneBtn');
+
+  if(needsTimer){
+    let remaining = MIN_READ_SECONDS;
+    readTimerInterval = setInterval(() => {
+      remaining--;
+      if(remaining <= 0){
+        clearReadTimer();
+        markBtn.disabled = false;
+        markBtn.textContent = 'Tandai Sudah Dibaca & Kembali';
+        const hint = document.getElementById('readTimerHint');
+        if(hint) hint.textContent = 'Waktu baca minimal terpenuhi. Silakan tandai sudah dibaca.';
+      } else {
+        markBtn.textContent = formatCountdownLabel(remaining);
+      }
+    }, 1000);
+  }
+
+  markBtn.addEventListener('click', () => {
+    if(markBtn.disabled) return;
+    partDone[idx] = true;
+    clearReadTimer();
+    backToList();
+  });
+}
+
+function backToList(){
+  clearReadTimer();
+  document.getElementById('partview').classList.remove('show');
+  document.getElementById('partlistWrap').style.display = 'block';
+  document.getElementById('submitcard').style.display = 'block';
+  renderPartList();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ============ CODE MODAL ============ */
+const codeModal = document.getElementById('codeModal');
+const codeInput = document.getElementById('codeInput');
+const codeMsg = document.getElementById('codeMsg');
+
+document.getElementById('openCodeBtn').addEventListener('click', () => {
+  codeInput.value = '';
+  codeMsg.textContent = '';
+  codeMsg.className = 'modal-msg';
+  codeModal.classList.add('show');
+  setTimeout(() => codeInput.focus(), 150);
+});
+document.getElementById('codeCancelBtn').addEventListener('click', () => {
+  codeModal.classList.remove('show');
+});
+codeModal.addEventListener('click', (e) => { if(e.target === codeModal) codeModal.classList.remove('show'); });
+
+function tryConfirmCode(){
+  const val = codeInput.value.trim().toUpperCase();
+  if(!val){
+    codeMsg.className = 'modal-msg err';
+    codeMsg.textContent = 'Masukkan kode terlebih dahulu.';
+    return;
+  }
+  if(val !== CONFIG.CONFIRM_CODE){
+    codeMsg.className = 'modal-msg err';
+    codeMsg.textContent = '✗ Kode salah. Tanyakan kode yang benar ke gurumu.';
+    return;
+  }
+  codeMsg.className = 'modal-msg';
+  codeMsg.textContent = '';
+  codeModal.classList.remove('show');
+  sendResult();
+}
+document.getElementById('codeConfirmBtn').addEventListener('click', tryConfirmCode);
+codeInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') tryConfirmCode(); });
+
+/* ============ SUBMIT TO SUPABASE (hasil_worksheet) ============ */
+function buildPayload(){
+  return {
+    worksheet_slug: CONFIG.SUBMIT_SLUG,
+    jenis: student.jenis,
+    nama: student.name,
+    anggota: student.jenis === 'kelompok' ? student.anggota : null,
+    kelas: student.kelas,
+    nilai: null,
+    nilai_maks: null,
+    status: 'selesai'
+  };
+}
+
+async function sendResult(){
+  const btn = document.getElementById('openCodeBtn');
+  const status = document.getElementById('sendStatus');
+  const payload = buildPayload();
+
+  btn.disabled = true;
+  btn.textContent = 'Mengirim...';
+  status.className = 'sendstatus';
+  status.textContent = '';
+
+  try{
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey': CONFIG.SUBMIT_APIKEY,
+      'Authorization': 'Bearer ' + CONFIG.SUBMIT_APIKEY,
+      'Prefer': 'return=minimal'
+    };
+    const res = await fetch(CONFIG.SUBMIT_URL, {
+      method: 'POST', headers, body: JSON.stringify(payload)
+    });
+    if(!res.ok){
+      const errText = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + (errText ? (' — ' + errText.slice(0,200)) : ''));
+    }
+    status.className = 'sendstatus ok';
+    status.textContent = '✓ Kode benar — hasil berhasil dikirim ke guru. Guru bisa melihatnya di menu "Hasil Worksheet" pada guru.html (slug: ' + CONFIG.SUBMIT_SLUG + ').';
+    btn.textContent = 'Terkirim ✓';
+  }catch(err){
+    status.className = 'sendstatus err';
+    status.textContent = '✗ Gagal mengirim (' + err.message + '). Periksa koneksi internet lalu coba tekan "Selesai & Kirim" lagi.';
+    btn.disabled = false;
+    btn.textContent = '✅ Selesai & Kirim';
+  }
+}
+
+/* ============ INIT ============ */
+document.getElementById('submitcard').style.display = 'none';
+</script>
+</body>
+</html>
