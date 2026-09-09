@@ -537,6 +537,17 @@
     <button type="button" id="violationExitBtn" class="violation-exit-btn">Keluar (Tanpa Kirim Jawaban)</button>
   </div>
 </div>
+
+<!-- Modal: dikeluarkan oleh guru dari ujian yang sedang berjalan -->
+<div id="kickedModal" class="violation-modal">
+  <div class="violation-card">
+    <div class="vicon">🚪</div>
+    <h2 id="kickedTitle">Kamu Dikeluarkan dari Ujian</h2>
+    <p id="kickedMsg">Gurumu telah mengeluarkanmu dari ujian ini. Progres jawabanmu tetap tersimpan, tapi kamu perlu meminta izin guru untuk melanjutkan.</p>
+    <button type="button" id="kickedOkBtn">Kembali ke Daftar Soal</button>
+  </div>
+</div>
+
 <div id="confirmModal" class="confirm-modal">
   <div class="confirm-card">
     <h2 id="confirmTitle">Konfirmasi Submit Ujian</h2>
@@ -1117,13 +1128,17 @@ async function mulaiSesiUjian(){
         kelas: stuClass,
         status: 'mengerjakan',
         pelanggaran: violationCount,
-        last_ping_at: new Date().toISOString()
+        last_ping_at: new Date().toISOString(),
+        force_exit: false,
+        paused: false
       }, { onConflict: 'bank_soal_id,profile_id' })
       .select('id')
       .single();
     if(error){ console.warn('Gagal mencatat sesi ujian (diabaikan):', error.message); return; }
     SESI_ID = data.id;
     startSesiPing();
+    startGuruControlPolling();
+    refreshCachedAccessToken();
   }catch(err){ console.warn('Gagal mencatat sesi ujian (diabaikan):', err); }
 }
 
@@ -1144,11 +1159,13 @@ async function pingSesiUjian(){
       pelanggaran: violationCount,
       last_ping_at: new Date().toISOString()
     }).eq('id', SESI_ID);
+    refreshCachedAccessToken();
   }catch(err){ /* koneksi bermasalah, biarkan — akan dicoba lagi di ping berikutnya */ }
 }
 
 async function selesaikanSesiUjian(){
   stopSesiPing();
+  stopGuruControlPolling();
   if(!SESI_ID) return;
   try{
     await supabase.from('sesi_ujian').update({
@@ -1158,6 +1175,122 @@ async function selesaikanSesiUjian(){
     }).eq('id', SESI_ID);
   }catch(err){ /* diabaikan — hasil ujian tetap sudah terkirim lewat hasil_ujian_lms */ }
 }
+
+/* Dipanggil saat siswa keluar dari soal TANPA submit (klik tombol
+   "Keluar (Tanpa Kirim Jawaban)" di modal pelanggaran, atau tutup
+   tab/pindah halaman). Sesi ditandai 'keluar' supaya otomatis hilang
+   dari daftar "Sedang Ujian" guru (query guru cuma ambil status
+   'mengerjakan'). Progres jawaban tetap tersimpan lewat saveState(),
+   jadi siswa bisa lanjut lagi nanti — hanya status monitoringnya saja
+   yang berubah.*/
+async function keluarUjianTanpaSubmit(){
+  stopSesiPing();
+  stopGuruControlPolling();
+  if(!SESI_ID) return;
+  try{
+    await supabase.from('sesi_ujian').update({
+      status: 'keluar',
+      pelanggaran: violationCount,
+      last_ping_at: new Date().toISOString()
+    }).eq('id', SESI_ID);
+  }catch(err){ /* diabaikan — ini murni fitur monitoring, tidak boleh menghalangi siswa keluar */ }
+}
+
+/* ---------- kontrol dari guru: pause & keluarkan (kick) ----------
+   Dipoll berkala (lebih sering dari heartbeat) supaya perintah guru
+   dari dashboard cepat terasa di layar siswa. Kalau gagal (offline
+   dsb) dibiarkan saja, akan dicoba lagi di poll berikutnya.*/
+const GURU_CONTROL_POLL_MS = 5000;
+let guruControlInterval = null;
+
+function startGuruControlPolling(){
+  if(guruControlInterval) clearInterval(guruControlInterval);
+  guruControlInterval = setInterval(checkGuruControl, GURU_CONTROL_POLL_MS);
+}
+function stopGuruControlPolling(){
+  if(guruControlInterval){ clearInterval(guruControlInterval); guruControlInterval = null; }
+}
+
+async function checkGuruControl(){
+  if(!SESI_ID || submitted || !isExamRunning()) return;
+  try{
+    const { data, error } = await supabase
+      .from('sesi_ujian')
+      .select('paused, force_exit')
+      .eq('id', SESI_ID)
+      .single();
+    if(error || !data) return;
+
+    if(data.force_exit){
+      handleForceExit();
+      return;
+    }
+
+    if(data.paused && !pausedByGuru){
+      pausedByGuru = true;
+      pauseTimer();
+      saveState();
+    } else if(!data.paused && pausedByGuru){
+      pausedByGuru = false;
+      if(navigator.onLine) resumeTimer();
+      saveState();
+    }
+  }catch(err){ /* koneksi bermasalah, dicoba lagi di poll berikutnya */ }
+}
+
+/* Guru menekan "Keluarkan" di dashboard -> layar siswa otomatis
+   berhenti, keluar fullscreen, dan diarahkan kembali ke daftar soal.
+   Jawaban yang sudah diisi tetap tersimpan (saveState) supaya bisa
+   dilanjutkan kalau guru mengizinkan lagi.*/
+let forceExitHandled = false;
+async function handleForceExit(){
+  if(forceExitHandled || submitted) return;
+  forceExitHandled = true;
+  stopTimer();
+  stopSesiPing();
+  stopGuruControlPolling();
+  examActive = false;
+  saveState();
+  if(isFullscreenActive()){
+    const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if(exitFs) exitFs.call(document).catch(()=>{});
+  }
+  document.getElementById('violationModal').classList.remove('show');
+  document.getElementById('kickedModal').classList.add('show');
+  try{
+    await supabase.from('sesi_ujian').update({ status: 'keluar' }).eq('id', SESI_ID);
+  }catch(err){ /* diabaikan */ }
+}
+
+document.getElementById('kickedOkBtn').addEventListener('click', ()=>{
+  window.location.href = 'worksheet.html';
+});
+
+/* Best-effort: kalau siswa menutup tab / pindah halaman tanpa sempat
+   klik tombol apa pun, coba tandai sesi 'keluar' lewat fetch keepalive
+   (lebih andal daripada panggilan async biasa saat halaman ditutup).*/
+let cachedAccessToken = null;
+async function refreshCachedAccessToken(){
+  try{
+    const { data } = await supabase.auth.getSession();
+    cachedAccessToken = data && data.session ? data.session.access_token : null;
+  }catch(err){ /* diabaikan */ }
+}
+window.addEventListener('pagehide', ()=>{
+  if(!SESI_ID || submitted || !cachedAccessToken) return;
+  try{
+    fetch(`${SUPABASE_URL}/rest/v1/sesi_ujian?id=eq.${SESI_ID}`, {
+      method: 'PATCH',
+      keepalive: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + cachedAccessToken
+      },
+      body: JSON.stringify({ status: 'keluar' })
+    }).catch(()=>{});
+  }catch(err){ /* diabaikan */ }
+});
 
 /* ---------- send result to Supabase (muncul di dashboard guru) ----------
    Memakai client `supabase` yang sama dengan halaman LMS lain
@@ -1446,6 +1579,7 @@ document.getElementById('violationOkBtn').addEventListener('click', ()=>{
 document.getElementById('violationExitBtn').addEventListener('click', ()=>{
   document.getElementById('violationModal').classList.remove('show');
   saveState();
+  keluarUjianTanpaSubmit();
   if(isFullscreenActive()){
     const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
     if(exitFs) exitFs.call(document).catch(()=>{});
@@ -1538,6 +1672,7 @@ let timerInterval = null;
 let examEndAt = null;
 let remainingTimeMs = TIMER_MS;
 let isTimerPaused = false;
+let pausedByGuru = false; // true kalau guru yang menjeda dari dashboard (bukan karena offline)
 
 function formatTime(ms){
   if(ms<0) ms=0;
@@ -1552,7 +1687,7 @@ function renderTimerDisplay(ms){
   if(!badge) return;
   badge.classList.remove('warn','danger','paused');
   if(isTimerPaused){
-    badge.textContent = formatTime(ms) + ' (PAUSED)';
+    badge.textContent = formatTime(ms) + (pausedByGuru ? ' (DIJEDA GURU)' : ' (PAUSED)');
     badge.classList.add('paused');
   } else {
     badge.textContent = formatTime(ms);
@@ -1623,7 +1758,7 @@ function updateOnlineBadge(){
     badge.classList.remove('offline');
     badge.classList.add('online');
     badge.innerHTML = '<span class="online-dot"></span>Online';
-    if(examEndAt && !submitted && isTimerPaused){
+    if(examEndAt && !submitted && isTimerPaused && !pausedByGuru){
       resumeTimer();
       saveState();
     }

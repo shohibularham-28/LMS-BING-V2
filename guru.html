@@ -2281,7 +2281,7 @@
 
     let query = supabase
       .from('sesi_ujian')
-      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, bank_soal:bank_soal_id ( judul )')
+      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, paused, bank_soal:bank_soal_id ( judul )')
       .eq('status', 'mengerjakan')
       .order('started_at', { ascending: true });
     if (bankSoalId) query = query.eq('bank_soal_id', bankSoalId);
@@ -2308,23 +2308,52 @@
 
     wrap.innerHTML = `
       <table class="grade-table">
-        <thead><tr><th>Nama</th><th>Kelas</th><th>Judul Soal</th><th>Status</th><th>Pelanggaran</th><th>Mulai</th><th>Ping Terakhir</th></tr></thead>
+        <thead><tr><th>Nama</th><th>Kelas</th><th>Judul Soal</th><th>Status</th><th>Pelanggaran</th><th>Mulai</th><th>Ping Terakhir</th><th>Aksi</th></tr></thead>
         <tbody>
           ${currentSedangUjianRows.map(r => {
             const stale = (now - new Date(r.last_ping_at).getTime()) > SEDANG_UJIAN_STALE_MS;
+            const isPaused = !!r.paused;
             return `
             <tr>
               <td>${esc(r.nama)}</td>
               <td>${esc(r.kelas)}</td>
               <td>${esc(r.bank_soal ? r.bank_soal.judul : '(soal dihapus)')}</td>
-              <td>${stale ? '<span class="score-pill status-belum">Tidak Merespon</span>' : '<span class="score-pill status-tuntas">🟢 Aktif</span>'}</td>
+              <td>
+                ${stale ? '<span class="score-pill status-belum">Tidak Merespon</span>' : '<span class="score-pill status-tuntas">🟢 Aktif</span>'}
+                ${isPaused ? '<br><span class="score-pill status-belum">⏸ Dijeda</span>' : ''}
+              </td>
               <td>${r.pelanggaran || 0}</td>
               <td>${fmtDurasiSejak(r.started_at)}</td>
               <td>${fmtDurasiSejak(r.last_ping_at)}</td>
+              <td style="white-space:nowrap;">
+                <button type="button" class="btn-secondary-sm btn-pause-ujian" data-id="${esc(r.id)}" data-paused="${isPaused ? '1' : '0'}">${isPaused ? '▶ Lanjutkan' : '⏸ Pause'}</button>
+                <button type="button" class="btn-danger-sm btn-keluarkan-ujian" data-id="${esc(r.id)}" data-nama="${esc(r.nama)}">🚪 Keluarkan</button>
+              </td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>`;
+
+    wrap.querySelectorAll('.btn-pause-ujian').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nowPaused = btn.dataset.paused === '1';
+        btn.disabled = true;
+        const { error } = await supabase.from('sesi_ujian').update({ paused: !nowPaused }).eq('id', btn.dataset.id);
+        if (error) { alert('Gagal: ' + error.message); btn.disabled = false; return; }
+        loadSedangUjian();
+      });
+    });
+
+    wrap.querySelectorAll('.btn-keluarkan-ujian').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nama = btn.dataset.nama;
+        if (!confirm(`Keluarkan ${nama} dari ujian ini sekarang? Layar siswa akan langsung berhenti dan diarahkan keluar dari soal. Jawaban yang sudah diisi tetap tersimpan.`)) return;
+        btn.disabled = true;
+        const { error } = await supabase.from('sesi_ujian').update({ force_exit: true, status: 'keluar' }).eq('id', btn.dataset.id);
+        if (error) { alert('Gagal: ' + error.message); btn.disabled = false; return; }
+        loadSedangUjian();
+      });
+    });
   }
 
   document.getElementById('btnMuatSedangUjian').addEventListener('click', loadSedangUjian);
