@@ -181,7 +181,7 @@ tr:nth-child(even) td{background:#f7f9f8;}
 
     <div class="gate-err" id="gErr"></div>
     <button class="gbtn" id="gStart" type="button">Mulai Belajar</button>
-    <p class="gate-note" id="gateNote">Progres disimpan selama halaman ini terbuka. Jangan tutup/refresh tab sebelum selesai mengirim hasil di akhir.</p>
+    <p class="gate-note" id="gateNote">Progres membaca kamu otomatis tersimpan di browser ini, jadi aman kalau halaman ter-reload atau tidak sengaja tertutup. Progres hanya tersimpan di perangkat/browser yang sama — jangan pindah perangkat atau pakai mode Incognito sebelum selesai mengirim hasil.</p>
   </div>
 </div>
 
@@ -189,7 +189,7 @@ tr:nth-child(even) td{background:#f7f9f8;}
 <div id="app">
   <div class="topbar">
     <div class="wrap topbar-inner">
-      <div class="who">👤 <b id="whoName">&mdash;</b> · <b id="whoClass">&mdash;</b></div>
+      <div class="who">👤 <b id="whoName">&mdash;</b> · <b id="whoClass">&mdash;</b> · <a href="#" id="resetLink" style="color:#8fe3c0;text-decoration:underline;font-size:11.5px;">bukan kamu?</a></div>
       <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
       <div class="progress-label" id="progLabel">0 / 9 bagian dibaca</div>
     </div>
@@ -320,6 +320,14 @@ function escapeHtml(s){
 
     const profile = await detectLoginSession();
     checkEl.remove();
+
+    // Kalau progres tersimpan sudah dipulihkan (lihat tryRestoreSession di
+    // bawah), gate sudah disembunyikan dan siswa sudah masuk ke app —
+    // auto-login LMS tidak diperlukan lagi.
+    if(document.getElementById('app').style.display === 'block'){
+      return;
+    }
+
     if(profile && profile.nama){
       applyAutoProfile(profile);
     }
@@ -549,6 +557,89 @@ const PARTS = [
 let student = { jenis:'individu', name:'', anggota:'', kelas:'' };
 let partDone = new Array(PARTS.length).fill(false);
 let currentPartIdx = -1;
+let submitted = false;
+
+/* =====================================================================
+   SIMPAN & PULIHKAN PROGRES DI localStorage
+   -----------------------------------------------------------------
+   Supaya progres siswa (identitas + bagian yang sudah dibaca + status
+   sudah/​belum terkirim) TIDAK HILANG kalau halaman ini di-reload atau
+   tab-nya sempat tertutup tidak sengaja. Kuncinya disatukan dengan
+   SUBMIT_SLUG supaya tiap worksheet punya progres sendiri-sendiri di
+   browser yang sama. Dibungkus try/catch karena localStorage bisa saja
+   diblokir (mode privat/Incognito, kebijakan browser sekolah, dll) —
+   kalau gagal, halaman harus tetap berfungsi seperti biasa tanpa
+   penyimpanan otomatis.
+===================================================================== */
+const STORAGE_KEY = 'materi_progress_' + CONFIG.SUBMIT_SLUG;
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      student, partDone, submitted, ts: Date.now()
+    }));
+  }catch(e){
+    console.log('Tidak bisa menyimpan progres ke penyimpanan lokal.', e);
+  }
+}
+
+function loadSavedState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    if(!data || typeof data !== 'object') return null;
+    if(!data.student || !data.student.name) return null;
+    if(!Array.isArray(data.partDone) || data.partDone.length !== PARTS.length) return null;
+    return data;
+  }catch(e){
+    console.log('Tidak bisa membaca progres tersimpan.', e);
+    return null;
+  }
+}
+
+function clearSavedState(){
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+}
+
+function enterApp(){
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('whoName').textContent = student.name;
+  document.getElementById('whoClass').textContent = student.kelas;
+  document.getElementById('subName').textContent = student.name;
+  document.getElementById('subClass').textContent = student.kelas;
+  renderPartList();
+}
+
+function tryRestoreSession(){
+  const saved = loadSavedState();
+  if(!saved) return false;
+
+  student = saved.student;
+  partDone = saved.partDone;
+  submitted = !!saved.submitted;
+
+  enterApp();
+
+  if(submitted){
+    const status = document.getElementById('sendStatus');
+    status.className = 'sendstatus ok';
+    status.textContent = '✓ Progres kamu dipulihkan. Hasil ini sebelumnya sudah berhasil dikirim ke guru.';
+    document.getElementById('openCodeBtn').textContent = 'Terkirim ✓';
+  }
+  return true;
+}
+
+const sessionWasRestored = tryRestoreSession();
+
+document.getElementById('resetLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  if(confirm('Ini akan menghapus progres yang tersimpan di perangkat ini (nama, kelas, dan bagian yang sudah dibaca) supaya siswa lain bisa mulai dari awal. Lanjutkan?')){
+    clearSavedState();
+    location.reload();
+  }
+});
 
 /* ============ GATE LOGIC ============ */
 const jenisSel = document.getElementById('gJenis');
@@ -579,14 +670,8 @@ document.getElementById('gStart').addEventListener('click', () => {
   errEl.textContent = '';
   student = { jenis: isKelompok ? 'kelompok' : 'individu', name: nama, anggota: isKelompok ? anggota : '', kelas };
 
-  document.getElementById('gate').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('whoName').textContent = nama;
-  document.getElementById('whoClass').textContent = kelas;
-  document.getElementById('subName').textContent = nama;
-  document.getElementById('subClass').textContent = kelas;
-
-  renderPartList();
+  enterApp();
+  saveState();
 });
 
 /* ============ RENDER PART LIST ============ */
@@ -686,6 +771,7 @@ function openPart(idx){
   markBtn.addEventListener('click', () => {
     if(markBtn.disabled) return;
     partDone[idx] = true;
+    saveState();
     clearReadTimer();
     backToList();
   });
@@ -778,6 +864,8 @@ async function sendResult(){
     status.className = 'sendstatus ok';
     status.textContent = '✓ Kode benar — hasil berhasil dikirim ke guru. Guru bisa melihatnya di menu "Hasil Worksheet" pada guru.html (slug: ' + CONFIG.SUBMIT_SLUG + ').';
     btn.textContent = 'Terkirim ✓';
+    submitted = true;
+    saveState();
   }catch(err){
     status.className = 'sendstatus err';
     status.textContent = '✗ Gagal mengirim (' + err.message + '). Periksa koneksi internet lalu coba tekan "Selesai & Kirim" lagi.';
