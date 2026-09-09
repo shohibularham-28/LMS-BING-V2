@@ -97,8 +97,7 @@
         </div>
         <div class="nav-group-items">
           <a class="nav-item" data-page="inputnilai" href="#" title="Input Nilai Massal"><span class="icon">✍️</span> <span class="label">Input Nilai Massal</span></a>
-          <a class="nav-item" data-page="hasilujian" href="#" title="Hasil Ujian"><span class="icon">🧾</span> <span class="label">Hasil Ujian</span></a>
-          <a class="nav-item" data-page="hasilsoal" href="#" title="Hasil Bank Soal"><span class="icon">✅</span> <span class="label">Hasil Bank Soal</span></a>
+          <a class="nav-item" data-page="nilai" href="#" title="Nilai"><span class="icon">🧾</span> <span class="label">Nilai</span></a>
           <a class="nav-item" data-page="hasilworksheet" href="#" title="Hasil Worksheet"><span class="icon">📝</span> <span class="label">Hasil Worksheet</span></a>
         </div>
       </div>
@@ -357,45 +356,33 @@
           <div id="worksheetList">Memuat…</div>
         </div>
 
-        <!-- ===== HASIL UJIAN (Nama/Kelas/Nilai dari soal ujian mandiri tanpa login) ===== -->
-        <div class="gs-section" id="section-hasilujian">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Hasil Ujian</h1></div>
-          <div class="hint">Ini berisi Nama, Kelas, dan Nilai yang dikirim dari soal ujian HTML mandiri (siswa isi Nama/Kelas manual, tidak perlu login LMS).</div>
+        <!-- ===== NILAI (gabungan Hasil Ujian HTML mandiri + Hasil Bank Soal LMS dalam satu tabel) ===== -->
+        <div class="gs-section" id="section-nilai">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Nilai</h1></div>
+          <div class="hint">Gabungan nilai dari <b>Ujian HTML Mandiri</b> (siswa isi Nama/Kelas manual, tanpa login LMS) dan <b>Bank Soal</b> (soal yang diupload lewat "Kelola Worksheet → Upload Soal dari Word", dikerjakan siswa lewat akun LMS). Semua tampil dalam satu tabel yang sama, dibedakan lewat kolom "Sumber".</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
             <div class="form-field" style="margin-bottom:0;">
-              <label>Slug Ujian</label>
-              <select id="hasilUjianSlugSelect"><option value="">Semua</option></select>
+              <label>Sumber</label>
+              <select id="nilaiSumberSelect">
+                <option value="">Semua Sumber</option>
+                <option value="ujian">Ujian HTML Mandiri</option>
+                <option value="soal">Bank Soal</option>
+              </select>
             </div>
             <div class="form-field" style="margin-bottom:0;">
               <label>Kelas</label>
-              <select id="hasilUjianKelasSelect"><option value="">Semua Kelas</option></select>
-            </div>
-            <button class="btn-secondary-sm" id="btnMuatHasilUjian">Muat Hasil</button>
-            <button class="btn-secondary-sm" id="btnDownloadHasilUjian">⬇️ Download Excel</button>
-            <button class="btn-danger-sm" id="btnHapusSemuaHasilUjian">🗑️ Hapus Semua</button>
-          </div>
-          <div class="table-responsive"><div id="hasilUjianTableWrap">Belum dimuat.</div></div>
-        </div>
-
-        <!-- ===== HASIL BANK SOAL (dari fitur Upload Soal dari Word, siswa login LMS) ===== -->
-        <div class="gs-section" id="section-hasilsoal">
-          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Hasil Bank Soal</h1></div>
-          <div class="hint">Ini berisi nilai dari soal yang diupload lewat "Kelola Worksheet → Upload Soal dari Word" dan dikerjakan siswa lewat akun LMS mereka (menu Worksheet). Beda dengan "Hasil Ujian" (soal HTML mandiri, isi Nama/Kelas manual tanpa login).</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:end; margin:14px 0 20px;">
-            <div class="form-field" style="margin-bottom:0;">
-              <label>Judul Soal</label>
-              <select id="hasilSoalJudulSelect"><option value="">Semua</option></select>
+              <select id="nilaiKelasFilterSelect"><option value="">Semua Kelas</option></select>
             </div>
             <div class="form-field" style="margin-bottom:0;">
-              <label>Kelas</label>
-              <select id="hasilSoalKelasSelect"><option value="">Semua Kelas</option></select>
+              <label>Cari Judul/Slug</label>
+              <input type="text" id="nilaiJudulFilterInput" placeholder="mis. procedure-text">
             </div>
-            <button class="btn-secondary-sm" id="btnMuatHasilSoal">Muat Hasil</button>
-            <button class="btn-secondary-sm" id="btnTerbitkanSemuaHasilSoal">📢 Terbitkan Semua</button>
-            <button class="btn-secondary-sm" id="btnDownloadHasilSoal">⬇️ Download Excel</button>
-            <button class="btn-danger-sm" id="btnHapusSemuaHasilSoal">🗑️ Hapus Semua</button>
+            <button class="btn-secondary-sm" id="btnMuatNilai">Muat Hasil</button>
+            <button class="btn-secondary-sm" id="btnTerbitkanSemuaNilai">📢 Terbitkan Semua (Bank Soal)</button>
+            <button class="btn-secondary-sm" id="btnDownloadNilai">⬇️ Download Excel</button>
+            <button class="btn-danger-sm" id="btnHapusSemuaNilai2">🗑️ Hapus Semua</button>
           </div>
-          <div class="table-responsive"><div id="hasilSoalTableWrap">Belum dimuat.</div></div>
+          <div class="table-responsive"><div id="nilaiTableWrap2">Belum dimuat.</div></div>
         </div>
 
         <!-- ===== HASIL WORKSHEET (Jenis/Nama/Anggota/Nilai/Status dari worksheet HTML mandiri) ===== -->
@@ -501,19 +488,36 @@
   }
 
   // ---------- Navigasi antar section ----------
+  const GURU_PAGE_STORAGE_KEY = 'guruDashboardActivePage';
+
+  function gotoPage(nav) {
+    document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.gs-section').forEach(s => s.classList.remove('active'));
+    nav.classList.add('active');
+    document.getElementById('section-' + nav.dataset.page).classList.add('active');
+    // Tandai & buka grup yang memuat menu aktif
+    document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('has-active'));
+    const group = nav.closest('.nav-group');
+    if (group) group.classList.add('open', 'has-active');
+    // Simpan supaya tetap di page ini kalau halaman di-reload
+    try { localStorage.setItem(GURU_PAGE_STORAGE_KEY, nav.dataset.page); } catch (e) {}
+  }
+
   document.querySelectorAll('.nav-item[data-page]').forEach(nav => {
     nav.addEventListener('click', (e) => {
       e.preventDefault();
-      document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
-      document.querySelectorAll('.gs-section').forEach(s => s.classList.remove('active'));
-      nav.classList.add('active');
-      document.getElementById('section-' + nav.dataset.page).classList.add('active');
-      // Tandai & buka grup yang memuat menu aktif
-      document.querySelectorAll('.nav-group').forEach(g => g.classList.remove('has-active'));
-      const group = nav.closest('.nav-group');
-      if (group) group.classList.add('open', 'has-active');
+      gotoPage(nav);
     });
   });
+
+  // Pulihkan page terakhir yang dibuka sebelum reload (kalau ada & masih valid)
+  try {
+    const lastPage = localStorage.getItem(GURU_PAGE_STORAGE_KEY);
+    if (lastPage) {
+      const lastNav = document.querySelector(`.nav-item[data-page="${lastPage}"]`);
+      if (lastNav) gotoPage(lastNav);
+    }
+  } catch (e) {}
 
   // ---------- Data kelas (dipakai di beberapa section) ----------
   let allKelas = [];
@@ -2097,107 +2101,6 @@
   });
 
   // =========================================================
-  // HASIL UJIAN (Nama/Kelas/Nilai dari soal ujian mandiri)
-  // =========================================================
-  let currentHasilUjianRows = [];
-
-  async function loadHasilUjianSlugOptions() {
-    const { data } = await supabase.from('hasil_ujian').select('ujian_slug');
-    const slugs = [...new Set((data || []).map(r => r.ujian_slug))].sort();
-    const sel = document.getElementById('hasilUjianSlugSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Semua</option>' + slugs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
-    sel.value = current;
-  }
-
-  async function loadHasilUjianKelasOptions() {
-    const { data } = await supabase.from('hasil_ujian').select('kelas');
-    const kelasList = [...new Set((data || []).map(r => r.kelas).filter(Boolean))].sort();
-    const sel = document.getElementById('hasilUjianKelasSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
-    sel.value = current;
-  }
-
-  async function loadHasilUjian() {
-    const wrap = document.getElementById('hasilUjianTableWrap');
-    wrap.innerHTML = 'Memuat…';
-    const slug = document.getElementById('hasilUjianSlugSelect').value;
-    const kelasFilter = document.getElementById('hasilUjianKelasSelect').value;
-
-    let query = supabase
-      .from('hasil_ujian')
-      .select('id, ujian_slug, nama, kelas, nilai, created_at')
-      .order('created_at', { ascending: false });
-    if (slug) query = query.eq('ujian_slug', slug);
-    if (kelasFilter) query = query.eq('kelas', kelasFilter);
-
-    const { data, error } = await query;
-    if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
-
-    currentHasilUjianRows = data || [];
-    if (!currentHasilUjianRows.length) {
-      wrap.innerHTML = emptyState('Belum ada hasil', 'Hasil ujian dari soal mandiri akan muncul di sini setelah siswa submit.', '🧾');
-      return;
-    }
-
-    wrap.innerHTML = `
-      <table class="grade-table">
-        <thead><tr><th>Nama</th><th>Kelas</th><th>Slug Ujian</th><th>Nilai</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
-        <tbody>
-          ${currentHasilUjianRows.map(r => `
-            <tr>
-              <td>${esc(r.nama)}</td>
-              <td>${esc(r.kelas)}</td>
-              <td>${esc(r.ujian_slug)}</td>
-              <td>${r.nilai}</td>
-              <td>${new Date(r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
-              <td><button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>`;
-
-    wrap.querySelectorAll('.btn-danger-sm[data-id]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Hapus hasil ujian ini?')) return;
-        const { error } = await supabase.from('hasil_ujian').delete().eq('id', btn.dataset.id);
-        if (error) { alert('Gagal menghapus: ' + error.message); return; }
-        await loadHasilUjian();
-      });
-    });
-  }
-
-  async function hapusSemuaHasilUjian() {
-    if (!currentHasilUjianRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
-    if (!confirm(`Hapus ${currentHasilUjianRows.length} hasil ujian yang sedang ditampilkan (sesuai filter saat ini)? Tindakan ini tidak bisa dibatalkan.`)) return;
-    const ids = currentHasilUjianRows.map(r => r.id);
-    const { error } = await supabase.from('hasil_ujian').delete().in('id', ids);
-    if (error) { alert('Gagal menghapus: ' + error.message); return; }
-    await loadHasilUjian();
-  }
-
-  function downloadHasilUjianXlsx() {
-    if (!currentHasilUjianRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Nama', 'Kelas', 'Slug Ujian', 'Nilai', 'Waktu Submit'];
-    const rows = currentHasilUjianRows.map(r => [
-      r.nama,
-      r.kelas,
-      r.ujian_slug,
-      r.nilai,
-      new Date(r.created_at).toLocaleString('id-ID')
-    ]);
-    const slug = document.getElementById('hasilUjianSlugSelect').value || 'semua';
-    downloadXlsx(`hasil-ujian-${slug.replace(/\s+/g, '_')}.xlsx`, header, rows);
-  }
-
-  document.getElementById('btnMuatHasilUjian').addEventListener('click', loadHasilUjian);
-  document.getElementById('btnDownloadHasilUjian').addEventListener('click', downloadHasilUjianXlsx);
-  document.getElementById('btnHapusSemuaHasilUjian').addEventListener('click', hapusSemuaHasilUjian);
-  loadHasilUjianSlugOptions();
-  loadHasilUjianKelasOptions();
-
-  // =========================================================
   // HASIL WORKSHEET (Jenis/Nama/Anggota/Nilai/Status dari worksheet HTML mandiri)
   // =========================================================
   let currentHasilWsRows = [];
@@ -2316,68 +2219,111 @@
   loadHasilWsKelasOptions();
 
   // =========================================================
-  // HASIL BANK SOAL (dari hasil_ujian_lms — soal Upload Word, siswa login LMS)
+  // NILAI — gabungan Hasil Ujian HTML Mandiri (hasil_ujian) +
+  // Hasil Bank Soal LMS (hasil_ujian_lms) dalam SATU tabel.
   // =========================================================
-  let currentHasilSoalRows = [];
+  let currentNilaiRows = [];
 
-  async function loadHasilSoalJudulOptions() {
-    const { data } = await supabase.from('bank_soal').select('id, judul').order('created_at', { ascending: false });
-    const sel = document.getElementById('hasilSoalJudulSelect');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">Semua</option>' +
-      (data || []).map(b => `<option value="${esc(b.id)}">${esc(b.judul)}</option>`).join('');
-    sel.value = current;
-  }
-
-  async function loadHasilSoalKelasOptions() {
-    const { data } = await supabase.from('hasil_ujian_lms').select('kelas');
-    const kelasList = [...new Set((data || []).map(r => r.kelas).filter(Boolean))].sort();
-    const sel = document.getElementById('hasilSoalKelasSelect');
+  async function loadNilaiKelasFilterOptions() {
+    const [ujianRes, soalRes] = await Promise.all([
+      supabase.from('hasil_ujian').select('kelas'),
+      supabase.from('hasil_ujian_lms').select('kelas')
+    ]);
+    const gabungan = [...(ujianRes.data || []), ...(soalRes.data || [])];
+    const kelasList = [...new Set(gabungan.map(r => r.kelas).filter(Boolean))].sort();
+    const sel = document.getElementById('nilaiKelasFilterSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
     sel.value = current;
   }
 
-  async function loadHasilSoal() {
-    const wrap = document.getElementById('hasilSoalTableWrap');
+  // Ambil dari kedua tabel, satukan jadi satu bentuk baris yang sama,
+  // beri penanda `_sumber` supaya tetap bisa dibedakan saat hapus/terbitkan/download.
+  async function loadNilai() {
+    const wrap = document.getElementById('nilaiTableWrap2');
     wrap.innerHTML = 'Memuat…';
-    const bankSoalId = document.getElementById('hasilSoalJudulSelect').value;
-    const kelasFilter = document.getElementById('hasilSoalKelasSelect').value;
+    const sumberFilter = document.getElementById('nilaiSumberSelect').value; // '', 'ujian', 'soal'
+    const kelasFilter = document.getElementById('nilaiKelasFilterSelect').value;
+    const judulFilter = document.getElementById('nilaiJudulFilterInput').value.trim().toLowerCase();
 
-    let query = supabase
-      .from('hasil_ujian_lms')
-      .select('id, bank_soal_id, nama, kelas, nilai, skor_mentah, skor_total, penalti, pelanggaran, jawaban, dipublikasikan, created_at, bank_soal:bank_soal_id ( judul )')
-      .order('created_at', { ascending: false });
-    if (bankSoalId) query = query.eq('bank_soal_id', bankSoalId);
-    if (kelasFilter) query = query.eq('kelas', kelasFilter);
+    const queries = [];
 
-    const { data, error } = await query;
-    if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
+    if (sumberFilter !== 'soal') {
+      let qUjian = supabase.from('hasil_ujian').select('id, ujian_slug, nama, kelas, nilai, created_at').order('created_at', { ascending: false });
+      if (kelasFilter) qUjian = qUjian.eq('kelas', kelasFilter);
+      queries.push(qUjian.then(({ data, error }) => {
+        if (error) throw error;
+        return (data || []).map(r => ({
+          _sumber: 'ujian',
+          id: r.id,
+          judul: r.ujian_slug,
+          nama: r.nama,
+          kelas: r.kelas,
+          nilai: r.nilai,
+          status: null,
+          created_at: r.created_at
+        }));
+      }));
+    }
 
-    currentHasilSoalRows = data || [];
-    if (!currentHasilSoalRows.length) {
-      wrap.innerHTML = emptyState('Belum ada hasil', 'Nilai akan muncul di sini setelah siswa submit soal yang diupload lewat "Upload Soal dari Word".', '✅');
+    if (sumberFilter !== 'ujian') {
+      let qSoal = supabase.from('hasil_ujian_lms')
+        .select('id, bank_soal_id, nama, kelas, nilai, penalti, dipublikasikan, jawaban, created_at, bank_soal:bank_soal_id ( judul )')
+        .order('created_at', { ascending: false });
+      if (kelasFilter) qSoal = qSoal.eq('kelas', kelasFilter);
+      queries.push(qSoal.then(({ data, error }) => {
+        if (error) throw error;
+        return (data || []).map(r => ({
+          _sumber: 'soal',
+          id: r.id,
+          judul: r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
+          nama: r.nama,
+          kelas: r.kelas,
+          nilai: r.nilai,
+          penalti: r.penalti,
+          jawaban: r.jawaban,
+          status: r.dipublikasikan,
+          created_at: r.created_at
+        }));
+      }));
+    }
+
+    let gabungan;
+    try {
+      gabungan = (await Promise.all(queries)).flat();
+    } catch (error) {
+      wrap.innerHTML = 'Gagal memuat: ' + esc(error.message);
+      return;
+    }
+
+    if (judulFilter) {
+      gabungan = gabungan.filter(r => (r.judul || '').toLowerCase().includes(judulFilter));
+    }
+    gabungan.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    currentNilaiRows = gabungan;
+    if (!currentNilaiRows.length) {
+      wrap.innerHTML = emptyState('Belum ada nilai', 'Nilai dari Ujian HTML Mandiri maupun Bank Soal akan muncul di sini setelah siswa submit.', '🧾');
       return;
     }
 
     wrap.innerHTML = `
       <table class="grade-table">
-        <thead><tr><th>Judul Soal</th><th>Nama</th><th>Kelas</th><th>Nilai</th><th>Skor</th><th>Pelanggaran</th><th>Status</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
+        <thead><tr><th>Sumber</th><th>Judul/Slug</th><th>Nama</th><th>Kelas</th><th>Nilai</th><th>Status</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
         <tbody>
-          ${currentHasilSoalRows.map(r => `
+          ${currentNilaiRows.map(r => `
             <tr>
-              <td>${esc(r.bank_soal ? r.bank_soal.judul : '(soal dihapus)')}</td>
+              <td>${r._sumber === 'soal' ? '<span class="score-pill">Bank Soal</span>' : '<span class="score-pill">Ujian HTML</span>'}</td>
+              <td>${esc(r.judul || '-')}</td>
               <td>${esc(r.nama)}</td>
               <td>${esc(r.kelas)}</td>
               <td><b>${r.nilai}</b>${r.penalti > 0 ? ` <span style="color:#c0392b;font-size:12px;">(-${r.penalti} penalti)</span>` : ''}</td>
-              <td>${r.skor_mentah ?? '-'} / ${r.skor_total ?? '-'}</td>
-              <td>${r.pelanggaran || 0}</td>
-              <td>${r.dipublikasikan ? '<span class="score-pill status-tuntas">Terbit</span>' : '<span class="score-pill status-belum">Belum Terbit</span>'}</td>
+              <td>${r.status === null ? '-' : (r.status ? '<span class="score-pill status-tuntas">Terbit</span>' : '<span class="score-pill status-belum">Belum Terbit</span>')}</td>
               <td>${new Date(r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
               <td style="white-space:nowrap;">
-                <button class="btn-secondary-sm" data-act="lihat" data-id="${r.id}">👁️ Jawaban</button>
-                ${r.dipublikasikan ? '' : `<button class="btn-secondary-sm" data-act="terbitkan" data-id="${r.id}">📢 Terbitkan</button>`}
-                <button class="btn-danger-sm" data-act="hapus" data-id="${r.id}">🗑️</button>
+                ${r._sumber === 'soal' ? `<button class="btn-secondary-sm" data-act="lihat" data-sumber="soal" data-id="${r.id}">👁️ Jawaban</button>` : ''}
+                ${r._sumber === 'soal' && !r.status ? `<button class="btn-secondary-sm" data-act="terbitkan" data-sumber="soal" data-id="${r.id}">📢 Terbitkan</button>` : ''}
+                <button class="btn-danger-sm" data-act="hapus" data-sumber="${r._sumber}" data-id="${r.id}">🗑️ Hapus</button>
               </td>
             </tr>
           `).join('')}
@@ -2386,7 +2332,7 @@
 
     wrap.querySelectorAll('[data-act="lihat"]').forEach(btn => {
       btn.addEventListener('click', () => {
-        const row = currentHasilSoalRows.find(r => String(r.id) === btn.dataset.id);
+        const row = currentNilaiRows.find(r => r._sumber === 'soal' && String(r.id) === btn.dataset.id);
         alert(row ? (row.jawaban || 'Tidak ada detail jawaban.') : 'Data tidak ditemukan.');
       });
     });
@@ -2394,57 +2340,63 @@
       btn.addEventListener('click', async () => {
         const { error } = await supabase.from('hasil_ujian_lms').update({ dipublikasikan: true }).eq('id', btn.dataset.id);
         if (error) { alert('Gagal menerbitkan: ' + error.message); return; }
-        await loadHasilSoal();
+        await loadNilai();
       });
     });
     wrap.querySelectorAll('[data-act="hapus"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Hapus hasil ini?')) return;
-        const { error } = await supabase.from('hasil_ujian_lms').delete().eq('id', btn.dataset.id);
+        if (!confirm('Hapus nilai ini?')) return;
+        const tabel = btn.dataset.sumber === 'soal' ? 'hasil_ujian_lms' : 'hasil_ujian';
+        const { error } = await supabase.from(tabel).delete().eq('id', btn.dataset.id);
         if (error) { alert('Gagal menghapus: ' + error.message); return; }
-        await loadHasilSoal();
+        await loadNilai();
       });
     });
   }
 
-  async function terbitkanSemuaHasilSoal() {
-    if (!currentHasilSoalRows.length) { alert('Tidak ada data untuk diterbitkan. Klik "Muat Hasil" dulu.'); return; }
-    const belumTerbit = currentHasilSoalRows.filter(r => !r.dipublikasikan);
-    if (!belumTerbit.length) { alert('Semua hasil yang sedang ditampilkan sudah terbit.'); return; }
-    if (!confirm(`Terbitkan ${belumTerbit.length} nilai yang sedang ditampilkan (sesuai filter saat ini) supaya bisa dilihat siswa?`)) return;
+  async function terbitkanSemuaNilai() {
+    const belumTerbit = currentNilaiRows.filter(r => r._sumber === 'soal' && !r.status);
+    if (!currentNilaiRows.length) { alert('Tidak ada data untuk diterbitkan. Klik "Muat Hasil" dulu.'); return; }
+    if (!belumTerbit.length) { alert('Tidak ada nilai Bank Soal yang belum terbit pada tampilan saat ini.'); return; }
+    if (!confirm(`Terbitkan ${belumTerbit.length} nilai Bank Soal yang sedang ditampilkan (sesuai filter saat ini) supaya bisa dilihat siswa?`)) return;
     const ids = belumTerbit.map(r => r.id);
     const { error } = await supabase.from('hasil_ujian_lms').update({ dipublikasikan: true }).in('id', ids);
     if (error) { alert('Gagal menerbitkan: ' + error.message); return; }
-    await loadHasilSoal();
+    await loadNilai();
   }
 
-  async function hapusSemuaHasilSoal() {
-    if (!currentHasilSoalRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
-    if (!confirm(`Hapus ${currentHasilSoalRows.length} hasil yang sedang ditampilkan (sesuai filter saat ini)? Tindakan ini tidak bisa dibatalkan.`)) return;
-    const ids = currentHasilSoalRows.map(r => r.id);
-    const { error } = await supabase.from('hasil_ujian_lms').delete().in('id', ids);
-    if (error) { alert('Gagal menghapus: ' + error.message); return; }
-    await loadHasilSoal();
+  async function hapusSemuaNilai2() {
+    if (!currentNilaiRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
+    if (!confirm(`Hapus ${currentNilaiRows.length} baris nilai yang sedang ditampilkan (sesuai filter saat ini), dari Ujian HTML maupun Bank Soal? Tindakan ini tidak bisa dibatalkan.`)) return;
+    const idsUjian = currentNilaiRows.filter(r => r._sumber === 'ujian').map(r => r.id);
+    const idsSoal = currentNilaiRows.filter(r => r._sumber === 'soal').map(r => r.id);
+    const tasks = [];
+    if (idsUjian.length) tasks.push(supabase.from('hasil_ujian').delete().in('id', idsUjian));
+    if (idsSoal.length) tasks.push(supabase.from('hasil_ujian_lms').delete().in('id', idsSoal));
+    const results = await Promise.all(tasks);
+    const gagal = results.find(r => r.error);
+    if (gagal) { alert('Gagal menghapus sebagian data: ' + gagal.error.message); }
+    await loadNilai();
   }
 
-  function downloadHasilSoalXlsx() {
-    if (!currentHasilSoalRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Judul Soal', 'Nama', 'Kelas', 'Nilai', 'Skor Mentah', 'Skor Total', 'Penalti', 'Pelanggaran', 'Status', 'Waktu Submit'];
-    const rows = currentHasilSoalRows.map(r => [
-      r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
-      r.nama, r.kelas, r.nilai, r.skor_mentah ?? '-', r.skor_total ?? '-', r.penalti || 0, r.pelanggaran || 0,
-      r.dipublikasikan ? 'Terbit' : 'Belum Terbit',
+  function downloadNilaiXlsx() {
+    if (!currentNilaiRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
+    const header = ['Sumber', 'Judul/Slug', 'Nama', 'Kelas', 'Nilai', 'Status', 'Waktu Submit'];
+    const rows = currentNilaiRows.map(r => [
+      r._sumber === 'soal' ? 'Bank Soal' : 'Ujian HTML',
+      r.judul || '-',
+      r.nama, r.kelas, r.nilai,
+      r.status === null ? '-' : (r.status ? 'Terbit' : 'Belum Terbit'),
       new Date(r.created_at).toLocaleString('id-ID')
     ]);
-    downloadXlsx('hasil-bank-soal.xlsx', header, rows);
+    downloadXlsx('nilai-ujian-dan-bank-soal.xlsx', header, rows);
   }
 
-  document.getElementById('btnMuatHasilSoal').addEventListener('click', loadHasilSoal);
-  document.getElementById('btnTerbitkanSemuaHasilSoal').addEventListener('click', terbitkanSemuaHasilSoal);
-  document.getElementById('btnDownloadHasilSoal').addEventListener('click', downloadHasilSoalXlsx);
-  document.getElementById('btnHapusSemuaHasilSoal').addEventListener('click', hapusSemuaHasilSoal);
-  loadHasilSoalJudulOptions();
-  loadHasilSoalKelasOptions();
+  document.getElementById('btnMuatNilai').addEventListener('click', loadNilai);
+  document.getElementById('btnTerbitkanSemuaNilai').addEventListener('click', terbitkanSemuaNilai);
+  document.getElementById('btnDownloadNilai').addEventListener('click', downloadNilaiXlsx);
+  document.getElementById('btnHapusSemuaNilai2').addEventListener('click', hapusSemuaNilai2);
+  loadNilaiKelasFilterOptions();
 
   // =========================================================
   // Init
