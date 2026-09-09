@@ -188,7 +188,7 @@
 
   const nilaiGabungan = [
     ...(mySoalResults || []).map(r => ({
-      sumber: 'Bank Soal',
+      sumber: 'Online',
       judul: r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
       nilai: r.nilai,
       predikat: null,
@@ -204,7 +204,7 @@
       created_at: r.created_at
     })),
     ...(myNilaiManual || []).map(r => ({
-      sumber: 'Nilai Manual',
+      sumber: 'Manual',
       judul: r.jenis || 'Nilai',
       nilai: r.skor,
       predikat: r.predikat,
