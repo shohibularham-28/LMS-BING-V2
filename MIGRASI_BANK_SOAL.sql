@@ -74,22 +74,32 @@ create table if not exists public.hasil_ujian_lms (
   penalti numeric default 0,
   pelanggaran integer default 0,
   jawaban text,                     -- laporan jawaban per nomor, untuk ditinjau guru
+  dipublikasikan boolean not null default true, -- apakah nilai ini sudah boleh dilihat siswa di akunnya
   created_at timestamptz default now()
 );
+
+alter table public.hasil_ujian_lms add column if not exists dipublikasikan boolean not null default true;
 
 alter table public.hasil_ujian_lms enable row level security;
 
 drop policy if exists "hasil_ujian_lms_insert_own" on public.hasil_ujian_lms;
 drop policy if exists "hasil_ujian_lms_select_own_or_guru" on public.hasil_ujian_lms;
+drop policy if exists "hasil_ujian_lms_update_guru" on public.hasil_ujian_lms;
 drop policy if exists "hasil_ujian_lms_delete_guru" on public.hasil_ujian_lms;
 
 -- Siswa hanya boleh mengirim hasil atas namanya sendiri (profile_id = akunnya).
 create policy "hasil_ujian_lms_insert_own" on public.hasil_ujian_lms
   for insert with check (profile_id = auth.uid());
 
--- Siswa boleh melihat hasil miliknya sendiri; guru boleh melihat semua.
+-- Siswa boleh melihat hasil miliknya sendiri (RLS di sini tidak menyembunyikan
+-- kolom "dipublikasikan" — sembunyikan nilai yang belum dipublikasikan di sisi
+-- tampilan/JavaScript, lihat pengumuman.html); guru boleh melihat semua.
 create policy "hasil_ujian_lms_select_own_or_guru" on public.hasil_ujian_lms
   for select using (profile_id = auth.uid() or public.is_guru());
+
+-- Cuma guru yang boleh mengubah (dipakai untuk tombol "Terbitkan Nilai").
+create policy "hasil_ujian_lms_update_guru" on public.hasil_ujian_lms
+  for update using (public.is_guru());
 
 -- Cuma guru yang boleh menghapus (mis. kalau ada percobaan curang / perlu reset).
 create policy "hasil_ujian_lms_delete_guru" on public.hasil_ujian_lms

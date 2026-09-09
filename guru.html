@@ -385,6 +385,7 @@
               <select id="hasilSoalKelasSelect"><option value="">Semua Kelas</option></select>
             </div>
             <button class="btn-secondary-sm" id="btnMuatHasilSoal">Muat Hasil</button>
+            <button class="btn-secondary-sm" id="btnTerbitkanSemuaHasilSoal">📢 Terbitkan Semua</button>
             <button class="btn-secondary-sm" id="btnDownloadHasilSoal">⬇️ Download Excel</button>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilSoal">🗑️ Hapus Semua</button>
           </div>
@@ -2259,7 +2260,7 @@
 
     let query = supabase
       .from('hasil_ujian_lms')
-      .select('id, bank_soal_id, nama, kelas, nilai, skor_mentah, skor_total, penalti, pelanggaran, jawaban, created_at, bank_soal:bank_soal_id ( judul )')
+      .select('id, bank_soal_id, nama, kelas, nilai, skor_mentah, skor_total, penalti, pelanggaran, jawaban, dipublikasikan, created_at, bank_soal:bank_soal_id ( judul )')
       .order('created_at', { ascending: false });
     if (bankSoalId) query = query.eq('bank_soal_id', bankSoalId);
     if (kelasFilter) query = query.eq('kelas', kelasFilter);
@@ -2275,7 +2276,7 @@
 
     wrap.innerHTML = `
       <table class="grade-table">
-        <thead><tr><th>Judul Soal</th><th>Nama</th><th>Kelas</th><th>Nilai</th><th>Skor</th><th>Pelanggaran</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
+        <thead><tr><th>Judul Soal</th><th>Nama</th><th>Kelas</th><th>Nilai</th><th>Skor</th><th>Pelanggaran</th><th>Status</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
         <tbody>
           ${currentHasilSoalRows.map(r => `
             <tr>
@@ -2285,9 +2286,11 @@
               <td><b>${r.nilai}</b>${r.penalti > 0 ? ` <span style="color:#c0392b;font-size:12px;">(-${r.penalti} penalti)</span>` : ''}</td>
               <td>${r.skor_mentah ?? '-'} / ${r.skor_total ?? '-'}</td>
               <td>${r.pelanggaran || 0}</td>
+              <td>${r.dipublikasikan ? '<span class="score-pill status-tuntas">Terbit</span>' : '<span class="score-pill status-belum">Belum Terbit</span>'}</td>
               <td>${new Date(r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
               <td style="white-space:nowrap;">
                 <button class="btn-secondary-sm" data-act="lihat" data-id="${r.id}">👁️ Jawaban</button>
+                ${r.dipublikasikan ? '' : `<button class="btn-secondary-sm" data-act="terbitkan" data-id="${r.id}">📢 Terbitkan</button>`}
                 <button class="btn-danger-sm" data-act="hapus" data-id="${r.id}">🗑️</button>
               </td>
             </tr>
@@ -2301,6 +2304,13 @@
         alert(row ? (row.jawaban || 'Tidak ada detail jawaban.') : 'Data tidak ditemukan.');
       });
     });
+    wrap.querySelectorAll('[data-act="terbitkan"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const { error } = await supabase.from('hasil_ujian_lms').update({ dipublikasikan: true }).eq('id', btn.dataset.id);
+        if (error) { alert('Gagal menerbitkan: ' + error.message); return; }
+        await loadHasilSoal();
+      });
+    });
     wrap.querySelectorAll('[data-act="hapus"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!confirm('Hapus hasil ini?')) return;
@@ -2309,6 +2319,17 @@
         await loadHasilSoal();
       });
     });
+  }
+
+  async function terbitkanSemuaHasilSoal() {
+    if (!currentHasilSoalRows.length) { alert('Tidak ada data untuk diterbitkan. Klik "Muat Hasil" dulu.'); return; }
+    const belumTerbit = currentHasilSoalRows.filter(r => !r.dipublikasikan);
+    if (!belumTerbit.length) { alert('Semua hasil yang sedang ditampilkan sudah terbit.'); return; }
+    if (!confirm(`Terbitkan ${belumTerbit.length} nilai yang sedang ditampilkan (sesuai filter saat ini) supaya bisa dilihat siswa?`)) return;
+    const ids = belumTerbit.map(r => r.id);
+    const { error } = await supabase.from('hasil_ujian_lms').update({ dipublikasikan: true }).in('id', ids);
+    if (error) { alert('Gagal menerbitkan: ' + error.message); return; }
+    await loadHasilSoal();
   }
 
   async function hapusSemuaHasilSoal() {
@@ -2322,16 +2343,18 @@
 
   function downloadHasilSoalXlsx() {
     if (!currentHasilSoalRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Judul Soal', 'Nama', 'Kelas', 'Nilai', 'Skor Mentah', 'Skor Total', 'Penalti', 'Pelanggaran', 'Waktu Submit'];
+    const header = ['Judul Soal', 'Nama', 'Kelas', 'Nilai', 'Skor Mentah', 'Skor Total', 'Penalti', 'Pelanggaran', 'Status', 'Waktu Submit'];
     const rows = currentHasilSoalRows.map(r => [
       r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
       r.nama, r.kelas, r.nilai, r.skor_mentah ?? '-', r.skor_total ?? '-', r.penalti || 0, r.pelanggaran || 0,
+      r.dipublikasikan ? 'Terbit' : 'Belum Terbit',
       new Date(r.created_at).toLocaleString('id-ID')
     ]);
     downloadXlsx('hasil-bank-soal.xlsx', header, rows);
   }
 
   document.getElementById('btnMuatHasilSoal').addEventListener('click', loadHasilSoal);
+  document.getElementById('btnTerbitkanSemuaHasilSoal').addEventListener('click', terbitkanSemuaHasilSoal);
   document.getElementById('btnDownloadHasilSoal').addEventListener('click', downloadHasilSoalXlsx);
   document.getElementById('btnHapusSemuaHasilSoal').addEventListener('click', hapusSemuaHasilSoal);
   loadHasilSoalJudulOptions();

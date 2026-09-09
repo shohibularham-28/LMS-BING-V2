@@ -1152,7 +1152,8 @@ function sendResultToForm(name, stuClass, score){
     skor_total: score.total,
     penalti: score.penalti,
     pelanggaran: score.violationCount,
-    jawaban: buildAnswerReport()
+    jawaban: buildAnswerReport(),
+    dipublikasikan: TAMPILKAN_NILAI_LANGSUNG
   }).then(({ error }) => {
     if (error) {
       console.error('Gagal mengirim hasil:', error);

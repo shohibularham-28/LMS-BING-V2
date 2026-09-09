@@ -114,6 +114,18 @@
           </table>
         </div>
         <div id="grade-empty-slot"></div>
+
+        <div class="section-label" style="margin-top:24px;">Nilai Ujian (Soal Upload Guru)</div>
+        <div class="hint">Ini nilai dari soal yang dikerjakan lewat menu Worksheet (bukan input nilai manual guru).</div>
+        <div class="table-responsive">
+          <table class="grade-table" id="soal-grade-table">
+            <thead>
+              <tr><th>Judul Soal</th><th>Nilai</th><th>Waktu Submit</th><th>Status</th></tr>
+            </thead>
+            <tbody id="soal-grade-container"></tbody>
+          </table>
+        </div>
+        <div id="soal-grade-empty-slot"></div>
       </div>
     </div>
   </div>
@@ -188,6 +200,48 @@
     gradeTable.style.display = 'none';
     gradeC.innerHTML = '';
     gradeEmptySlot.innerHTML = emptyState("Belum ada nilai", "Nilai yang sudah dinilai guru akan tampil di sini.", "📊");
+  }
+
+  // Nilai Ujian dari soal Upload Word (hasil_ujian_lms), milik siswa ini saja.
+  const soalGradeTable = document.getElementById('soal-grade-table');
+  const soalGradeC = document.getElementById('soal-grade-container');
+  const soalGradeEmptySlot = document.getElementById('soal-grade-empty-slot');
+  const { data: mySoalResults } = await supabase
+    .from('hasil_ujian_lms')
+    .select('nilai, dipublikasikan, created_at, bank_soal:bank_soal_id ( judul )')
+    .eq('profile_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  const soalResults = mySoalResults || [];
+  if (soalResults.length) {
+    soalGradeTable.style.display = '';
+    soalGradeEmptySlot.innerHTML = '';
+    soalGradeC.innerHTML = soalResults.map(r => {
+      const judul = r.bank_soal ? esc(r.bank_soal.judul) : '(soal dihapus)';
+      const waktu = new Date(r.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      if (!r.dipublikasikan) {
+        return `
+        <tr>
+          <td>${judul}</td>
+          <td>—</td>
+          <td>${waktu}</td>
+          <td><span class="score-pill status-belum">Menunggu Diumumkan Guru</span></td>
+        </tr>`;
+      }
+      const statusCls = r.nilai < 75 ? 'status-remidi' : 'status-tuntas';
+      const statusTxt = r.nilai < 75 ? 'Remidi' : 'Tuntas';
+      return `
+      <tr>
+        <td>${judul}</td>
+        <td><b>${r.nilai}</b></td>
+        <td>${waktu}</td>
+        <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
+      </tr>`;
+    }).join('');
+  } else {
+    soalGradeTable.style.display = 'none';
+    soalGradeC.innerHTML = '';
+    soalGradeEmptySlot.innerHTML = emptyState("Belum ada nilai ujian", "Nilai dari soal yang kamu kerjakan lewat menu Worksheet akan tampil di sini.", "✅");
   }
 
   // Siswa sudah melihat halaman ini, tandai pengumuman & nilai sebagai sudah dibaca.
