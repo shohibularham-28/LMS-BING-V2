@@ -90,6 +90,15 @@
   font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px;
   background:var(--violet-soft); color:var(--violet); text-transform:uppercase; letter-spacing:.4px;
 }
+.msg-meta .anon-tag{
+  font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px;
+  background:#EDEEF3; color:#6B7280; text-transform:uppercase; letter-spacing:.4px;
+}
+.msg-meta .msg-del{
+  border:none; background:none; cursor:pointer; color:#B0B5C4; font-size:12px;
+  padding:0 2px; line-height:1; margin-left:2px;
+}
+.msg-meta .msg-del:hover{ color:#E0554F; }
 .msg-bubble{
   padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.5;
   word-break:break-word; white-space:pre-wrap;
@@ -97,6 +106,12 @@
 .msg-row.me .msg-bubble{ background:var(--violet); color:#fff; border-bottom-right-radius:4px; }
 .msg-row.other .msg-bubble{ background:#fff; border:1px solid #E7E9F2; color:#2b2f3a; border-bottom-left-radius:4px; }
 .msg-row.other.from-guru .msg-bubble{ border-color:var(--violet-soft); background:#F5F2FF; }
+.btn-hapus-semua-chat{
+  background:#FFF1F0; color:#E0554F; border:1px solid #FFD4D0; border-radius:10px;
+  padding:7px 14px; font-size:12.5px; font-weight:700; cursor:pointer; flex-shrink:0;
+}
+.btn-hapus-semua-chat:hover{ background:#FFE2DF; }
+.btn-hapus-semua-chat:disabled{ opacity:.5; cursor:not-allowed; }
 .chat-input-bar{
   display:flex; gap:10px; padding:14px 16px; border-top:1px solid #E7E9F2; background:#fff;
 }
@@ -237,6 +252,7 @@
                 <h3 id="obrolanKelasNama">Pilih kelas</h3>
                 <div class="sub">Sebagai guru, pesanmu terlihat di semua kelas yang kamu pilih.</div>
               </div>
+              <button type="button" class="btn-hapus-semua-chat" id="obrolanHapusSemuaBtn" disabled>🗑 Hapus Semua Pesan</button>
             </div>
             <div class="chat-body" id="obrolanBody"><div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div></div>
             <form class="chat-input-bar" id="obrolanForm">
@@ -2733,6 +2749,18 @@
     return new Date(iso).toLocaleString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
   }
 
+  async function obrolanDeleteMessage(id, rowEl) {
+    if (!confirm('Hapus pesan ini? Tindakan ini tidak bisa dibatalkan.')) return;
+    const { error } = await supabase.from('pesan_kelas').delete().eq('id', id);
+    if (error) { alert('Gagal menghapus pesan: ' + error.message); return; }
+    obrolanKnownIds.delete(id);
+    rowEl.remove();
+    const body = document.getElementById('obrolanBody');
+    if (!body.querySelector('.msg-row')) {
+      body.innerHTML = '<div class="chat-empty">Belum ada obrolan di kelas ini.</div>';
+    }
+  }
+
   function obrolanAppend(rows) {
     const body = document.getElementById('obrolanBody');
     const wasNearBottom = (body.scrollHeight - body.scrollTop - body.clientHeight) < 80;
@@ -2744,9 +2772,10 @@
       const row = document.createElement('div');
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru && !mine ? ' from-guru' : '');
       row.innerHTML = `
-        <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''} · ${obrolanFmtTime(m.created_at)}</div>
+        <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${obrolanFmtTime(m.created_at)} <button type="button" class="msg-del" title="Hapus pesan">🗑</button></div>
         <div class="msg-bubble">${esc(m.isi)}</div>
       `;
+      row.querySelector('.msg-del').addEventListener('click', () => obrolanDeleteMessage(m.id, row));
       body.appendChild(row);
     });
     if (obrolanFirstLoad || wasNearBottom) body.scrollTop = body.scrollHeight;
@@ -2757,7 +2786,7 @@
     const body = document.getElementById('obrolanBody');
     const { data, error } = await supabase
       .from('pesan_kelas')
-      .select('id, sender_id, sender_nama, sender_role, isi, created_at')
+      .select('id, sender_id, sender_nama, sender_role, isi, created_at, is_anonim')
       .eq('kelas_id', obrolanKelasId)
       .order('created_at', { ascending: true })
       .limit(200);
@@ -2784,17 +2813,34 @@
     obrolanFirstLoad = true;
     const input = document.getElementById('obrolanInput');
     const sendBtn = document.getElementById('obrolanSendBtn');
+    const hapusSemuaBtn = document.getElementById('obrolanHapusSemuaBtn');
     const kelasNama = document.getElementById('obrolanKelasNama');
     const opt = allKelas.find(k => k.id === obrolanKelasId);
     kelasNama.textContent = opt ? 'Kelas ' + opt.nama : 'Pilih kelas';
     if (!obrolanKelasId) {
       document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div>';
-      input.disabled = true; sendBtn.disabled = true;
+      input.disabled = true; sendBtn.disabled = true; hapusSemuaBtn.disabled = true;
       return;
     }
-    input.disabled = false; sendBtn.disabled = false;
+    input.disabled = false; sendBtn.disabled = false; hapusSemuaBtn.disabled = false;
     document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Memuat obrolan…</div>';
     loadObrolanMessages();
+  });
+
+  document.getElementById('obrolanHapusSemuaBtn').addEventListener('click', async () => {
+    if (!obrolanKelasId) return;
+    const opt = allKelas.find(k => k.id === obrolanKelasId);
+    const namaKelas = opt ? opt.nama : 'ini';
+    if (!confirm(`Hapus SEMUA pesan di obrolan kelas ${namaKelas}? Tindakan ini tidak bisa dibatalkan.`)) return;
+    const hapusSemuaBtn = document.getElementById('obrolanHapusSemuaBtn');
+    hapusSemuaBtn.disabled = true;
+    const { error } = await supabase.from('pesan_kelas').delete().eq('kelas_id', obrolanKelasId);
+    hapusSemuaBtn.disabled = false;
+    if (error) { alert('Gagal menghapus semua pesan: ' + error.message); return; }
+    obrolanKnownIds = new Set();
+    obrolanFirstLoad = true;
+    document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Belum ada obrolan di kelas ini.</div>';
+    obrolanFirstLoad = false;
   });
 
   document.getElementById('obrolanForm').addEventListener('submit', async (e) => {
