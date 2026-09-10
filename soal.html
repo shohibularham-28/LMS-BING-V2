@@ -227,6 +227,11 @@
     display:block; width:100%; max-width:420px; margin:0 auto; border-radius:8px;
     border:1px solid var(--line);
   }
+  .q-image{
+    display:block; max-width:360px; width:100%; margin:10px 0 14px 44px; border-radius:8px;
+    border:1px solid var(--line);
+  }
+  @media (max-width:640px){ .q-image{ margin-left:0; max-width:100%; } }
 
   .q-card{
     background:var(--paper-card); border:1px solid var(--line); border-radius:12px;
@@ -261,6 +266,8 @@
   .opt.opt-wrong .tag{color:var(--bad);}
   .opt input:disabled{cursor:default;}
   .opt.locked{cursor:default;}
+  .opt-text-wrap{display:flex; flex-direction:column; gap:7px; flex:1;}
+  .opt-img{display:block; max-width:200px; max-height:160px; border-radius:6px; border:1px solid var(--line); object-fit:contain;}
 
   @media (max-width:640px){
     .wrap{padding:0 10px;}
@@ -811,6 +818,14 @@ function renderStage(){
   });
   card.appendChild(top);
 
+  if(q.image){
+    const qImg = document.createElement('img');
+    qImg.src = q.image;
+    qImg.alt = 'Gambar referensi soal';
+    qImg.className = 'q-image';
+    card.appendChild(qImg);
+  }
+
   if(q.hint){
     const hint = document.createElement('div');
     hint.className='q-hint';
@@ -826,7 +841,7 @@ function renderStage(){
       lbl.className='opt';
       lbl.dataset.key=o.k;
       const checked = answers[q.id]===o.k ? 'checked' : '';
-      lbl.innerHTML = `<input type="radio" name="${q.id}" value="${o.k}" ${checked}> <span>${o.t}</span> <span class="tag"></span>`;
+      lbl.innerHTML = `<input type="radio" name="${q.id}" value="${o.k}" ${checked}> <span class="opt-text-wrap"><span>${o.t}</span>${o.img ? `<img src="${o.img}" alt="Gambar opsi ${o.k}" class="opt-img">` : ''}</span> <span class="tag"></span>`;
       if(answers[q.id]===o.k) lbl.classList.add('selected');
       lbl.querySelector('input').addEventListener('change', ()=>{
         answers[q.id]=o.k;
@@ -848,7 +863,7 @@ function renderStage(){
       lbl.className='opt';
       lbl.dataset.key=o.k;
       const isChecked = (answers[q.id]||[]).includes(o.k);
-      lbl.innerHTML = `<input type="checkbox" name="${q.id}" value="${o.k}" ${isChecked?'checked':''}> <span>${o.t}</span> <span class="tag"></span>`;
+      lbl.innerHTML = `<input type="checkbox" name="${q.id}" value="${o.k}" ${isChecked?'checked':''}> <span class="opt-text-wrap"><span>${o.t}</span>${o.img ? `<img src="${o.img}" alt="Gambar opsi ${o.k}" class="opt-img">` : ''}</span> <span class="tag"></span>`;
       if(isChecked) lbl.classList.add('selected');
       lbl.querySelector('input').addEventListener('change', ()=>{
         const cur = new Set(answers[q.id]||[]);

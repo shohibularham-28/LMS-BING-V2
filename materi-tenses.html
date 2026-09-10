@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>16 Tenses — The Time Rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF0F4;
+    --card:#FFFFFF;
+    --ink:#1B2430;
+    --ink-soft:#5B6472;
+    --line:#DBDFE7;
+
+    --present:#0F8B8D;
+    --present-tint:#E3F3F2;
+    --past:#7C6A8E;
+    --past-tint:#EEEAF3;
+    --future:#C97D31;
+    --future-tint:#FBEEDF;
+
+    --accent: var(--present);
+    --accent-tint: var(--present-tint);
+
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ===== TOP BAR / TIME RAIL ===== */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--paper);
+    padding:16px 16px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .eyebrow b{color:var(--accent);transition:color .35s;}
+
+  .rail{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    padding:2px 2px 6px;
+  }
+  .rail::-webkit-scrollbar{display:none;}
+  .tick{
+    flex:0 0 auto;
+    width:16px;
+    height:30px;
+    border-radius:5px;
+    border:none;
+    background:var(--line);
+    cursor:pointer;
+    position:relative;
+    transition:background .25s, transform .25s;
+    padding:0;
+  }
+  .tick.group-present{background:#c9e4e3;}
+  .tick.group-past{background:#dcd5e6;}
+  .tick.group-future{background:#f0dcc0;}
+  .tick.active{
+    transform:scaleY(1.15);
+    background:var(--accent) !important;
+  }
+  .tick .num{
+    position:absolute;
+    bottom:-16px;
+    left:50%;
+    transform:translateX(-50%);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.55rem;
+    color:var(--ink-soft);
+    white-space:nowrap;
+  }
+  .rail-wrap{margin-bottom:14px;}
+
+  /* ===== MAIN STAGE ===== */
+  .stage{
+    max-width:640px;
+    margin:0 auto;
+    padding:22px 18px 60px;
+  }
+
+  .page{
+    display:none;
+    animation:rise .38s ease;
+  }
+  .page.active{display:block;}
+  @keyframes rise{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .group-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.7rem;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:999px;
+    background:var(--accent-tint);
+    color:var(--accent);
+    font-weight:600;
+    margin-bottom:14px;
+  }
+  .group-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
+
+  h1.title{
+    font-family:'Fraunces',serif;
+    font-optical-sizing:auto;
+    font-weight:600;
+    font-size:2rem;
+    line-height:1.08;
+    margin:0 0 6px;
+    color:var(--ink);
+  }
+  h1.title .idx{
+    font-size:1rem;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    vertical-align:super;
+  }
+
+  .usage{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:4px solid var(--accent);
+    border-radius:12px;
+    padding:14px 16px;
+    margin:18px 0 8px;
+    font-size:.92rem;
+    color:var(--ink);
+  }
+  .usage b{color:var(--accent);}
+  .adverbs{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.78rem;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+
+  .timeline-wrap{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px 12px 10px;
+    margin:16px 0 4px;
+  }
+  .timeline-wrap svg{width:100%;height:auto;display:block;overflow:visible;}
+  .tl-zone{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:9px;
+    letter-spacing:.08em;
+    fill:var(--ink-soft);
+    text-transform:uppercase;
+  }
+  .tl-pivot-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:8px;
+    fill:var(--ink-soft);
+  }
+  .tl-caption{
+    text-align:center;
+    font-size:.78rem;
+    color:var(--ink-soft);
+    margin-top:8px;
+    font-style:italic;
+  }
+
+  h2.section-title{
+    font-family:'Inter',sans-serif;
+    font-size:.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:var(--ink-soft);
+    margin:26px 0 10px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  h2.section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  .formula-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .formula-row{
+    display:grid;
+    grid-template-columns:56px 1fr;
+    border-bottom:1px solid var(--line);
+  }
+  .formula-row:last-child{border-bottom:none;}
+  .formula-tag{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:.95rem;
+    color:#fff;
+  }
+  .formula-tag.aff{background:var(--present);}
+  .formula-tag.neg{background:#C1554F;}
+  .formula-tag.int{background:var(--past);}
+
+  .formula-body{padding:12px 14px;}
+  .formula-rule{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.85rem;
+    color:var(--ink);
+    margin-bottom:6px;
+    word-break:break-word;
+  }
+  .formula-example{
+    font-size:.86rem;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
+  .no-form-note{
+    font-size:.82rem;
+    color:var(--ink-soft);
+    background:var(--card);
+    border:1px dashed var(--line);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:14px;
+  }
+
+  .qword{
+    background:var(--past-tint);
+    border-radius:var(--radius);
+    padding:14px 16px;
+    font-size:.86rem;
+    margin-top:6px;
+  }
+  .qword b{color:var(--past);}
+  .qword code{
+    background:#fff;
+    border:1px solid var(--line);
+    padding:2px 6px;
+    border-radius:6px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+  }
+  .qword .ex{margin-top:6px;color:var(--ink-soft);font-style:italic;}
+
+  .inline-nav{
+    display:flex;
+    gap:10px;
+    margin-top:32px;
+  }
+  .inline-btn{
+    flex:1;
+    border:none;
+    border-radius:14px;
+    padding:14px 10px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:.88rem;
+    cursor:pointer;
+    transition:transform .15s, opacity .2s;
+  }
+  .inline-btn:active{transform:scale(.97);}
+  .inline-btn.prev{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+  .inline-btn.next{background:var(--ink);color:#fff;}
+  .inline-btn:disabled{opacity:.35;pointer-events:none;}
+
+  @media (min-width:640px){
+    h1.title{font-size:2.3rem;}
+  }
+
+  /* ===== MENU BUTTON ===== */
+  .menu-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 14px;
+    font-family:'Inter',sans-serif;
+    font-size:.82rem;
+    font-weight:600;
+    color:var(--ink);
+    cursor:pointer;
+    margin-top:4px;
+    transition:border-color .2s, transform .15s;
+  }
+  .menu-btn:active{transform:scale(.98);}
+  .menu-icon{font-size:.95rem;color:var(--accent);}
+
+  /* ===== MENU OVERLAY ===== */
+  .menu-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(27,36,48,.45);
+    backdrop-filter:blur(2px);
+    z-index:100;
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .menu-overlay.open{display:flex;}
+  .menu-panel{
+    width:100%;
+    max-width:640px;
+    background:var(--paper);
+    border-radius:20px 20px 0 0;
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+    animation:slideUp .28s ease;
+    box-shadow:0 -8px 30px rgba(0,0,0,.2);
+  }
+  @keyframes slideUp{
+    from{transform:translateY(30px); opacity:0;}
+    to{transform:translateY(0); opacity:1;}
+  }
+  .menu-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px;
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:1.15rem;
+    border-bottom:1px solid var(--line);
+  }
+  .menu-close{
+    border:none;
+    background:var(--card);
+    border-radius:50%;
+    width:32px;
+    height:32px;
+    font-size:.9rem;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .menu-list{
+    overflow-y:auto;
+    padding:8px 10px 20px;
+  }
+  .menu-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    border-radius:12px;
+    padding:11px 10px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    transition:background .15s;
+  }
+  .menu-item:active{background:var(--line);}
+  .menu-item.current{background:var(--accent-tint);}
+  .menu-item .m-num{
+    flex:0 0 30px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;
+    color:var(--ink-soft);
+  }
+  .menu-item .m-dot{
+    width:8px;height:8px;border-radius:50%;
+    flex:0 0 auto;
+  }
+  .menu-item .m-dot.group-present{background:var(--present);}
+  .menu-item .m-dot.group-past{background:var(--past);}
+  .menu-item .m-dot.group-future{background:var(--future);}
+  .menu-item .m-title{
+    font-size:.9rem;
+    color:var(--ink);
+    font-weight:500;
+  }
+  .menu-item .m-title small{
+    display:block;
+    font-size:.72rem;
+    color:var(--ink-soft);
+    font-weight:400;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="eyebrow">
+    <span>ENGLISH TENSES · ACTIVE VOICE</span>
+    <span><b id="pageNum">01</b>&nbsp;/&nbsp;16</span>
+  </div>
+  <div class="rail-wrap">
+    <div class="rail" id="rail"></div>
+  </div>
+  <button class="menu-btn" id="btnMenu">
+    <span class="menu-icon">☰</span>
+    <span id="menuBtnLabel">Daftar 16 Tenses</span>
+  </button>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-panel">
+    <div class="menu-header">
+      <span>Pilih Tense</span>
+      <button class="menu-close" id="btnMenuClose">✕</button>
+    </div>
+    <div class="menu-list" id="menuList"></div>
+  </div>
+</div>
+
+
+<script>
+const GROUP_META = {
+  present: {label:"Present", color:"var(--present)"},
+  past: {label:"Past", color:"var(--past)"},
+  future: {label:"Future", color:"var(--future)"}
+};
+
+/* Konfigurasi grafis timeline per tense.
+   category: habit | point | duration | perfect | perfect_duration
+   refX/startX/secondaryX: posisi X pada garis waktu (viewBox 640 lebar)
+   pivotX: jika ada, artinya tense ini dilihat dari "sudut pandang lampau" (past-future group) */
+const TIMELINE_META = {
+  "Simple Present Tense": {
+    category:"habit",
+    caption:"Kebiasaan & fakta umum — berulang di masa lalu, sekarang, dan nanti."
+  },
+  "Present Continuous Tense": {
+    category:"duration", refX:320,
+    caption:"Sedang berlangsung tepat pada saat ini."
+  },
+  "Present Perfect Tense": {
+    category:"perfect", startX:190, refX:320,
+    caption:"Selesai di masa lalu, tapi hasil/pengaruhnya masih terasa sekarang."
+  },
+  "Present Perfect Continuous": {
+    category:"perfect_duration", startX:170, refX:320,
+    caption:"Dimulai di masa lalu dan terus berlangsung sampai sekarang."
+  },
+  "Simple Past Tense": {
+    category:"point", refX:120,
+    caption:"Terjadi dan selesai sepenuhnya di masa lalu."
+  },
+  "Past Continuous Tense": {
+    category:"duration", refX:120,
+    caption:"Sedang berlangsung pada satu titik waktu tertentu di masa lalu."
+  },
+  "Past Perfect Tense": {
+    category:"perfect", startX:40, refX:150, secondaryX:230,
+    caption:'Selesai sebelum aksi lampau lain terjadi — "masa lalu dari masa lalu".'
+  },
+  "Past Perfect Continuous": {
+    category:"perfect_duration", startX:40, refX:150, secondaryX:230,
+    caption:"Sedang berlangsung sebelum aksi lampau lain terjadi."
+  },
+  "Simple Future Tense": {
+    category:"point", refX:520,
+    caption:"Akan terjadi pada suatu waktu di masa depan."
+  },
+  "Future Continuous Tense": {
+    category:"duration", refX:520,
+    caption:"Akan sedang berlangsung pada waktu tertentu di masa depan."
+  },
+  "Future Perfect Tense": {
+    category:"perfect", startX:420, refX:540,
+    caption:"Akan sudah selesai sebelum waktu tertentu di masa depan."
+  },
+  "Future Perfect Continuous": {
+    category:"perfect_duration", startX:400, refX:540,
+    caption:"Akan sudah berlangsung selama durasi tertentu hingga waktu itu tiba."
+  },
+  "Past Future Tense": {
+    category:"point", pivotX:150, refX:250,
+    caption:"Rencana/prediksi masa depan, tapi dilihat dari sudut pandang masa lalu."
+  },
+  "Past Future Continuous": {
+    category:"duration", pivotX:130, refX:230,
+    caption:"Sedang berlangsung, dilihat dari sudut pandang masa lalu."
+  },
+  "Past Future Perfect": {
+    category:"perfect", pivotX:90, startX:160, refX:270,
+    caption:"Sudah selesai sebelum suatu titik waktu, dilihat dari sudut pandang masa lalu (andaian)."
+  },
+  "Past Future Perfect Continuous": {
+    category:"perfect_duration", pivotX:80, startX:150, refX:270,
+    caption:"Sudah berlangsung hingga suatu titik waktu, dilihat dari sudut pandang masa lalu."
+  }
+};
+
+function renderTimeline(meta, idx){
+  if(!meta) return "";
+  const y = 95;
+  const markerId = `tlarrow${idx}`;
+  let marks = "";
+
+  if(meta.pivotX !== undefined){
+    const connectTo = meta.startX !== undefined ? meta.startX : meta.refX;
+    marks += `
+      <line x1="${meta.pivotX}" y1="70" x2="${meta.pivotX}" y2="120" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <polygon points="${meta.pivotX-6},64 ${meta.pivotX+6},64 ${meta.pivotX},75" fill="var(--ink-soft)"/>
+      <text x="${meta.pivotX}" y="56" text-anchor="middle" class="tl-pivot-label">sudut pandang lampau</text>
+      <line x1="${meta.pivotX}" y1="${y}" x2="${connectTo}" y2="${y}" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="2 5"/>
+    `;
+  }
+
+  if(meta.category === "habit"){
+    marks += `
+      <line x1="80" y1="${y}" x2="560" y2="${y}" stroke="var(--accent)" stroke-width="2" stroke-dasharray="2 7" opacity=".5"/>
+      <circle cx="80" cy="${y}" r="5" fill="var(--accent)" opacity=".55"/>
+      <circle cx="320" cy="${y}" r="7" fill="var(--accent)"/>
+      <circle cx="560" cy="${y}" r="5" fill="var(--accent)" opacity=".55"/>
+    `;
+  } else if(meta.category === "point"){
+    marks += `<circle cx="${meta.refX}" cy="${y}" r="7" fill="var(--accent)"/>`;
+  } else if(meta.category === "duration"){
+    marks += `
+      <line x1="${meta.refX-55}" y1="${y}" x2="${meta.refX+55}" y2="${y}" stroke="var(--accent)" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="${meta.refX}" cy="${y}" r="4" fill="#fff"/>
+    `;
+  } else if(meta.category === "perfect" || meta.category === "perfect_duration"){
+    const width = meta.category === "perfect_duration" ? 7 : 4;
+    marks += `
+      <defs>
+        <marker id="${markerId}" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <line x1="${meta.startX}" y1="${y}" x2="${meta.refX-8}" y2="${y}" stroke="var(--accent)" stroke-width="${width}" stroke-linecap="round" marker-end="url(#${markerId})"/>
+    `;
+    if(meta.category === "perfect_duration"){
+      for(let x=meta.startX+14; x<meta.refX-10; x+=16){
+        marks += `<line x1="${x}" y1="${y-7}" x2="${x}" y2="${y+7}" stroke="#fff" stroke-width="2" opacity=".6"/>`;
+      }
+    }
+    if(meta.secondaryX !== undefined){
+      marks += `
+        <line x1="${meta.refX}" y1="${y}" x2="${meta.secondaryX}" y2="${y}" stroke="var(--ink-soft)" stroke-width="2" stroke-dasharray="3 4"/>
+        <circle cx="${meta.secondaryX}" cy="${y}" r="5" fill="var(--ink-soft)"/>
+      `;
+    }
+  }
+
+  return `
+    <div class="timeline-wrap">
+      <svg viewBox="0 0 640 170" xmlns="http://www.w3.org/2000/svg">
+        <line x1="20" y1="${y}" x2="620" y2="${y}" stroke="var(--line)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="320" y1="55" x2="320" y2="135" stroke="var(--ink-soft)" stroke-width="1.5" stroke-dasharray="4 4"/>
+        ${marks}
+        <text x="120" y="150" text-anchor="middle" class="tl-zone">Lampau</text>
+        <text x="320" y="150" text-anchor="middle" class="tl-zone">Sekarang</text>
+        <text x="520" y="150" text-anchor="middle" class="tl-zone">Depan</text>
+      </svg>
+      <div class="tl-caption">${meta.caption}</div>
+    </div>
+  `;
+}
+
+const DATA = [
+{
+  group:"present", title:"Simple Present Tense",
+  usage:"Kebiasaan, fakta umum, kebenaran umum, dan jadwal tetap.",
+  adverbs:"always · usually · every day · sometimes",
+  verbal:[
+    {t:"aff", rule:"S + V1 (+s/es untuk he/she/it)", ex:"She reads a book every morning."},
+    {t:"neg", rule:"S + do/does + not + V1", ex:"She does not read a book every morning."},
+    {t:"int", rule:"Do/Does + S + V1 ?", ex:"Does she read a book every morning?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + am/is/are + noun/adjective", ex:"They are students."},
+    {t:"neg", rule:"S + am/is/are + not + noun/adjective", ex:"They are not students."},
+    {t:"int", rule:"Am/Is/Are + S + noun/adjective ?", ex:"Are they students?"}
+  ],
+  qword:{rule:"Q-word + do/does + S + V1 ?  /  Q-word + am/is/are + S + noun/adj ?", ex:"Where does she work? · What are they?"}
+},
+{
+  group:"present", title:"Present Continuous Tense",
+  usage:"Aksi yang sedang berlangsung sekarang, atau rencana masa depan yang sudah pasti.",
+  adverbs:"now · right now · at the moment",
+  verbal:[
+    {t:"aff", rule:"S + am/is/are + V-ing", ex:"I am writing a letter now."},
+    {t:"neg", rule:"S + am/is/are + not + V-ing", ex:"I am not writing a letter now."},
+    {t:"int", rule:"Am/Is/Are + S + V-ing ?", ex:"Are you writing a letter now?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah — \"to be\" sudah berfungsi sebagai auxiliary dalam pola V-ing.",
+  qword:{rule:"Q-word + am/is/are + S + V-ing ?", ex:"What are you doing now?"}
+},
+{
+  group:"present", title:"Present Perfect Tense",
+  usage:"Aksi masa lalu yang masih berdampak/berhubungan dengan sekarang, atau pengalaman.",
+  adverbs:"already · just · yet · ever · never · since · for",
+  verbal:[
+    {t:"aff", rule:"S + have/has + V3", ex:"They have finished the project."},
+    {t:"neg", rule:"S + have/has + not + V3", ex:"They have not finished the project."},
+    {t:"int", rule:"Have/Has + S + V3 ?", ex:"Have they finished the project?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + have/has + been + noun/adjective", ex:"She has been sick since Monday."},
+    {t:"neg", rule:"S + have/has + not + been + noun/adjective", ex:"She has not been sick since Monday."},
+    {t:"int", rule:"Have/Has + S + been + noun/adjective ?", ex:"Has she been sick since Monday?"}
+  ],
+  qword:{rule:"Q-word + have/has + S + V3 / been + noun/adj ?", ex:"Why has he been absent?"}
+},
+{
+  group:"present", title:"Present Perfect Continuous",
+  usage:"Aksi yang dimulai di masa lalu dan masih berlangsung sampai sekarang; menekankan durasi.",
+  adverbs:"since · for · lately · recently",
+  verbal:[
+    {t:"aff", rule:"S + have/has + been + V-ing", ex:"I have been studying for three hours."},
+    {t:"neg", rule:"S + have/has + not + been + V-ing", ex:"I have not been studying for three hours."},
+    {t:"int", rule:"Have/Has + S + been + V-ing ?", ex:"Have you been studying for three hours?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah — selalu memakai pola V-ing.",
+  qword:{rule:"Q-word + have/has + S + been + V-ing ?", ex:"How long have you been waiting?"}
+},
+{
+  group:"past", title:"Simple Past Tense",
+  usage:"Aksi atau kejadian yang telah selesai pada waktu tertentu di masa lampau.",
+  adverbs:"yesterday · last week · ago · in 2020",
+  verbal:[
+    {t:"aff", rule:"S + V2", ex:"He visited his grandmother yesterday."},
+    {t:"neg", rule:"S + did + not + V1", ex:"He did not visit his grandmother yesterday."},
+    {t:"int", rule:"Did + S + V1 ?", ex:"Did he visit his grandmother yesterday?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + was/were + noun/adjective", ex:"The weather was cold last night."},
+    {t:"neg", rule:"S + was/were + not + noun/adjective", ex:"The weather was not cold last night."},
+    {t:"int", rule:"Was/Were + S + noun/adjective ?", ex:"Was the weather cold last night?"}
+  ],
+  qword:{rule:"Q-word + did + S + V1 ?  /  Q-word + was/were + S + noun/adj ?", ex:"Where did you go yesterday? · Why was she late?"}
+},
+{
+  group:"past", title:"Past Continuous Tense",
+  usage:"Aksi yang sedang berlangsung pada waktu tertentu di masa lampau, sering disela aksi lain.",
+  adverbs:"while · when · at 8 o'clock last night",
+  verbal:[
+    {t:"aff", rule:"S + was/were + V-ing", ex:"They were watching TV when I called."},
+    {t:"neg", rule:"S + was/were + not + V-ing", ex:"They were not watching TV when I called."},
+    {t:"int", rule:"Was/Were + S + V-ing ?", ex:"Were they watching TV when I called?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + was/were + S + V-ing ?", ex:"What were you doing at 8 pm?"}
+},
+{
+  group:"past", title:"Past Perfect Tense",
+  usage:"Aksi yang telah selesai sebelum aksi lain terjadi di masa lampau — \"masa lalu dari masa lalu\".",
+  adverbs:"before · after · already · by the time",
+  verbal:[
+    {t:"aff", rule:"S + had + V3", ex:"She had left before I arrived."},
+    {t:"neg", rule:"S + had + not + V3", ex:"She had not left before I arrived."},
+    {t:"int", rule:"Had + S + V3 ?", ex:"Had she left before you arrived?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + had + been + noun/adjective", ex:"He had been a teacher before he retired."},
+    {t:"neg", rule:"S + had + not + been + noun/adjective", ex:"He had not been a teacher before he retired."},
+    {t:"int", rule:"Had + S + been + noun/adjective ?", ex:"Had he been a teacher before he retired?"}
+  ],
+  qword:{rule:"Q-word + had + S + V3 / been + noun/adj ?", ex:"Why had they left early?"}
+},
+{
+  group:"past", title:"Past Perfect Continuous",
+  usage:"Aksi yang sedang berlangsung sebelum aksi lain terjadi di masa lampau; menekankan durasi.",
+  adverbs:"for · since · before",
+  verbal:[
+    {t:"aff", rule:"S + had + been + V-ing", ex:"We had been waiting for two hours when the bus came."},
+    {t:"neg", rule:"S + had + not + been + V-ing", ex:"We had not been waiting for two hours when the bus came."},
+    {t:"int", rule:"Had + S + been + V-ing ?", ex:"Had you been waiting for two hours when the bus came?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + had + S + been + V-ing ?", ex:"How long had they been living there?"}
+},
+{
+  group:"future", title:"Simple Future Tense",
+  usage:"Rencana, prediksi, janji, atau keputusan spontan di masa depan.",
+  adverbs:"tomorrow · next week · soon",
+  verbal:[
+    {t:"aff", rule:"S + will/shall + V1", ex:"I will call you tomorrow."},
+    {t:"neg", rule:"S + will/shall + not + V1", ex:"I will not call you tomorrow."},
+    {t:"int", rule:"Will/Shall + S + V1 ?", ex:"Will you call me tomorrow?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + will/shall + be + noun/adjective", ex:"She will be a doctor someday."},
+    {t:"neg", rule:"S + will/shall + not + be + noun/adjective", ex:"She will not be a doctor someday."},
+    {t:"int", rule:"Will/Shall + S + be + noun/adjective ?", ex:"Will she be a doctor someday?"}
+  ],
+  qword:{rule:"Q-word + will/shall + S + V1 / be + noun/adj ?", ex:"When will you arrive?"}
+},
+{
+  group:"future", title:"Future Continuous Tense",
+  usage:"Aksi yang akan sedang berlangsung pada waktu tertentu di masa depan.",
+  adverbs:"at this time tomorrow · at 9 pm tonight",
+  verbal:[
+    {t:"aff", rule:"S + will + be + V-ing", ex:"I will be sleeping at midnight."},
+    {t:"neg", rule:"S + will + not + be + V-ing", ex:"I will not be sleeping at midnight."},
+    {t:"int", rule:"Will + S + be + V-ing ?", ex:"Will you be sleeping at midnight?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + will + S + be + V-ing ?", ex:"What will you be doing at 9 pm?"}
+},
+{
+  group:"future", title:"Future Perfect Tense",
+  usage:"Aksi yang akan telah selesai sebelum waktu tertentu di masa depan.",
+  adverbs:"by the time · by next year · before",
+  verbal:[
+    {t:"aff", rule:"S + will + have + V3", ex:"They will have finished the report by Friday."},
+    {t:"neg", rule:"S + will + not + have + V3", ex:"They will not have finished the report by Friday."},
+    {t:"int", rule:"Will + S + have + V3 ?", ex:"Will they have finished the report by Friday?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + will + have + been + noun/adjective", ex:"By next year, he will have been a manager for five years."},
+    {t:"neg", rule:"S + will + not + have + been + noun/adjective", ex:"By next year, he will not have been a manager for five years."},
+    {t:"int", rule:"Will + S + have + been + noun/adjective ?", ex:"Will he have been a manager for five years by next year?"}
+  ],
+  qword:{rule:"Q-word + will + S + have + V3 / been + noun/adj ?", ex:"How long will you have worked here by 2027?"}
+},
+{
+  group:"future", title:"Future Perfect Continuous",
+  usage:"Aksi yang akan sedang berlangsung hingga waktu tertentu di masa depan; menekankan durasi.",
+  adverbs:"for · by the time · when",
+  verbal:[
+    {t:"aff", rule:"S + will + have + been + V-ing", ex:"By June, I will have been working here for ten years."},
+    {t:"neg", rule:"S + will + not + have + been + V-ing", ex:"By June, I will not have been working here for ten years."},
+    {t:"int", rule:"Will + S + have + been + V-ing ?", ex:"Will you have been working here for ten years by June?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + will + S + have + been + V-ing ?", ex:"How long will she have been studying by graduation?"}
+},
+{
+  group:"future", title:"Past Future Tense",
+  usage:"Rencana/prediksi di masa lampau tentang sesuatu yang akan terjadi — sering dalam reported speech atau pengandaian.",
+  adverbs:"then · at that time",
+  verbal:[
+    {t:"aff", rule:"S + would/should + V1", ex:"She said she would come to the party."},
+    {t:"neg", rule:"S + would/should + not + V1", ex:"She said she would not come to the party."},
+    {t:"int", rule:"Would/Should + S + V1 ?", ex:"Would she come to the party?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + would/should + be + noun/adjective", ex:"He would be happy with the result."},
+    {t:"neg", rule:"S + would/should + not + be + noun/adjective", ex:"He would not be happy with the result."},
+    {t:"int", rule:"Would/Should + S + be + noun/adjective ?", ex:"Would he be happy with the result?"}
+  ],
+  qword:{rule:"Q-word + would/should + S + V1 / be + noun/adj ?", ex:"Where would you go if you had money?"}
+},
+{
+  group:"future", title:"Past Future Continuous",
+  usage:"Aksi yang akan sedang berlangsung pada waktu tertentu, dilihat dari sudut pandang masa lalu.",
+  adverbs:"at that moment · at 8 pm that day",
+  verbal:[
+    {t:"aff", rule:"S + would + be + V-ing", ex:"I knew he would be waiting at the station."},
+    {t:"neg", rule:"S + would + not + be + V-ing", ex:"I knew he would not be waiting at the station."},
+    {t:"int", rule:"Would + S + be + V-ing ?", ex:"Would he be waiting at the station?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + would + S + be + V-ing ?", ex:"What would you be doing at that time?"}
+},
+{
+  group:"future", title:"Past Future Perfect",
+  usage:"Aksi yang akan telah selesai sebelum waktu tertentu di masa lalu — sering untuk pengandaian (conditional type 3).",
+  adverbs:"by that time · before",
+  verbal:[
+    {t:"aff", rule:"S + would + have + V3", ex:"I would have helped you if you had asked."},
+    {t:"neg", rule:"S + would + not + have + V3", ex:"I would not have helped you if you had asked."},
+    {t:"int", rule:"Would + S + have + V3 ?", ex:"Would you have helped me if I had asked?"}
+  ],
+  nominal:[
+    {t:"aff", rule:"S + would + have + been + noun/adjective", ex:"She would have been proud of you."},
+    {t:"neg", rule:"S + would + not + have + been + noun/adjective", ex:"She would not have been proud of you."},
+    {t:"int", rule:"Would + S + have + been + noun/adjective ?", ex:"Would she have been proud of you?"}
+  ],
+  qword:{rule:"Q-word + would + S + have + V3 / been + noun/adj ?", ex:"What would you have done in that situation?"}
+},
+{
+  group:"future", title:"Past Future Perfect Continuous",
+  usage:"Aksi yang akan sedang berlangsung hingga waktu tertentu di masa lalu; menekankan durasi (bentuk paling jarang dipakai).",
+  adverbs:"for · by that time",
+  verbal:[
+    {t:"aff", rule:"S + would + have + been + V-ing", ex:"By next month, he would have been working here for a year."},
+    {t:"neg", rule:"S + would + not + have + been + V-ing", ex:"By next month, he would not have been working here for a year."},
+    {t:"int", rule:"Would + S + have + been + V-ing ?", ex:"Would he have been working here for a year by next month?"}
+  ],
+  nominalNote:"Tidak memiliki bentuk nominal terpisah.",
+  qword:{rule:"Q-word + would + S + have + been + V-ing ?", ex:"How long would they have been waiting by then?"}
+}
+];
+
+const stage = document.getElementById('stage');
+const rail = document.getElementById('rail');
+let current = 0;
+
+function labelRow(item){
+  const map = {aff:"+", neg:"−", int:"?"};
+  return `<div class="formula-row">
+    <div class="formula-tag ${item.t}">${map[item.t]}</div>
+    <div class="formula-body">
+      <div class="formula-rule">${item.rule}</div>
+      <div class="formula-example">${item.ex}</div>
+    </div>
+  </div>`;
+}
+
+function renderPage(d, i){
+  const meta = GROUP_META[d.group];
+  let nominalHtml = "";
+  if(d.nominal){
+    nominalHtml = `<h2 class="section-title">Rumus Nominal (To Be)</h2>
+      <div class="formula-card">${d.nominal.map(labelRow).join("")}</div>`;
+  } else {
+    nominalHtml = `<h2 class="section-title">Rumus Nominal (To Be)</h2>
+      <div class="no-form-note">${d.nominalNote}</div>`;
+  }
+
+  return `
+    <span class="group-tag"><span class="dot"></span>${meta.label} Group</span>
+    <h1 class="title"><span class="idx">${String(i+1).padStart(2,'0')} /</span> ${d.title}</h1>
+    <div class="usage"><b>Kegunaan.</b> ${d.usage}
+      <div class="adverbs">${d.adverbs}</div>
+    </div>
+
+    ${renderTimeline(TIMELINE_META[d.title], i)}
+
+    <h2 class="section-title">Rumus Verbal (Kata Kerja)</h2>
+    <div class="formula-card">${d.verbal.map(labelRow).join("")}</div>
+
+    ${nominalHtml}
+
+    <h2 class="section-title">Question Word</h2>
+    <div class="qword">
+      <div><b>Rumus:</b> ${d.qword.rule}</div>
+      <div class="ex">${d.qword.ex}</div>
+    </div>
+
+    <div class="inline-nav">
+      <button class="inline-btn prev" onclick="goTo(${i-1})" ${i===0?'disabled':''}>← Sebelumnya</button>
+      <button class="inline-btn next" onclick="goTo(${i+1})" ${i===DATA.length-1?'disabled':''}>${i===DATA.length-1?'Selesai ✓':'Berikutnya →'}</button>
+    </div>
+  `;
+}
+
+function buildRail(){
+  rail.innerHTML = DATA.map((d,i)=>
+    `<button class="tick group-${d.group}" data-i="${i}" title="${d.title}"></button>`
+  ).join("");
+  rail.querySelectorAll('.tick').forEach(btn=>{
+    btn.addEventListener('click', ()=> goTo(parseInt(btn.dataset.i)));
+  });
+}
+
+function buildMenu(){
+  const menuList = document.getElementById('menuList');
+  menuList.innerHTML = DATA.map((d,i)=>
+    `<button class="menu-item" data-i="${i}">
+      <span class="m-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="m-dot group-${d.group}"></span>
+      <span class="m-title">${d.title}<small>${GROUP_META[d.group].label} Group</small></span>
+    </button>`
+  ).join("");
+  menuList.querySelectorAll('.menu-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      goTo(parseInt(btn.dataset.i));
+      closeMenu();
+    });
+  });
+}
+
+function refreshMenuHighlight(){
+  document.querySelectorAll('.menu-item').forEach((el,i)=>{
+    el.classList.toggle('current', i===current);
+  });
+}
+
+function openMenu(){
+  document.getElementById('menuOverlay').classList.add('open');
+  refreshMenuHighlight();
+  const cur = document.querySelector('.menu-item.current');
+  if(cur) cur.scrollIntoView({block:'center'});
+}
+function closeMenu(){
+  document.getElementById('menuOverlay').classList.remove('open');
+}
+
+document.getElementById('btnMenu').addEventListener('click', openMenu);
+document.getElementById('btnMenuClose').addEventListener('click', closeMenu);
+document.getElementById('menuOverlay').addEventListener('click', (e)=>{
+  if(e.target.id==='menuOverlay') closeMenu();
+});
+
+function buildPages(){
+  stage.innerHTML = DATA.map((d,i)=>
+    `<div class="page" id="page-${i}">${renderPage(d,i)}</div>`
+  ).join("");
+}
+
+function goTo(i){
+  if(i<0 || i>=DATA.length) return;
+  document.getElementById('page-'+current).classList.remove('active');
+  current = i;
+  document.getElementById('page-'+current).classList.add('active');
+
+  document.querySelectorAll('.tick').forEach(t=>t.classList.remove('active'));
+  const activeTick = rail.querySelector(`[data-i="${current}"]`);
+  activeTick.classList.add('active');
+  activeTick.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+
+  const d = DATA[current];
+  const meta = GROUP_META[d.group];
+  document.documentElement.style.setProperty('--accent', meta.color);
+  document.documentElement.style.setProperty('--accent-tint',
+    d.group==='present' ? 'var(--present-tint)' : d.group==='past' ? 'var(--past-tint)' : 'var(--future-tint)'
+  );
+
+  document.getElementById('pageNum').textContent = String(current+1).padStart(2,'0');
+  document.getElementById('menuBtnLabel').textContent = `${String(current+1).padStart(2,'0')} · ${d.title}`;
+  refreshMenuHighlight();
+
+  stage.scrollIntoView({behavior:'instant', block:'start'});
+  window.scrollTo({top:0, behavior:'instant'});
+}
+
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='ArrowRight') goTo(current+1);
+  if(e.key==='ArrowLeft') goTo(current-1);
+});
+
+// swipe support
+let touchX=null;
+document.addEventListener('touchstart', e=>{touchX=e.touches[0].clientX;});
+document.addEventListener('touchend', e=>{
+  if(touchX===null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  if(dx>60) goTo(current-1);
+  if(dx<-60) goTo(current+1);
+  touchX=null;
+});
+
+buildRail();
+buildPages();
+buildMenu();
+goTo(0);
+</script>
+</body>
+</html>
