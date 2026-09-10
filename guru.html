@@ -125,6 +125,37 @@
   padding:0 2px; line-height:1; margin-left:2px;
 }
 .msg-meta .msg-del:hover{ color:#E0554F; }
+.msg-meta .sender-name-clickable{
+  cursor:pointer; font-weight:700; color:#6B7280; border-bottom:1px dashed #c9cddb;
+}
+.msg-meta .sender-name-clickable:hover{ color:#946200; border-bottom-color:#946200; }
+.kirim-bintang-chat-backdrop{
+  position:fixed; inset:0; background:rgba(20,20,35,0.45); display:flex; align-items:center;
+  justify-content:center; z-index:2000; padding:16px;
+}
+.kirim-bintang-chat-modal{
+  background:#fff; border-radius:18px; padding:24px 22px; max-width:360px; width:100%;
+  box-shadow:0 20px 50px rgba(20,20,40,0.25);
+}
+.kirim-bintang-chat-modal h3{ margin:0 0 4px; font-family:'Space Grotesk', sans-serif; font-size:17px; color:#161927; display:flex; align-items:center; gap:6px; }
+.kirim-bintang-chat-modal .kb-sub{ margin:0 0 16px; font-size:13px; color:#8A90A3; }
+.kirim-bintang-chat-modal .form-field{ margin-bottom:12px; }
+.kirim-bintang-chat-modal .form-field label{ display:block; font-size:12.5px; font-weight:600; color:#4b5563; margin-bottom:5px; }
+.kirim-bintang-chat-modal input[type="number"],
+.kirim-bintang-chat-modal input[type="text"]{
+  width:100%; box-sizing:border-box; padding:9px 12px; border:1.5px solid #E7E9F2; border-radius:10px;
+  font-family:inherit; font-size:13.5px;
+}
+.kirim-bintang-chat-modal input:focus{ outline:none; border-color:#f0c04f; box-shadow:0 0 0 3px rgba(240,192,79,0.25); }
+.kirim-bintang-chat-modal .kb-actions{ display:flex; gap:8px; margin-top:16px; }
+.kirim-bintang-chat-modal .kb-actions button{ flex:1; padding:10px 14px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; }
+.kirim-bintang-chat-modal .btn-kb-batal{ border:1px solid #E7E9F2; background:#fff; color:#6B7280; }
+.kirim-bintang-chat-modal .btn-kb-batal:hover{ background:#F5F6FA; }
+.kirim-bintang-chat-modal .btn-kb-kirim{ border:1px solid #f0c04f; background:#fff8e6; color:#946200; }
+.kirim-bintang-chat-modal .btn-kb-kirim:hover{ background:#fff0c4; }
+.kirim-bintang-chat-modal .btn-kb-kirim:disabled{ opacity:.5; cursor:not-allowed; }
+.kirim-bintang-chat-modal .kb-error{ font-size:12.5px; color:#E0554F; margin-top:8px; display:none; }
+.kirim-bintang-chat-modal .kb-ok{ font-size:12.5px; color:#1a8f4c; margin-top:8px; display:none; }
 .msg-bubble{
   padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.5;
   word-break:break-word; white-space:pre-wrap;
@@ -3639,17 +3670,97 @@
       }
       const mine = m.sender_id === teacher.id;
       const isGuru = m.sender_role === 'guru';
+      // Nama siswa (bukan guru, bukan pesan sendiri, bukan anonim) bisa diklik
+      // untuk langsung mengirim bintang ke siswa itu dari obrolan.
+      const clickable = !mine && !isGuru && !m.is_anonim && m.sender_id;
+      const namaHtml = mine
+        ? 'Kamu'
+        : (clickable
+            ? `<span class="sender-name-clickable" data-siswa-id="${esc(m.sender_id)}" data-siswa-nama="${esc(m.sender_nama)}" title="Klik untuk kirim bintang ke ${esc(m.sender_nama)}">${esc(m.sender_nama)}</span>`
+            : esc(m.sender_nama));
       const row = document.createElement('div');
       row.dataset.id = m.id;
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru && !mine ? ' from-guru' : '');
       row.innerHTML = `
-        <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${obrolanFmtTime(m.created_at)} <button type="button" class="msg-del" title="Hapus pesan">🗑</button></div>
+        <div class="msg-meta">${namaHtml}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${obrolanFmtTime(m.created_at)} <button type="button" class="msg-del" title="Hapus pesan">🗑</button></div>
         <div class="msg-bubble">${esc(m.isi)}</div>
       `;
       row.querySelector('.msg-del').addEventListener('click', () => obrolanDeleteMessage(m.id));
+      if (clickable) {
+        row.querySelector('.sender-name-clickable').addEventListener('click', () => {
+          openKirimBintangChatModal(m.sender_id, m.sender_nama);
+        });
+      }
       body.appendChild(row);
     });
     if (obrolanFirstLoad || wasNearBottom) body.scrollTop = body.scrollHeight;
+  }
+
+  // ===== Kirim Bintang langsung dari Obrolan: klik nama siswa di chat =====
+  function closeKirimBintangChatModal() {
+    const el = document.getElementById('kirimBintangChatBackdrop');
+    if (el) el.remove();
+  }
+
+  function openKirimBintangChatModal(siswaId, siswaNama) {
+    closeKirimBintangChatModal();
+    const backdrop = document.createElement('div');
+    backdrop.id = 'kirimBintangChatBackdrop';
+    backdrop.className = 'kirim-bintang-chat-backdrop';
+    backdrop.innerHTML = `
+      <div class="kirim-bintang-chat-modal">
+        <h3>⭐ Kirim Bintang</h3>
+        <p class="kb-sub">Untuk <strong>${esc(siswaNama)}</strong></p>
+        <div class="form-field">
+          <label for="kbChatJumlah">Jumlah Bintang</label>
+          <input type="number" id="kbChatJumlah" min="1" max="100" value="1">
+        </div>
+        <div class="form-field">
+          <label for="kbChatAlasan">Alasan / Pesan (kenapa dapat bintang)</label>
+          <input type="text" id="kbChatAlasan" placeholder="mis. Aktif menjawab di obrolan kelas" maxlength="200">
+        </div>
+        <p class="kb-error" id="kbChatError"></p>
+        <p class="kb-ok" id="kbChatOk"></p>
+        <div class="kb-actions">
+          <button type="button" class="btn-kb-batal" id="kbChatBatal">Batal</button>
+          <button type="button" class="btn-kb-kirim" id="kbChatKirim">Kirim</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeKirimBintangChatModal(); });
+    backdrop.querySelector('#kbChatBatal').addEventListener('click', closeKirimBintangChatModal);
+    backdrop.querySelector('#kbChatAlasan').focus();
+
+    backdrop.querySelector('#kbChatKirim').addEventListener('click', async () => {
+      const errEl = backdrop.querySelector('#kbChatError');
+      const okEl = backdrop.querySelector('#kbChatOk');
+      errEl.style.display = 'none';
+      okEl.style.display = 'none';
+      const jumlah = parseInt(backdrop.querySelector('#kbChatJumlah').value, 10) || 1;
+      if (jumlah < 1 || jumlah > 100) {
+        errEl.textContent = 'Jumlah bintang harus antara 1–100.';
+        errEl.style.display = '';
+        return;
+      }
+      const alasan = backdrop.querySelector('#kbChatAlasan').value.trim() || null;
+      const btn = backdrop.querySelector('#kbChatKirim');
+      btn.disabled = true;
+      btn.textContent = 'Mengirim…';
+      const { error } = await supabase.from('bintang').insert({
+        siswa_id: siswaId, guru_id: teacher.id, guru_nama: teacher.nama, jumlah, alasan,
+      });
+      btn.disabled = false;
+      btn.textContent = 'Kirim';
+      if (error) {
+        errEl.textContent = 'Gagal mengirim bintang: ' + error.message;
+        errEl.style.display = '';
+        return;
+      }
+      okEl.textContent = `✅ ${jumlah} bintang berhasil dikirim ke ${siswaNama}.`;
+      okEl.style.display = '';
+      setTimeout(closeKirimBintangChatModal, 1200);
+    });
   }
 
   // Realtime: pesan baru/hapus di kelas yang sedang dibuka guru muncul instan.
