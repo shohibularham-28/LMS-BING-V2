@@ -270,6 +270,69 @@ function linkify(str) {
   });
 }
 
+// ===================== PRESENCE: SISWA AKTIF DI OBROLAN KELAS =====================
+// Dipakai bareng oleh obrolan.html (siswa) & guru.html (menu Obrolan Kelas).
+// Menampilkan daftar siswa yang SEDANG BUKA halaman obrolan kelas tertentu,
+// lewat fitur Presence Supabase Realtime — bukan status "online umum", dan
+// tidak disimpan ke tabel manapun (murni realtime, hilang sendiri begitu
+// tab ditutup / koneksi putus).
+
+let _presenceChannel = null;
+
+// kelasId: kelas yang mau dipantau (null/'' untuk berhenti memantau & bersihkan tampilan).
+// containerId: id elemen tempat daftar chip nama siswa aktif dirender.
+// selfMeta: { id, nama } kalau dipanggil dari sisi SISWA (supaya ikut tercatat aktif),
+//           atau null kalau dipanggil dari sisi GURU (cuma menonton, tidak ikut tercatat).
+function subscribePresenceKelas(kelasId, containerId, selfMeta) {
+  if (_presenceChannel) {
+    supabase.removeChannel(_presenceChannel);
+    _presenceChannel = null;
+  }
+  const container = document.getElementById(containerId);
+  if (!kelasId) {
+    if (container) container.innerHTML = '';
+    return;
+  }
+  if (container) container.innerHTML = '<span class="active-empty">Memuat status aktif…</span>';
+
+  const presenceKey = selfMeta ? selfMeta.id : ('viewer_' + Math.random().toString(36).slice(2));
+  const channel = supabase.channel('presence_kelas_' + kelasId, {
+    config: { presence: { key: presenceKey } },
+  });
+
+  channel.on('presence', { event: 'sync' }, () => {
+    renderActiveStudentsBar(channel.presenceState(), containerId);
+  });
+
+  channel.subscribe(async (status) => {
+    if (status === 'SUBSCRIBED' && selfMeta) {
+      await channel.track({ nama: selfMeta.nama, role: 'siswa', online_at: new Date().toISOString() });
+    }
+  });
+
+  _presenceChannel = channel;
+}
+
+function renderActiveStudentsBar(state, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const active = [];
+  Object.keys(state || {}).forEach((key) => {
+    const metas = state[key];
+    if (!metas || !metas.length) return;
+    const m = metas[metas.length - 1];
+    if (m && m.role === 'siswa' && m.nama) active.push(m.nama);
+  });
+  active.sort((a, b) => a.localeCompare(b, 'id'));
+  if (!active.length) {
+    container.innerHTML = '<span class="active-empty">Belum ada siswa yang aktif di obrolan ini.</span>';
+    return;
+  }
+  container.innerHTML =
+    `<span class="asb-label">🟢 ${active.length} siswa aktif</span>` +
+    active.map((nama) => `<span class="active-chip"><span class="dot"></span>${esc(nama)}</span>`).join('');
+}
+
 // ===================== NOTIFIKASI (bell di topbar) =====================
 // Dipakai bareng oleh halaman siswa & guru.html. Butuh markup:
 // <button id="notifBell"><span id="notifDot"></span></button>

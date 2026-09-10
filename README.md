@@ -90,6 +90,11 @@ Siswa melihat bintang yang terkumpul lewat menu baru **⭐ Koleksi Bintang** (`b
 
 Jalankan `MIGRASI_BINTANG.sql` sekali di Supabase SQL Editor untuk mengaktifkan fitur ini (menambah tabel `bintang` beserta RLS-nya).
 
+## 17. Siswa Aktif di Obrolan Kelas 🟢
+Di menu **💬 Obrolan Kelas** (siswa & guru), sekarang ada baris hijau di atas kolom chat yang menampilkan **siswa yang sedang membuka halaman obrolan kelas tersebut saat ini** — mis. "🟢 3 siswa aktif: Ani, Budi, Citra". Ini pakai fitur Presence dari Supabase Realtime, jadi tidak tersimpan ke tabel manapun dan otomatis hilang sendiri begitu siswa menutup tab / pindah halaman / koneksinya putus (tidak perlu migrasi tambahan).
+
+Yang guru & siswa lihat sama-sama cuma daftar **siswa** yang aktif (guru yang lagi buka halaman itu sendiri tidak ikut ditampilkan di daftar). Guru tinggal pilih kelas di menu Obrolan Kelas untuk lihat siapa yang sedang aktif di kelas itu.
+
 ## 14. Deploy
 Karena ini masih situs statis (HTML+JS) yang manggil Supabase langsung dari browser, kamu bisa deploy persis seperti sebelumnya: GitHub Pages, Netlify, Vercel, dsb. Cukup push semua file (kecuali folder `supabase/functions`, yang di-deploy terpisah lewat Supabase CLI di langkah 3).
 
