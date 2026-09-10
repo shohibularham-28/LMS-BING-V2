@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koleksi Bintang — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  /* ===== Mobile bottom nav (menu siswa di bawah layar) ===== */
+  .mobile-bottom-nav{ display:none; }
+  @media (max-width: 768px){
+    .mobile-bottom-nav{
+      display:flex;
+      position:fixed;
+      left:0; right:0; bottom:0;
+      background:#fff;
+      border-top:1px solid #E7E9F2;
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      z-index:999;
+      box-shadow:0 -2px 12px rgba(20,20,40,0.07);
+    }
+    .mobile-bottom-nav a{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      padding:6px 2px;
+      text-decoration:none;
+      color:#8A90A3;
+      font-size:10.5px;
+      font-weight:600;
+      border-radius:10px;
+    }
+    .mobile-bottom-nav a .mbn-icon{ font-size:19px; line-height:1; }
+    .mobile-bottom-nav a.active{ color:#1f2937; background:#F1F2F6; }
+    #app-screen .content{ padding-bottom:80px; }
+  }
+
+  /* ===== Koleksi Bintang ===== */
+  .bintang-hero{
+    background:linear-gradient(135deg, #fff6da 0%, #ffe9b3 55%, #ffdf94 100%);
+    border:1px solid #f4dca0;
+    border-radius:20px;
+    padding:28px 26px;
+    margin-bottom:24px;
+    display:flex;
+    align-items:center;
+    gap:22px;
+    flex-wrap:wrap;
+  }
+  .bintang-hero .bh-icon{ font-size:52px; line-height:1; filter:drop-shadow(0 4px 10px rgba(180,130,0,0.25)); }
+  .bintang-hero .bh-total{ font-family:'Space Grotesk', sans-serif; font-size:40px; font-weight:700; color:#7a5400; line-height:1; }
+  .bintang-hero .bh-label{ font-size:13px; color:#8a6a10; font-weight:600; margin-top:4px; }
+  .bintang-hero .bh-tier{
+    margin-left:auto;
+    background:rgba(255,255,255,0.65);
+    border:1px solid rgba(180,130,0,0.2);
+    border-radius:14px;
+    padding:12px 18px;
+    text-align:center;
+    min-width:150px;
+  }
+  .bintang-hero .bh-tier .tt{ font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#a87c00; }
+  .bintang-hero .bh-tier .tn{ font-family:'Space Grotesk', sans-serif; font-size:16px; font-weight:700; color:#5c4300; margin-top:2px; }
+  .bintang-hero .bh-tier .tnext{ font-size:11.5px; color:#8a6a10; margin-top:4px; }
+
+  .bintang-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-bottom:26px;
+  }
+  .bintang-grid .star{
+    font-size:26px;
+    filter:drop-shadow(0 2px 4px rgba(180,130,0,0.2));
+    animation:starPop .25s ease-out backwards;
+  }
+  @keyframes starPop{ from{ transform:scale(0); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+  .bintang-item{
+    background:#fff;
+    border:1px solid #E7E9F2;
+    border-radius:14px;
+    padding:16px 18px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .bintang-item .bi-icon{
+    width:42px; height:42px; border-radius:12px;
+    background:#fff8e0; color:#c48b00;
+    display:flex; align-items:center; justify-content:center;
+    font-size:19px; font-weight:700; flex-shrink:0;
+  }
+  .bintang-item .bi-body{ flex:1; min-width:0; }
+  .bintang-item .bi-title{ font-size:14px; font-weight:600; color:#161927; }
+  .bintang-item .bi-desc{ font-size:12.5px; color:#5F6478; margin-top:2px; }
+  .bintang-item .bi-date{ font-size:11.5px; color:#9AA3B8; white-space:nowrap; }
+</style>
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell">
+    <div class="sidebar">
+      <div class="brand">
+        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <div class="brand-name display">English Class</div>
+      </div>
+
+      <div class="user-card">
+        <div class="avatar" id="userAvatar">D</div>
+        <div class="name" id="sideName">—</div>
+        <span class="kelas-tag" id="sideClass">Kelas —</span>
+      </div>
+
+      <div class="nav-section-label">Menu Utama</div>
+      <a class="nav-item" data-page="pengumuman" href="pengumuman.html" title="Pengumuman & Nilai">
+        <span class="icon">📣</span> <span class="label">Pengumuman &amp; Nilai</span>
+      </a>
+      <a class="nav-item" data-page="materi" href="materi.html" title="Materi">
+        <span class="icon">📘</span> <span class="label">Materi</span>
+      </a>
+      <a class="nav-item" data-page="worksheet" href="worksheet.html" title="Worksheet">
+        <span class="icon">📝</span> <span class="label">Worksheet</span>
+      </a>
+
+      <a class="nav-item" data-page="obrolan" href="obrolan.html" title="Obrolan Kelas">
+        <span class="icon">💬</span> <span class="label">Obrolan Kelas</span>
+      </a>
+      <a class="nav-item active" data-page="bintang" href="bintang.html" title="Koleksi Bintang">
+        <span class="icon">⭐</span> <span class="label">Koleksi Bintang</span>
+      </a>
+
+      <div class="nav-section-label">Akun</div>
+      <a class="nav-item" data-page="pengaturan" href="pengaturan.html" title="Pengaturan">
+        <span class="icon">⚙️</span> <span class="label">Pengaturan</span>
+      </a>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()" title="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span class="logout-label">Keluar</span></button>
+      </div>
+    </div>
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <button class="nav-toggle-btn" id="navToggle" type="button" aria-label="Buka/tutup menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="page-header">
+          <div class="eyebrow">Apresiasi</div>
+          <h1>Koleksi Bintang</h1>
+        </div>
+
+        <div class="bintang-hero">
+          <div class="bh-icon">⭐</div>
+          <div>
+            <div class="bh-total" id="bintangTotal">0</div>
+            <div class="bh-label">Total Bintang Terkumpul</div>
+          </div>
+          <div class="bh-tier">
+            <div class="tt">Level Kamu</div>
+            <div class="tn" id="bintangTierName">Pemula</div>
+            <div class="tnext" id="bintangTierNext">—</div>
+          </div>
+        </div>
+
+        <div id="bintangGridWrap">
+          <div class="section-label">Koleksi</div>
+          <div class="bintang-grid" id="bintangGrid"></div>
+        </div>
+
+        <div class="section-label">Riwayat Bintang</div>
+        <div id="bintangHistory">Memuat…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-bottom-nav">
+  <a href="pengumuman.html" data-page="pengumuman"><span class="mbn-icon">📣</span>Pengumuman</a>
+  <a href="materi.html" data-page="materi"><span class="mbn-icon">📘</span>Materi</a>
+  <a href="worksheet.html" data-page="worksheet"><span class="mbn-icon">📝</span>Worksheet</a>
+  <a href="obrolan.html" data-page="obrolan"><span class="mbn-icon">💬</span>Obrolan</a>
+  <a href="bintang.html" data-page="bintang" class="active"><span class="mbn-icon">⭐</span>Bintang</a>
+  <a href="pengaturan.html" data-page="pengaturan"><span class="mbn-icon">⚙️</span>Akun</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, 'bintang');
+  initSidebarToggle();
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+
+  // Tingkatan koleksi bintang — murni untuk gamifikasi, tidak tersimpan di DB.
+  const TIERS = [
+    { min: 0, name: 'Pemula' },
+    { min: 10, name: 'Rajin' },
+    { min: 25, name: 'Bintang Kelas' },
+    { min: 50, name: 'Juara' },
+    { min: 100, name: 'Bintang Sekolah' },
+  ];
+  function getTier(total) {
+    let current = TIERS[0];
+    let next = TIERS[1] || null;
+    for (let i = 0; i < TIERS.length; i++) {
+      if (total >= TIERS[i].min) {
+        current = TIERS[i];
+        next = TIERS[i + 1] || null;
+      }
+    }
+    return { current, next };
+  }
+
+  const { data: rows, error } = await supabase
+    .from('bintang')
+    .select('id, jumlah, alasan, guru_nama, created_at')
+    .eq('siswa_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  const history = error ? [] : (rows || []);
+  const total = history.reduce((sum, r) => sum + (r.jumlah || 0), 0);
+
+  document.getElementById('bintangTotal').textContent = total;
+  const { current, next } = getTier(total);
+  document.getElementById('bintangTierName').textContent = current.name;
+  document.getElementById('bintangTierNext').textContent = next
+    ? `${next.min - total} bintang lagi ke "${next.name}"`
+    : 'Level tertinggi tercapai! 🎉';
+
+  // Grid visual koleksi bintang (dibatasi 120 ikon biar tetap ringan, sisanya diringkas).
+  const gridEl = document.getElementById('bintangGrid');
+  const gridWrap = document.getElementById('bintangGridWrap');
+  if (total > 0) {
+    const MAX_ICONS = 120;
+    const shown = Math.min(total, MAX_ICONS);
+    let starsHtml = '';
+    for (let i = 0; i < shown; i++) {
+      starsHtml += `<span class="star" style="animation-delay:${Math.min(i * 12, 600)}ms">⭐</span>`;
+    }
+    if (total > MAX_ICONS) {
+      starsHtml += `<span class="star" style="font-size:15px; align-self:center; color:#8a6a10; font-weight:700;">+${total - MAX_ICONS} lagi</span>`;
+    }
+    gridEl.innerHTML = starsHtml;
+  } else {
+    gridWrap.style.display = 'none';
+  }
+
+  const historyEl = document.getElementById('bintangHistory');
+  historyEl.innerHTML = history.length ? history.map(r => `
+    <div class="bintang-item">
+      <div class="bi-icon">⭐${r.jumlah}</div>
+      <div class="bi-body">
+        <div class="bi-title">${r.jumlah} bintang dari ${esc(r.guru_nama || 'Guru')}</div>
+        <div class="bi-desc">${esc(r.alasan || 'Terus semangat belajar!')}</div>
+      </div>
+      <div class="bi-date">${new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+    </div>
+  `).join('') : emptyState('Belum ada bintang', 'Bintang yang kamu dapat dari guru akan muncul di sini. Terus aktif & semangat belajar!', '⭐');
+
+  await markUpdatesSeen(profile);
+})();
+</script>
+
+</body>
+</html>

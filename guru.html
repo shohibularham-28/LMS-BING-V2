@@ -57,6 +57,17 @@
   .kelas-check-item:has(input:disabled){ opacity:.4; cursor:not-allowed; }
 
   .pending-badge{ display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; padding:0 5px; border-radius:999px; background:#ff6b5e; color:#fff; font-size:11px; font-weight:700; margin-left:auto; }
+
+  .bintang-siswa-list{ display:flex; flex-direction:column; gap:4px; max-height:360px; overflow-y:auto; border:1px solid rgba(0,0,0,0.08); border-radius:12px; padding:8px; margin-bottom:18px; background:#fff; }
+  .bintang-siswa-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:8px; cursor:pointer; }
+  .bintang-siswa-row:hover{ background:#fbf6e9; }
+  .bintang-siswa-row input{ width:16px; height:16px; accent-color:#f5a623; cursor:pointer; }
+  .bintang-siswa-row .bsr-nama{ font-size:14px; color:#333; }
+  .bintang-siswa-row .bsr-total{ margin-left:auto; font-size:12px; color:#b8860b; font-weight:600; white-space:nowrap; }
+  .btn-kirim-bintang{ padding:10px 18px; border-radius:10px; border:1px solid #f0c04f; background:#fff8e6; color:#946200; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .btn-kirim-bintang:hover{ background:#fff0c4; }
+  .btn-kirim-bintang:disabled{ opacity:.5; cursor:not-allowed; }
+  .bintang-result-ok{ font-size:13px; color:#1a8f4c; margin-top:8px; }
   .approve-row{ display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid rgba(0,0,0,0.08); border-radius:12px; margin-bottom:8px; background:#fff; }
   .approve-row .meta{ font-size:12.5px; color:#888; margin-top:2px; }
   .btn-approve-sm{ padding:8px 16px; border-radius:8px; border:1px solid rgba(26,143,76,0.3); background:#eafff2; color:#1a8f4c; font-size:13px; font-weight:700; cursor:pointer; }
@@ -172,6 +183,7 @@
       <a class="nav-item active" data-page="rekap" href="#" title="Rekap Nilai"><span class="icon">📊</span> <span class="label">Rekap Nilai</span></a>
       <a class="nav-item" data-page="obrolan" href="#" title="Obrolan Kelas"><span class="icon">💬</span> <span class="label">Obrolan Kelas</span></a>
       <a class="nav-item" data-page="kehadiran" href="#" title="Rekap Kehadiran"><span class="icon">🧾</span> <span class="label">Rekap Kehadiran</span></a>
+      <a class="nav-item" data-page="bintang" href="#" title="Kirim Bintang"><span class="icon">⭐</span> <span class="label">Kirim Bintang</span></a>
 
       <div class="nav-group" data-group="siswa-akun">
         <div class="nav-group-header" data-group-toggle title="Siswa & Akun">
@@ -318,6 +330,43 @@
             <tbody id="kehadiran-container"></tbody>
           </table>
           <div id="kehadiran-empty-slot"></div>
+        </div>
+
+        <!-- ===== KIRIM BINTANG ===== -->
+        <div class="gs-section" id="section-bintang">
+          <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kirim Bintang ⭐</h1></div>
+          <div class="hint">Beri apresiasi ke siswa dengan mengirim bintang. Bintang yang dikirim langsung masuk ke menu Koleksi Bintang milik siswa yang dipilih.</div>
+          <div class="filter-select-row">
+            <div class="filter-select-field"><label for="bintangLevelSelect">Tingkat Kelas</label><select id="bintangLevelSelect"></select></div>
+            <div class="filter-select-field"><label for="bintangKelasSelect">Kelas</label><select id="bintangKelasSelect"></select></div>
+          </div>
+          <div class="form-field" style="max-width:320px;">
+            <label>Cari Nama</label>
+            <input type="text" id="bintangSearchInput" placeholder="Ketik nama siswa...">
+          </div>
+          <div class="section-label" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:18px;">
+            <span>Pilih Siswa Penerima</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button type="button" class="btn-secondary-sm" id="btnBintangPilihSemua">Pilih Semua</button>
+              <button type="button" class="btn-secondary-sm" id="btnBintangBatalPilih">Batal Pilih</button>
+            </div>
+          </div>
+          <div id="bintangSiswaList" class="bintang-siswa-list">Pilih kelas dulu untuk melihat daftar siswa.</div>
+
+          <div class="form-row">
+            <div class="form-field" style="max-width:160px;"><label>Jumlah Bintang</label><input type="number" id="bintangJumlahInput" min="1" max="100" value="1"></div>
+            <div class="form-field"><label>Alasan / Pesan (opsional)</label><input type="text" id="bintangAlasanInput" placeholder="mis. Aktif menjawab di kelas hari ini" maxlength="200"></div>
+          </div>
+          <button class="btn-kirim-bintang" id="btnKirimBintang" disabled>⭐ Kirim Bintang (<span id="bintangTerpilihCount">0</span> siswa)</button>
+          <p class="login-error" id="bintangError" style="display:none;"></p>
+          <div id="bintangResult"></div>
+
+          <div class="section-label" style="margin-top:30px;">Riwayat Pengiriman Terbaru</div>
+          <table class="grade-table" id="bintang-riwayat-table">
+            <thead><tr><th>Tanggal</th><th>Siswa</th><th>Kelas</th><th>Jumlah</th><th>Alasan</th><th>Aksi</th></tr></thead>
+            <tbody id="bintang-riwayat-container"></tbody>
+          </table>
+          <div id="bintang-riwayat-empty-slot"></div>
         </div>
 
         <!-- ===== PERSETUJUAN AKUN BARU ===== -->
@@ -3313,10 +3362,195 @@
   // =========================================================
   // Init
   // =========================================================
+  // =========================================================
+  // KIRIM BINTANG ⭐ (guru → siswa)
+  // =========================================================
+  const bintangState = { level: 'X', kelasId: null };
+  let currentBintangSiswaList = [];
+  let bintangTotalsBySiswa = {}; // siswa_id -> total bintang sepanjang waktu
+  let selectedBintangIds = new Set();
+
+  function renderBintangLevelTabs() {
+    const el = document.getElementById('bintangLevelSelect');
+    if (!el) return;
+    el.innerHTML = ['X', 'XI', 'XII'].map(lv => `<option value="${lv}" ${bintangState.level === lv ? 'selected' : ''}>Kelas ${lv}</option>`).join('');
+    el.onchange = async () => {
+      bintangState.level = el.value;
+      bintangState.kelasId = null;
+      await renderBintangKelasChips();
+    };
+  }
+
+  async function renderBintangKelasChips() {
+    const el = document.getElementById('bintangKelasSelect');
+    if (!el) return;
+    const list = allKelas.filter(k => k.level === bintangState.level);
+    if (!bintangState.kelasId || !list.some(k => k.id === bintangState.kelasId)) {
+      bintangState.kelasId = list[0] ? list[0].id : null;
+    }
+    el.innerHTML = list.length
+      ? list.map(k => `<option value="${k.id}" ${bintangState.kelasId === k.id ? 'selected' : ''}>${esc(k.nama)}</option>`).join('')
+      : '<option value="">— Tidak ada kelas —</option>';
+    el.onchange = async () => {
+      bintangState.kelasId = el.value;
+      await loadBintangSiswaList();
+    };
+    await loadBintangSiswaList();
+  }
+
+  async function loadBintangSiswaList() {
+    selectedBintangIds.clear();
+    const listEl = document.getElementById('bintangSiswaList');
+    if (!bintangState.kelasId) {
+      currentBintangSiswaList = [];
+      bintangTotalsBySiswa = {};
+      if (listEl) listEl.innerHTML = 'Pilih kelas dulu untuk melihat daftar siswa.';
+      updateBintangSelectedCount();
+      return;
+    }
+    const { data, error } = await supabase.from('profiles').select('id, nama').eq('kelas_id', bintangState.kelasId).order('nama');
+    currentBintangSiswaList = error ? [] : (data || []);
+    // Hitung total bintang tiap siswa di kelas ini (untuk ditampilkan di samping nama)
+    bintangTotalsBySiswa = {};
+    if (currentBintangSiswaList.length) {
+      const ids = currentBintangSiswaList.map(s => s.id);
+      const { data: bRows } = await supabase.from('bintang').select('siswa_id, jumlah').in('siswa_id', ids);
+      (bRows || []).forEach(r => {
+        bintangTotalsBySiswa[r.siswa_id] = (bintangTotalsBySiswa[r.siswa_id] || 0) + r.jumlah;
+      });
+    }
+    renderBintangSiswaList();
+  }
+
+  function renderBintangSiswaList() {
+    const listEl = document.getElementById('bintangSiswaList');
+    if (!listEl) return;
+    const q = (document.getElementById('bintangSearchInput').value || '').trim().toLowerCase();
+    const filtered = currentBintangSiswaList.filter(s => !q || s.nama.toLowerCase().includes(q));
+    if (!filtered.length) {
+      listEl.innerHTML = emptyState('Tidak ada siswa', currentBintangSiswaList.length ? 'Tidak ada nama yang cocok dengan pencarian.' : 'Belum ada siswa di kelas ini.', '⭐');
+      updateBintangSelectedCount();
+      return;
+    }
+    listEl.innerHTML = filtered.map(s => `
+      <label class="bintang-siswa-row">
+        <input type="checkbox" class="bintang-siswa-check" data-id="${s.id}" ${selectedBintangIds.has(s.id) ? 'checked' : ''}>
+        <span class="bsr-nama">${esc(s.nama)}</span>
+        <span class="bsr-total">⭐ ${bintangTotalsBySiswa[s.id] || 0}</span>
+      </label>
+    `).join('');
+    listEl.querySelectorAll('.bintang-siswa-check').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) selectedBintangIds.add(cb.dataset.id);
+        else selectedBintangIds.delete(cb.dataset.id);
+        updateBintangSelectedCount();
+      });
+    });
+    updateBintangSelectedCount();
+  }
+
+  function updateBintangSelectedCount() {
+    const countEl = document.getElementById('bintangTerpilihCount');
+    const btn = document.getElementById('btnKirimBintang');
+    if (countEl) countEl.textContent = selectedBintangIds.size;
+    if (btn) btn.disabled = selectedBintangIds.size === 0;
+  }
+
+  const bintangSearchInputEl = document.getElementById('bintangSearchInput');
+  if (bintangSearchInputEl) bintangSearchInputEl.addEventListener('input', renderBintangSiswaList);
+
+  const btnBintangPilihSemua = document.getElementById('btnBintangPilihSemua');
+  if (btnBintangPilihSemua) btnBintangPilihSemua.addEventListener('click', () => {
+    const q = (document.getElementById('bintangSearchInput').value || '').trim().toLowerCase();
+    currentBintangSiswaList.filter(s => !q || s.nama.toLowerCase().includes(q)).forEach(s => selectedBintangIds.add(s.id));
+    renderBintangSiswaList();
+  });
+
+  const btnBintangBatalPilih = document.getElementById('btnBintangBatalPilih');
+  if (btnBintangBatalPilih) btnBintangBatalPilih.addEventListener('click', () => {
+    selectedBintangIds.clear();
+    renderBintangSiswaList();
+  });
+
+  const btnKirimBintang = document.getElementById('btnKirimBintang');
+  if (btnKirimBintang) btnKirimBintang.addEventListener('click', async () => {
+    const errEl = document.getElementById('bintangError');
+    const resultEl = document.getElementById('bintangResult');
+    errEl.style.display = 'none';
+    resultEl.innerHTML = '';
+    if (!selectedBintangIds.size) return;
+    const jumlah = parseInt(document.getElementById('bintangJumlahInput').value, 10) || 1;
+    if (jumlah < 1 || jumlah > 100) {
+      errEl.textContent = 'Jumlah bintang harus antara 1–100.';
+      errEl.style.display = '';
+      return;
+    }
+    const alasan = document.getElementById('bintangAlasanInput').value.trim() || null;
+    const rows = Array.from(selectedBintangIds).map(siswaId => ({
+      siswa_id: siswaId, guru_id: teacher.id, guru_nama: teacher.nama, jumlah, alasan,
+    }));
+    btnKirimBintang.disabled = true;
+    btnKirimBintang.textContent = 'Mengirim…';
+    const { error } = await supabase.from('bintang').insert(rows);
+    btnKirimBintang.disabled = false;
+    if (error) {
+      errEl.textContent = 'Gagal mengirim bintang: ' + error.message;
+      errEl.style.display = '';
+    } else {
+      resultEl.innerHTML = `<p class="bintang-result-ok">✅ ${jumlah} bintang berhasil dikirim ke ${rows.length} siswa.</p>`;
+      selectedBintangIds.clear();
+      document.getElementById('bintangAlasanInput').value = '';
+      await loadBintangSiswaList();
+      await renderBintangRiwayat();
+    }
+    updateBintangSelectedCount();
+    btnKirimBintang.textContent = `⭐ Kirim Bintang (${document.getElementById('bintangTerpilihCount').textContent} siswa)`;
+  });
+
+  async function renderBintangRiwayat() {
+    const container = document.getElementById('bintang-riwayat-container');
+    const emptySlot = document.getElementById('bintang-riwayat-empty-slot');
+    const table = document.getElementById('bintang-riwayat-table');
+    if (!container) return;
+    const { data, error } = await supabase
+      .from('bintang')
+      .select('id, jumlah, alasan, created_at, siswa:siswa_id ( nama, kelas:kelas_id ( nama ) )')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    const rows = error ? [] : (data || []);
+    if (!rows.length) {
+      table.style.display = 'none';
+      emptySlot.innerHTML = emptyState('Belum ada bintang dikirim', 'Riwayat pengiriman bintang ke siswa akan muncul di sini.', '⭐');
+      return;
+    }
+    table.style.display = '';
+    emptySlot.innerHTML = '';
+    container.innerHTML = rows.map(r => `
+      <tr>
+        <td>${new Date(r.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+        <td>${esc(r.siswa ? r.siswa.nama : '(siswa dihapus)')}</td>
+        <td>${esc(r.siswa && r.siswa.kelas ? r.siswa.kelas.nama : '—')}</td>
+        <td>⭐ ${r.jumlah}</td>
+        <td>${esc(r.alasan || '—')}</td>
+        <td><button class="btn-danger-sm" data-bintang-hapus="${r.id}">🗑️ Hapus</button></td>
+      </tr>
+    `).join('');
+    container.querySelectorAll('[data-bintang-hapus]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Hapus riwayat pengiriman bintang ini?')) return;
+        await supabase.from('bintang').delete().eq('id', btn.dataset.bintangHapus);
+        await renderBintangRiwayat();
+        await loadBintangSiswaList();
+      });
+    });
+  }
+
   async function refreshAllKelasDependentUI() {
     await loadAllKelas();
     await renderKelasChips();
     await renderSiswaKelasChips();
+    await renderBintangKelasChips();
+    await renderBintangRiwayat();
     fillKelasSelect(document.getElementById('nilaiKelasSelect'));
     fillKelasSelect(document.getElementById('akunKelasSelect'));
     fillObrolanKelasSelect();
@@ -3710,6 +3944,7 @@
 
   renderLevelTabs();
   renderSiswaLevelTabs();
+  renderBintangLevelTabs();
   renderAkunStagingTable();
   await renderPersetujuanList();
   await loadNilaiMasukNotif();

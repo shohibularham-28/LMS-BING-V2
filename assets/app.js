@@ -309,7 +309,7 @@ async function loadStudentNotifications(profile) {
   if (!list) return;
   const since = profile.last_seen_updates || '1970-01-01T00:00:00Z';
 
-  const [annRes, nilaiRes] = await Promise.all([
+  const [annRes, nilaiRes, bintangRes] = await Promise.all([
     supabase.from('pengumuman').select('id, judul, created_at')
       .or(`kelas_id.eq.${profile.kelas_id},kelas_id.is.null`)
       .gt('created_at', since)
@@ -318,17 +318,22 @@ async function loadStudentNotifications(profile) {
       .eq('siswa_id', profile.id)
       .gt('created_at', since)
       .order('created_at', { ascending: false }),
+    supabase.from('bintang').select('id, jumlah, guru_nama, created_at')
+      .eq('siswa_id', profile.id)
+      .gt('created_at', since)
+      .order('created_at', { ascending: false }),
   ]);
 
   const items = [
-    ...((annRes.data) || []).map(a => ({ icon: '📣', title: a.judul, desc: 'Pengumuman baru', created_at: a.created_at })),
-    ...((nilaiRes.data) || []).map(n => ({ icon: '📊', title: n.jenis, desc: 'Nilai baru' + (typeof n.skor === 'number' ? ': ' + n.skor : ''), created_at: n.created_at })),
+    ...((annRes.data) || []).map(a => ({ icon: '📣', title: a.judul, desc: 'Pengumuman baru', created_at: a.created_at, href: 'pengumuman.html' })),
+    ...((nilaiRes.data) || []).map(n => ({ icon: '📊', title: n.jenis, desc: 'Nilai baru' + (typeof n.skor === 'number' ? ': ' + n.skor : ''), created_at: n.created_at, href: 'pengumuman.html' })),
+    ...((bintangRes.data) || []).map(b => ({ icon: '⭐', title: `${b.jumlah} bintang baru`, desc: 'Dari ' + (b.guru_nama || 'Guru'), created_at: b.created_at, href: 'bintang.html' })),
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   setNotifDot(items.length);
 
   list.innerHTML = items.length ? items.map(it => `
-    <a class="notif-item" href="pengumuman.html">
+    <a class="notif-item" href="${it.href}">
       <div class="t">${it.icon} ${esc(it.title)}</div>
       <div class="d">${esc(it.desc)} · ${new Date(it.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}</div>
     </a>

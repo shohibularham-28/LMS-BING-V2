@@ -83,6 +83,13 @@ Di menu **💬 Obrolan Kelas**, setelah guru pilih kelas, ada tombol baru **📋
 
 Jalankan `MIGRASI_KEHADIRAN.sql` sekali di Supabase SQL Editor (butuh `MIGRASI_OBROLAN_KELAS.sql` sudah pernah dijalankan lebih dulu). Ini menambah tabel `sesi_hadir` & `kehadiran`, plus kolom `tipe`/`sesi_hadir_id` di `pesan_kelas`.
 
+## 16. Koleksi Bintang ⭐
+Guru bisa mengirim bintang ke siswa sebagai bentuk apresiasi lewat menu baru **⭐ Kirim Bintang** di dashboard guru: pilih tingkat + kelas, centang satu atau banyak siswa sekaligus, isi jumlah bintang (default 1) dan alasan/pesan opsional, lalu klik "Kirim Bintang". Ada juga tabel **Riwayat Pengiriman Terbaru** untuk melihat/menghapus pengiriman yang salah.
+
+Siswa melihat bintang yang terkumpul lewat menu baru **⭐ Koleksi Bintang** (`bintang.html`) di sidebar/menu bawah — menampilkan total bintang, "level" koleksi (Pemula → Rajin → Bintang Kelas → Juara → Bintang Sekolah, murni gamifikasi, tidak memengaruhi nilai), serta riwayat kapan & dari guru mana bintangnya didapat. Bintang baru juga muncul di lonceng notifikasi 🔔 siswa seperti pengumuman & nilai.
+
+Jalankan `MIGRASI_BINTANG.sql` sekali di Supabase SQL Editor untuk mengaktifkan fitur ini (menambah tabel `bintang` beserta RLS-nya).
+
 ## 14. Deploy
 Karena ini masih situs statis (HTML+JS) yang manggil Supabase langsung dari browser, kamu bisa deploy persis seperti sebelumnya: GitHub Pages, Netlify, Vercel, dsb. Cukup push semua file (kecuali folder `supabase/functions`, yang di-deploy terpisah lewat Supabase CLI di langkah 3).
 
