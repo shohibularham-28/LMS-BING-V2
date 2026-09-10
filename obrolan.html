@@ -99,9 +99,32 @@
   .msg-row.other .msg-bubble{ background:#fff; border:1px solid #E7E9F2; color:#2b2f3a; border-bottom-left-radius:4px; }
   .msg-row.other.from-guru .msg-bubble{ border-color:var(--violet-soft); background:#F5F2FF; }
   .chat-input-bar{
+    position:relative;
     display:flex; flex-direction:column; gap:8px; padding:12px 16px 14px; border-top:1px solid #E7E9F2; background:#fff;
   }
   .chat-input-row{ display:flex; gap:10px; }
+  .stiker-btn{
+    flex-shrink:0; width:42px; height:42px; border-radius:12px;
+    background:#F1F2F6; border:1.5px solid #E7E9F2; color:#6B7280;
+    font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .stiker-btn:hover{ background:#E7E9F2; }
+  .stiker-btn.active{ background:var(--violet-soft); border-color:var(--violet); }
+  .stiker-btn:disabled{ opacity:.5; cursor:not-allowed; }
+  .stiker-panel{
+    position:absolute; left:16px; right:16px; bottom:100%; margin-bottom:8px;
+    background:#fff; border:1px solid #E7E9F2; border-radius:16px;
+    box-shadow:0 12px 30px rgba(20,20,40,0.18); padding:12px;
+    max-height:230px; overflow-y:auto; display:none; z-index:50;
+  }
+  .stiker-panel.open{ display:block; }
+  .stiker-grid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+  .stiker-grid button{
+    border:none; background:#F5F6FA; border-radius:10px; font-size:23px; line-height:1;
+    padding:8px 0; cursor:pointer; transition:transform .1s, background .1s;
+  }
+  .stiker-grid button:hover{ background:#EDEEF3; transform:scale(1.1); }
+  .msg-sticker{ font-size:56px; line-height:1; padding:2px 0; }
   .chat-anon-row{
     display:flex; align-items:center; gap:6px; font-size:12.5px; color:#6B7280; user-select:none;
   }
@@ -245,11 +268,15 @@
           <div class="active-students-bar" id="activeStudentsBar"><span class="active-empty">Memuat status aktif…</span></div>
           <div class="chat-body" id="chatBody"><div class="chat-empty">Memuat obrolan…</div></div>
           <form class="chat-input-bar" id="chatForm">
+            <div class="stiker-panel" id="stikerPanel">
+              <div class="stiker-grid" id="stikerGrid"></div>
+            </div>
             <div class="chat-anon-row">
               <input type="checkbox" id="chatAnonToggle">
               <label for="chatAnonToggle">Kirim sebagai Anonim (nama asli tidak ditampilkan)</label>
             </div>
             <div class="chat-input-row">
+              <button type="button" class="stiker-btn" id="stikerBtn" title="Kirim stiker">😊</button>
               <textarea id="chatInput" placeholder="Tulis pesan…" maxlength="1000" rows="1"></textarea>
               <button type="submit" id="chatSendBtn">Kirim</button>
             </div>
@@ -285,6 +312,7 @@
     document.getElementById('chatBody').innerHTML = '<div class="chat-empty">Kamu belum terdaftar di kelas manapun, jadi belum bisa ikut obrolan. Hubungi gurumu.</div>';
     document.getElementById('chatSendBtn').disabled = true;
     document.getElementById('chatInput').disabled = true;
+    document.getElementById('stikerBtn').disabled = true;
     return;
   }
 
@@ -296,6 +324,56 @@
   const input = document.getElementById('chatInput');
   const sendBtn = document.getElementById('chatSendBtn');
   const anonToggle = document.getElementById('chatAnonToggle');
+  const stikerBtn = document.getElementById('stikerBtn');
+  const stikerPanel = document.getElementById('stikerPanel');
+  const stikerGrid = document.getElementById('stikerGrid');
+
+  // ===== Stiker Obrolan =====
+  const STIKER_LIST = [
+    '😀','😂','🤣','😍','😘','😎','🥳','🤩',
+    '😢','😭','😡','😱','🤔','😴','👋','🙄',
+    '👍','👎','🙏','👏','🙌','💪','❤️','🔥',
+    '💯','🎉','✅','❌','⭐','🌟','📚','🏆'
+  ];
+  STIKER_LIST.forEach(emoji => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = emoji;
+    b.title = 'Kirim stiker ' + emoji;
+    b.addEventListener('click', () => sendSticker(emoji));
+    stikerGrid.appendChild(b);
+  });
+  function closeStikerPanel(){
+    stikerPanel.classList.remove('open');
+    stikerBtn.classList.remove('active');
+  }
+  stikerBtn.addEventListener('click', () => {
+    const willOpen = !stikerPanel.classList.contains('open');
+    closeStikerPanel();
+    if (willOpen) { stikerPanel.classList.add('open'); stikerBtn.classList.add('active'); }
+  });
+  document.addEventListener('click', (e) => {
+    if (stikerPanel.classList.contains('open') && !stikerPanel.contains(e.target) && e.target !== stikerBtn) {
+      closeStikerPanel();
+    }
+  });
+  async function sendSticker(emoji){
+    closeStikerPanel();
+    stikerBtn.disabled = true;
+    const isAnonim = anonToggle.checked;
+    const { error } = await supabase.from('pesan_kelas').insert({
+      kelas_id: KELAS_ID,
+      sender_id: profile.id,
+      sender_nama: isAnonim ? 'Anonim' : profile.nama,
+      sender_role: 'siswa',
+      isi: emoji,
+      is_anonim: isAnonim,
+      tipe: 'stiker'
+    });
+    stikerBtn.disabled = false;
+    if (error) { alert('Gagal mengirim stiker: ' + error.message); return; }
+    await loadMessages();
+  }
 
   let knownIds = new Set();
   let firstLoad = true;
@@ -410,12 +488,13 @@
       }
       const mine = m.sender_id === profile.id;
       const isGuru = m.sender_role === 'guru';
+      const isSticker = m.tipe === 'stiker';
       const row = document.createElement('div');
       row.dataset.id = m.id;
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru ? ' from-guru' : '');
       row.innerHTML = `
         <div class="msg-meta">${mine ? 'Kamu' : esc(m.sender_nama)}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${fmtTime(m.created_at)}${mine ? ' <button type="button" class="msg-del" title="Hapus pesan">🗑</button>' : ''}</div>
-        <div class="msg-bubble">${esc(m.isi)}</div>
+        <div class="${isSticker ? 'msg-sticker' : 'msg-bubble'}">${esc(m.isi)}</div>
       `;
       if (mine) {
         row.querySelector('.msg-del').addEventListener('click', () => deleteMessage(m.id, row));

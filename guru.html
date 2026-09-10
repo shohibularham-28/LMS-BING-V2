@@ -189,8 +189,31 @@
 .hadir-chip .hadir-text .t1{ font-size:13px; font-weight:700; color:#161927; }
 .hadir-chip .hadir-text .t2{ font-size:11.5px; color:#8A90A3; margin-top:1px; }
 .chat-input-bar{
+  position:relative;
   display:flex; gap:10px; padding:14px 16px; border-top:1px solid #E7E9F2; background:#fff;
 }
+.stiker-btn{
+  flex-shrink:0; width:42px; height:42px; border-radius:12px;
+  background:#F1F2F6; border:1.5px solid #E7E9F2; color:#6B7280;
+  font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.stiker-btn:hover{ background:#E7E9F2; }
+.stiker-btn.active{ background:var(--violet-soft); border-color:var(--violet); }
+.stiker-btn:disabled{ opacity:.5; cursor:not-allowed; }
+.stiker-panel{
+  position:absolute; left:16px; right:16px; bottom:100%; margin-bottom:8px;
+  background:#fff; border:1px solid #E7E9F2; border-radius:16px;
+  box-shadow:0 12px 30px rgba(20,20,40,0.18); padding:12px;
+  max-height:230px; overflow-y:auto; display:none; z-index:50;
+}
+.stiker-panel.open{ display:block; }
+.stiker-grid{ display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; }
+.stiker-grid button{
+  border:none; background:#F5F6FA; border-radius:10px; font-size:23px; line-height:1;
+  padding:8px 0; cursor:pointer; transition:transform .1s, background .1s;
+}
+.stiker-grid button:hover{ background:#EDEEF3; transform:scale(1.1); }
+.msg-sticker{ font-size:56px; line-height:1; padding:2px 0; }
 .chat-input-bar textarea{
   flex:1; resize:none; border:1.5px solid #E7E9F2; border-radius:12px; padding:10px 14px;
   font-family:inherit; font-size:14px; line-height:1.4; max-height:100px; min-height:42px;
@@ -349,6 +372,10 @@
             <div class="active-students-bar" id="obrolanActiveStudentsBar"><span class="active-empty">Pilih kelas dulu.</span></div>
             <div class="chat-body" id="obrolanBody"><div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div></div>
             <form class="chat-input-bar" id="obrolanForm">
+              <div class="stiker-panel" id="obrolanStikerPanel">
+                <div class="stiker-grid" id="obrolanStikerGrid"></div>
+              </div>
+              <button type="button" class="stiker-btn" id="obrolanStikerBtn" title="Kirim stiker" disabled>😊</button>
               <textarea id="obrolanInput" placeholder="Tulis pesan…" maxlength="1000" rows="1" disabled></textarea>
               <button type="submit" id="obrolanSendBtn" disabled>Kirim</button>
             </form>
@@ -3617,6 +3644,55 @@
   let obrolanFirstLoad = true;
   let obrolanChannel = null;
 
+  // ===== Stiker Obrolan (guru) =====
+  const OBROLAN_STIKER_LIST = [
+    '😀','😂','🤣','😍','😘','😎','🥳','🤩',
+    '😢','😭','😡','😱','🤔','😴','👋','🙄',
+    '👍','👎','🙏','👏','🙌','💪','❤️','🔥',
+    '💯','🎉','✅','❌','⭐','🌟','📚','🏆'
+  ];
+  (function initObrolanStiker(){
+    const btn = document.getElementById('obrolanStikerBtn');
+    const panel = document.getElementById('obrolanStikerPanel');
+    const grid = document.getElementById('obrolanStikerGrid');
+    OBROLAN_STIKER_LIST.forEach(emoji => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = emoji;
+      b.title = 'Kirim stiker ' + emoji;
+      b.addEventListener('click', () => sendObrolanSticker(emoji));
+      grid.appendChild(b);
+    });
+    function closePanel(){ panel.classList.remove('open'); btn.classList.remove('active'); }
+    btn.addEventListener('click', () => {
+      const willOpen = !panel.classList.contains('open');
+      closePanel();
+      if (willOpen) { panel.classList.add('open'); btn.classList.add('active'); }
+    });
+    document.addEventListener('click', (e) => {
+      if (panel.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) closePanel();
+    });
+    window.__closeObrolanStikerPanel = closePanel;
+  })();
+
+  async function sendObrolanSticker(emoji){
+    if (!obrolanKelasId) return;
+    if (window.__closeObrolanStikerPanel) window.__closeObrolanStikerPanel();
+    const stikerBtn = document.getElementById('obrolanStikerBtn');
+    stikerBtn.disabled = true;
+    const { error } = await supabase.from('pesan_kelas').insert({
+      kelas_id: obrolanKelasId,
+      sender_id: teacher.id,
+      sender_nama: teacher.nama,
+      sender_role: 'guru',
+      isi: emoji,
+      tipe: 'stiker'
+    });
+    stikerBtn.disabled = false;
+    if (error) { alert('Gagal mengirim stiker: ' + error.message); return; }
+    await loadObrolanMessages();
+  }
+
   function fillObrolanKelasSelect() {
     const sel = document.getElementById('obrolanKelasSelect');
     if (!sel) return;
@@ -3670,6 +3746,7 @@
       }
       const mine = m.sender_id === teacher.id;
       const isGuru = m.sender_role === 'guru';
+      const isSticker = m.tipe === 'stiker';
       // Nama siswa (bukan guru, bukan pesan sendiri, bukan anonim) bisa diklik
       // untuk langsung mengirim bintang ke siswa itu dari obrolan.
       const clickable = !mine && !isGuru && !m.is_anonim && m.sender_id;
@@ -3683,7 +3760,7 @@
       row.className = 'msg-row ' + (mine ? 'me' : 'other') + (isGuru && !mine ? ' from-guru' : '');
       row.innerHTML = `
         <div class="msg-meta">${namaHtml}${isGuru ? ' <span class="role-tag">Guru</span>' : ''}${m.is_anonim ? ' <span class="anon-tag">Anonim</span>' : ''} · ${obrolanFmtTime(m.created_at)} <button type="button" class="msg-del" title="Hapus pesan">🗑</button></div>
-        <div class="msg-bubble">${esc(m.isi)}</div>
+        <div class="${isSticker ? 'msg-sticker' : 'msg-bubble'}">${esc(m.isi)}</div>
       `;
       row.querySelector('.msg-del').addEventListener('click', () => obrolanDeleteMessage(m.id));
       if (clickable) {
@@ -3820,6 +3897,7 @@
     subscribePresenceKelas(obrolanKelasId, 'obrolanActiveStudentsBar', null);
     const input = document.getElementById('obrolanInput');
     const sendBtn = document.getElementById('obrolanSendBtn');
+    const stikerBtn = document.getElementById('obrolanStikerBtn');
     const hapusSemuaBtn = document.getElementById('obrolanHapusSemuaBtn');
     const kirimHadirBtn = document.getElementById('obrolanKirimHadirBtn');
     const kelasNama = document.getElementById('obrolanKelasNama');
@@ -3828,10 +3906,10 @@
     if (!obrolanKelasId) {
       document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Pilih kelas dulu untuk mulai obrolan.</div>';
       document.getElementById('obrolanActiveStudentsBar').innerHTML = '<span class="active-empty">Pilih kelas dulu.</span>';
-      input.disabled = true; sendBtn.disabled = true; hapusSemuaBtn.disabled = true; kirimHadirBtn.disabled = true;
+      input.disabled = true; sendBtn.disabled = true; stikerBtn.disabled = true; hapusSemuaBtn.disabled = true; kirimHadirBtn.disabled = true;
       return;
     }
-    input.disabled = false; sendBtn.disabled = false; hapusSemuaBtn.disabled = false; kirimHadirBtn.disabled = false;
+    input.disabled = false; sendBtn.disabled = false; stikerBtn.disabled = false; hapusSemuaBtn.disabled = false; kirimHadirBtn.disabled = false;
     document.getElementById('obrolanBody').innerHTML = '<div class="chat-empty">Memuat obrolan…</div>';
     loadObrolanMessages();
   });
