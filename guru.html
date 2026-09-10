@@ -942,6 +942,7 @@
     list.querySelectorAll('[data-goto-notif]').forEach(item => {
       item.addEventListener('click', () => {
         document.getElementById('notifDropdown').classList.remove('open');
+        if (typeof checkNotifDropdownClosed === 'function') checkNotifDropdownClosed();
         const nav = document.querySelector(`.nav-item[data-page="${item.dataset.gotoNotif}"]`);
         if (nav) nav.click();
         if (item.dataset.kelasId) {
@@ -1024,15 +1025,31 @@
     })
     .subscribe();
 
+  // Notifikasi (nilai & pesan) baru ditandai "sudah dilihat" begitu dropdown
+  // DITUTUP, bukan saat baru dibuka — supaya daftarnya tidak langsung kosong
+  // begitu guru klik lonceng; guru sempat baca dulu, baru hilang setelah ditutup.
+  let notifDropdownWasOpen = false;
+  function checkNotifDropdownClosed() {
+    const dropdown = document.getElementById('notifDropdown');
+    if (!dropdown) return;
+    const isOpen = dropdown.classList.contains('open');
+    if (notifDropdownWasOpen && !isOpen) {
+      markNilaiSeen();
+      markPesanSeen();
+    }
+    notifDropdownWasOpen = isOpen;
+  }
   document.getElementById('notifBell').addEventListener('click', () => {
-    // Dropdown baru saja dibuka (initNotifDropdown yang toggle class-nya) —
-    // beri jeda kecil supaya class 'open' sempat ke-set sebelum dicek.
-    setTimeout(() => {
-      if (document.getElementById('notifDropdown').classList.contains('open')) {
-        markNilaiSeen();
-        markPesanSeen();
-      }
-    }, 0);
+    // initNotifDropdown() (app.js) yang toggle class 'open'-nya duluan —
+    // beri jeda kecil supaya class-nya sempat ke-set sebelum dicek di sini.
+    setTimeout(checkNotifDropdownClosed, 0);
+  });
+  document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('notifDropdown');
+    const bell = document.getElementById('notifBell');
+    if (dropdown && dropdown.classList.contains('open') && !dropdown.contains(e.target) && e.target !== bell) {
+      setTimeout(checkNotifDropdownClosed, 0);
+    }
   });
 
   // ---------- Akun Menunggu Persetujuan (badge angka di sidebar) ----------
