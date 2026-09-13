@@ -637,6 +637,12 @@ body{
   color:#282C3D;
 }
 .grade-table tr:hover td{background:#FAFBFE;}
+.grade-table th.sortable{cursor:pointer; user-select:none; white-space:nowrap;}
+.grade-table th.sortable:hover{color:#161927;}
+.grade-table th.sortable .sort-arrow{display:inline-block; margin-left:5px; font-size:9px; opacity:.35;}
+.grade-table th.sortable.sort-active .sort-arrow{opacity:1; color:var(--brand,#4A6CF7);}
+.grade-table td.col-no,
+.grade-table th.col-no{width:1%; white-space:nowrap; text-align:center; color:var(--ink-dim); font-variant-numeric:tabular-nums;}
 .aksi-cell{white-space:nowrap; width:1%;}
 .action-trigger{
   background:none;

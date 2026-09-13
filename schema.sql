@@ -46,7 +46,7 @@ create table if not exists public.materi (
   judul text not null,
   deskripsi text,
   url text,
-  kelas_id uuid references public.kelas(id), -- legacy: target 1 kelas spesifik (data lama). null = semua kelas
+  kelas_id uuid references public.kelas(id), -- target 1 kelas spesifik (guru bisa pilih kelas tertentu, bukan cuma tingkat). null = semua kelas
   level text check (level in ('X','XI','XII')), -- target 1 tingkat (semua kelas di tingkat itu). null + kelas_id null = semua tingkat
   created_at timestamptz default now()
 );
@@ -59,7 +59,7 @@ create table if not exists public.worksheet (
   judul text not null,
   meta text default 'Worksheet interaktif online',
   url text not null,
-  kelas_id uuid references public.kelas(id), -- legacy: target 1 kelas spesifik (data lama)
+  kelas_id uuid references public.kelas(id), -- target 1 kelas spesifik (guru bisa pilih kelas tertentu, bukan cuma tingkat)
   level text check (level in ('X','XI','XII')), -- target 1 tingkat (semua kelas di tingkat itu)
   mulai timestamptz,       -- tanggal & jam worksheet mulai bisa dibuka (null = langsung terbuka)
   deadline date,
@@ -137,7 +137,7 @@ create policy "pengumuman_write_guru" on public.pengumuman for insert with check
 create policy "pengumuman_update_guru" on public.pengumuman for update using (public.is_guru());
 create policy "pengumuman_delete_guru" on public.pengumuman for delete using (public.is_guru());
 
--- MATERI: siswa lihat materi untuk semua tingkat/kelas, tingkatnya, atau kelasnya (data lama); guru lihat & tulis semua
+-- MATERI: siswa lihat materi untuk semua tingkat/kelas, tingkatnya, atau kelas spesifiknya; guru lihat & tulis semua
 create policy "materi_select" on public.materi for select using (
   (kelas_id is null and level is null)
   or kelas_id = (select kelas_id from public.profiles where id = auth.uid())
@@ -148,7 +148,7 @@ create policy "materi_write_guru" on public.materi for insert with check (public
 create policy "materi_update_guru" on public.materi for update using (public.is_guru());
 create policy "materi_delete_guru" on public.materi for delete using (public.is_guru());
 
--- WORKSHEET: siswa lihat worksheet untuk tingkatnya, atau kelasnya (data lama); guru lihat & tulis semua
+-- WORKSHEET: siswa lihat worksheet untuk tingkatnya, atau kelas spesifiknya; guru lihat & tulis semua
 create policy "worksheet_select" on public.worksheet for select using (
   kelas_id = (select kelas_id from public.profiles where id = auth.uid())
   or level = (select k.level from public.profiles p join public.kelas k on k.id = p.kelas_id where p.id = auth.uid())

@@ -560,7 +560,7 @@
           <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1>Kelola Worksheet</h1></div>
           <div class="form-row">
             <div class="form-field"><label>Judul</label><input type="text" id="wsJudulInput" placeholder="mis. Latihan Simple Past"></div>
-            <div class="form-field"><label>Tingkat</label><select id="wsTingkatSelect"><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+            <div class="form-field"><label>Target Sasaran</label><select id="wsTingkatSelect"></select></div>
           </div>
           <div class="form-row">
             <div class="form-field"><label>URL Worksheet</label><input type="text" id="wsUrlInput" placeholder="https://..."></div>
@@ -569,7 +569,7 @@
             <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="wsMulaiInput"></div>
             <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="wsDeadlineInput"></div>
           </div>
-          <div class="hint">Kosongkan "Mulai Bisa Dibuka" kalau worksheet boleh langsung dikerjakan siswa sejak diterbitkan.</div>
+          <div class="hint">Pilih "Semua Kelas Tingkat X/XI/XII" untuk menyasar satu tingkat penuh, atau pilih kelas tertentu (mis. "X-IPA 1") di bawah tingkatnya kalau hanya untuk kelas itu saja. Kosongkan "Mulai Bisa Dibuka" kalau worksheet boleh langsung dikerjakan siswa sejak diterbitkan.</div>
           <button class="btn-secondary-sm" id="btnTambahWorksheet">+ Tambahkan Worksheet</button>
           <p class="login-error" id="wsError" style="display:none;"></p>
 
@@ -789,8 +789,9 @@
           <div class="form-field"><label>Deskripsi Singkat</label><input type="text" id="materiDeskripsiInput" placeholder="Deskripsi singkat materi ini"></div>
           <div class="form-row">
             <div class="form-field"><label>Link Materi (URL)</label><input type="text" id="materiUrlInput" placeholder="https://..."></div>
-            <div class="form-field"><label>Tingkat Tujuan</label><select id="materiTingkatSelect"><option value="">Semua Tingkat (Umum)</option><option value="X">Tingkat X</option><option value="XI">Tingkat XI</option><option value="XII">Tingkat XII</option></select></div>
+            <div class="form-field"><label>Target Sasaran</label><select id="materiTingkatSelect"></select></div>
           </div>
+          <div class="hint" style="margin-top:-4px;">Pilih "Semua Tingkat (Umum)" untuk semua siswa, "Semua Kelas Tingkat X/XI/XII" untuk satu tingkat penuh, atau kelas tertentu (mis. "X-IPA 1") kalau hanya untuk kelas itu saja.</div>
           <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambahkan Materi</button>
           <p class="login-error" id="materiError" style="display:none;"></p>
           <div class="section-label" style="margin-top:24px;">Materi Aktif</div>
@@ -885,6 +886,37 @@
     const { data } = await supabase.from('kelas').select('id, nama, level').order('nama');
     allKelas = data || [];
     return allKelas;
+  }
+
+  // Isi <select> target materi/worksheet: pilihan per tingkat (X/XI/XII), lalu
+  // daftar kelas spesifik (mis. "X-IPA 1") dikelompokkan per tingkat lewat <optgroup>.
+  // Value kelas diberi prefix "kelas:" supaya bisa dibedakan dari value tingkat ('X'/'XI'/'XII').
+  function fillTargetSelectWithKelas(selectEl, { includeSemua = false, semuaLabel = 'Semua Tingkat (Umum)' } = {}) {
+    if (!selectEl) return;
+    const prevValue = selectEl.value;
+    let html = includeSemua ? `<option value="">${semuaLabel}</option>` : '';
+    ['X', 'XI', 'XII'].forEach(lv => {
+      html += `<option value="${lv}">Semua Kelas Tingkat ${lv}</option>`;
+      const kelasDiTingkat = allKelas.filter(k => k.level === lv);
+      if (kelasDiTingkat.length) {
+        html += `<optgroup label="Kelas Tertentu — Tingkat ${lv}">` +
+          kelasDiTingkat.map(k => `<option value="kelas:${k.id}">${esc(k.nama)}</option>`).join('') +
+          `</optgroup>`;
+      }
+    });
+    selectEl.innerHTML = html;
+    // pertahankan pilihan sebelumnya kalau opsinya masih ada (mis. setelah refresh daftar kelas)
+    if (prevValue && [...selectEl.options].some(o => o.value === prevValue)) {
+      selectEl.value = prevValue;
+    }
+  }
+
+  // Baca value dari <select> target (hasil fillTargetSelectWithKelas) jadi { level, kelasId }.
+  function parseTargetSelectValue(value) {
+    if (value && value.startsWith('kelas:')) {
+      return { level: null, kelasId: value.slice(6) };
+    }
+    return { level: value || null, kelasId: null };
   }
 
   function fmtSkor(v) {
@@ -2197,7 +2229,7 @@
     const el = document.getElementById('worksheetList');
     const { data } = await supabase
       .from('worksheet')
-      .select('id, judul, url, mulai, deadline, level, kelas:kelas_id ( nama )')
+      .select('id, judul, url, mulai, deadline, level, kelas_id, kelas:kelas_id ( nama )')
       .order('created_at', { ascending: false });
     const list = data || [];
     const now = new Date();
@@ -2231,12 +2263,8 @@
             <div class="form-field" style="max-width:none;"><label>Judul</label><input type="text" class="edit-judul-input" data-id="${w.id}" value="${esc(w.judul)}"></div>
           </div>
           <div class="form-row">
-            <div class="form-field"><label>Target Tingkat</label>
-              <select class="edit-level-input" data-id="${w.id}">
-                <option value="X"${w.level === 'X' ? ' selected' : ''}>Tingkat X</option>
-                <option value="XI"${w.level === 'XI' ? ' selected' : ''}>Tingkat XI</option>
-                <option value="XII"${w.level === 'XII' ? ' selected' : ''}>Tingkat XII</option>
-              </select>
+            <div class="form-field"><label>Target Sasaran</label>
+              <select class="edit-level-input" data-id="${w.id}" data-current="${w.level ? w.level : (w.kelas_id ? 'kelas:' + w.kelas_id : '')}"></select>
             </div>
           </div>
           <div class="form-row">
@@ -2253,6 +2281,12 @@
       </div>
     `;
     }).join('') : emptyState('Belum ada worksheet', 'Tambahkan worksheet pertama lewat form di atas.', '📝');
+
+    el.querySelectorAll('.edit-level-input').forEach(sel => {
+      fillTargetSelectWithKelas(sel);
+      const current = sel.dataset.current;
+      if (current) sel.value = current;
+    });
 
     el.querySelectorAll('.btn-danger-sm').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -2278,7 +2312,8 @@
       btn.addEventListener('click', async () => {
         const id = btn.dataset.save;
         const judul = el.querySelector(`.edit-judul-input[data-id="${id}"]`).value.trim();
-        const level = el.querySelector(`.edit-level-input[data-id="${id}"]`).value;
+        const targetVal = el.querySelector(`.edit-level-input[data-id="${id}"]`).value;
+        const { level, kelasId } = parseTargetSelectValue(targetVal);
         const mulaiRaw = el.querySelector(`.edit-mulai-input[data-id="${id}"]`).value;
         const deadlineRaw = el.querySelector(`.edit-deadline-input[data-id="${id}"]`).value;
         const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
@@ -2290,6 +2325,11 @@
           errEl.style.display = 'block';
           return;
         }
+        if (!targetVal) {
+          errEl.textContent = 'Target sasaran wajib dipilih.';
+          errEl.style.display = 'block';
+          return;
+        }
         if (mulai && deadline && mulai.slice(0, 10) > deadline) {
           errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.';
           errEl.style.display = 'block';
@@ -2297,7 +2337,7 @@
         }
         btn.disabled = true;
         btn.textContent = 'Menyimpan…';
-        const { error } = await supabase.from('worksheet').update({ judul, level, mulai, deadline }).eq('id', id);
+        const { error } = await supabase.from('worksheet').update({ judul, level, kelas_id: kelasId, mulai, deadline }).eq('id', id);
         if (error) {
           errEl.textContent = 'Gagal menyimpan: ' + error.message;
           errEl.style.display = 'block';
@@ -2313,15 +2353,16 @@
   document.getElementById('btnTambahWorksheet').addEventListener('click', async () => {
     const judul = document.getElementById('wsJudulInput').value.trim();
     const url = document.getElementById('wsUrlInput').value.trim();
-    const level = document.getElementById('wsTingkatSelect').value;
+    const targetVal = document.getElementById('wsTingkatSelect').value;
+    const { level, kelasId } = parseTargetSelectValue(targetVal);
     const mulaiRaw = document.getElementById('wsMulaiInput').value;
     const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
     const deadline = document.getElementById('wsDeadlineInput').value || null;
     const err = document.getElementById('wsError');
     err.style.display = 'none';
 
-    if (!judul || !url || !level) {
-      err.textContent = 'Judul, URL, dan tingkat wajib diisi.';
+    if (!judul || !url || !targetVal) {
+      err.textContent = 'Judul, URL, dan target sasaran wajib diisi.';
       err.style.display = 'block';
       return;
     }
@@ -2330,7 +2371,7 @@
       err.style.display = 'block';
       return;
     }
-    const { error } = await supabase.from('worksheet').insert({ judul, url, level, kelas_id: null, mulai, deadline });
+    const { error } = await supabase.from('worksheet').insert({ judul, url, level, kelas_id: kelasId, mulai, deadline });
     if (error) { err.textContent = 'Gagal menambah worksheet: ' + error.message; err.style.display = 'block'; return; }
 
     document.getElementById('wsJudulInput').value = '';
@@ -3002,7 +3043,7 @@
     const tag = document.getElementById('materiTagInput').value.trim();
     const deskripsi = document.getElementById('materiDeskripsiInput').value.trim();
     const url = document.getElementById('materiUrlInput').value.trim();
-    const level = document.getElementById('materiTingkatSelect').value || null;
+    const { level, kelasId } = parseTargetSelectValue(document.getElementById('materiTingkatSelect').value);
     const err = document.getElementById('materiError');
     err.style.display = 'none';
 
@@ -3012,7 +3053,7 @@
       return;
     }
     const { error } = await supabase.from('materi').insert({
-      judul, tag: tag || null, deskripsi: deskripsi || null, url, kelas_id: null, level,
+      judul, tag: tag || null, deskripsi: deskripsi || null, url, kelas_id: kelasId, level,
     });
     if (error) { err.textContent = 'Gagal menambah materi: ' + error.message; err.style.display = 'block'; return; }
 
@@ -3111,9 +3152,51 @@
   });
 
   // =========================================================
+  // Helper sort generik untuk tabel hasil (dipakai Hasil Worksheet & Nilai)
+  // =========================================================
+  function sortRowsBy(rows, key, dir, valueFn) {
+    if (!key) return rows;
+    const get = valueFn || (r => r[key]);
+    return [...rows].sort((a, b) => {
+      const va = get(a), vb = get(b);
+      const na = (va === '' || va === null || va === undefined) ? NaN : Number(va);
+      const nb = (vb === '' || vb === null || vb === undefined) ? NaN : Number(vb);
+      let cmp;
+      if (!Number.isNaN(na) && !Number.isNaN(nb)) {
+        cmp = na - nb;
+      } else {
+        cmp = String(va ?? '').toLowerCase().localeCompare(String(vb ?? '').toLowerCase(), 'id');
+      }
+      return dir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  function thSort(label, key, sortState) {
+    const active = sortState.key === key;
+    const arrow = active ? (sortState.dir === 'asc' ? '▲' : '▼') : '↕';
+    return `<th class="sortable${active ? ' sort-active' : ''}" data-sort-key="${key}">${label}<span class="sort-arrow">${arrow}</span></th>`;
+  }
+
+  function attachThSort(wrap, sortState, onChange) {
+    wrap.querySelectorAll('th[data-sort-key]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sortKey;
+        if (sortState.key === key) {
+          sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          sortState.key = key;
+          sortState.dir = 'asc';
+        }
+        onChange();
+      });
+    });
+  }
+
+  // =========================================================
   // HASIL WORKSHEET (Jenis/Nama/Anggota/Nilai/Status dari worksheet HTML mandiri)
   // =========================================================
   let currentHasilWsRows = [];
+  let hasilWsSort = { key: 'updated_at', dir: 'desc' };
 
   async function loadHasilWsSlugOptions() {
     const { data } = await supabase.from('hasil_worksheet').select('worksheet_slug');
@@ -3160,17 +3243,37 @@
     if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
 
     currentHasilWsRows = data || [];
+    renderHasilWsTable();
+  }
+
+  function renderHasilWsTable() {
+    const wrap = document.getElementById('hasilWsTableWrap');
     if (!currentHasilWsRows.length) {
       wrap.innerHTML = emptyState('Belum ada hasil', 'Hasil worksheet mandiri akan muncul di sini setelah siswa mulai/submit.', '📝');
       return;
     }
 
+    const sortValueFn = hasilWsSort.key === 'updated_at' ? (r => r.updated_at || r.created_at) : undefined;
+    const sortedRows = sortRowsBy(currentHasilWsRows, hasilWsSort.key, hasilWsSort.dir, sortValueFn);
+
     wrap.innerHTML = `
       <table class="grade-table">
-        <thead><tr><th>Jenis</th><th>Nama / Kelompok</th><th>Anggota</th><th>Kelas</th><th>Slug</th><th>Nilai</th><th>Status</th><th>Update Terakhir</th><th>Aksi</th></tr></thead>
+        <thead><tr>
+          <th class="col-no">No</th>
+          ${thSort('Jenis', 'jenis', hasilWsSort)}
+          ${thSort('Nama / Kelompok', 'nama', hasilWsSort)}
+          ${thSort('Anggota', 'anggota', hasilWsSort)}
+          ${thSort('Kelas', 'kelas', hasilWsSort)}
+          ${thSort('Slug', 'worksheet_slug', hasilWsSort)}
+          ${thSort('Nilai', 'nilai', hasilWsSort)}
+          ${thSort('Status', 'status', hasilWsSort)}
+          ${thSort('Update Terakhir', 'updated_at', hasilWsSort)}
+          <th>Aksi</th>
+        </tr></thead>
         <tbody>
-          ${currentHasilWsRows.map(r => `
+          ${sortedRows.map((r, i) => `
             <tr>
+              <td class="col-no">${i + 1}</td>
               <td>${r.jenis === 'kelompok' ? 'Kelompok' : 'Individu'}</td>
               <td>${esc(r.nama)}</td>
               <td>${esc(r.anggota || '-')}</td>
@@ -3184,6 +3287,8 @@
           `).join('')}
         </tbody>
       </table>`;
+
+    attachThSort(wrap, hasilWsSort, renderHasilWsTable);
 
     wrap.querySelectorAll('.btn-danger-sm[data-id]').forEach(btn => {
       btn.addEventListener('click', async () => {
@@ -3206,8 +3311,11 @@
 
   function downloadHasilWsXlsx() {
     if (!currentHasilWsRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Jenis', 'Nama/Kelompok', 'Anggota', 'Kelas', 'Slug Worksheet', 'Nilai', 'Nilai Maks', 'Status', 'Update Terakhir'];
-    const rows = currentHasilWsRows.map(r => [
+    const sortValueFn = hasilWsSort.key === 'updated_at' ? (r => r.updated_at || r.created_at) : undefined;
+    const sortedRows = sortRowsBy(currentHasilWsRows, hasilWsSort.key, hasilWsSort.dir, sortValueFn);
+    const header = ['No', 'Jenis', 'Nama/Kelompok', 'Anggota', 'Kelas', 'Slug Worksheet', 'Nilai', 'Nilai Maks', 'Status', 'Update Terakhir'];
+    const rows = sortedRows.map((r, i) => [
+      i + 1,
       r.jenis === 'kelompok' ? 'Kelompok' : 'Individu',
       r.nama,
       r.anggota || '-',
@@ -3362,6 +3470,7 @@
   // Hasil Bank Soal LMS (hasil_ujian_lms) dalam SATU tabel.
   // =========================================================
   let currentNilaiRows = [];
+  let nilaiSort = { key: 'created_at', dir: 'desc' };
 
   async function loadNilaiKelasFilterOptions() {
     const [ujianRes, soalRes] = await Promise.all([
@@ -3441,17 +3550,38 @@
     gabungan.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     currentNilaiRows = gabungan;
+    renderNilaiTable();
+  }
+
+  function renderNilaiTable() {
+    const wrap = document.getElementById('nilaiTableWrap2');
     if (!currentNilaiRows.length) {
       wrap.innerHTML = emptyState('Belum ada nilai', 'Nilai dari Ujian HTML Mandiri maupun Bank Soal akan muncul di sini setelah siswa submit.', '🧾');
       return;
     }
 
+    const sortValueFn = nilaiSort.key === 'sumber'
+      ? (r => r._sumber === 'soal' ? 'Bank Soal' : 'Ujian HTML')
+      : undefined;
+    const sortedRows = sortRowsBy(currentNilaiRows, nilaiSort.key, nilaiSort.dir, sortValueFn);
+
     wrap.innerHTML = `
       <table class="grade-table">
-        <thead><tr><th>Sumber</th><th>Judul/Slug</th><th>Nama</th><th>Kelas</th><th>Nilai</th><th>Status</th><th>Waktu Submit</th><th>Aksi</th></tr></thead>
+        <thead><tr>
+          <th class="col-no">No</th>
+          ${thSort('Sumber', 'sumber', nilaiSort)}
+          ${thSort('Judul/Slug', 'judul', nilaiSort)}
+          ${thSort('Nama', 'nama', nilaiSort)}
+          ${thSort('Kelas', 'kelas', nilaiSort)}
+          ${thSort('Nilai', 'nilai', nilaiSort)}
+          ${thSort('Status', 'status', nilaiSort)}
+          ${thSort('Waktu Submit', 'created_at', nilaiSort)}
+          <th>Aksi</th>
+        </tr></thead>
         <tbody>
-          ${currentNilaiRows.map(r => `
+          ${sortedRows.map((r, i) => `
             <tr>
+              <td class="col-no">${i + 1}</td>
               <td>${r._sumber === 'soal' ? '<span class="score-pill">Bank Soal</span>' : '<span class="score-pill">Ujian HTML</span>'}</td>
               <td>${esc(r.judul || '-')}</td>
               <td>${esc(r.nama)}</td>
@@ -3468,6 +3598,8 @@
           `).join('')}
         </tbody>
       </table>`;
+
+    attachThSort(wrap, nilaiSort, renderNilaiTable);
 
     wrap.querySelectorAll('[data-act="lihat"]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -3520,8 +3652,13 @@
 
   function downloadNilaiXlsx() {
     if (!currentNilaiRows.length) { alert('Belum ada data untuk didownload. Klik "Muat Hasil" dulu.'); return; }
-    const header = ['Sumber', 'Judul/Slug', 'Nama', 'Kelas', 'Nilai', 'Status', 'Waktu Submit'];
-    const rows = currentNilaiRows.map(r => [
+    const sortValueFn = nilaiSort.key === 'sumber'
+      ? (r => r._sumber === 'soal' ? 'Bank Soal' : 'Ujian HTML')
+      : undefined;
+    const sortedRows = sortRowsBy(currentNilaiRows, nilaiSort.key, nilaiSort.dir, sortValueFn);
+    const header = ['No', 'Sumber', 'Judul/Slug', 'Nama', 'Kelas', 'Nilai', 'Status', 'Waktu Submit'];
+    const rows = sortedRows.map((r, i) => [
+      i + 1,
       r._sumber === 'soal' ? 'Bank Soal' : 'Ujian HTML',
       r.judul || '-',
       r.nama, r.kelas, r.nilai,
@@ -3733,6 +3870,8 @@
     fillKelasSelect(document.getElementById('akunKelasSelect'));
     fillObrolanKelasSelect();
     fillKehadiranKelasSelect();
+    fillTargetSelectWithKelas(document.getElementById('wsTingkatSelect'));
+    fillTargetSelectWithKelas(document.getElementById('materiTingkatSelect'), { includeSemua: true });
     await renderKehadiranSesiOptions();
     renderAnnKelasChecklist();
     await renderKelasList();
