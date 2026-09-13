@@ -775,6 +775,40 @@ body{
 .materi-card a.dl:hover{gap:9px;}
 
 /* Worksheet */
+.ws-tabs{
+  display:flex;
+  gap:8px;
+  margin:0 0 20px;
+  border-bottom:1px solid #E7E9F2;
+}
+.ws-tab{
+  appearance:none;
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:12px 4px 13px;
+  margin-right:22px;
+  font-family:'Inter', sans-serif;
+  font-size:14.5px;
+  font-weight:700;
+  color:var(--ink-faint);
+  border-bottom:2.5px solid transparent;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  transition:color .15s, border-color .15s;
+}
+.ws-tab:hover{color:#161927;}
+.ws-tab.active{color:#161927; border-bottom-color:var(--violet);}
+.ws-tab .ws-tab-count{
+  background:var(--bg-soft);
+  color:var(--ink-dim);
+  font-size:11.5px;
+  font-weight:700;
+  padding:1px 8px;
+  border-radius:20px;
+}
+.ws-tab.active .ws-tab-count{background:var(--violet-soft); color:var(--violet);}
 .ws-card{
   background:#fff;
   border:1px solid #E7E9F2;

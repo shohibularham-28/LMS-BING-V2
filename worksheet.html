@@ -110,6 +110,10 @@
           <div class="eyebrow">Practice</div>
           <h1>Worksheet</h1>
         </div>
+        <div class="ws-tabs" id="wsTabs">
+          <button type="button" class="ws-tab active" data-tab="worksheet">📝 Worksheet <span class="ws-tab-count" id="wsTabCountWorksheet">0</span></button>
+          <button type="button" class="ws-tab" data-tab="ujian">🧪 Ujian <span class="ws-tab-count" id="wsTabCountUjian">0</span></button>
+        </div>
         <div id="worksheet-container">Memuat…</div>
       </div>
     </div>
@@ -143,31 +147,35 @@
   const [wsRes, juRes] = await Promise.all([
     supabase
       .from('worksheet')
-      .select('judul, meta, url, mulai, deadline')
+      .select('judul, meta, url, mulai, deadline, created_at')
       .or(`level.eq.${level},kelas_id.eq.${profile.kelas_id}`)
       .order('created_at', { ascending: false }),
     // RLS jadwal_ujian sudah otomatis membatasi hanya baris yang menyasar
     // tingkat/kelas siswa ini (lihat fungsi public.ujian_terlihat_untukku).
     supabase
       .from('jadwal_ujian')
-      .select('id, judul, mulai, deadline')
+      .select('id, judul, mulai, deadline, created_at')
       .order('created_at', { ascending: false })
   ]);
 
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
 
+  // Worksheet & Ujian terbaru (created_at terbaru) selalu di urutan paling atas —
+  // sudah dijamin oleh .order('created_at', {ascending:false}) di query masing-masing di atas.
   const worksheetItems = (wsRes.data || []).map(w => ({
     tipe: 'worksheet', judul: w.judul, meta: w.meta || 'Worksheet interaktif online',
-    url: w.url, mulai: w.mulai, deadline: w.deadline
+    url: w.url, mulai: w.mulai, deadline: w.deadline, created_at: w.created_at
   }));
   const ujianItems = (juRes.data || []).map(j => ({
     tipe: 'ujian', judul: j.judul, meta: 'Ujian',
-    url: 'soal.html?jadwal=' + j.id, mulai: j.mulai, deadline: j.deadline
+    url: 'soal.html?jadwal=' + j.id, mulai: j.mulai, deadline: j.deadline, created_at: j.created_at
   }));
-  const list = [...worksheetItems, ...ujianItems];
 
-  wsC.innerHTML = list.length ? list.map(w => {
+  document.getElementById('wsTabCountWorksheet').textContent = worksheetItems.length;
+  document.getElementById('wsTabCountUjian').textContent = ujianItems.length;
+
+  function renderCard(w) {
     const notStarted = w.mulai && new Date(w.mulai) > now;
     const closed = w.deadline && w.deadline < todayStr;
 
@@ -210,7 +218,30 @@
       </div>
     </div>
   `;
-  }).join('') : emptyState("Belum ada worksheet", "Tugas, latihan, dan ujian akan muncul di sini saat guru menerbitkannya.", "📝");
+  }
+
+  function renderTab(tab) {
+    const items = tab === 'ujian' ? ujianItems : worksheetItems;
+    wsC.innerHTML = items.length
+      ? items.map(renderCard).join('')
+      : (tab === 'ujian'
+        ? emptyState("Belum ada ujian", "Ujian yang diterbitkan guru akan muncul di sini.", "🧪")
+        : emptyState("Belum ada worksheet", "Tugas dan latihan akan muncul di sini saat guru menerbitkannya.", "📝"));
+  }
+
+  let activeTab = (new URLSearchParams(window.location.search).get('tab') === 'ujian') ? 'ujian' : 'worksheet';
+
+  document.querySelectorAll('.ws-tab').forEach(btn => {
+    if (btn.dataset.tab === activeTab) btn.classList.add('active'); else btn.classList.remove('active');
+    btn.addEventListener('click', () => {
+      if (btn.dataset.tab === activeTab) return;
+      activeTab = btn.dataset.tab;
+      document.querySelectorAll('.ws-tab').forEach(b => b.classList.toggle('active', b === btn));
+      renderTab(activeTab);
+    });
+  });
+
+  renderTab(activeTab);
 })();
 </script>
 

@@ -1280,7 +1280,7 @@ async function handleForceExit(){
 }
 
 document.getElementById('kickedOkBtn').addEventListener('click', ()=>{
-  window.location.href = 'worksheet.html';
+  window.location.href = 'worksheet.html?tab=ujian';
 });
 
 /* Best-effort: kalau siswa menutup tab / pindah halaman tanpa sempat
@@ -1602,7 +1602,7 @@ document.getElementById('violationExitBtn').addEventListener('click', ()=>{
     const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
     if(exitFs) exitFs.call(document).catch(()=>{});
   }
-  window.location.href = 'worksheet.html';
+  window.location.href = 'worksheet.html?tab=ujian';
 });
 
 document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
@@ -1911,7 +1911,7 @@ document.getElementById('rulesStartBtn').addEventListener('click', ()=>{
 
 document.getElementById('backToLoginBtn').addEventListener('click', ()=>{
   saveState();
-  window.location.href = 'worksheet.html';
+  window.location.href = 'worksheet.html?tab=ujian';
 });
 
 document.getElementById('hideBarBtn').addEventListener('click', function(){
