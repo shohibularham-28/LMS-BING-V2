@@ -60,11 +60,13 @@
          begitu siswa sudah login, Nama & Kelas otomatis diambil dari akun mereka
          dan tidak bisa diubah. Kalau belum login, otomatis diarahkan ke index.html. -->
     <div id="gate-screen" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4">
-      <div class="text-center space-y-3">
-        <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-brand-500/20 animate-pulse">
+      <div class="text-center space-y-3 max-w-sm">
+        <div id="gate-icon" class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-brand-500/20 animate-pulse">
           <i class="fa-solid fa-book-bookmark"></i>
         </div>
         <p class="text-sm font-semibold text-slate-600" id="gate-message">Memeriksa akun kamu...</p>
+        <p class="text-xs text-slate-400 hidden" id="gate-hint"></p>
+        <a href="index.html" id="gate-login-link" class="hidden inline-block text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 px-4 py-2 rounded-lg transition">Ke Halaman Login</a>
       </div>
     </div>
 
@@ -965,13 +967,57 @@
         let PROGRESS_KEY = 'recount_lms_v2_data'; // dibuat unik per akun di bootstrap()
         let hasilSubmitted = false;
 
+        function showGateError(message, hint, showLoginLink) {
+            const icon = document.getElementById('gate-icon');
+            const msg = document.getElementById('gate-message');
+            const hintEl = document.getElementById('gate-hint');
+            const loginLink = document.getElementById('gate-login-link');
+            if (icon) { icon.classList.remove('animate-pulse'); icon.classList.add('bg-gradient-to-tr', 'from-rose-500', 'to-rose-600'); icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>'; }
+            if (msg) msg.textContent = message;
+            if (hintEl && hint) { hintEl.textContent = hint; hintEl.classList.remove('hidden'); }
+            if (loginLink && showLoginLink) loginLink.classList.remove('hidden');
+        }
+
         /* ===================== LOGIN GATE ===================== */
         // Tidak ada halaman login/Nama/Kelas manual di sini: siswa sudah
         // diautentikasi lewat akun LMS (requireLogin() di assets/app.js).
         // Nama & Kelas otomatis diambil dari profil akun mereka dan terkunci.
         (async function bootstrap() {
-            const profile = await requireLogin(); // redirect ke index.html kalau belum login
-            if (!profile) return;
+            // Kalau assets/supabaseClient.js & assets/app.js gagal dimuat (mis. file ini
+            // dibuka sendirian tanpa folder "assets" di sebelahnya, atau bukan lewat
+            // website LMS), jangan macet diam-diam — kasih tahu penyebabnya.
+            if (typeof requireLogin !== 'function' || typeof supabase === 'undefined') {
+                showGateError(
+                    'Halaman ini tidak bisa memuat sistem login LMS.',
+                    'Pastikan file ini dibuka dari dalam website LMS (folder "assets" harus ada di sebelah file ini), bukan dibuka sendirian di luar project.'
+                );
+                return;
+            }
+
+            // Jaga-jaga kalau requireLogin() macet (mis. koneksi ke Supabase lambat/timeout)
+            // supaya siswa tidak terjebak selamanya di layar "Memeriksa akun kamu...".
+            const gateTimeout = setTimeout(() => {
+                showGateError(
+                    'Proses login terlalu lama / tidak merespons.',
+                    'Cek koneksi internetmu, lalu muat ulang halaman ini. Kalau masih macet, masuk ulang lewat halaman login.',
+                    true
+                );
+            }, 12000);
+
+            let profile = null;
+            try {
+                profile = await requireLogin(); // redirect ke index.html kalau belum login
+            } catch (err) {
+                clearTimeout(gateTimeout);
+                showGateError(
+                    'Gagal memeriksa status login.',
+                    (err && err.message) ? err.message : 'Terjadi kesalahan tak terduga. Coba muat ulang halaman.',
+                    true
+                );
+                return;
+            }
+            clearTimeout(gateTimeout);
+            if (!profile) return; // requireLogin sudah redirect ke index.html
 
             currentProfile = profile;
             studentIdentity = {
