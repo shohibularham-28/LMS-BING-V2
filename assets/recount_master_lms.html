@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recount Master LMS - Media Pembelajaran Interaktif Recount Text</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .highlight-orientation { background-color: #dbeafe; border-left: 4px solid #3b82f6; }
+        .highlight-events { background-color: #fef3c7; border-left: 4px solid #f59e0b; }
+        .highlight-reorientation { background-color: #dcfce7; border-left: 4px solid #22c55e; }
+    </style>
+</head>
+<body class="h-full text-slate-800 font-sans flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- STUDENT IDENTITY MODAL (wajib diisi agar nilai bisa dikirim ke guru) -->
+    <div id="identity-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-brand-500/20">
+            <i class="fa-solid fa-user-pen"></i>
+          </div>
+          <h2 class="font-heading font-bold text-lg text-slate-900">Data Diri Sebelum Mulai</h2>
+          <p class="text-xs text-slate-500">Isi data ini dulu supaya nilaimu bisa otomatis terkirim ke guru.</p>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Jenis Pengerjaan</label>
+          <select id="idJenis" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+            <option value="individu">Individu</option>
+            <option value="kelompok">Kelompok</option>
+          </select>
+        </div>
+
+        <div id="idIndividuFields" class="space-y-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Nama Kamu</label>
+          <input type="text" id="idNamaIndividu" placeholder="mis. Siti Amalia" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
+
+        <div id="idKelompokFields" class="space-y-3 hidden">
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Nama Kelompok</label>
+            <input type="text" id="idNamaKelompok" placeholder="mis. Kelompok 1 / The Explorers" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Anggota Kelompok</label>
+            <div id="idMemberList" class="space-y-2"></div>
+            <button type="button" id="idAddMemberBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700">
+              <i class="fa-solid fa-plus mr-1"></i>Tambah anggota
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Kelas</label>
+          <input type="text" id="idKelas" placeholder="mis. VIII A" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
+
+        <div id="idWarn" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5"></div>
+
+        <button type="button" id="idStartBtn" class="w-full py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md transition">
+          <i class="fa-solid fa-play mr-2"></i>Mulai Belajar
+        </button>
+      </div>
+    </div>
+
+    <!-- TOP NAVBAR -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <button id="mobile-menu-btn" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-2 rounded-md">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-book-bookmark text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-heading font-bold text-lg leading-tight text-slate-900">Recount Master <span class="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">LMS v2.5</span></h1>
+                        <p class="text-xs text-slate-500 hidden sm:block">Interactive English Recount Text Learning Media</p>
+                    </div>
+                </div>
+
+                <!-- XP Score, Language Toggle & Global Progress Bar -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Translate Toggle Button -->
+                    <button id="translate-btn" onclick="toggleTranslation()" class="flex items-center space-x-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100 transition shadow-sm">
+                        <i class="fa-solid fa-language text-base text-indigo-600"></i>
+                        <span id="translate-btn-text">Terjemahkan (ID)</span>
+                    </button>
+
+                    <button id="identity-chip" onclick="openIdentityModal()" title="Ubah data diri" class="hidden md:flex items-center space-x-1.5 bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full font-semibold text-xs hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-user text-slate-400"></i>
+                        <span id="identity-chip-text">—</span>
+                        <i class="fa-solid fa-pen text-[10px] text-slate-400"></i>
+                    </button>
+
+                    <div class="flex items-center space-x-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-full font-semibold text-xs sm:text-sm">
+                        <i class="fa-solid fa-trophy text-amber-500 animate-bounce"></i>
+                        <span id="global-xp">0 XP</span>
+                    </div>
+                    
+                    <div class="hidden md:flex flex-col w-36 lg:w-44">
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-slate-500">Progress</span>
+                            <span id="progress-text" class="text-brand-600">0%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                            <div id="progress-bar-fill" class="bg-gradient-to-r from-brand-500 to-indigo-600 h-2 rounded-full transition-all duration-500 w-0"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="resetProgress()" title="Reset Progress" class="text-slate-400 hover:text-rose-600 text-sm p-2 transition">
+                        <i class="fa-solid fa-rotate-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MANDATORY READING TIMER STICKY BANNER -->
+    <div id="reading-timer-banner" class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white px-4 py-2 text-xs sm:text-sm border-b border-indigo-800 flex items-center justify-between sticky top-16 z-20 shadow-md">
+        <div class="flex items-center space-x-2">
+            <span class="relative flex h-3 w-3">
+              <span id="timer-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+            </span>
+            <span class="font-medium">Reading Timer (Stage <span id="current-stage-timer-num">1</span>):</span>
+            <span id="reading-timer-display" class="font-mono font-bold text-amber-300 bg-black/30 px-2 py-0.5 rounded border border-amber-400/30">01:30 remaining</span>
+        </div>
+        <div id="timer-status-badge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-semibold">
+            <i class="fa-solid fa-lock mr-1"></i> Read 1.5 min to unlock Quiz
+        </div>
+    </div>
+
+    <div class="flex-1 flex overflow-hidden">
+        <!-- SIDEBAR NAVIGATION -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 w-72 bg-white border-r border-slate-200 flex flex-col transition-transform duration-300 transform -translate-x-full lg:translate-x-0 lg:static lg:z-auto">
+            <div class="p-4 border-b border-slate-100 flex justify-between items-center lg:hidden">
+                <span class="font-bold text-slate-700">Daftar Modul</span>
+                <button id="close-sidebar-btn" class="text-slate-500 hover:text-slate-700 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Stage Navigation Menu -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Alur Pembelajaran</div>
+                
+                <button onclick="switchStage(1)" id="stage-nav-1" class="stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-semibold bg-brand-50 text-brand-700 border border-brand-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="nav-icon w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center font-bold text-xs">1</div>
+                        <div>
+                            <div class="leading-snug">Stage 1: Pengenalan</div>
+                            <div class="text-xs text-slate-500 font-normal">Konsep & Tujuan Teks</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-circle-check text-brand-600 text-base" id="stage-check-1"></i>
+                </button>
+
+                <button onclick="switchStage(2)" id="stage-nav-2" class="stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-600 hover:bg-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="nav-icon w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">2</div>
+                        <div>
+                            <div class="leading-snug">Stage 2: Generic Structure</div>
+                            <div class="text-xs text-slate-400 font-normal">Struktur Teks Recount</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-lock text-slate-300 text-xs" id="stage-check-2"></i>
+                </button>
+
+                <button onclick="switchStage(3)" id="stage-nav-3" class="stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-600 hover:bg-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="nav-icon w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">3</div>
+                        <div>
+                            <div class="leading-snug">Stage 3: Language Features</div>
+                            <div class="text-xs text-slate-400 font-normal">Past Tense & Connectors</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-lock text-slate-300 text-xs" id="stage-check-3"></i>
+                </button>
+
+                <button onclick="switchStage(4)" id="stage-nav-4" class="stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-600 hover:bg-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="nav-icon w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">4</div>
+                        <div>
+                            <div class="leading-snug">Stage 4: Analisis & Jenis Teks</div>
+                            <div class="text-xs text-slate-400 font-normal">Studi Kasus & Variasi</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-lock text-slate-300 text-xs" id="stage-check-4"></i>
+                </button>
+
+                <button onclick="switchStage(5)" id="stage-nav-5" class="stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-600 hover:bg-slate-100">
+                    <div class="flex items-center space-x-3">
+                        <div class="nav-icon w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs">5</div>
+                        <div>
+                            <div class="leading-snug">Stage 5: Final Evaluation</div>
+                            <div class="text-xs text-slate-400 font-normal">Uji Pemahaman Total</div>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-lock text-slate-300 text-xs" id="stage-check-5"></i>
+                </button>
+            </div>
+
+            <!-- Achievement Badges Widget -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50">
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                    <span>Lencana Prestasi</span>
+                    <i class="fa-solid fa-award text-amber-500"></i>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center" id="badges-container">
+                    <div id="badge-1" title="Pioneer: Selesaikan Stage 1" class="p-2 rounded-lg bg-slate-200 text-slate-400 grayscale transition duration-300">
+                        <i class="fa-solid fa-seedling text-lg"></i>
+                    </div>
+                    <div id="badge-2" title="Architect: Kuasai Generic Structure" class="p-2 rounded-lg bg-slate-200 text-slate-400 grayscale transition duration-300">
+                        <i class="fa-solid fa-cubes text-lg"></i>
+                    </div>
+                    <div id="badge-3" title="Grammar Master: Kuasai Simple Past Tense" class="p-2 rounded-lg bg-slate-200 text-slate-400 grayscale transition duration-300">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <div id="badge-4" title="Master Graduate: Lulus Evaluasi Akhir" class="p-2 rounded-lg bg-slate-200 text-slate-400 grayscale transition duration-300">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 overflow-y-auto custom-scrollbar p-3 sm:p-6 lg:p-8">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <!-- Alert Message Banner -->
+                <div id="toast-banner" class="hidden rounded-xl p-4 transition-all duration-300 shadow-md">
+                    <div class="flex items-center space-x-3">
+                        <i id="toast-icon" class="fa-solid text-xl"></i>
+                        <div id="toast-message" class="text-sm font-semibold"></div>
+                    </div>
+                </div>
+
+                <!-- STAGE 1 CONTENT -->
+                <section id="stage-content-1" class="stage-section space-y-6">
+                    <!-- Banner -->
+                    <div class="bg-gradient-to-r from-brand-600 to-indigo-700 rounded-2xl p-5 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Stage 1</span>
+                            <h2 class="text-xl sm:text-3xl font-heading font-extrabold mt-2 translatable" 
+                                data-en="Introduction to Recount Text" 
+                                data-id="Pengenalan Teks Recount">Introduction to Recount Text</h2>
+                            <p class="text-brand-100 text-xs sm:text-base mt-2 max-w-2xl translatable"
+                                data-en="Learn the core concept, social function, and categories of Recount Text in English."
+                                data-id="Pelajari konsep dasar, fungsi sosial, serta klasifikasi jenis-jenis Recount Text dalam bahasa Inggris.">
+                                Learn the core concept, social function, and categories of Recount Text in English.
+                            </p>
+                        </div>
+                        <i class="fa-solid fa-book-open text-white/10 text-8xl sm:text-9xl absolute -right-6 -bottom-8"></i>
+                    </div>
+
+                    <!-- Tabs Header -->
+                    <div class="flex border-b border-slate-200 space-x-2 sm:space-x-4">
+                        <button onclick="switchSubTab(1, 'materi')" id="tab-btn-1-materi" class="subtab-btn border-b-2 border-brand-600 pb-3 text-xs sm:text-sm font-bold text-brand-600">
+                            <i class="fa-solid fa-book-reader mr-1.5"></i>Learning Material
+                        </button>
+                        <button onclick="attemptSubTabAccess(1, 'exercise')" id="tab-btn-1-exercise" class="subtab-btn border-b-2 border-transparent pb-3 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-600 flex items-center">
+                            <i class="fa-solid fa-pen-to-square mr-1.5"></i>Exercises & Quiz
+                            <i id="quiz-lock-icon-1" class="fa-solid fa-lock text-amber-500 text-xs ml-1.5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Materi View Stage 1 -->
+                    <div id="subtab-content-1-materi" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-brand-600 flex items-center justify-center text-lg font-bold">
+                                    <i class="fa-solid fa-question"></i>
+                                </div>
+                                <h3 class="text-base sm:text-lg font-bold text-slate-900 translatable" data-en="What is Recount Text?" data-id="Apa itu Recount Text?">What is Recount Text?</h3>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed translatable" 
+                                   data-en="A Recount Text is a type of English text that retells past events, experiences, or activities in chronological order (the order in which they happened)." 
+                                   data-id="Recount Text adalah jenis teks bahasa Inggris yang menceritakan kembali kejadian, pengalaman, atau aktivitas di masa lalu secara kronologis.">
+                                    A Recount Text is a type of English text that retells past events, experiences, or activities in chronological order (the order in which they happened).
+                                </p>
+                                <div class="p-3 bg-blue-50 border-l-4 border-brand-500 rounded text-xs text-brand-900 translatable"
+                                     data-en="💡 Key Rule: Recount Text always retells actions that ALREADY happened in the past."
+                                     data-id="💡 Aturan Kunci: Recount Text selalu menceritakan tindakan yang SUDAH TERJADI di masa lalu.">
+                                    💡 Key Rule: Recount Text always retells actions that ALREADY happened in the past.
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg font-bold">
+                                    <i class="fa-solid fa-bullseye"></i>
+                                </div>
+                                <h3 class="text-base sm:text-lg font-bold text-slate-900 translatable" data-en="Social Function (Purpose)" data-id="Fungsi Sosial (Tujuan)">Social Function (Purpose)</h3>
+                                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed translatable"
+                                   data-en="The main goals of writing a Recount Text include:"
+                                   data-id="Tujuan utama penulisan Recount Text antara lain:">
+                                    The main goals of writing a Recount Text include:
+                                </p>
+                                <ul class="text-xs sm:text-sm text-slate-600 space-y-2 list-disc list-inside">
+                                    <li class="translatable" data-en="To entertain or amuse readers with personal stories." data-id="Menghibur pembaca dengan cerita pribadi.">To entertain or amuse readers with personal stories.</li>
+                                    <li class="translatable" data-en="To inform readers about what happened and when." data-id="Memberikan informasi tentang apa yang terjadi dan kapan.">To inform readers about what happened and when.</li>
+                                    <li class="translatable" data-en="To record historical events or memorable moments." data-id="Mencatat peristiwa sejarah atau momen berkesan.">To record historical events or memorable moments.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Types of Recount Text -->
+                        <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 translatable" data-en="4 Major Types of Recount Text" data-id="4 Jenis Utama Recount Text">4 Major Types of Recount Text</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-brand-300 transition">
+                                    <i class="fa-solid fa-user text-brand-600 text-2xl mb-2"></i>
+                                    <h4 class="font-bold text-xs sm:text-sm text-slate-800">1. Personal Recount</h4>
+                                    <p class="text-xs text-slate-500 mt-1 translatable" data-en="Retells author's personal experiences (e.g., My Holiday in Bali)." data-id="Menceritakan pengalaman pribadi penulis (contoh: Liburan Saya di Bali).">Retells author's personal experiences (e.g., My Holiday in Bali).</p>
+                                </div>
+                                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-brand-300 transition">
+                                    <i class="fa-solid fa-newspaper text-emerald-600 text-2xl mb-2"></i>
+                                    <h4 class="font-bold text-xs sm:text-sm text-slate-800">2. Factual Recount</h4>
+                                    <p class="text-xs text-slate-500 mt-1 translatable" data-en="Reports factual incidents (e.g., Police report, science experiment)." data-id="Laporan fakta nyata (contoh: Laporan polisi, eksperimen sains).">Reports factual incidents (e.g., Police report, science experiment).</p>
+                                </div>
+                                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-brand-300 transition">
+                                    <i class="fa-solid fa-book-bookmark text-amber-600 text-2xl mb-2"></i>
+                                    <h4 class="font-bold text-xs sm:text-sm text-slate-800">3. Biographical Recount</h4>
+                                    <p class="text-xs text-slate-500 mt-1 translatable" data-en="Recounts a famous person's life history (e.g., Life of B.J. Habibie)." data-id="Menceritakan riwayat hidup seseorang (contoh: Biografi B.J. Habibie).">Recounts a famous person's life history (e.g., Life of B.J. Habibie).</p>
+                                </div>
+                                <div class="p-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-brand-300 transition">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-2xl mb-2"></i>
+                                    <h4 class="font-bold text-xs sm:text-sm text-slate-800">4. Imaginative Recount</h4>
+                                    <p class="text-xs text-slate-500 mt-1 translatable" data-en="Applies imaginary details to a real situation (e.g., A Day as an Astronaut)." data-id="Rekaan khayalan dalam situasi nyata (contoh: Sehari Menjadi Astronaut).">Applies imaginary details to a real situation (e.g., A Day as an Astronaut).</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise View Stage 1 -->
+                    <div id="subtab-content-1-exercise" class="hidden space-y-6">
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-shield-halved text-amber-600 text-xl"></i>
+                                <div class="text-xs sm:text-sm text-amber-900">
+                                    <strong>Strict Passing Rule:</strong> You must answer ALL questions 100% correctly to unlock Stage 2!
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="quiz-form-1" class="space-y-6">
+                            <!-- Question 1 -->
+                            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-brand-600 uppercase">Question 1 of 3</span>
+                                <h4 class="font-bold text-slate-800 text-xs sm:text-base">What is the primary social function of a Recount Text?</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_1" value="A" class="text-brand-600 focus:ring-brand-500">
+                                        <span>A. To describe how to make a dish step-by-step</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q1_1" value="B" class="text-brand-600 focus:ring-brand-500">
+                                        <span>B. To retell past events or experiences in chronological order</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q1_1" value="C" class="text-brand-600 focus:ring-brand-500">
+                                        <span>C. To persuade readers to buy a commercial product</span>
+                                    </label>
+                                </div>
+                                <div id="feedback-q1-1" class="hidden text-xs p-2.5 rounded font-semibold"></div>
+                            </div>
+
+                            <!-- Question 2 -->
+                            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-brand-600 uppercase">Question 2 of 3</span>
+                                <h4 class="font-bold text-slate-800 text-xs sm:text-base">If a student writes an essay about "My First Trip to Mount Bromo", which category does it belong to?</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_2" value="A" class="text-brand-600">
+                                        <span>A. Personal Recount</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_2" value="B" class="text-brand-600">
+                                        <span>B. Biographical Recount</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_2" value="C" class="text-brand-600">
+                                        <span>C. Factual Recount</span>
+                                    </label>
+                                </div>
+                                <div id="feedback-q1-2" class="hidden text-xs p-2.5 rounded font-semibold"></div>
+                            </div>
+
+                            <!-- Question 3 -->
+                            <div class="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-brand-600 uppercase">Question 3 of 3</span>
+                                <h4 class="font-bold text-slate-800 text-xs sm:text-base">A text detailing the life history and achievements of Albert Einstein is called...</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_3" value="A" class="text-brand-600">
+                                        <span>A. Imaginative Recount</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_3" value="B" class="text-brand-600">
+                                        <span>B. Biographical Recount</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs sm:text-sm">
+                                        <input type="radio" name="q1_3" value="C" class="text-brand-600">
+                                        <span>C. Narrative Legend</span>
+                                    </label>
+                                </div>
+                                <div id="feedback-q1-3" class="hidden text-xs p-2.5 rounded font-semibold"></div>
+                            </div>
+
+                            <button type="button" onclick="verifyQuizStage1()" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>Submit Answers (Stage 1)</span>
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- STAGE 2 TO 5 SCRIPT UPDATES BELOW -->
+                        <button onclick="switchSubTab(2, 'materi')" id="tab-btn-2-materi" class="subtab-btn border-b-2 border-amber-600 pb-3 text-sm font-bold text-amber-600">
+                            <i class="fa-solid fa-book-reader mr-2"></i>Materi Struktur
+                        </button>
+                        <button onclick="switchSubTab(2, 'exercise')" id="tab-btn-2-exercise" class="subtab-btn border-b-2 border-transparent pb-3 text-sm font-medium text-slate-500 hover:text-slate-700">
+                            <i class="fa-solid fa-pen-to-square mr-2"></i>Latihan Struktur (Drag & Drop)
+                        </button>
+                    </div>
+
+                    <!-- Materi View -->
+                    <div id="subtab-content-2-materi" class="space-y-6">
+                        <div class="space-y-4">
+                            <!-- Structure 1 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-start">
+                                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shrink-0">1</div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-lg font-bold text-slate-900">Orientation (Pengenalan)</h3>
+                                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-semibold">Paragraf Pembuka</span>
+                                    </div>
+                                    <p class="text-slate-600 text-sm">
+                                        Berisi pengenalan tentang <strong>SIAPA (Who)</strong> yang terlibat, <strong>DI MANA (Where)</strong> kejadian berlangsung, dan <strong>KAPAN (When)</strong> peristiwa itu terjadi.
+                                    </p>
+                                    <div class="p-3 bg-blue-50 text-blue-900 text-xs rounded border border-blue-100">
+                                        <em>Example: Last month, my family and I went to Pangandaran Beach for holiday. We stayed at a small hotel near the coast.</em>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Structure 2 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-start">
+                                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg shrink-0">2</div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-lg font-bold text-slate-900">Events (Urutan Peristiwa)</h3>
+                                        <span class="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-semibold">Isi / Inti Cerita</span>
+                                    </div>
+                                    <p class="text-slate-600 text-sm">
+                                        Menceritakan serangkaian kejadian secara <strong>kronologis</strong> dari awal hingga akhir. Biasanya terdiri dari beberapa paragraf dan menggunakan kata penghubung waktu (First, Then, After that, Finally).
+                                    </p>
+                                    <div class="p-3 bg-amber-50 text-amber-900 text-xs rounded border border-amber-100">
+                                        <em>Example: On the first day, we built sandcastles and played volleyball. The next morning, we rented a boat to explore the small island...</em>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Structure 3 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-start">
+                                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg shrink-0">3</div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-lg font-bold text-slate-900">Re-orientation (Kesan / Penutup)</h3>
+                                        <span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded font-semibold">Paragraf Penutup (Opsional)</span>
+                                    </div>
+                                    <p class="text-slate-600 text-sm">
+                                        Berisi rangkuman, kesimpulan, atau <strong>kesan/perasaan pribadi (personal comment)</strong> penulis terhadap peristiwa tersebut.
+                                    </p>
+                                    <div class="p-3 bg-emerald-50 text-emerald-900 text-xs rounded border border-emerald-100">
+                                        <em>Example: It was the best vacation ever! We felt very tired but extremely happy.</em>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Text Breakdown Tool -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-hand-pointer text-amber-500 mr-2"></i> Interactive Text Structure Breakdown
+                            </h3>
+                            <p class="text-xs text-slate-500">Klik tombol di bawah untuk melihat bagian mana yang termasuk Orientation, Events, dan Re-orientation!</p>
+                            
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="highlightTextSection('all')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-white">Tampilkan Semua</button>
+                                <button onclick="highlightTextSection('orientation')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200">Highlight Orientation</button>
+                                <button onclick="highlightTextSection('events')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200">Highlight Events</button>
+                                <button onclick="highlightTextSection('reorientation')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-100 text-emerald-700 hover:bg-emerald-200">Highlight Re-orientation</button>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-slate-200 space-y-3 bg-slate-50 text-sm font-sans" id="sample-text-breakdown">
+                                <p id="sec-ori" class="p-3 rounded transition duration-300 highlight-orientation">
+                                    <strong>[Orientation]</strong> Last Sunday, my school organized a trip to the National Museum in Jakarta. Thirty students and two teachers joined the trip. We departed at 7.00 AM by bus.
+                                </p>
+                                <p id="sec-evt" class="p-3 rounded transition duration-300 highlight-events">
+                                    <strong>[Events]</strong> When we arrived at 9.00 AM, a tour guide welcomed us. First, we walked into the historical gallery and saw ancient statues. Next, we observed traditional weapons and clothes from various provinces. After having lunch together at noon, we watched a short documentary film about Indonesian independence history.
+                                </p>
+                                <p id="sec-reori" class="p-3 rounded transition duration-300 highlight-reorientation">
+                                    <strong>[Re-orientation]</strong> Finally, at 4.00 PM, we went back home. Overall, it was a very educational and enjoyable trip. I learned a lot about our nation's history.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise View Stage 2 -->
+                    <div id="subtab-content-2-exercise" class="hidden space-y-6">
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-circle-exclamation text-amber-600 text-xl"></i>
+                                <div class="text-xs sm:text-sm text-amber-900">
+                                    <strong>Latihan Identifikasi Struktur:</strong> Tentukan bagian mana dari paragraf di bawah ini!
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="quiz-form-2" class="space-y-6">
+                            <!-- Section Identification 1 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-amber-600 uppercase">Soal 1: Identifikasi Bagian Teks</span>
+                                <blockquote class="p-3 bg-slate-100 rounded text-xs text-slate-700 italic border-l-4 border-slate-400">
+                                    "Although I felt exhausted after walking for five hours, I was extremely happy because I reached the top of Mount Papandayan with my best friends."
+                                </blockquote>
+                                <p class="text-sm font-semibold text-slate-800">Paragraf tersebut dalam Recount Text dikategorikan sebagai bagian...</p>
+                                <select id="q2_1" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Pilih Jawaban --</option>
+                                    <option value="Orientation">Orientation</option>
+                                    <option value="Events">Events</option>
+                                    <option value="Re-orientation">Re-orientation</option>
+                                </select>
+                                <div id="feedback-q2-1" class="hidden text-xs p-2 rounded"></div>
+                            </div>
+
+                            <!-- Section Identification 2 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-amber-600 uppercase">Soal 2: Identifikasi Bagian Teks</span>
+                                <blockquote class="p-3 bg-slate-100 rounded text-xs text-slate-700 italic border-l-4 border-slate-400">
+                                    "Two weeks ago, Mr. Ahmad and his family spent their weekend in Yogyakarta. They arrived at Tugu Station at 6.00 AM."
+                                </blockquote>
+                                <p class="text-sm font-semibold text-slate-800">Paragraf di atas berfungsi sebagai...</p>
+                                <select id="q2_2" class="w-full p-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Pilih Jawaban --</option>
+                                    <option value="Orientation">Orientation</option>
+                                    <option value="Events">Events</option>
+                                    <option value="Re-orientation">Re-orientation</option>
+                                </select>
+                                <div id="feedback-q2-2" class="hidden text-xs p-2 rounded"></div>
+                            </div>
+
+                            <!-- Chronological Ordering Question -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                <span class="text-xs font-bold text-amber-600 uppercase">Soal 3: Susun Urutan Kronologis (Events)</span>
+                                <p class="text-sm font-semibold text-slate-800">Urutkan kalimat acak berikut menjadi alur kejadian yang benar (Tulis angka 1, 2, 3 pada kotak):</p>
+                                
+                                <div class="space-y-3 text-sm">
+                                    <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <input type="number" min="1" max="3" id="order_step_a" class="w-14 p-1.5 border border-slate-300 rounded text-center font-bold">
+                                        <span>After that, we sat under a palm tree and ate our lunch boxes together.</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <input type="number" min="1" max="3" id="order_step_b" class="w-14 p-1.5 border border-slate-300 rounded text-center font-bold">
+                                        <span>First, we bought entry tickets and walked straight to the beach shore.</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <input type="number" min="1" max="3" id="order_step_c" class="w-14 p-1.5 border border-slate-300 rounded text-center font-bold">
+                                        <span>Then, we swam in the shallow water and took many photos.</span>
+                                    </div>
+                                </div>
+                                <div id="feedback-q2-3" class="hidden text-xs p-2 rounded"></div>
+                            </div>
+
+                            <button type="button" onclick="verifyQuizStage2()" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md transition">
+                                <i class="fa-solid fa-check-double mr-2"></i> Periksa Jawaban Stage 2
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- STAGE 3 CONTENT -->
+                <section id="stage-content-3" class="stage-section hidden space-y-6">
+                    <!-- Banner -->
+                    <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Stage 3</span>
+                            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold mt-2">Language Features (Unsur Kebahasaan)</h2>
+                            <p class="text-emerald-100 text-sm sm:text-base mt-2 max-w-2xl">Pendalaman Simple Past Tense, Regular/Irregular Verbs, dan Time Connectors.</p>
+                        </div>
+                        <i class="fa-solid fa-bolt text-white/10 text-9xl absolute -right-6 -bottom-8"></i>
+                    </div>
+
+                    <!-- Tabs Header -->
+                    <div class="flex border-b border-slate-200 space-x-4">
+                        <button onclick="switchSubTab(3, 'materi')" id="tab-btn-3-materi" class="subtab-btn border-b-2 border-emerald-600 pb-3 text-sm font-bold text-emerald-600">
+                            <i class="fa-solid fa-book-reader mr-2"></i>Materi Kebahasaan
+                        </button>
+                        <button onclick="switchSubTab(3, 'exercise')" id="tab-btn-3-exercise" class="subtab-btn border-b-2 border-transparent pb-3 text-sm font-medium text-slate-500 hover:text-slate-700">
+                            <i class="fa-solid fa-pen-to-square mr-2"></i>Latihan Past Tense (Strict Checking)
+                        </button>
+                    </div>
+
+                    <!-- Materi View -->
+                    <div id="subtab-content-3-materi" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Feature 1 -->
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">1</div>
+                                <h3 class="font-bold text-slate-900 text-base">Simple Past Tense</h3>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    Menggunakan kata kerja bentuk kedua (Verb 2) untuk menyatakan tindakan yang telah selesai di masa lampau.
+                                </p>
+                                <div class="p-2.5 bg-slate-100 text-xs rounded font-mono font-semibold text-slate-800">
+                                    Subject + Verb 2 + Object
+                                </div>
+                            </div>
+
+                            <!-- Feature 2 -->
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <div class="w-10 h-10 rounded-lg bg-teal-100 text-teal-600 flex items-center justify-center font-bold">2</div>
+                                <h3 class="font-bold text-slate-900 text-base">Chronological Connectors</h3>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    Kata penghubung waktu untuk menunjukkan urutan peristiwa secara logis dan runtut.
+                                </p>
+                                <div class="text-xs text-slate-700 bg-slate-100 p-2.5 rounded font-medium space-x-1">
+                                    <span class="bg-emerald-200 text-emerald-900 px-1 rounded">First</span>
+                                    <span class="bg-emerald-200 text-emerald-900 px-1 rounded">Then</span>
+                                    <span class="bg-emerald-200 text-emerald-900 px-1 rounded">After that</span>
+                                    <span class="bg-emerald-200 text-emerald-900 px-1 rounded">Finally</span>
+                                </div>
+                            </div>
+
+                            <!-- Feature 3 -->
+                            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center font-bold">3</div>
+                                <h3 class="font-bold text-slate-900 text-base">Adverbs of Time & Place</h3>
+                                <p class="text-xs text-slate-600 leading-relaxed">
+                                    Keterangan waktu dan tempat yang spesifik di masa lampau.
+                                </p>
+                                <ul class="text-xs text-slate-600 space-y-1 list-disc list-inside">
+                                    <li><em>Yesterday, last week, 2 days ago</em></li>
+                                    <li><em>In Yogyakarta, at the beach</em></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Verb 1 vs Verb 2 Interactive Helper -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <h3 class="text-base font-bold text-slate-900 flex items-center">
+                                <i class="fa-solid fa-list-check text-emerald-600 mr-2"></i> Regular vs Irregular Verbs Cheat-Sheet
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="border border-slate-200 rounded-xl p-4 bg-emerald-50/50">
+                                    <h4 class="font-bold text-sm text-emerald-900 mb-2">Regular Verbs (+ed / +d)</h4>
+                                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                                        <div>visit &rarr; <strong>visited</strong></div>
+                                        <div>play &rarr; <strong>played</strong></div>
+                                        <div>walk &rarr; <strong>walked</strong></div>
+                                        <div>cook &rarr; <strong>cooked</strong></div>
+                                        <div>study &rarr; <strong>studied</strong></div>
+                                        <div>arrive &rarr; <strong>arrived</strong></div>
+                                    </div>
+                                </div>
+                                <div class="border border-slate-200 rounded-xl p-4 bg-teal-50/50">
+                                    <h4 class="font-bold text-sm text-teal-900 mb-2">Irregular Verbs (Berubah Bentuk)</h4>
+                                    <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+                                        <div>go &rarr; <strong>went</strong></div>
+                                        <div>see &rarr; <strong>saw</strong></div>
+                                        <div>buy &rarr; <strong>bought</strong></div>
+                                        <div>eat &rarr; <strong>ate</strong></div>
+                                        <div>take &rarr; <strong>took</strong></div>
+                                        <div>make &rarr; <strong>made</strong></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise View Stage 3 -->
+                    <div id="subtab-content-3-exercise" class="hidden space-y-6">
+                        <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <i class="fa-solid fa-pen-nib text-amber-600 text-xl"></i>
+                                <div class="text-xs sm:text-sm text-amber-900">
+                                    <strong>Strict Fill-in-the-blank Test:</strong> Isilah kata kerja dalam kurung menjadi kata kerja bentuk kedua (Verb 2) dengan benar!
+                                </div>
+                            </div>
+                        </div>
+
+                        <form id="quiz-form-3" class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-sm leading-relaxed">
+                                <h4 class="font-bold text-slate-800">Lengkapi Cerita Pendek Berikut:</h4>
+                                
+                                <div class="p-4 bg-slate-50 rounded-xl space-y-4 font-sans text-slate-700">
+                                    <p>
+                                        Last holiday, my brother and I 
+                                        <input type="text" id="v_go" class="w-24 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(go)"> 
+                                        to Bali. We 
+                                        <input type="text" id="v_stay" class="w-28 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(stay)"> 
+                                        at a beautiful resort near Kuta Beach.
+                                    </p>
+                                    <p>
+                                        On the second day, we 
+                                        <input type="text" id="v_buy" class="w-24 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(buy)"> 
+                                        some souvenirs and 
+                                        <input type="text" id="v_eat" class="w-24 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(eat)"> 
+                                        delicious seafood at Jimbaran. 
+                                    </p>
+                                    <p>
+                                        Finally, we 
+                                        <input type="text" id="v_take" class="w-24 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(take)"> 
+                                        a flight back to Jakarta in the evening. We 
+                                        <input type="text" id="v_feel" class="w-24 p-1.5 border border-slate-300 rounded text-center font-bold text-brand-600 focus:ring-2 focus:ring-emerald-500" placeholder="(feel)"> 
+                                        very happy.
+                                    </p>
+                                </div>
+                                <div id="feedback-q3" class="hidden text-xs p-3 rounded"></div>
+                            </div>
+
+                            <button type="button" onclick="verifyQuizStage3()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition">
+                                <i class="fa-solid fa-check-double mr-2"></i> Periksa Konjugasi Verb Stage 3
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- STAGE 4 CONTENT -->
+                <section id="stage-content-4" class="stage-section hidden space-y-6">
+                    <!-- Banner -->
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-800 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Stage 4</span>
+                            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold mt-2">Analisis Teks & Studi Kasus</h2>
+                            <p class="text-purple-100 text-sm sm:text-base mt-2 max-w-2xl">Menganalisis teks Recount sejarah dan biografi serta latihan membaca kritis.</p>
+                        </div>
+                        <i class="fa-solid fa-magnifying-glass text-white/10 text-9xl absolute -right-6 -bottom-8"></i>
+                    </div>
+
+                    <!-- Tabs Header -->
+                    <div class="flex border-b border-slate-200 space-x-4">
+                        <button onclick="switchSubTab(4, 'materi')" id="tab-btn-4-materi" class="subtab-btn border-b-2 border-purple-600 pb-3 text-sm font-bold text-purple-600">
+                            <i class="fa-solid fa-book-reader mr-2"></i>Contoh Teks Lengkap
+                        </button>
+                        <button onclick="switchSubTab(4, 'exercise')" id="tab-btn-4-exercise" class="subtab-btn border-b-2 border-transparent pb-3 text-sm font-medium text-slate-500 hover:text-slate-700">
+                            <i class="fa-solid fa-pen-to-square mr-2"></i>Quiz Pemahaman Bacaan
+                        </button>
+                    </div>
+
+                    <!-- Materi View -->
+                    <div id="subtab-content-4-materi" class="space-y-6">
+                        <!-- Reading Passage Card with Audio Pronunciation Button -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
+                                <div>
+                                    <span class="text-xs font-bold text-purple-600 uppercase">Historical Recount Sample</span>
+                                    <h3 class="text-lg font-bold text-slate-900">The Proclamation of Indonesian Independence</h3>
+                                </div>
+                                <button onclick="readAloudText()" class="px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-bold rounded-lg transition flex items-center space-x-2">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                    <span>Dengarkan Audio (TTS)</span>
+                                </button>
+                            </div>
+
+                            <div id="reading-passage" class="text-sm text-slate-700 leading-relaxed space-y-3">
+                                <p>
+                                    The Proclamation of Indonesian Independence occurred on Friday, 17 August 1945. The declaration marked the start of the diplomatic and armed resistance of the Indonesian National Revolution, fighting against the forces of the Netherlands.
+                                </p>
+                                <p>
+                                    First, in the early morning of August 17, Ir. Soekarno and Drs. Mohammad Hatta gathered with other freedom fighters at Jalan Pegangsaan Timur No. 56, Jakarta. They drafted the concise text of the proclamation. Sayuti Melik then typed the final draft of the proclamation text.
+                                </p>
+                                <p>
+                                    At 10:00 AM, Ir. Soekarno read the proclamation text in front of a crowd. After the reading, the red-and-white Indonesian flag was raised for the first time, accompanied by the national anthem "Indonesia Raya".
+                                </p>
+                                <p>
+                                    This historic event was brief but held immense significance for all Indonesian people, as it marked the birth of a free nation.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exercise View Stage 4 -->
+                    <div id="subtab-content-4-exercise" class="hidden space-y-6">
+                        <form id="quiz-form-4" class="space-y-6">
+                            <!-- Q1 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-purple-600 uppercase">Soal 1: Pemahaman Teks</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Kapan Proklamasi Kemerdekaan Indonesia dibacakan berdasarkan teks?</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q4_1" value="A" class="text-purple-600">
+                                        <span>A. 17 August 1945 at 10:00 AM</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q4_1" value="B" class="text-purple-600">
+                                        <span>B. 17 August 1945 at 7:00 AM</span>
+                                    </label>
+                                </div>
+                                <div id="feedback-q4-1" class="hidden text-xs p-2 rounded"></div>
+                            </div>
+
+                            <!-- Q2 -->
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                                <span class="text-xs font-bold text-purple-600 uppercase">Soal 2: Tokoh & Peran</span>
+                                <h4 class="font-bold text-slate-800 text-sm">Siapakah yang mengetik naskah proklamasi berdasarkan teks di atas?</h4>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q4_2" value="A" class="text-purple-600">
+                                        <span>A. Mohammad Hatta</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q4_2" value="B" class="text-purple-600">
+                                        <span>B. Sayuti Melik</span>
+                                    </label>
+                                </div>
+                                <div id="feedback-q4-2" class="hidden text-xs p-2 rounded"></div>
+                            </div>
+
+                            <button type="button" onclick="verifyQuizStage4()" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl shadow-md transition">
+                                <i class="fa-solid fa-check-double mr-2"></i> Periksa Jawaban Stage 4
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- STAGE 5 CONTENT -->
+                <section id="stage-content-5" class="stage-section hidden space-y-6">
+                    <!-- Banner -->
+                    <div class="bg-gradient-to-r from-rose-600 to-pink-700 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                        <div class="relative z-10">
+                            <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Stage 5 - Final Stage</span>
+                            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold mt-2">Ujian Evaluasi Akhir & Kelulusan</h2>
+                            <p class="text-rose-100 text-sm sm:text-base mt-2 max-w-2xl">Buktikan penguasaan penuh materi Recount Text untuk mendapatkan Sertifikat Kelulusan Resmi!</p>
+                        </div>
+                        <i class="fa-solid fa-award text-white/10 text-9xl absolute -right-6 -bottom-8"></i>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                        <div class="border-b pb-4">
+                            <h3 class="font-bold text-slate-900 text-lg">Final Master Exam</h3>
+                            <p class="text-xs text-slate-500">Jawablah 4 soal evaluasi menyeluruh berikut dengan tepat. Skor sempurna (100%) wajib dicapai!</p>
+                        </div>
+
+                        <form id="quiz-form-5" class="space-y-6">
+                            <!-- Q5_1 -->
+                            <div class="space-y-2">
+                                <label class="block font-bold text-sm text-slate-800">1. Kalimat manakah yang menggunakan Simple Past Tense secara benar?</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q5_1" value="A">
+                                        <span>A. We are visiting Borobudur Temple last Sunday.</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q5_1" value="B">
+                                        <span>B. We visited Borobudur Temple last Sunday.</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Q5_2 -->
+                            <div class="space-y-2">
+                                <label class="block font-bold text-sm text-slate-800">2. Bagian struktur yang berisi tanggapan atau kesan pribadi penulis di akhir cerita disebut...</label>
+                                <input type="text" id="q5_2_input" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Ketik nama bagian struktur (misal: Re-orientation)">
+                            </div>
+
+                            <!-- Q5_3 -->
+                            <div class="space-y-2">
+                                <label class="block font-bold text-sm text-slate-800">3. Bentuk kata kerja kedua (Verb 2) dari kata "BUY" adalah...</label>
+                                <input type="text" id="q5_3_input" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm" placeholder="Ketik V2 dari buy">
+                            </div>
+
+                            <!-- Q5_4 -->
+                            <div class="space-y-2">
+                                <label class="block font-bold text-sm text-slate-800">4. Manakah kata yang termasuk Chronological Connector?</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q5_4" value="A">
+                                        <span>A. After that</span>
+                                    </label>
+                                    <label class="flex items-center space-x-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer text-sm">
+                                        <input type="radio" name="q5_4" value="B">
+                                        <span>B. Beautiful</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="button" onclick="verifyQuizStage5()" class="w-full py-4 bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-extrabold rounded-xl shadow-lg transition">
+                                <i class="fa-solid fa-trophy mr-2"></i> Submit Evaluasi Akhir & Klaim Sertifikat
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Certificate Box Container -->
+                    <div id="certificate-card" class="hidden bg-amber-50 border-4 border-amber-300 p-8 rounded-2xl text-center shadow-2xl relative space-y-4">
+                        <div class="text-amber-600 text-4xl mb-2">
+                            <i class="fa-solid fa-certificate"></i>
+                        </div>
+                        <h3 class="font-heading font-extrabold text-2xl text-amber-900 tracking-wider">CERTIFICATE OF COMPLETION</h3>
+                        <p class="text-xs text-amber-800">Sertifikat ini secara resmi diberikan kepada:</p>
+                        <div id="cert-student-name" class="text-2xl font-bold text-slate-900 underline decoration-amber-500 decoration-2">Siswa Recount Master</div>
+                        <p class="text-xs text-amber-800 max-w-md mx-auto">
+                            Telah berhasil menyelesaikan seluruh modul pembelajaran interaktif dan lulus kriteria penilaian 100% pada topik <strong>Recount Text (English Learning LMS)</strong>.
+                        </p>
+                        <div class="pt-4 flex justify-center space-x-4 text-xs text-slate-500 border-t border-amber-200">
+                            <div>Status: <span class="font-bold text-emerald-600">LULUS (100% Verified)</span></div>
+                            <div>•</div>
+                            <div>Lencana: <span class="font-bold text-amber-600">Master Graduate</span></div>
+                        </div>
+
+                        <div class="pt-4 border-t border-amber-200 space-y-2">
+                            <div id="hw-status" class="text-xs font-semibold rounded-lg p-2.5 bg-slate-100 text-slate-500">
+                                Nilai akan otomatis terkirim ke guru begitu ujian akhir dinyatakan lulus.
+                            </div>
+                            <button type="button" id="hw-retry-btn" onclick="submitHasilWorksheet()" class="hidden mx-auto text-xs font-bold text-brand-700 bg-brand-50 border border-brand-200 hover:bg-brand-100 px-4 py-2 rounded-lg transition">
+                                <i class="fa-solid fa-rotate mr-1"></i> Kirim Ulang Nilai ke Guru
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        /* ===================== SUPABASE (kirim hasil ke guru) ===================== */
+        const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const WORKSHEET_SLUG = "recount-text-master";
+        const TOTAL_XP_MAX = 850; // 100 + 150 + 150 + 200 + 250
+        const IDENTITY_KEY = "recount_lms_v2_identity";
+
+        const REQUIRED_READING_TIME = 90; // 1.5 minutes = 90 seconds
+
+        let appState = {
+            currentStage: 1,
+            unlockedStages: [1],
+            xp: 0,
+            completedStages: [],
+            readingTimers: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            unlockedQuiz: { 1: false, 2: false, 3: false, 4: false, 5: false },
+            isIndonesian: false,
+            badges: []
+        };
+
+        let studentIdentity = null; // { jenis, nama, anggota, kelas }
+        let hasilSubmitted = false;
+
+        let activeTimerInterval = null;
+        let toastTimeout = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadProgress();
+            updateUI();
+            setupSidebarToggle();
+            setupIdentityModal();
+            loadIdentity();
+            startReadingTimer(appState.currentStage);
+
+            // Kalau Stage 5 sudah pernah lulus sebelumnya (dari sesi/reload sebelumnya),
+            // jangan auto-kirim lagi — cukup tampilkan status & sediakan tombol kirim ulang manual.
+            if (appState.completedStages.includes(5)) {
+                renderCertificateName();
+                const statusEl = document.getElementById('hw-status');
+                const retryBtn = document.getElementById('hw-retry-btn');
+                if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> Sertifikat ini sudah pernah kamu selesaikan. Klik tombol di bawah jika ingin memastikan nilai terkirim ke guru.';
+                if (retryBtn) retryBtn.classList.remove('hidden');
+            }
+        });
+
+        /* ===================== STUDENT IDENTITY (utk hasil_worksheet) ===================== */
+        function setupIdentityModal() {
+            const jenisSelect = document.getElementById('idJenis');
+            const individuFields = document.getElementById('idIndividuFields');
+            const kelompokFields = document.getElementById('idKelompokFields');
+            const memberList = document.getElementById('idMemberList');
+
+            function addMemberRow(value) {
+                const row = document.createElement('div');
+                row.className = 'flex items-center gap-2';
+                row.innerHTML = `<input type="text" class="idMemberInput flex-1 p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Nama anggota">
+                    <button type="button" class="idRemoveMemberBtn text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-xmark"></i></button>`;
+                memberList.appendChild(row);
+                if (value) row.querySelector('input').value = value;
+                row.querySelector('.idRemoveMemberBtn').addEventListener('click', () => row.remove());
+            }
+            addMemberRow();
+            document.getElementById('idAddMemberBtn').addEventListener('click', () => addMemberRow());
+
+            jenisSelect.addEventListener('change', () => {
+                if (jenisSelect.value === 'kelompok') {
+                    individuFields.classList.add('hidden');
+                    kelompokFields.classList.remove('hidden');
+                } else {
+                    individuFields.classList.remove('hidden');
+                    kelompokFields.classList.add('hidden');
+                }
+            });
+
+            document.getElementById('idStartBtn').addEventListener('click', () => {
+                const data = readIdentityForm();
+                const warn = document.getElementById('idWarn');
+                let msg = '';
+                if (!data.kelas) msg = 'Kelas wajib diisi.';
+                else if (data.jenis === 'individu' && !data.nama) msg = 'Nama wajib diisi.';
+                else if (data.jenis === 'kelompok') {
+                    if (!data.nama) msg = 'Nama kelompok wajib diisi.';
+                    else if (!data.anggota) msg = 'Isi minimal satu nama anggota kelompok.';
+                }
+                if (msg) {
+                    warn.textContent = msg;
+                    warn.classList.remove('hidden');
+                    return;
+                }
+                warn.classList.add('hidden');
+                studentIdentity = data;
+                try { localStorage.setItem(IDENTITY_KEY, JSON.stringify(data)); } catch (e) {}
+                renderIdentityChip();
+                closeIdentityModal();
+            });
+
+            window._addIdMemberRow = addMemberRow;
+        }
+
+        function readIdentityForm() {
+            const jenis = document.getElementById('idJenis').value;
+            const kelas = document.getElementById('idKelas').value.trim();
+            if (jenis === 'individu') {
+                const nama = document.getElementById('idNamaIndividu').value.trim();
+                return { jenis, nama, anggota: null, kelas };
+            }
+            const namaKelompok = document.getElementById('idNamaKelompok').value.trim();
+            const members = Array.from(document.querySelectorAll('.idMemberInput'))
+                .map(i => i.value.trim()).filter(Boolean);
+            return { jenis, nama: namaKelompok, anggota: members.join(', '), kelas };
+        }
+
+        function loadIdentity() {
+            let saved = null;
+            try { saved = JSON.parse(localStorage.getItem(IDENTITY_KEY) || 'null'); } catch (e) {}
+            if (saved && saved.kelas && saved.nama) {
+                studentIdentity = saved;
+                // Prefill the form fields in case the student reopens the modal to edit.
+                document.getElementById('idJenis').value = saved.jenis || 'individu';
+                document.getElementById('idKelas').value = saved.kelas || '';
+                if (saved.jenis === 'kelompok') {
+                    document.getElementById('idIndividuFields').classList.add('hidden');
+                    document.getElementById('idKelompokFields').classList.remove('hidden');
+                    document.getElementById('idNamaKelompok').value = saved.nama || '';
+                    const memberList = document.getElementById('idMemberList');
+                    memberList.innerHTML = '';
+                    (saved.anggota ? saved.anggota.split(',').map(s => s.trim()).filter(Boolean) : ['']).forEach(m => window._addIdMemberRow(m));
+                } else {
+                    document.getElementById('idNamaIndividu').value = saved.nama || '';
+                }
+                renderIdentityChip();
+                renderCertificateName();
+                closeIdentityModal();
+            } else {
+                openIdentityModal();
+            }
+        }
+
+        function renderCertificateName() {
+            const certName = document.getElementById('cert-student-name');
+            if (certName && studentIdentity) {
+                certName.textContent = studentIdentity.jenis === 'kelompok'
+                    ? `${studentIdentity.nama} (${studentIdentity.anggota || '-'})`
+                    : studentIdentity.nama;
+            }
+        }
+
+        function renderIdentityChip() {
+            const chip = document.getElementById('identity-chip');
+            const chipText = document.getElementById('identity-chip-text');
+            if (!studentIdentity) return;
+            chipText.textContent = `${studentIdentity.nama} · ${studentIdentity.kelas}`;
+            chip.classList.remove('hidden');
+            chip.classList.add('flex');
+        }
+
+        function openIdentityModal() {
+            document.getElementById('identity-modal').classList.remove('hidden');
+            document.getElementById('identity-modal').classList.add('flex');
+        }
+
+        function closeIdentityModal() {
+            document.getElementById('identity-modal').classList.add('hidden');
+            document.getElementById('identity-modal').classList.remove('flex');
+        }
+
+        /* ===================== KIRIM HASIL KE hasil_worksheet ===================== */
+        async function submitHasilWorksheet() {
+            if (!studentIdentity) { openIdentityModal(); return; }
+
+            const statusEl = document.getElementById('hw-status');
+            const retryBtn = document.getElementById('hw-retry-btn');
+            if (statusEl) {
+                statusEl.className = 'text-xs font-semibold rounded-lg p-2.5 bg-slate-100 text-slate-500';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-1"></i> Mengirim nilai ke guru...';
+            }
+            if (retryBtn) retryBtn.classList.add('hidden');
+
+            const nilai = Math.round((appState.xp / TOTAL_XP_MAX) * 100);
+            const payload = {
+                worksheet_slug: WORKSHEET_SLUG,
+                jenis: studentIdentity.jenis,
+                nama: studentIdentity.nama,
+                anggota: studentIdentity.anggota,
+                kelas: studentIdentity.kelas,
+                nilai: nilai,
+                nilai_maks: 100,
+                status: appState.completedStages.includes(5) ? 'selesai' : 'belum'
+            };
+
+            try {
+                const { error } = await sb.from('hasil_worksheet').insert(payload);
+                if (error) throw error;
+                hasilSubmitted = true;
+                if (statusEl) {
+                    statusEl.className = 'text-xs font-semibold rounded-lg p-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200';
+                    statusEl.innerHTML = `<i class="fa-solid fa-circle-check mr-1"></i> Nilai (${nilai}/100) sudah terkirim ke guru.`;
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.className = 'text-xs font-semibold rounded-lg p-2.5 bg-rose-50 text-rose-700 border border-rose-200';
+                    statusEl.innerHTML = 'Gagal mengirim otomatis (' + (err.message || 'network error') + '). Coba kirim ulang.';
+                }
+                if (retryBtn) retryBtn.classList.remove('hidden');
+            }
+        }
+
+        function setupSidebarToggle() {
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const closeBtn = document.getElementById('close-sidebar-btn');
+            const sidebar = document.getElementById('sidebar');
+
+            if (mobileBtn && sidebar) {
+                mobileBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            }
+            if (closeBtn && sidebar) {
+                closeBtn.addEventListener('click', () => {
+                    sidebar.classList.add('-translate-x-full');
+                });
+            }
+        }
+
+        function updateUI() {
+            // Update XP counter display
+            const xpElem = document.getElementById('global-xp');
+            if (xpElem) xpElem.innerText = `${appState.xp} XP`;
+
+            // Calculate & update overall learning progress percentage
+            const totalStages = 5;
+            const completedCount = appState.completedStages ? appState.completedStages.length : 0;
+            const percentage = Math.round((completedCount / totalStages) * 100);
+
+            const progressText = document.getElementById('progress-text');
+            const progressFill = document.getElementById('progress-bar-fill');
+            if (progressText) progressText.innerText = `${percentage}%`;
+            if (progressFill) progressFill.style.width = `${percentage}%`;
+
+            // Update Stage sidebar items (locks/unlocks/active styles)
+            for (let i = 1; i <= 5; i++) {
+                const navBtn = document.getElementById(`stage-nav-${i}`);
+                const checkIcon = document.getElementById(`stage-check-${i}`);
+
+                if (!navBtn || !checkIcon) continue;
+
+                const isUnlocked = appState.unlockedStages.includes(i);
+                const isCompleted = appState.completedStages.includes(i);
+
+                if (isCompleted) {
+                    checkIcon.className = "fa-solid fa-circle-check text-emerald-600 text-base";
+                } else if (isUnlocked) {
+                    checkIcon.className = "fa-solid fa-unlock text-brand-600 text-xs";
+                } else {
+                    checkIcon.className = "fa-solid fa-lock text-slate-300 text-xs";
+                }
+
+                if (i === appState.currentStage) {
+                    navBtn.className = "stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-semibold bg-brand-50 text-brand-700 border border-brand-200 shadow-sm";
+                } else if (isUnlocked) {
+                    navBtn.className = "stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-700 hover:bg-slate-100";
+                } else {
+                    navBtn.className = "stage-nav-item w-full flex items-center justify-between p-3 rounded-xl text-left transition text-sm font-medium text-slate-400 bg-slate-50 cursor-not-allowed opacity-75";
+                }
+            }
+
+            // Highlight earned achievement badges
+            if (appState.badges && Array.isArray(appState.badges)) {
+                appState.badges.forEach(bId => {
+                    const badgeEl = document.getElementById(`badge-${bId}`);
+                    if (badgeEl) {
+                        badgeEl.classList.remove('bg-slate-200', 'text-slate-400', 'grayscale');
+                        badgeEl.classList.add('bg-amber-100', 'text-amber-600', 'ring-2', 'ring-amber-400');
+                    }
+                });
+            }
+
+            // Display Certificate if Stage 5 is completed
+            if (appState.completedStages.includes(5)) {
+                const certCard = document.getElementById('certificate-card');
+                if (certCard) certCard.classList.remove('hidden');
+            }
+        }
+
+        function switchSubTab(stageNum, tabType) {
+            const materiView = document.getElementById(`subtab-content-${stageNum}-materi`);
+            const exerciseView = document.getElementById(`subtab-content-${stageNum}-exercise`);
+            const btnMateri = document.getElementById(`tab-btn-${stageNum}-materi`);
+            const btnExercise = document.getElementById(`tab-btn-${stageNum}-exercise`);
+
+            if (!materiView || !exerciseView) return;
+
+            if (tabType === 'materi') {
+                materiView.classList.remove('hidden');
+                exerciseView.classList.add('hidden');
+                if (btnMateri) btnMateri.className = "subtab-btn border-b-2 border-brand-600 pb-3 text-xs sm:text-sm font-bold text-brand-600";
+                if (btnExercise) btnExercise.className = "subtab-btn border-b-2 border-transparent pb-3 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-600 flex items-center";
+            } else {
+                materiView.classList.add('hidden');
+                exerciseView.classList.remove('hidden');
+                if (btnMateri) btnMateri.className = "subtab-btn border-b-2 border-transparent pb-3 text-xs sm:text-sm font-medium text-slate-400 hover:text-slate-600";
+                if (btnExercise) btnExercise.className = "subtab-btn border-b-2 border-brand-600 pb-3 text-xs sm:text-sm font-bold text-brand-600 flex items-center";
+            }
+        }
+
+        function startReadingTimer(stageNum) {
+            if (activeTimerInterval) clearInterval(activeTimerInterval);
+
+            const timerNumEl = document.getElementById('current-stage-timer-num');
+            if (timerNumEl) timerNumEl.innerText = stageNum;
+
+            activeTimerInterval = setInterval(() => {
+                const activeMateriTab = document.getElementById(`subtab-content-${stageNum}-materi`);
+                if (activeMateriTab && !activeMateriTab.classList.contains('hidden')) {
+                    if (appState.readingTimers[stageNum] < REQUIRED_READING_TIME) {
+                        appState.readingTimers[stageNum]++;
+                        saveProgress();
+                    }
+                }
+
+                updateTimerDisplay(stageNum);
+            }, 1000);
+
+            updateTimerDisplay(stageNum);
+        }
+
+        function updateTimerDisplay(stageNum) {
+            const elapsed = appState.readingTimers[stageNum] || 0;
+            const remaining = Math.max(0, REQUIRED_READING_TIME - elapsed);
+            
+            const mins = Math.floor(remaining / 60);
+            const secs = remaining % 60;
+            const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            const displayElem = document.getElementById('reading-timer-display');
+            const badgeElem = document.getElementById('timer-status-badge');
+            const lockIcon = document.getElementById(`quiz-lock-icon-${stageNum}`);
+
+            if (remaining > 0) {
+                if (displayElem) displayElem.innerText = `${formatted} remaining`;
+                if (badgeElem) {
+                    badgeElem.className = "text-xs bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-semibold";
+                    badgeElem.innerHTML = `<i class="fa-solid fa-lock mr-1"></i> Read 1.5 min to unlock Quiz`;
+                }
+                if (lockIcon) lockIcon.className = "fa-solid fa-lock text-amber-500 text-xs ml-1.5";
+                appState.unlockedQuiz[stageNum] = false;
+            } else {
+                if (displayElem) displayElem.innerText = `00:00 - Complete!`;
+                if (badgeElem) {
+                    badgeElem.className = "text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-2 py-0.5 rounded-full font-semibold";
+                    badgeElem.innerHTML = `<i class="fa-solid fa-unlock mr-1"></i> Quiz Unlocked!`;
+                }
+                if (lockIcon) lockIcon.className = "fa-solid fa-unlock text-emerald-500 text-xs ml-1.5";
+                appState.unlockedQuiz[stageNum] = true;
+            }
+        }
+
+        function attemptSubTabAccess(stageNum, tabType) {
+            if (tabType === 'exercise') {
+                const elapsed = appState.readingTimers[stageNum] || 0;
+                if (elapsed < REQUIRED_READING_TIME) {
+                    const rem = REQUIRED_READING_TIME - elapsed;
+                    showToast(`⚠️ Please read the Stage ${stageNum} material for at least 1.5 minutes (90s). ${rem} seconds remaining!`, 'warning');
+                    return;
+                }
+            }
+            switchSubTab(stageNum, tabType);
+        }
+
+        function toggleTranslation() {
+            appState.isIndonesian = !appState.isIndonesian;
+            saveProgress();
+            applyTranslationUI();
+        }
+
+        function applyTranslationUI() {
+            const btnText = document.getElementById('translate-btn-text');
+            if (btnText) btnText.innerText = appState.isIndonesian ? "Show English" : "Terjemahkan (ID)";
+
+            document.querySelectorAll('.translatable').forEach(el => {
+                const en = el.getAttribute('data-en');
+                const id = el.getAttribute('data-id');
+                if (appState.isIndonesian && id) {
+                    el.innerText = id;
+                } else if (!appState.isIndonesian && en) {
+                    el.innerText = en;
+                }
+            });
+        }
+
+        function switchStage(stageNum) {
+            if (!appState.unlockedStages.includes(stageNum)) {
+                showToast(`Stage ${stageNum} is locked! Complete previous stages first.`, 'warning');
+                return;
+            }
+
+            appState.currentStage = stageNum;
+
+            document.querySelectorAll('.stage-section').forEach(sec => sec.classList.add('hidden'));
+            
+            const target = document.getElementById(`stage-content-${stageNum}`);
+            if (target) target.classList.remove('hidden');
+
+            switchSubTab(stageNum, 'materi');
+            startReadingTimer(stageNum);
+            updateUI();
+
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.add('-translate-x-full');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function highlightTextSection(section) {
+            const secOri = document.getElementById('sec-ori');
+            const secEvt = document.getElementById('sec-evt');
+            const secReori = document.getElementById('sec-reori');
+
+            if (!secOri || !secEvt || !secReori) return;
+
+            secOri.className = "p-3 rounded transition duration-300 " + (section === 'all' || section === 'orientation' ? 'highlight-orientation' : 'opacity-40 bg-slate-100');
+            secEvt.className = "p-3 rounded transition duration-300 " + (section === 'all' || section === 'events' ? 'highlight-events' : 'opacity-40 bg-slate-100');
+            secReori.className = "p-3 rounded transition duration-300 " + (section === 'all' || section === 'reorientation' ? 'highlight-reorientation' : 'opacity-40 bg-slate-100');
+        }
+
+        function readAloudText() {
+            if (!('speechSynthesis' in window)) {
+                showToast("Text-to-speech is not supported in your browser.", "warning");
+                return;
+            }
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                showToast("Audio stopped.", "info");
+                return;
+            }
+            const passage = document.getElementById('reading-passage');
+            if (passage) {
+                const text = passage.innerText;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+                showToast("🔊 Reading passage aloud in English...", "info");
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            const banner = document.getElementById('toast-banner');
+            const msgEl = document.getElementById('toast-message');
+            const iconEl = document.getElementById('toast-icon');
+
+            if (!banner || !msgEl || !iconEl) return;
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            msgEl.innerText = message;
+            if (type === 'warning') {
+                banner.className = "rounded-xl p-4 transition-all duration-300 shadow-md bg-amber-50 border border-amber-300 text-amber-900";
+                iconEl.className = "fa-solid fa-triangle-exclamation text-amber-600 text-xl";
+            } else if (type === 'success') {
+                banner.className = "rounded-xl p-4 transition-all duration-300 shadow-md bg-emerald-50 border border-emerald-300 text-emerald-900";
+                iconEl.className = "fa-solid fa-circle-check text-emerald-600 text-xl";
+            } else {
+                banner.className = "rounded-xl p-4 transition-all duration-300 shadow-md bg-indigo-50 border border-indigo-300 text-indigo-900";
+                iconEl.className = "fa-solid fa-circle-info text-indigo-600 text-xl";
+            }
+
+            banner.classList.remove('hidden');
+            toastTimeout = setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 4500);
+        }
+
+        function verifyQuizStage1() {
+            const q1 = document.querySelector('input[name="q1_1"]:checked');
+            const q2 = document.querySelector('input[name="q1_2"]:checked');
+            const q3 = document.querySelector('input[name="q1_3"]:checked');
+
+            if (!q1 || !q2 || !q3) {
+                showToast("Please answer ALL 3 questions before submitting!", "warning");
+                return;
+            }
+
+            const isCorrect = (q1.value === 'B' && q2.value === 'A' && q3.value === 'B');
+
+            if (isCorrect) {
+                passStage(1, 100, 1);
+            } else {
+                showToast("❌ Incorrect answers detected! Review the material and try again.", "warning");
+            }
+        }
+
+        function verifyQuizStage2() {
+            const q1 = document.getElementById('q2_1').value;
+            const q2 = document.getElementById('q2_2').value;
+            const stepA = parseInt(document.getElementById('order_step_a').value);
+            const stepB = parseInt(document.getElementById('order_step_b').value);
+            const stepC = parseInt(document.getElementById('order_step_c').value);
+
+            if (!q1 || !q2 || isNaN(stepA) || isNaN(stepB) || isNaN(stepC)) {
+                showToast("Please answer all identification questions and order inputs!", "warning");
+                return;
+            }
+
+            const isCorrect = (q1 === 'Re-orientation' && q2 === 'Orientation' && stepA === 3 && stepB === 1 && stepC === 2);
+
+            if (isCorrect) {
+                passStage(2, 150, 2);
+            } else {
+                showToast("❌ Structure identification or chronological ordering is incorrect. Try again!", "warning");
+            }
+        }
+
+        function verifyQuizStage3() {
+            const vGo = document.getElementById('v_go').value.trim().toLowerCase();
+            const vStay = document.getElementById('v_stay').value.trim().toLowerCase();
+            const vBuy = document.getElementById('v_buy').value.trim().toLowerCase();
+            const vEat = document.getElementById('v_eat').value.trim().toLowerCase();
+            const vTake = document.getElementById('v_take').value.trim().toLowerCase();
+            const vFeel = document.getElementById('v_feel').value.trim().toLowerCase();
+
+            if (!vGo || !vStay || !vBuy || !vEat || !vTake || !vFeel) {
+                showToast("Please fill in all past tense verb boxes!", "warning");
+                return;
+            }
+
+            const isCorrect = (vGo === 'went' && vStay === 'stayed' && vBuy === 'bought' && vEat === 'ate' && vTake === 'took' && vFeel === 'felt');
+
+            if (isCorrect) {
+                passStage(3, 150, 3);
+            } else {
+                showToast("❌ Some past tense verb conjugations are wrong. Check spelling and try again!", "warning");
+            }
+        }
+
+        function verifyQuizStage4() {
+            const q1 = document.querySelector('input[name="q4_1"]:checked');
+            const q2 = document.querySelector('input[name="q4_2"]:checked');
+
+            if (!q1 || !q2) {
+                showToast("Please answer all reading comprehension questions!", "warning");
+                return;
+            }
+
+            const isCorrect = (q1.value === 'A' && q2.value === 'B');
+
+            if (isCorrect) {
+                passStage(4, 200);
+            } else {
+                showToast("❌ Reading comprehension answers incorrect. Reread the passage and try again!", "warning");
+            }
+        }
+
+        function verifyQuizStage5() {
+            const q1 = document.querySelector('input[name="q5_1"]:checked');
+            const q2Input = document.getElementById('q5_2_input').value.trim().toLowerCase();
+            const q3Input = document.getElementById('q5_3_input').value.trim().toLowerCase();
+            const q4 = document.querySelector('input[name="q5_4"]:checked');
+
+            if (!q1 || !q2Input || !q3Input || !q4) {
+                showToast("Please complete all questions in the final exam!", "warning");
+                return;
+            }
+
+            const isCorrect = (q1.value === 'B' && (q2Input === 're-orientation' || q2Input === 'reorientation') && q3Input === 'bought' && q4.value === 'A');
+
+            if (isCorrect) {
+                passStage(5, 250, 4);
+                const cert = document.getElementById('certificate-card');
+                if (cert) cert.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                showToast("❌ Final exam score must be 100%! Review your answers and try again.", "warning");
+            }
+        }
+
+        function passStage(stageNum, xpReward, badgeId = null) {
+            if (!appState.completedStages.includes(stageNum)) {
+                appState.completedStages.push(stageNum);
+                appState.xp += xpReward;
+            }
+            if (badgeId && !appState.badges.includes(badgeId)) {
+                appState.badges.push(badgeId);
+            }
+            const nextStage = stageNum + 1;
+            if (nextStage <= 5 && !appState.unlockedStages.includes(nextStage)) {
+                appState.unlockedStages.push(nextStage);
+            }
+
+            saveProgress();
+            updateUI();
+            showToast(`🎉 Excellent! Stage ${stageNum} 100% Passed! +${xpReward} XP Earned!`, 'success');
+
+            // Stage 5 = ujian akhir & sertifikat. Begitu lulus, otomatis kirim nilai ke guru
+            // (hanya sekali per kunjungan halaman — kalau mau kirim ulang, pakai tombol di sertifikat).
+            if (stageNum === 5) {
+                renderCertificateName();
+                if (!hasilSubmitted) submitHasilWorksheet();
+            }
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem('recount_lms_v2_data', JSON.stringify(appState));
+            } catch(e) {
+                console.error("Failed to save progress", e);
+            }
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('recount_lms_v2_data');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+                    if (!appState.badges) appState.badges = [];
+                    applyTranslationUI();
+                } catch(e) {
+                    console.error("Failed to load progress from localStorage", e);
+                }
+            }
+        }
+
+        function resetProgress() {
+            if (confirm("Are you sure you want to reset all learning progress and timers?")) {
+                localStorage.removeItem('recount_lms_v2_data');
+                appState = {
+                    currentStage: 1,
+                    unlockedStages: [1],
+                    xp: 0,
+                    completedStages: [],
+                    readingTimers: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+                    unlockedQuiz: { 1: false, 2: false, 3: false, 4: false, 5: false },
+                    isIndonesian: false,
+                    badges: []
+                };
+                updateUI();
+                switchStage(1);
+                showToast("Progress successfully reset.", "warning");
+            }
+        }
+    </script>
+</body>
+</html>
