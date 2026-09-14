@@ -56,95 +56,62 @@
 </head>
 <body class="h-full text-slate-800 font-sans flex flex-col antialiased selection:bg-brand-500 selection:text-white">
 
-    <!-- STUDENT IDENTITY MODAL (wajib diisi agar nilai bisa dikirim ke guru) -->
-    <div id="identity-modal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 sm:p-8 space-y-4 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div class="text-center space-y-1">
-          <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-brand-500/20">
-            <i class="fa-solid fa-user-pen"></i>
-          </div>
-          <h2 class="font-heading font-bold text-lg text-slate-900">Data Diri Sebelum Mulai</h2>
-          <p class="text-xs text-slate-500">Isi data ini dulu supaya nilaimu bisa otomatis terkirim ke guru.</p>
+    <!-- LOGIN GATE — menunggu profil akun LMS. Tidak ada input Nama/Kelas manual:
+         begitu siswa sudah login, Nama & Kelas otomatis diambil dari akun mereka
+         dan tidak bisa diubah. Kalau belum login, otomatis diarahkan ke index.html. -->
+    <div id="gate-screen" class="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-4">
+      <div class="text-center space-y-3">
+        <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-md shadow-brand-500/20 animate-pulse">
+          <i class="fa-solid fa-book-bookmark"></i>
         </div>
-
-        <div class="space-y-1">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Jenis Pengerjaan</label>
-          <select id="idJenis" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            <option value="individu">Individu</option>
-            <option value="kelompok">Kelompok</option>
-          </select>
-        </div>
-
-        <div id="idIndividuFields" class="space-y-1">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Nama Kamu</label>
-          <input type="text" id="idNamaIndividu" placeholder="mis. Siti Amalia" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-        </div>
-
-        <div id="idKelompokFields" class="space-y-3 hidden">
-          <div class="space-y-1">
-            <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Nama Kelompok</label>
-            <input type="text" id="idNamaKelompok" placeholder="mis. Kelompok 1 / The Explorers" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-          </div>
-          <div class="space-y-1">
-            <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Anggota Kelompok</label>
-            <div id="idMemberList" class="space-y-2"></div>
-            <button type="button" id="idAddMemberBtn" class="text-xs font-bold text-brand-600 hover:text-brand-700">
-              <i class="fa-solid fa-plus mr-1"></i>Tambah anggota
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <label class="text-xs font-bold text-slate-600 uppercase tracking-wide">Kelas</label>
-          <input type="text" id="idKelas" placeholder="mis. VIII A" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-        </div>
-
-        <div id="idWarn" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5"></div>
-
-        <button type="button" id="idStartBtn" class="w-full py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white font-bold rounded-xl shadow-md transition">
-          <i class="fa-solid fa-play mr-2"></i>Mulai Belajar
-        </button>
+        <p class="text-sm font-semibold text-slate-600" id="gate-message">Memeriksa akun kamu...</p>
       </div>
     </div>
 
+    <div id="app-root" class="contents" style="display:none;">
+
     <!-- TOP NAVBAR -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
+        <div class="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center gap-2">
                 <!-- Logo & Title -->
-                <div class="flex items-center space-x-3">
-                    <button id="mobile-menu-btn" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-2 rounded-md">
-                        <i class="fa-solid fa-bars text-xl"></i>
+                <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                    <button id="mobile-menu-btn" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-1.5 rounded-lg hover:bg-slate-100 shrink-0">
+                        <i class="fa-solid fa-bars text-lg sm:text-xl"></i>
                     </button>
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
-                        <i class="fa-solid fa-book-bookmark text-lg"></i>
+                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-brand-500/20 shrink-0">
+                        <i class="fa-solid fa-book-bookmark text-sm sm:text-lg"></i>
                     </div>
-                    <div>
-                        <h1 class="font-heading font-bold text-lg leading-tight text-slate-900">Recount Master <span class="text-xs bg-brand-100 text-brand-700 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">LMS v2.5</span></h1>
-                        <p class="text-xs text-slate-500 hidden sm:block">Interactive English Recount Text Learning Media</p>
+                    <div class="truncate">
+                        <div class="flex items-center space-x-1.5">
+                            <h1 class="font-heading font-bold text-sm sm:text-lg leading-tight text-slate-900 truncate">Recount Master</h1>
+                            <span class="text-[10px] sm:text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wider shrink-0">v2.5</span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 hidden sm:block truncate">Interactive English Recount Text Learning Media</p>
                     </div>
                 </div>
 
                 <!-- XP Score, Language Toggle & Global Progress Bar -->
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <!-- Translate Toggle Button -->
-                    <button id="translate-btn" onclick="toggleTranslation()" class="flex items-center space-x-1.5 bg-indigo-50 border border-indigo-200 text-indigo-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100 transition shadow-sm">
-                        <i class="fa-solid fa-language text-base text-indigo-600"></i>
-                        <span id="translate-btn-text">Terjemahkan (ID)</span>
-                    </button>
-
-                    <button id="identity-chip" onclick="openIdentityModal()" title="Ubah data diri" class="hidden md:flex items-center space-x-1.5 bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full font-semibold text-xs hover:bg-slate-100 transition">
+                <div class="flex items-center space-x-1.5 sm:space-x-3 shrink-0">
+                    <!-- Student identity, locked from login account (not editable) -->
+                    <div id="identity-chip" class="hidden sm:flex items-center space-x-1.5 bg-slate-50 border border-slate-200 text-slate-600 px-2 sm:px-3 py-1.5 rounded-full font-semibold text-[11px] sm:text-xs" title="Nama & kelas diambil otomatis dari akun LMS-mu">
                         <i class="fa-solid fa-user text-slate-400"></i>
                         <span id="identity-chip-text">—</span>
-                        <i class="fa-solid fa-pen text-[10px] text-slate-400"></i>
+                        <i class="fa-solid fa-lock text-[9px] text-slate-300"></i>
+                    </div>
+
+                    <!-- Translate Toggle Button -->
+                    <button id="translate-btn" onclick="toggleTranslation()" class="flex items-center space-x-1 bg-indigo-50 border border-indigo-200 text-indigo-700 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100 transition shadow-sm" title="Ubah Bahasa">
+                        <i class="fa-solid fa-language text-sm sm:text-base text-indigo-600"></i>
+                        <span id="translate-btn-text" class="text-[11px] sm:text-xs">Indonesia</span>
                     </button>
 
-                    <div class="flex items-center space-x-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-full font-semibold text-xs sm:text-sm">
-                        <i class="fa-solid fa-trophy text-amber-500 animate-bounce"></i>
+                    <div class="flex items-center space-x-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-2 sm:px-3 py-1.5 rounded-full font-semibold text-xs sm:text-sm">
+                        <i class="fa-solid fa-trophy text-amber-500 animate-bounce text-xs sm:text-sm"></i>
                         <span id="global-xp">0 XP</span>
                     </div>
                     
-                    <div class="hidden md:flex flex-col w-36 lg:w-44">
+                    <div class="hidden lg:flex flex-col w-32 xl:w-40">
                         <div class="flex justify-between text-xs font-semibold mb-1">
                             <span class="text-slate-500">Progress</span>
                             <span id="progress-text" class="text-brand-600">0%</span>
@@ -154,7 +121,7 @@
                         </div>
                     </div>
 
-                    <button onclick="resetProgress()" title="Reset Progress" class="text-slate-400 hover:text-rose-600 text-sm p-2 transition">
+                    <button onclick="resetProgress()" title="Reset Progress" class="text-slate-400 hover:text-rose-600 text-xs sm:text-sm p-1.5 sm:p-2 rounded-lg hover:bg-slate-100 transition">
                         <i class="fa-solid fa-rotate-left"></i>
                     </button>
                 </div>
@@ -163,16 +130,16 @@
     </header>
 
     <!-- MANDATORY READING TIMER STICKY BANNER -->
-    <div id="reading-timer-banner" class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white px-4 py-2 text-xs sm:text-sm border-b border-indigo-800 flex items-center justify-between sticky top-16 z-20 shadow-md">
+    <div id="reading-timer-banner" class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white px-3 sm:px-4 py-2 text-xs sm:text-sm border-b border-indigo-800 flex items-center justify-between sticky top-16 z-20 shadow-md flex-wrap sm:flex-nowrap gap-1.5 sm:gap-2">
         <div class="flex items-center space-x-2">
-            <span class="relative flex h-3 w-3">
+            <span class="relative flex h-2.5 w-2.5 sm:h-3 sm:w-3">
               <span id="timer-pulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 bg-emerald-500"></span>
             </span>
-            <span class="font-medium">Reading Timer (Stage <span id="current-stage-timer-num">1</span>):</span>
-            <span id="reading-timer-display" class="font-mono font-bold text-amber-300 bg-black/30 px-2 py-0.5 rounded border border-amber-400/30">01:30 remaining</span>
+            <span class="font-medium text-[11px] sm:text-xs">Reading Timer (Stage <span id="current-stage-timer-num">1</span>):</span>
+            <span id="reading-timer-display" class="font-mono font-bold text-amber-300 bg-black/30 px-1.5 py-0.5 rounded border border-amber-400/30 text-[11px] sm:text-xs">01:30 remaining</span>
         </div>
-        <div id="timer-status-badge" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-semibold">
+        <div id="timer-status-badge" class="text-[11px] sm:text-xs bg-amber-500/20 text-amber-300 border border-amber-400/40 px-2 py-0.5 rounded-full font-semibold">
             <i class="fa-solid fa-lock mr-1"></i> Read 1.5 min to unlock Quiz
         </div>
     </div>
@@ -967,18 +934,15 @@
             </div>
         </main>
     </div>
+    </div><!-- /#app-root -->
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/supabaseClient.js"></script>
+    <script src="assets/app.js"></script>
     <script>
-        /* ===================== SUPABASE (kirim hasil ke guru) ===================== */
-        const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
-        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const REQUIRED_READING_TIME = 90; // 1.5 minutes = 90 seconds
         const WORKSHEET_SLUG = "recount-text-master";
         const TOTAL_XP_MAX = 850; // 100 + 150 + 150 + 200 + 250
-        const IDENTITY_KEY = "recount_lms_v2_identity";
-
-        const REQUIRED_READING_TIME = 90; // 1.5 minutes = 90 seconds
 
         let appState = {
             currentStage: 1,
@@ -991,155 +955,59 @@
             badges: []
         };
 
-        let studentIdentity = null; // { jenis, nama, anggota, kelas }
-        let hasilSubmitted = false;
-
         let activeTimerInterval = null;
         let toastTimeout = null;
 
-        document.addEventListener("DOMContentLoaded", () => {
+        // Diisi otomatis dari akun LMS yang login — TIDAK ada input manual,
+        // dan tidak bisa diganti oleh siswa (lihat bootstrap() di bawah).
+        let currentProfile = null;
+        let studentIdentity = null; // { nama, kelas }
+        let PROGRESS_KEY = 'recount_lms_v2_data'; // dibuat unik per akun di bootstrap()
+        let hasilSubmitted = false;
+
+        /* ===================== LOGIN GATE ===================== */
+        // Tidak ada halaman login/Nama/Kelas manual di sini: siswa sudah
+        // diautentikasi lewat akun LMS (requireLogin() di assets/app.js).
+        // Nama & Kelas otomatis diambil dari profil akun mereka dan terkunci.
+        (async function bootstrap() {
+            const profile = await requireLogin(); // redirect ke index.html kalau belum login
+            if (!profile) return;
+
+            currentProfile = profile;
+            studentIdentity = {
+                nama: profile.nama,
+                kelas: profile.kelas ? profile.kelas.nama : '-'
+            };
+            PROGRESS_KEY = 'recount_lms_v2_data_' + profile.id;
+
+            renderIdentityChip();
+
+            document.getElementById('gate-screen').style.display = 'none';
+            document.getElementById('app-root').style.display = '';
+
             loadProgress();
             updateUI();
             setupSidebarToggle();
-            setupIdentityModal();
-            loadIdentity();
             startReadingTimer(appState.currentStage);
-
-            // Kalau Stage 5 sudah pernah lulus sebelumnya (dari sesi/reload sebelumnya),
-            // jangan auto-kirim lagi — cukup tampilkan status & sediakan tombol kirim ulang manual.
-            if (appState.completedStages.includes(5)) {
-                renderCertificateName();
-                const statusEl = document.getElementById('hw-status');
-                const retryBtn = document.getElementById('hw-retry-btn');
-                if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> Sertifikat ini sudah pernah kamu selesaikan. Klik tombol di bawah jika ingin memastikan nilai terkirim ke guru.';
-                if (retryBtn) retryBtn.classList.remove('hidden');
-            }
-        });
-
-        /* ===================== STUDENT IDENTITY (utk hasil_worksheet) ===================== */
-        function setupIdentityModal() {
-            const jenisSelect = document.getElementById('idJenis');
-            const individuFields = document.getElementById('idIndividuFields');
-            const kelompokFields = document.getElementById('idKelompokFields');
-            const memberList = document.getElementById('idMemberList');
-
-            function addMemberRow(value) {
-                const row = document.createElement('div');
-                row.className = 'flex items-center gap-2';
-                row.innerHTML = `<input type="text" class="idMemberInput flex-1 p-2.5 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Nama anggota">
-                    <button type="button" class="idRemoveMemberBtn text-slate-400 hover:text-rose-600 p-1"><i class="fa-solid fa-xmark"></i></button>`;
-                memberList.appendChild(row);
-                if (value) row.querySelector('input').value = value;
-                row.querySelector('.idRemoveMemberBtn').addEventListener('click', () => row.remove());
-            }
-            addMemberRow();
-            document.getElementById('idAddMemberBtn').addEventListener('click', () => addMemberRow());
-
-            jenisSelect.addEventListener('change', () => {
-                if (jenisSelect.value === 'kelompok') {
-                    individuFields.classList.add('hidden');
-                    kelompokFields.classList.remove('hidden');
-                } else {
-                    individuFields.classList.remove('hidden');
-                    kelompokFields.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('idStartBtn').addEventListener('click', () => {
-                const data = readIdentityForm();
-                const warn = document.getElementById('idWarn');
-                let msg = '';
-                if (!data.kelas) msg = 'Kelas wajib diisi.';
-                else if (data.jenis === 'individu' && !data.nama) msg = 'Nama wajib diisi.';
-                else if (data.jenis === 'kelompok') {
-                    if (!data.nama) msg = 'Nama kelompok wajib diisi.';
-                    else if (!data.anggota) msg = 'Isi minimal satu nama anggota kelompok.';
-                }
-                if (msg) {
-                    warn.textContent = msg;
-                    warn.classList.remove('hidden');
-                    return;
-                }
-                warn.classList.add('hidden');
-                studentIdentity = data;
-                try { localStorage.setItem(IDENTITY_KEY, JSON.stringify(data)); } catch (e) {}
-                renderIdentityChip();
-                closeIdentityModal();
-            });
-
-            window._addIdMemberRow = addMemberRow;
-        }
-
-        function readIdentityForm() {
-            const jenis = document.getElementById('idJenis').value;
-            const kelas = document.getElementById('idKelas').value.trim();
-            if (jenis === 'individu') {
-                const nama = document.getElementById('idNamaIndividu').value.trim();
-                return { jenis, nama, anggota: null, kelas };
-            }
-            const namaKelompok = document.getElementById('idNamaKelompok').value.trim();
-            const members = Array.from(document.querySelectorAll('.idMemberInput'))
-                .map(i => i.value.trim()).filter(Boolean);
-            return { jenis, nama: namaKelompok, anggota: members.join(', '), kelas };
-        }
-
-        function loadIdentity() {
-            let saved = null;
-            try { saved = JSON.parse(localStorage.getItem(IDENTITY_KEY) || 'null'); } catch (e) {}
-            if (saved && saved.kelas && saved.nama) {
-                studentIdentity = saved;
-                // Prefill the form fields in case the student reopens the modal to edit.
-                document.getElementById('idJenis').value = saved.jenis || 'individu';
-                document.getElementById('idKelas').value = saved.kelas || '';
-                if (saved.jenis === 'kelompok') {
-                    document.getElementById('idIndividuFields').classList.add('hidden');
-                    document.getElementById('idKelompokFields').classList.remove('hidden');
-                    document.getElementById('idNamaKelompok').value = saved.nama || '';
-                    const memberList = document.getElementById('idMemberList');
-                    memberList.innerHTML = '';
-                    (saved.anggota ? saved.anggota.split(',').map(s => s.trim()).filter(Boolean) : ['']).forEach(m => window._addIdMemberRow(m));
-                } else {
-                    document.getElementById('idNamaIndividu').value = saved.nama || '';
-                }
-                renderIdentityChip();
-                renderCertificateName();
-                closeIdentityModal();
-            } else {
-                openIdentityModal();
-            }
-        }
-
-        function renderCertificateName() {
-            const certName = document.getElementById('cert-student-name');
-            if (certName && studentIdentity) {
-                certName.textContent = studentIdentity.jenis === 'kelompok'
-                    ? `${studentIdentity.nama} (${studentIdentity.anggota || '-'})`
-                    : studentIdentity.nama;
-            }
-        }
+        })();
 
         function renderIdentityChip() {
             const chip = document.getElementById('identity-chip');
             const chipText = document.getElementById('identity-chip-text');
-            if (!studentIdentity) return;
+            if (!studentIdentity || !chip || !chipText) return;
             chipText.textContent = `${studentIdentity.nama} · ${studentIdentity.kelas}`;
             chip.classList.remove('hidden');
             chip.classList.add('flex');
         }
 
-        function openIdentityModal() {
-            document.getElementById('identity-modal').classList.remove('hidden');
-            document.getElementById('identity-modal').classList.add('flex');
-        }
-
-        function closeIdentityModal() {
-            document.getElementById('identity-modal').classList.add('hidden');
-            document.getElementById('identity-modal').classList.remove('flex');
+        function renderCertificateName() {
+            const certName = document.getElementById('cert-student-name');
+            if (certName && studentIdentity) certName.textContent = studentIdentity.nama;
         }
 
         /* ===================== KIRIM HASIL KE hasil_worksheet ===================== */
         async function submitHasilWorksheet() {
-            if (!studentIdentity) { openIdentityModal(); return; }
+            if (!studentIdentity) return;
 
             const statusEl = document.getElementById('hw-status');
             const retryBtn = document.getElementById('hw-retry-btn');
@@ -1152,9 +1020,9 @@
             const nilai = Math.round((appState.xp / TOTAL_XP_MAX) * 100);
             const payload = {
                 worksheet_slug: WORKSHEET_SLUG,
-                jenis: studentIdentity.jenis,
+                jenis: 'individu',
                 nama: studentIdentity.nama,
-                anggota: studentIdentity.anggota,
+                anggota: null,
                 kelas: studentIdentity.kelas,
                 nilai: nilai,
                 nilai_maks: 100,
@@ -1162,7 +1030,7 @@
             };
 
             try {
-                const { error } = await sb.from('hasil_worksheet').insert(payload);
+                const { error } = await supabase.from('hasil_worksheet').insert(payload);
                 if (error) throw error;
                 hasilSubmitted = true;
                 if (statusEl) {
@@ -1348,7 +1216,7 @@
 
         function applyTranslationUI() {
             const btnText = document.getElementById('translate-btn-text');
-            if (btnText) btnText.innerText = appState.isIndonesian ? "Show English" : "Terjemahkan (ID)";
+            if (btnText) btnText.innerText = appState.isIndonesian ? "English" : "Indonesia";
 
             document.querySelectorAll('.translatable').forEach(el => {
                 const en = el.getAttribute('data-en');
@@ -1572,14 +1440,14 @@
 
         function saveProgress() {
             try {
-                localStorage.setItem('recount_lms_v2_data', JSON.stringify(appState));
+                localStorage.setItem(PROGRESS_KEY, JSON.stringify(appState));
             } catch(e) {
                 console.error("Failed to save progress", e);
             }
         }
 
         function loadProgress() {
-            const saved = localStorage.getItem('recount_lms_v2_data');
+            const saved = localStorage.getItem(PROGRESS_KEY);
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
@@ -1590,11 +1458,20 @@
                     console.error("Failed to load progress from localStorage", e);
                 }
             }
+            // Kalau siswa reload halaman setelah sebelumnya sudah lulus Stage 5,
+            // jangan auto-kirim lagi — cukup tampilkan status & tombol kirim ulang manual.
+            if (appState.completedStages.includes(5)) {
+                renderCertificateName();
+                const statusEl = document.getElementById('hw-status');
+                const retryBtn = document.getElementById('hw-retry-btn');
+                if (statusEl) statusEl.innerHTML = '<i class="fa-solid fa-circle-info mr-1"></i> Sertifikat ini sudah pernah kamu selesaikan. Klik tombol di bawah jika ingin memastikan nilai terkirim ke guru.';
+                if (retryBtn) retryBtn.classList.remove('hidden');
+            }
         }
 
         function resetProgress() {
             if (confirm("Are you sure you want to reset all learning progress and timers?")) {
-                localStorage.removeItem('recount_lms_v2_data');
+                localStorage.removeItem(PROGRESS_KEY);
                 appState = {
                     currentStage: 1,
                     unlockedStages: [1],
