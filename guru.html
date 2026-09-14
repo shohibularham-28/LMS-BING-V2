@@ -156,6 +156,37 @@
 .kirim-bintang-chat-modal .btn-kb-kirim:disabled{ opacity:.5; cursor:not-allowed; }
 .kirim-bintang-chat-modal .kb-error{ font-size:12.5px; color:#E0554F; margin-top:8px; display:none; }
 .kirim-bintang-chat-modal .kb-ok{ font-size:12.5px; color:#1a8f4c; margin-top:8px; display:none; }
+.share-hasilws-backdrop{
+  position:fixed; inset:0; background:rgba(20,20,35,0.45); display:flex; align-items:center;
+  justify-content:center; z-index:2000; padding:16px;
+}
+.share-hasilws-modal{
+  background:#fff; border-radius:18px; padding:24px 22px; max-width:480px; width:100%;
+  max-height:90vh; overflow-y:auto; box-shadow:0 20px 50px rgba(20,20,40,0.25);
+}
+.share-hasilws-modal h3{ margin:0 0 4px; font-family:'Space Grotesk', sans-serif; font-size:17px; color:#161927; display:flex; align-items:center; gap:6px; }
+.share-hasilws-modal .kb-sub{ margin:0 0 16px; font-size:13px; color:#8A90A3; }
+.share-hasilws-modal .form-field{ margin-bottom:12px; }
+.share-hasilws-modal .form-field label{ display:block; font-size:12.5px; font-weight:600; color:#4b5563; margin-bottom:5px; }
+.share-hasilws-modal select,
+.share-hasilws-modal textarea{
+  width:100%; box-sizing:border-box; padding:9px 12px; border:1.5px solid #E7E9F2; border-radius:10px;
+  font-family:inherit; font-size:13px;
+}
+.share-hasilws-modal textarea{ resize:vertical; min-height:200px; line-height:1.5; }
+.share-hasilws-modal select:focus, .share-hasilws-modal textarea:focus{
+  outline:none; border-color:var(--violet); box-shadow:0 0 0 3px rgba(124,92,252,0.2);
+}
+.share-hasilws-modal .kb-hint{ font-size:12px; color:#8A90A3; margin:-6px 0 12px; }
+.share-hasilws-modal .kb-actions{ display:flex; gap:8px; margin-top:16px; }
+.share-hasilws-modal .kb-actions button{ flex:1; padding:10px 14px; border-radius:10px; font-size:13.5px; font-weight:700; cursor:pointer; }
+.share-hasilws-modal .btn-kb-batal{ border:1px solid #E7E9F2; background:#fff; color:#6B7280; }
+.share-hasilws-modal .btn-kb-batal:hover{ background:#F5F6FA; }
+.share-hasilws-modal .btn-kb-kirim{ border:1px solid var(--violet); background:var(--violet-soft); color:var(--violet); }
+.share-hasilws-modal .btn-kb-kirim:hover{ background:#ece5ff; }
+.share-hasilws-modal .btn-kb-kirim:disabled{ opacity:.5; cursor:not-allowed; }
+.share-hasilws-modal .kb-error{ font-size:12.5px; color:#E0554F; margin-top:8px; display:none; }
+.share-hasilws-modal .kb-ok{ font-size:12.5px; color:#1a8f4c; margin-top:8px; display:none; }
 .msg-bubble{
   padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.5;
   word-break:break-word; white-space:pre-wrap;
@@ -776,6 +807,7 @@
             </div>
             <button class="btn-secondary-sm" id="btnMuatHasilWs">Muat Hasil</button>
             <button class="btn-secondary-sm" id="btnDownloadHasilWs">⬇️ Download Excel</button>
+            <button class="btn-secondary-sm" id="btnShareHasilWsObrolan">🔗 Share ke Obrolan</button>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilWs">🗑️ Hapus Semua</button>
           </div>
           <div class="form-field" style="margin:-10px 0 16px;">
@@ -783,7 +815,7 @@
               <input type="checkbox" id="hasilWsTampilkanBelum" style="width:auto;">
               Sertakan siswa yang belum mengerjakan (diambil dari Daftar Siswa)
             </label>
-            <div class="hint" style="margin-top:4px;">Pilih dulu <b>Slug Worksheet</b> dan <b>Kelas</b> tertentu (bukan "Semua"), lalu klik "Muat Hasil". Siswa di kelas tersebut yang belum mengirim hasil akan tetap tampil di tabel dengan keterangan status "Belum Mengerjakan".</div>
+            <div class="hint" style="margin-top:4px;">Pilih dulu <b>Slug Worksheet</b> dan <b>Kelas</b> tertentu (bukan "Semua"), lalu centang ini. Siswa di kelas tersebut yang belum mengirim hasil akan tetap tampil di tabel dengan keterangan status "Belum Mengerjakan". Status fitur ini akan muncul sebagai catatan di atas tabel.</div>
           </div>
           <div class="table-responsive"><div id="hasilWsTableWrap">Belum dimuat.</div></div>
         </div>
@@ -3205,6 +3237,15 @@
   // =========================================================
   let currentHasilWsRows = [];
   let hasilWsSort = { key: 'updated_at', dir: 'desc' };
+  let hasilWsBelumNotice = ''; // pesan status fitur "sertakan siswa belum mengerjakan", ditampilkan di atas tabel
+
+  // Perbandingan nama kelas dibuat tidak sensitif huruf besar/kecil & spasi,
+  // karena nama kelas di hasil_worksheet diketik bebas oleh siswa (tanpa login)
+  // dan sering beda ejaan tipis dari nama kelas resmi di Daftar Siswa
+  // (mis. "X IPA 1" vs "X-IPA 1", atau beda huruf besar/kecil).
+  function normKelas(s) {
+    return (s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
 
   // Slug worksheet yang tertanam di halaman worksheet mandiri (WORKSHEET_SLUG /
   // CONFIG.SUBMIT_SLUG). Disertakan di dropdown supaya worksheet yang BELUM pernah
@@ -3231,9 +3272,17 @@
     // punya hasil sama sekali pun tetap bisa dipilih (untuk fitur "belum mengerjakan").
     if (!allKelas.length) await loadAllKelas();
     const { data } = await supabase.from('hasil_worksheet').select('kelas');
-    const dariHasil = (data || []).map(r => r.kelas).filter(Boolean);
     const dariRoster = (allKelas || []).map(k => k.nama);
-    const kelasList = [...new Set([...dariRoster, ...dariHasil])].sort((a, b) => a.localeCompare(b, 'id'));
+    // Kelas dari hasil_worksheet yang EJAANNYA beda tipis dari kelas resmi (huruf besar/
+    // kecil, spasi) tidak perlu ditambahkan sebagai opsi duplikat — cukup pakai nama resmi
+    // supaya fitur "belum mengerjakan" langsung bisa mencocokkannya. Hanya kelas yang benar-
+    // benar tidak dikenali sama sekali yang ditambahkan apa adanya.
+    const rosterNorm = new Set(dariRoster.map(normKelas));
+    const dariHasilTakDikenal = (data || [])
+      .map(r => r.kelas)
+      .filter(Boolean)
+      .filter(k => !rosterNorm.has(normKelas(k)));
+    const kelasList = [...new Set([...dariRoster, ...dariHasilTakDikenal])].sort((a, b) => a.localeCompare(b, 'id'));
     const sel = document.getElementById('hasilWsKelasSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
@@ -3255,17 +3304,20 @@
   async function loadHasilWorksheet() {
     const wrap = document.getElementById('hasilWsTableWrap');
     wrap.innerHTML = 'Memuat…';
+    hasilWsBelumNotice = '';
     const slug = document.getElementById('hasilWsSlugSelect').value;
     const kelasFilter = document.getElementById('hasilWsKelasSelect').value;
     const jenisFilter = document.getElementById('hasilWsJenisSelect').value;
     const statusFilter = document.getElementById('hasilWsStatusSelect').value;
 
+    // Filter "kelas" TIDAK dilakukan di query Supabase (persis/case-sensitive),
+    // supaya beda ejaan tipis (huruf besar/kecil, spasi) tetap bisa dicocokkan
+    // di JS lewat normKelas().
     let query = supabase
       .from('hasil_worksheet')
       .select('id, worksheet_slug, jenis, nama, anggota, kelas, nilai, nilai_maks, status, created_at, updated_at')
       .order('updated_at', { ascending: false });
     if (slug) query = query.eq('worksheet_slug', slug);
-    if (kelasFilter) query = query.eq('kelas', kelasFilter);
     if (jenisFilter) query = query.eq('jenis', jenisFilter);
     if (statusFilter) query = query.eq('status', statusFilter);
 
@@ -3273,17 +3325,22 @@
     if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
 
     let rows = data || [];
+    if (kelasFilter) {
+      const targetNorm = normKelas(kelasFilter);
+      rows = rows.filter(r => normKelas(r.kelas) === targetNorm);
+    }
 
     // ---- Sertakan siswa yang belum mengerjakan, diambil dari Daftar Siswa ----
     const includeBelum = document.getElementById('hasilWsTampilkanBelum').checked;
     if (includeBelum) {
       if (!slug || !kelasFilter) {
-        alert('Untuk menyertakan siswa yang belum mengerjakan, pilih dulu Slug Worksheet dan Kelas tertentu (bukan "Semua").');
+        hasilWsBelumNotice = '⚠️ Untuk menyertakan siswa yang belum mengerjakan, pilih dulu <b>Slug Worksheet</b> dan <b>Kelas</b> tertentu (bukan "Semua"), lalu klik "Muat Hasil" lagi.';
       } else {
         if (!allKelas.length) await loadAllKelas();
-        const kelasObj = allKelas.find(k => k.nama === kelasFilter);
+        const targetNorm = normKelas(kelasFilter);
+        const kelasObj = allKelas.find(k => normKelas(k.nama) === targetNorm);
         if (!kelasObj) {
-          alert('Kelas "' + kelasFilter + '" tidak ditemukan di Daftar Siswa. Pastikan nama kelas yang diisi siswa di worksheet sama persis dengan nama kelas resmi.');
+          hasilWsBelumNotice = `⚠️ Kelas "${esc(kelasFilter)}" tidak ditemukan di Daftar Siswa (menu Kelola Siswa), jadi siswa yang belum mengerjakan tidak bisa ditampilkan. Pastikan kelas ini sudah dibuat & siswanya sudah didaftarkan di menu "Kelola Kelas" / "Daftar Siswa".`;
         } else {
           const { data: siswaList, error: siswaErr } = await supabase
             .from('profiles')
@@ -3292,28 +3349,33 @@
             .eq('role', 'siswa')
             .order('nama');
 
-          if (!siswaErr) {
+          if (siswaErr) {
+            hasilWsBelumNotice = '⚠️ Gagal memuat Daftar Siswa: ' + esc(siswaErr.message);
+          } else if (!siswaList || !siswaList.length) {
+            hasilWsBelumNotice = `ℹ️ Kelas "${esc(kelasObj.nama)}" belum punya siswa terdaftar di menu Daftar Siswa, jadi tidak ada yang bisa dibandingkan.`;
+          } else {
             // Cari semua nama yang SUDAH ada hasilnya untuk slug + kelas ini (tanpa
             // terpengaruh filter jenis/status), supaya siswa yang sudah selesai
             // tidak ikut ditandai "belum" hanya karena sedang difilter keluar.
             const { data: semuaHasil } = await supabase
               .from('hasil_worksheet')
-              .select('jenis, nama, anggota')
-              .eq('worksheet_slug', slug)
-              .eq('kelas', kelasFilter);
+              .select('jenis, nama, anggota, kelas')
+              .eq('worksheet_slug', slug);
 
             const sudahAda = new Set();
-            (semuaHasil || []).forEach(r => {
-              if (r.jenis === 'kelompok') {
-                (r.anggota || '').split(',').forEach(n => {
-                  const t = n.trim().toLowerCase();
+            (semuaHasil || [])
+              .filter(r => normKelas(r.kelas) === targetNorm)
+              .forEach(r => {
+                if (r.jenis === 'kelompok') {
+                  (r.anggota || '').split(',').forEach(n => {
+                    const t = n.trim().toLowerCase();
+                    if (t) sudahAda.add(t);
+                  });
+                } else {
+                  const t = (r.nama || '').trim().toLowerCase();
                   if (t) sudahAda.add(t);
-                });
-              } else {
-                const t = (r.nama || '').trim().toLowerCase();
-                if (t) sudahAda.add(t);
-              }
-            });
+                }
+              });
 
             const belumRows = (siswaList || [])
               .filter(s => !sudahAda.has((s.nama || '').trim().toLowerCase()))
@@ -3323,7 +3385,7 @@
                 jenis: 'individu',
                 nama: s.nama,
                 anggota: null,
-                kelas: kelasFilter,
+                kelas: kelasObj.nama,
                 nilai: null,
                 nilai_maks: null,
                 status: 'belum',
@@ -3334,6 +3396,10 @@
               .filter(r => (!jenisFilter || jenisFilter === r.jenis) && (!statusFilter || statusFilter === r.status));
 
             rows = rows.concat(belumRows);
+
+            hasilWsBelumNotice = belumRows.length
+              ? `✅ ${belumRows.length} dari ${siswaList.length} siswa di kelas ${esc(kelasObj.nama)} belum mengirim hasil untuk worksheet ini — ditambahkan ke tabel dengan status "Belum Mengerjakan".`
+              : `✅ Semua ${siswaList.length} siswa di kelas ${esc(kelasObj.nama)} sudah mengirim hasil untuk worksheet ini.`;
           }
         }
       }
@@ -3345,15 +3411,17 @@
 
   function renderHasilWsTable() {
     const wrap = document.getElementById('hasilWsTableWrap');
+    const notice = hasilWsBelumNotice ? `<div class="hint" style="margin-bottom:12px;">${hasilWsBelumNotice}</div>` : '';
+
     if (!currentHasilWsRows.length) {
-      wrap.innerHTML = emptyState('Belum ada hasil', 'Hasil worksheet mandiri akan muncul di sini setelah siswa mulai/submit.', '📝');
+      wrap.innerHTML = notice + emptyState('Belum ada hasil', 'Hasil worksheet mandiri akan muncul di sini setelah siswa mulai/submit.', '📝');
       return;
     }
 
     const sortValueFn = hasilWsSort.key === 'updated_at' ? (r => r.updated_at || r.created_at) : undefined;
     const sortedRows = sortRowsBy(currentHasilWsRows, hasilWsSort.key, hasilWsSort.dir, sortValueFn);
 
-    wrap.innerHTML = `
+    wrap.innerHTML = notice + `
       <table class="grade-table">
         <thead><tr>
           <th class="col-no">No</th>
@@ -3427,11 +3495,141 @@
     downloadXlsx(`hasil-worksheet-${slug.replace(/\s+/g, '_')}.xlsx`, header, rows);
   }
 
+  // =========================================================
+  // SHARE HASIL WORKSHEET KE OBROLAN KELAS
+  // Guru pilih kelas tujuan (dropdown) → preview pesan dibuat otomatis
+  // dari baris yang sedang tampil (nama siswa terlihat) → kirim sebagai
+  // pesan biasa ke room obrolan kelas itu, supaya siswa bisa melihatnya.
+  // =========================================================
+  function buildHasilWsShareText(kelasNama, rowsForKelas, judulOverride) {
+    const slug = document.getElementById('hasilWsSlugSelect').value;
+    const judul = judulOverride || ('📊 Hasil Worksheet' + (slug ? ': ' + slug : ''));
+    const sorted = sortRowsBy(rowsForKelas, 'nama', 'asc', r => r.nama);
+    const lines = sorted.map((r, i) => {
+      const namaTampil = r.jenis === 'kelompok' ? `Kelompok ${r.nama}${r.anggota ? ' (' + r.anggota + ')' : ''}` : r.nama;
+      const nilaiTampil = (r.nilai ?? null) !== null ? (r.nilai + (r.nilai_maks != null ? '/' + r.nilai_maks : '')) : '-';
+      return `${i + 1}. ${namaTampil} — ${nilaiTampil} (${statusLabel(r.status)})`;
+    });
+    const selesai = rowsForKelas.filter(r => r.status === 'selesai').length;
+    const belum = rowsForKelas.length - selesai;
+    return [
+      judul,
+      `Kelas: ${kelasNama}`,
+      new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+      '',
+      ...lines,
+      '',
+      `Total: ${rowsForKelas.length} | Selesai: ${selesai} | Belum: ${belum}`,
+    ].join('\n');
+  }
+
+  function closeShareHasilWsModal() {
+    const el = document.getElementById('shareHasilWsBackdrop');
+    if (el) el.remove();
+  }
+
+  function openShareHasilWsModal() {
+    if (!currentHasilWsRows.length) { alert('Belum ada data untuk dishare. Klik "Muat Hasil" dulu.'); return; }
+    closeShareHasilWsModal();
+
+    // Hanya tawarkan kelas yang benar-benar ada di data yang sedang tampil,
+    // supaya tidak share pesan kosong.
+    const kelasDiData = [...new Set(currentHasilWsRows.map(r => r.kelas).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id'));
+    if (!kelasDiData.length) { alert('Tidak ada data kelas pada hasil yang sedang tampil.'); return; }
+    const kelasFilterAktif = document.getElementById('hasilWsKelasSelect').value;
+    const defaultKelas = kelasDiData.includes(kelasFilterAktif) ? kelasFilterAktif : kelasDiData[0];
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'shareHasilWsBackdrop';
+    backdrop.className = 'share-hasilws-backdrop';
+    backdrop.innerHTML = `
+      <div class="share-hasilws-modal">
+        <h3>🔗 Share Hasil Worksheet</h3>
+        <p class="kb-sub">Pesan akan dikirim ke Obrolan Kelas sebagai pesan biasa dari akun guru, sehingga siswa di kelas tersebut bisa melihat namanya di daftar.</p>
+        <div class="form-field">
+          <label for="shareWsKelasSelect">Kirim ke Obrolan Kelas</label>
+          <select id="shareWsKelasSelect">
+            ${kelasDiData.map(k => `<option value="${esc(k)}" ${k === defaultKelas ? 'selected' : ''}>${esc(k)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="shareWsPreview">Preview Pesan (bisa diedit sebelum dikirim)</label>
+          <textarea id="shareWsPreview"></textarea>
+        </div>
+        <p class="kb-error" id="shareWsError"></p>
+        <p class="kb-ok" id="shareWsOk"></p>
+        <div class="kb-actions">
+          <button type="button" class="btn-kb-batal" id="shareWsBatal">Batal</button>
+          <button type="button" class="btn-kb-kirim" id="shareWsKirim">📤 Kirim ke Obrolan</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeShareHasilWsModal(); });
+    backdrop.querySelector('#shareWsBatal').addEventListener('click', closeShareHasilWsModal);
+
+    const kelasSelect = backdrop.querySelector('#shareWsKelasSelect');
+    const preview = backdrop.querySelector('#shareWsPreview');
+
+    function refreshPreview() {
+      const kelasNama = kelasSelect.value;
+      const rowsForKelas = currentHasilWsRows.filter(r => r.kelas === kelasNama);
+      preview.value = buildHasilWsShareText(kelasNama, rowsForKelas);
+    }
+    kelasSelect.addEventListener('change', refreshPreview);
+    refreshPreview();
+
+    backdrop.querySelector('#shareWsKirim').addEventListener('click', async () => {
+      const errEl = backdrop.querySelector('#shareWsError');
+      const okEl = backdrop.querySelector('#shareWsOk');
+      errEl.style.display = 'none';
+      okEl.style.display = 'none';
+
+      const kelasNama = kelasSelect.value;
+      const isi = preview.value.trim();
+      if (!isi) { errEl.textContent = 'Pesan tidak boleh kosong.'; errEl.style.display = ''; return; }
+
+      if (!allKelas.length) await loadAllKelas();
+      const kelasObj = allKelas.find(k => k.nama === kelasNama);
+      if (!kelasObj) {
+        errEl.textContent = `Kelas "${kelasNama}" tidak ditemukan di daftar kelas resmi, jadi tidak bisa dikirim ke room obrolannya.`;
+        errEl.style.display = '';
+        return;
+      }
+
+      const btn = backdrop.querySelector('#shareWsKirim');
+      btn.disabled = true;
+      btn.textContent = 'Mengirim…';
+      const { error } = await supabase.from('pesan_kelas').insert({
+        kelas_id: kelasObj.id,
+        sender_id: teacher.id,
+        sender_nama: teacher.nama,
+        sender_role: 'guru',
+        isi,
+      });
+      btn.disabled = false;
+      btn.textContent = '📤 Kirim ke Obrolan';
+      if (error) {
+        errEl.textContent = 'Gagal mengirim ke obrolan: ' + error.message;
+        errEl.style.display = '';
+        return;
+      }
+      okEl.textContent = `✅ Berhasil dikirim ke obrolan kelas ${kelasNama}.`;
+      okEl.style.display = '';
+      setTimeout(closeShareHasilWsModal, 1200);
+    });
+  }
+
   document.getElementById('btnMuatHasilWs').addEventListener('click', loadHasilWorksheet);
   document.getElementById('btnDownloadHasilWs').addEventListener('click', downloadHasilWsXlsx);
+  document.getElementById('btnShareHasilWsObrolan').addEventListener('click', openShareHasilWsModal);
   document.getElementById('btnHapusSemuaHasilWs').addEventListener('click', hapusSemuaHasilWs);
+  // Centang/hapus centang "sertakan yang belum mengerjakan" langsung memuat ulang,
+  // supaya guru tidak perlu klik "Muat Hasil" lagi & langsung terlihat hasilnya.
+  document.getElementById('hasilWsTampilkanBelum').addEventListener('change', loadHasilWorksheet);
   loadHasilWsSlugOptions();
   loadHasilWsKelasOptions();
+
 
   // =========================================================
   // SEDANG UJIAN — monitoring live siapa yang sedang mengerjakan
