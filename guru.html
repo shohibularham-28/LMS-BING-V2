@@ -771,11 +771,19 @@
                 <option value="">Semua</option>
                 <option value="selesai">Selesai</option>
                 <option value="belum_selesai">Belum Selesai</option>
+                <option value="belum">Belum Mengerjakan (belum ada data)</option>
               </select>
             </div>
             <button class="btn-secondary-sm" id="btnMuatHasilWs">Muat Hasil</button>
             <button class="btn-secondary-sm" id="btnDownloadHasilWs">⬇️ Download Excel</button>
             <button class="btn-danger-sm" id="btnHapusSemuaHasilWs">🗑️ Hapus Semua</button>
+          </div>
+          <div class="form-field" style="margin:-10px 0 16px;">
+            <label style="display:flex; align-items:center; gap:8px; font-weight:normal;">
+              <input type="checkbox" id="hasilWsTampilkanBelum" style="width:auto;">
+              Sertakan siswa yang belum mengerjakan (diambil dari Daftar Siswa)
+            </label>
+            <div class="hint" style="margin-top:4px;">Pilih dulu <b>Slug Worksheet</b> dan <b>Kelas</b> tertentu (bukan "Semua"), lalu klik "Muat Hasil". Siswa di kelas tersebut yang belum mengirim hasil akan tetap tampil di tabel dengan keterangan status "Belum Mengerjakan".</div>
           </div>
           <div class="table-responsive"><div id="hasilWsTableWrap">Belum dimuat.</div></div>
         </div>
@@ -3198,9 +3206,20 @@
   let currentHasilWsRows = [];
   let hasilWsSort = { key: 'updated_at', dir: 'desc' };
 
+  // Slug worksheet yang tertanam di halaman worksheet mandiri (WORKSHEET_SLUG /
+  // CONFIG.SUBMIT_SLUG). Disertakan di dropdown supaya worksheet yang BELUM pernah
+  // dikirim sama sekali oleh siapa pun tetap bisa dipilih (untuk fitur "belum mengerjakan").
+  const KNOWN_WORKSHEET_SLUGS = [
+    'past-continuous-tense',
+    'materi-worksheet-descriptive-text-person',
+    'materi-fractured-fairy-tales-part1-9',
+    'recount-text',
+  ];
+
   async function loadHasilWsSlugOptions() {
     const { data } = await supabase.from('hasil_worksheet').select('worksheet_slug');
-    const slugs = [...new Set((data || []).map(r => r.worksheet_slug))].sort();
+    const dariHasil = (data || []).map(r => r.worksheet_slug);
+    const slugs = [...new Set([...KNOWN_WORKSHEET_SLUGS, ...dariHasil])].sort();
     const sel = document.getElementById('hasilWsSlugSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">Semua</option>' + slugs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
@@ -3208,8 +3227,13 @@
   }
 
   async function loadHasilWsKelasOptions() {
+    // Ambil kelas dari daftar kelas resmi (tabel kelas) supaya kelas yang belum
+    // punya hasil sama sekali pun tetap bisa dipilih (untuk fitur "belum mengerjakan").
+    if (!allKelas.length) await loadAllKelas();
     const { data } = await supabase.from('hasil_worksheet').select('kelas');
-    const kelasList = [...new Set((data || []).map(r => r.kelas).filter(Boolean))].sort();
+    const dariHasil = (data || []).map(r => r.kelas).filter(Boolean);
+    const dariRoster = (allKelas || []).map(k => k.nama);
+    const kelasList = [...new Set([...dariRoster, ...dariHasil])].sort((a, b) => a.localeCompare(b, 'id'));
     const sel = document.getElementById('hasilWsKelasSelect');
     const current = sel.value;
     sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
@@ -3217,9 +3241,15 @@
   }
 
   function statusBadge(status) {
-    return status === 'selesai'
-      ? '<span class="ws-status status-open">Selesai</span>'
-      : '<span class="ws-status status-due">Belum Selesai</span>';
+    if (status === 'selesai') return '<span class="ws-status status-open">Selesai</span>';
+    if (status === 'belum') return '<span class="ws-status status-due">Belum Mengerjakan</span>';
+    return '<span class="ws-status status-due">Belum Selesai</span>';
+  }
+
+  function statusLabel(status) {
+    if (status === 'selesai') return 'Selesai';
+    if (status === 'belum') return 'Belum Mengerjakan';
+    return 'Belum Selesai';
   }
 
   async function loadHasilWorksheet() {
@@ -3242,7 +3272,74 @@
     const { data, error } = await query;
     if (error) { wrap.innerHTML = 'Gagal memuat: ' + esc(error.message); return; }
 
-    currentHasilWsRows = data || [];
+    let rows = data || [];
+
+    // ---- Sertakan siswa yang belum mengerjakan, diambil dari Daftar Siswa ----
+    const includeBelum = document.getElementById('hasilWsTampilkanBelum').checked;
+    if (includeBelum) {
+      if (!slug || !kelasFilter) {
+        alert('Untuk menyertakan siswa yang belum mengerjakan, pilih dulu Slug Worksheet dan Kelas tertentu (bukan "Semua").');
+      } else {
+        if (!allKelas.length) await loadAllKelas();
+        const kelasObj = allKelas.find(k => k.nama === kelasFilter);
+        if (!kelasObj) {
+          alert('Kelas "' + kelasFilter + '" tidak ditemukan di Daftar Siswa. Pastikan nama kelas yang diisi siswa di worksheet sama persis dengan nama kelas resmi.');
+        } else {
+          const { data: siswaList, error: siswaErr } = await supabase
+            .from('profiles')
+            .select('nama')
+            .eq('kelas_id', kelasObj.id)
+            .eq('role', 'siswa')
+            .order('nama');
+
+          if (!siswaErr) {
+            // Cari semua nama yang SUDAH ada hasilnya untuk slug + kelas ini (tanpa
+            // terpengaruh filter jenis/status), supaya siswa yang sudah selesai
+            // tidak ikut ditandai "belum" hanya karena sedang difilter keluar.
+            const { data: semuaHasil } = await supabase
+              .from('hasil_worksheet')
+              .select('jenis, nama, anggota')
+              .eq('worksheet_slug', slug)
+              .eq('kelas', kelasFilter);
+
+            const sudahAda = new Set();
+            (semuaHasil || []).forEach(r => {
+              if (r.jenis === 'kelompok') {
+                (r.anggota || '').split(',').forEach(n => {
+                  const t = n.trim().toLowerCase();
+                  if (t) sudahAda.add(t);
+                });
+              } else {
+                const t = (r.nama || '').trim().toLowerCase();
+                if (t) sudahAda.add(t);
+              }
+            });
+
+            const belumRows = (siswaList || [])
+              .filter(s => !sudahAda.has((s.nama || '').trim().toLowerCase()))
+              .map(s => ({
+                id: null,
+                worksheet_slug: slug,
+                jenis: 'individu',
+                nama: s.nama,
+                anggota: null,
+                kelas: kelasFilter,
+                nilai: null,
+                nilai_maks: null,
+                status: 'belum',
+                created_at: null,
+                updated_at: null,
+              }))
+              // Tetap hormati filter Jenis & Status yang sedang dipilih guru.
+              .filter(r => (!jenisFilter || jenisFilter === r.jenis) && (!statusFilter || statusFilter === r.status));
+
+            rows = rows.concat(belumRows);
+          }
+        }
+      }
+    }
+
+    currentHasilWsRows = rows;
     renderHasilWsTable();
   }
 
@@ -3281,8 +3378,8 @@
               <td>${esc(r.worksheet_slug)}</td>
               <td>${(r.nilai ?? null) !== null ? (r.nilai + (r.nilai_maks != null ? ' / ' + r.nilai_maks : '')) : '-'}</td>
               <td>${statusBadge(r.status)}</td>
-              <td>${new Date(r.updated_at || r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })}</td>
-              <td><button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button></td>
+              <td>${(r.updated_at || r.created_at) ? new Date(r.updated_at || r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-'}</td>
+              <td>${r.id ? `<button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button>` : '<span style="color:#c8cbd6;">-</span>'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -3301,9 +3398,9 @@
   }
 
   async function hapusSemuaHasilWs() {
-    if (!currentHasilWsRows.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
-    if (!confirm(`Hapus ${currentHasilWsRows.length} hasil worksheet yang sedang ditampilkan (sesuai filter saat ini)? Tindakan ini tidak bisa dibatalkan.`)) return;
-    const ids = currentHasilWsRows.map(r => r.id);
+    const ids = currentHasilWsRows.map(r => r.id).filter(Boolean);
+    if (!ids.length) { alert('Tidak ada data untuk dihapus. Klik "Muat Hasil" dulu.'); return; }
+    if (!confirm(`Hapus ${ids.length} hasil worksheet yang sedang ditampilkan (sesuai filter saat ini)? Baris siswa "Belum Mengerjakan" (tanpa data tersimpan) tidak akan terpengaruh. Tindakan ini tidak bisa dibatalkan.`)) return;
     const { error } = await supabase.from('hasil_worksheet').delete().in('id', ids);
     if (error) { alert('Gagal menghapus: ' + error.message); return; }
     await loadHasilWorksheet();
@@ -3323,8 +3420,8 @@
       r.worksheet_slug,
       r.nilai ?? '-',
       r.nilai_maks ?? '-',
-      r.status === 'selesai' ? 'Selesai' : 'Belum Selesai',
-      new Date(r.updated_at || r.created_at).toLocaleString('id-ID')
+      statusLabel(r.status),
+      (r.updated_at || r.created_at) ? new Date(r.updated_at || r.created_at).toLocaleString('id-ID') : '-'
     ]);
     const slug = document.getElementById('hasilWsSlugSelect').value || 'semua';
     downloadXlsx(`hasil-worksheet-${slug.replace(/\s+/g, '_')}.xlsx`, header, rows);
