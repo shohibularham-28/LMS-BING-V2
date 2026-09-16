@@ -4,7 +4,7 @@ on:
   schedule:
     # Jalan setiap 3 hari sekali, jam 00:00 UTC
     - cron: '0 0 */3 * *'
-  workflow_dispatch: # biar bisa jalan manual juga
+  workflow_dispatch: # biar bisa dijalankan manual juga
 
 jobs:
   ping:
@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: Ping Supabase REST API
         run: |
-          curl -X GET "https://<PROJECT_REF>.supabase.co/rest/v1/<nama_tabel>?select=*&limit=1" \
+          curl -X GET "https://sviftypadyorgalehzxh.supabase.co/rest/v1/bintang?select=*&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
