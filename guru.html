@@ -713,6 +713,18 @@
             <div class="hint" style="margin-top:4px;">Kalau dimatikan, siswa hanya lihat "Jawaban Terkirim" — nilai tetap tersimpan dan bisa kamu lihat/umumkan lewat menu "Nilai".</div>
           </div>
 
+          <div class="section-label" style="margin-top:18px; font-size:14px;">🔒 Token Ujian (opsional)</div>
+          <div class="form-row">
+            <div class="form-field" style="max-width:none;">
+              <label>Token</label>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="juTokenInput" placeholder="Kosongkan kalau tidak perlu token" style="flex:1;">
+                <button type="button" class="btn-secondary-sm" id="btnAcakToken" style="flex:0 0 auto;">🎲 Acak</button>
+              </div>
+            </div>
+          </div>
+          <div class="hint">Kalau diisi, siswa WAJIB memasukkan token ini sebelum bisa mulai mengerjakan (bagikan token secara lisan/tertulis saat ujian dimulai). Kosongkan kalau ujian boleh langsung dibuka tanpa token.</div>
+
           <div class="section-label" style="margin-top:18px; font-size:14px;">🗓️ Tanggal</div>
           <div class="form-row">
             <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="juMulaiInput"></div>
@@ -2924,11 +2936,50 @@
     if (document.getElementById('juTargetTertentu').checked) renderJuKelasCheckboxes();
   });
 
+  document.getElementById('btnAcakToken').addEventListener('click', () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // tanpa 0/O/1/I biar tidak ketuker
+    let out = '';
+    for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('juTokenInput').value = out;
+  });
+
+  // Menyimpan satu baris Jadwal Ujian baru (beserta target kelas tertentu kalau ada).
+  async function simpanJadwalUjian({
+    judul, bankSoalId, guruId, tingkat, targetTipe, kelasIds,
+    durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
+    mulai, deadline, token
+  }) {
+    const { data: inserted, error } = await supabase.from('jadwal_ujian').insert({
+      judul,
+      bank_soal_id: bankSoalId,
+      guru_id: guruId,
+      tingkat,
+      target_tipe: targetTipe,
+      durasi_menit: durasiMenit,
+      penalti_aktif: penaltiAktif,
+      poin_penalti: poinPenalti,
+      acak_soal: acakSoal,
+      tampilkan_nilai_langsung: tampilkanNilaiLangsung,
+      mulai,
+      deadline,
+      token: token || null
+    }).select('id').single();
+    if (error) throw error;
+
+    if (targetTipe === 'tertentu' && kelasIds.length) {
+      const rows = kelasIds.map(kelasId => ({ jadwal_ujian_id: inserted.id, kelas_id: kelasId }));
+      const { error: kelasErr } = await supabase.from('jadwal_ujian_kelas').insert(rows);
+      if (kelasErr) throw kelasErr;
+    }
+
+    return inserted;
+  }
+
   async function renderJadwalUjianList() {
     const el = document.getElementById('jadwalUjianDaftar');
     const { data, error } = await supabase
       .from('jadwal_ujian')
-      .select('id, judul, tingkat, target_tipe, mulai, deadline, bank_soal:bank_soal_id ( judul ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) )')
+      .select('id, judul, tingkat, target_tipe, mulai, deadline, token, bank_soal:bank_soal_id ( judul ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) )')
       .order('created_at', { ascending: false });
     if (error) { el.innerHTML = emptyState('Gagal memuat', error.message, '⚠️'); return; }
     const list = data || [];
@@ -2946,11 +2997,15 @@
       const metaBits = [esc('Soal: ' + (j.bank_soal ? j.bank_soal.judul : '(soal dihapus)')), esc(target)];
       if (j.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(j.mulai));
       if (j.deadline) metaBits.push('Deadline ' + j.deadline);
+      const tokenBit = j.token
+        ? `<span class="score-pill" style="background:#eef2ff;color:#3730a3;">🔒 Token: <b style="font-family:'JetBrains Mono',monospace;">${esc(j.token)}</b></span>`
+        : `<span class="hint" style="margin:0;">Tanpa token</span>`;
       return `
       <div class="list-row">
         <div>
           <strong>${esc(j.judul)}</strong> ${statusPill}
           <div style="color:#888;font-size:12.5px;">${metaBits.join(' · ')}</div>
+          <div style="margin-top:4px;">${tokenBit}</div>
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
           <button class="btn-danger-sm" data-ju-hapus="${j.id}">Hapus</button>
@@ -2987,6 +3042,7 @@
     const mulaiRaw = document.getElementById('juMulaiInput').value;
     const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
     const deadline = document.getElementById('juDeadlineInput').value || null;
+    const token = document.getElementById('juTokenInput').value.trim() || null;
 
     if (!judul) { errEl.textContent = 'Judul ujian wajib diisi.'; errEl.style.display = 'block'; return; }
     if (!bankSoalId) { errEl.textContent = 'Pilih soal dari Bank Soal dulu.'; errEl.style.display = 'block'; return; }
@@ -3000,12 +3056,13 @@
       await simpanJadwalUjian({
         judul, bankSoalId, guruId: teacher.id, tingkat, targetTipe, kelasIds,
         durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
-        mulai, deadline
+        mulai, deadline, token
       });
       document.getElementById('juJudulInput').value = '';
       document.getElementById('juBankSoalSelect').value = '';
       document.getElementById('juMulaiInput').value = '';
       document.getElementById('juDeadlineInput').value = '';
+      document.getElementById('juTokenInput').value = '';
       document.getElementById('juTargetSemua').checked = true;
       toggleJuKelasWrap();
       await renderJadwalUjianList();

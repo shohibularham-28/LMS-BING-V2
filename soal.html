@@ -367,11 +367,13 @@
 
   .gate-screen{
     position:fixed; inset:0; z-index:100; background:var(--navy);
-    display:flex; align-items:center; justify-content:center; padding:24px;
+    display:flex; align-items:flex-start; justify-content:center; padding:24px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
   .gate-card{
     background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16); border-radius:16px;
     padding:28px 26px; max-width:400px; width:100%; color:var(--cream);
+    margin:auto 0; max-height:calc(100vh - 48px); overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
   .gate-card h1{ font-size:21px; font-weight:600; color:var(--cream); margin:6px 0 8px; line-height:1.3; }
   .gate-card .desc{color:#c9c6da; font-size:14px; margin:0 0 18px;}
@@ -391,13 +393,15 @@
   /* Confirmation Modal */
   .confirm-modal{
     position:fixed; inset:0; z-index:200; background:rgba(15, 18, 30, 0.75);
-    display:none; align-items:center; justify-content:center; padding:20px;
+    display:none; align-items:flex-start; justify-content:center; padding:20px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
     backdrop-filter: blur(4px);
   }
   .confirm-modal.show{ display:flex; }
   .confirm-card{
     background:var(--paper-card); border:1px solid var(--line); border-radius:16px;
     padding:24px 26px; max-width:420px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);
+    margin:auto 0; max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
     text-align:center;
   }
   .confirm-card h2{ font-size:20px; font-weight:700; color:var(--navy); margin-bottom:10px; }
@@ -417,7 +421,8 @@
   /* Exam rules consent popup */
   .rules-modal{
     position:fixed; inset:0; z-index:400; background:rgba(15, 18, 30, 0.8);
-    display:none; align-items:center; justify-content:center; padding:20px;
+    display:none; align-items:flex-start; justify-content:center; padding:20px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
     backdrop-filter: blur(4px);
   }
   .rules-modal.show{ display:flex; }
@@ -426,6 +431,10 @@
     padding:26px 26px 22px; max-width:460px; width:100%;
     box-shadow:0 20px 30px -5px rgba(0,0,0,.35);
     text-align:left;
+    margin:auto 0; /* keeps it vertically centered on tall screens, but lets it
+                       scroll into view instead of being clipped on short/mobile
+                       screens where the content is taller than the viewport */
+    max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
   .rules-card .ricon{ font-size:34px; margin-bottom:8px; text-align:center; }
   .rules-card h2{ font-size:19px; font-weight:700; color:var(--navy); margin-bottom:12px; text-align:center; }
@@ -450,7 +459,8 @@
   /* Violation / anti-cheat */
   .violation-modal{
     position:fixed; inset:0; z-index:300; background:rgba(140,20,20,.55);
-    display:none; align-items:center; justify-content:center; padding:20px;
+    display:none; align-items:flex-start; justify-content:center; padding:20px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
     backdrop-filter: blur(4px);
   }
   .violation-modal.show{ display:flex; }
@@ -459,6 +469,7 @@
     padding:26px 24px; max-width:420px; width:100%; text-align:center;
     box-shadow:0 20px 30px -5px rgba(0,0,0,.3);
     animation:shake .4s ease;
+    margin:auto 0; max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
   }
   @keyframes shake{
     0%,100%{transform:translateX(0);} 20%{transform:translateX(-8px);}
@@ -507,6 +518,12 @@
     <h1 id="gateTitle">Menyiapkan Soal…</h1>
     <p class="desc" id="gateDesc">Mohon tunggu sebentar, soal sedang dimuat dari server.</p>
     <div class="gate-error" id="gateError"></div>
+    <!-- Muncul hanya kalau guru mengatur Token Ujian untuk jadwal ini -->
+    <div id="tokenFieldWrap" class="gate-field" style="display:none;">
+      <label for="tokenInput">Token Ujian</label>
+      <input type="text" id="tokenInput" placeholder="Masukkan token dari guru" autocomplete="off" autocapitalize="characters">
+    </div>
+    <button type="button" class="primary" id="tokenSubmitBtn" style="display:none;">Masuk Ujian</button>
   </div>
 </div>
 
@@ -1932,6 +1949,48 @@ function showFatalGateError(msg){
   document.getElementById('gateError').textContent = msg;
 }
 
+/* ---------- Token Ujian: kalau guru mengisi token di Jadwal Ujian, siswa
+   wajib memasukkan token yang sama persis sebelum soal ditampilkan. Dicek
+   sekali per tab (sessionStorage) supaya tidak diminta ulang tiap kali
+   soal ini di-refresh dalam sesi browser yang sama. ---------- */
+function showTokenGate(requiredToken, sessionKey){
+  document.getElementById('gateTitle').textContent = '🔒 Masukkan Token Ujian';
+  document.getElementById('gateDesc').textContent = 'Ujian ini dikunci token. Minta token ujian ke gurumu, lalu masukkan di bawah untuk mulai mengerjakan.';
+  const wrap = document.getElementById('tokenFieldWrap');
+  const input = document.getElementById('tokenInput');
+  const btn = document.getElementById('tokenSubmitBtn');
+  const errEl = document.getElementById('gateError');
+  wrap.style.display = 'block';
+  btn.style.display = 'block';
+  input.value = '';
+  errEl.textContent = '';
+  setTimeout(()=>{ input.focus(); }, 50);
+
+  function trySubmit(){
+    const val = input.value.trim();
+    if(!val){
+      errEl.textContent = 'Token wajib diisi.';
+      return;
+    }
+    if(val.toUpperCase() === requiredToken.toUpperCase()){
+      errEl.textContent = '';
+      try{ sessionStorage.setItem(sessionKey, '1'); }catch(e){ /* ignore */ }
+      wrap.style.display = 'none';
+      btn.style.display = 'none';
+      document.getElementById('gateTitle').textContent = 'Menyiapkan Soal…';
+      document.getElementById('gateDesc').textContent = 'Token benar. Soal sedang disiapkan…';
+      runInitAfterDataReady();
+    } else {
+      errEl.textContent = 'Token salah. Periksa lagi ke gurumu, lalu coba lagi.';
+      input.select();
+    }
+  }
+  btn.onclick = trySubmit;
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){ e.preventDefault(); trySubmit(); }
+  });
+}
+
 (async function bootstrap(){
   const profile = await requireLogin(); // redirect ke index.html kalau belum login
   if(!profile) return;
@@ -1964,7 +2023,7 @@ function showFatalGateError(msg){
 
   const { data: juRow, error } = await supabase
     .from('jadwal_ujian')
-    .select('id, judul, mulai, deadline, durasi_menit, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, bank_soal:bank_soal_id ( id, data )')
+    .select('id, judul, mulai, deadline, durasi_menit, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, token, bank_soal:bank_soal_id ( id, data )')
     .eq('id', JADWAL_UJIAN_ID)
     .single();
 
@@ -2017,7 +2076,19 @@ function showFatalGateError(msg){
   document.getElementById('stuName').value = profile.nama;
   document.getElementById('stuClass').value = profile.kelas ? profile.kelas.nama : '-';
 
-  runInitAfterDataReady();
+  const requiredToken = (juRow.token || '').trim();
+  if(requiredToken){
+    const sessionKey = 'lms_token_ok_' + JADWAL_UJIAN_ID;
+    let alreadyOk = false;
+    try{ alreadyOk = sessionStorage.getItem(sessionKey) === '1'; }catch(e){ /* ignore */ }
+    if(alreadyOk){
+      runInitAfterDataReady();
+    } else {
+      showTokenGate(requiredToken, sessionKey);
+    }
+  } else {
+    runInitAfterDataReady();
+  }
 })();
 
 </script>
