@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kontrol Battle Kelas — Dashboard Guru</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{ background:var(--page-bg); }
+  .bg-wrap{ max-width:980px; margin:0 auto; padding:24px 18px 60px; }
+  .bg-topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+  .bg-topbar a{ font-size:13px; color:#7C5CFC; font-weight:700; text-decoration:none; }
+  .bg-hero{ background:linear-gradient(135deg,#7C5CFC,#4CC9F0); border-radius:18px; padding:22px; color:#fff; margin-bottom:20px; }
+  .bg-hero h1{ font-family:'Space Grotesk',sans-serif; margin:0 0 4px; font-size:20px; }
+  .bg-hero p{ margin:0; font-size:13px; opacity:.9; }
+
+  .bg-card{ background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:20px; margin-bottom:18px; }
+  .bg-card h3{ margin:0 0 14px; font-family:'Space Grotesk',sans-serif; font-size:15px; color:#161927; }
+  .bg-field{ margin-bottom:12px; }
+  .bg-field label{ display:block; font-size:12.5px; font-weight:700; color:#5D6478; margin-bottom:5px; }
+  .bg-field input, .bg-field select, .bg-field textarea{ width:100%; padding:10px 12px; border:1px solid #E7E9F2; border-radius:10px; font-size:13.5px; font-family:inherit; }
+  .bg-row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .bg-btn{ padding:11px 18px; border-radius:10px; border:none; font-weight:700; font-size:13.5px; cursor:pointer; }
+  .bg-btn-primary{ background:linear-gradient(135deg,#7C5CFC,#4CC9F0); color:#fff; }
+  .bg-btn-outline{ background:#fff; border:1px solid #E7E9F2; color:#333750; }
+  .bg-btn-danger{ background:#FFECEA; color:#FF6B5E; }
+  .bg-btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+  .bg-soal-item{ border:1px solid #E7E9F2; border-radius:12px; padding:14px; margin-bottom:10px; position:relative; }
+  .bg-soal-item .bg-remove{ position:absolute; top:10px; right:10px; background:none; border:none; color:#FF6B5E; font-weight:700; cursor:pointer; font-size:12px; }
+  .bg-opt-row{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .bg-opt-row input[type="text"]{ flex:1; }
+  .bg-opt-row input[type="radio"]{ width:18px; height:18px; }
+
+  .bg-kode-box{ display:flex; align-items:center; gap:12px; background:#F8F7FF; border:1px dashed #7C5CFC; border-radius:12px; padding:16px; margin-bottom:14px; }
+  .bg-kode-box .kode{ font-family:'Space Grotesk',sans-serif; font-size:24px; font-weight:700; color:#7C5CFC; letter-spacing:2px; }
+  .bg-status-badge{ display:inline-block; padding:5px 12px; border-radius:999px; font-size:11.5px; font-weight:700; background:#F1F2F6; color:#5D6478; }
+  .bg-status-badge.live{ background:#FFECEA; color:#FF6B5E; }
+  .bg-status-badge.selesai{ background:#E9FBEF; color:#22C55E; }
+
+  .bg-qctrl{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .bg-qnow{ font-size:13.5px; color:#333750; }
+  .bg-qnow b{ color:#161927; }
+
+  .bg-leader-row{ display:flex; align-items:center; gap:10px; padding:8px 6px; border-bottom:1px solid #F1F2F6; font-size:13px; }
+  .bg-leader-row .r{ width:22px; color:#8A90A3; font-weight:700; }
+  .bg-leader-row .n{ flex:1; font-weight:600; color:#333750; }
+  .bg-leader-row .s{ font-weight:800; color:#7C5CFC; }
+</style>
+</head>
+<body>
+
+<div class="bg-wrap">
+  <div class="bg-topbar">
+    <div style="font-weight:700; color:#161927;">⚔️ Kontrol Battle Kelas</div>
+    <a href="guru.html">← Kembali ke Dashboard Guru</a>
+  </div>
+
+  <div class="bg-hero">
+    <h1>Battle Mode: Leaderboard</h1>
+    <p>Semua siswa jawab soal yang sama secara live. Benar + cepat = skor lebih tinggi.</p>
+  </div>
+
+  <!-- SETUP: belum ada sesi aktif -->
+  <div id="setupArea">
+    <div class="bg-card">
+      <h3>1. Buat Sesi Battle</h3>
+      <div class="bg-row2">
+        <div class="bg-field">
+          <label>Judul Battle</label>
+          <input type="text" id="judulInput" placeholder="mis. Battle Vocabulary Bab 3" value="Battle Kelas">
+        </div>
+        <div class="bg-field">
+          <label>Target Kelas</label>
+          <select id="kelasInput"><option value="">Semua kelas</option></select>
+        </div>
+      </div>
+      <div class="bg-row2">
+        <div class="bg-field">
+          <label>Durasi per soal (detik)</label>
+          <input type="number" id="durasiInput" value="20" min="5" max="120">
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-card">
+      <h3>2. Susun Soal (Pilihan Ganda)</h3>
+      <div id="soalListBox"></div>
+      <button class="bg-btn bg-btn-outline" onclick="tambahSoal()">➕ Tambah Soal</button>
+    </div>
+
+    <button class="bg-btn bg-btn-primary" style="width:100%; padding:14px;" onclick="buatSesi()">🚀 Buat &amp; Mulai Battle</button>
+    <div id="setupError" style="color:#FF6B5E; font-size:12.5px; margin-top:8px; font-weight:600;"></div>
+  </div>
+
+  <!-- ROOM: sesi sedang berjalan/lobi -->
+  <div id="roomArea" style="display:none;">
+    <div class="bg-card">
+      <div class="bg-kode-box">
+        <div>
+          <div style="font-size:11.5px; color:#8A90A3; font-weight:700;">KODE BATTLE</div>
+          <div class="kode" id="kodeTampil">—</div>
+        </div>
+        <div style="margin-left:auto;"><span class="bg-status-badge" id="statusBadge">lobi</span></div>
+      </div>
+      <div style="font-size:12.5px; color:#8A90A3;">Bagikan kode ini ke siswa untuk join di menu <b>Battle Kelas</b>.</div>
+    </div>
+
+    <div class="bg-card">
+      <h3>Kontrol Soal</h3>
+      <div class="bg-qctrl">
+        <div class="bg-qnow">Soal saat ini: <b id="qNowLabel">Belum dirilis</b></div>
+        <div style="display:flex; gap:8px;">
+          <button class="bg-btn bg-btn-primary" id="nextBtn" onclick="rilisSoalBerikutnya()">▶️ Rilis Soal Berikutnya</button>
+          <button class="bg-btn bg-btn-danger" onclick="akhiriBattle()">🏁 Akhiri Battle</button>
+        </div>
+      </div>
+      <div id="qPreview" style="font-size:13.5px; color:#333750;"></div>
+    </div>
+
+    <div class="bg-card">
+      <h3>🏆 Papan Peringkat Live</h3>
+      <div id="leaderBox">Belum ada peserta.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+let profile = null;
+let sesi = null;
+let channel = null;
+let soalCount = 0;
+
+(async function init(){
+  profile = await requireTeacherLogin();
+  if (!profile) return;
+  await loadKelasOptions();
+  tambahSoal(); // mulai dengan 1 form soal kosong
+})();
+
+async function loadKelasOptions(){
+  const { data } = await supabase.from("kelas").select("id, nama").order("nama");
+  const sel = document.getElementById("kelasInput");
+  (data || []).forEach(k => {
+    const opt = document.createElement("option");
+    opt.value = k.id; opt.textContent = k.nama;
+    sel.appendChild(opt);
+  });
+}
+
+function tambahSoal(){
+  soalCount++;
+  const id = "s" + soalCount;
+  const box = document.getElementById("soalListBox");
+  const div = document.createElement("div");
+  div.className = "bg-soal-item";
+  div.id = id;
+  div.innerHTML = `
+    <button class="bg-remove" onclick="document.getElementById('${id}').remove()">✕ hapus</button>
+    <div class="bg-field">
+      <label>Pertanyaan</label>
+      <textarea rows="2" class="q-prompt" placeholder="Tulis pertanyaan di sini..."></textarea>
+    </div>
+    ${['A','B','C','D'].map(k => `
+      <div class="bg-opt-row">
+        <input type="radio" name="correct_${id}" value="${k}" ${k==='A'?'checked':''}>
+        <span style="width:16px; font-weight:700; color:#7C5CFC; font-size:12px;">${k}</span>
+        <input type="text" class="q-opt" data-key="${k}" placeholder="Opsi ${k}">
+      </div>`).join("")}
+  `;
+  box.appendChild(div);
+}
+
+function kumpulkanSoal(){
+  const items = document.querySelectorAll(".bg-soal-item");
+  const soal = [];
+  const errors = [];
+  items.forEach((item, idx) => {
+    const prompt = item.querySelector(".q-prompt").value.trim();
+    const opts = [...item.querySelectorAll(".q-opt")].map(inp => ({ key: inp.dataset.key, text: inp.value.trim() }));
+    const correctRadio = item.querySelector(`input[type="radio"]:checked`);
+    if (!prompt || opts.some(o => !o.text)) {
+      errors.push(`Soal #${idx+1}: pertanyaan/opsi belum lengkap.`);
+      return;
+    }
+    soal.push({ prompt, options: opts, correct: correctRadio ? correctRadio.value : "A" });
+  });
+  return { soal, errors };
+}
+
+async function buatSesi(){
+  const errBox = document.getElementById("setupError");
+  errBox.textContent = "";
+  const judul = document.getElementById("judulInput").value.trim() || "Battle Kelas";
+  const kelasId = document.getElementById("kelasInput").value || null;
+  const durasi = parseInt(document.getElementById("durasiInput").value, 10) || 20;
+
+  const { soal, errors } = kumpulkanSoal();
+  if (soal.length === 0) { errBox.textContent = "Tambahkan minimal 1 soal yang lengkap."; return; }
+  if (errors.length > 0) { errBox.textContent = errors.join(" "); return; }
+
+  const kode = "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+  const { data, error } = await supabase.from("battle_sesi").insert({
+    kode, judul, guru_id: profile.id, kelas_id: kelasId,
+    status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi
+  }).select().single();
+
+  if (error) { errBox.textContent = "Gagal membuat sesi: " + error.message; return; }
+
+  sesi = data;
+  document.getElementById("setupArea").style.display = "none";
+  document.getElementById("roomArea").style.display = "block";
+  document.getElementById("kodeTampil").textContent = sesi.kode;
+  updateRoomUI();
+  subscribeRealtime();
+
+  // Battle langsung berstatus "berjalan" begitu dibuat, tapi soal belum
+  // dirilis (soal_aktif_index -1) supaya guru bisa rilis manual saat siap.
+  await supabase.from("battle_sesi").update({ status: "berjalan" }).eq("id", sesi.id);
+}
+
+function subscribeRealtime(){
+  if (channel) supabase.removeChannel(channel);
+  channel = supabase
+    .channel("battle_admin_" + sesi.id)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "battle_sesi", filter: `id=eq.${sesi.id}` }, (payload) => {
+      sesi = payload.new;
+      updateRoomUI();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_peserta", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadLeaderboard();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_jawaban", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadLeaderboard();
+    })
+    .subscribe();
+  loadLeaderboard();
+}
+
+function updateRoomUI(){
+  const badge = document.getElementById("statusBadge");
+  badge.textContent = sesi.status;
+  badge.className = "bg-status-badge " + (sesi.status === "berjalan" ? "live" : sesi.status === "selesai" ? "selesai" : "");
+
+  const total = (sesi.soal || []).length;
+  const label = document.getElementById("qNowLabel");
+  const preview = document.getElementById("qPreview");
+  const nextBtn = document.getElementById("nextBtn");
+
+  if (sesi.status === "selesai") {
+    label.textContent = "Battle sudah selesai";
+    nextBtn.disabled = true;
+    preview.innerHTML = "";
+    return;
+  }
+
+  if (sesi.soal_aktif_index < 0) {
+    label.textContent = `Belum dirilis (total ${total} soal)`;
+    preview.innerHTML = "";
+  } else {
+    const q = sesi.soal[sesi.soal_aktif_index];
+    label.textContent = `Soal ${sesi.soal_aktif_index + 1} dari ${total}`;
+    preview.innerHTML = `<b>${escapeHtml(q.prompt)}</b><br><span style="color:#8A90A3;">Jawaban benar: ${q.correct}</span>`;
+  }
+  nextBtn.disabled = sesi.soal_aktif_index >= total - 1;
+  nextBtn.textContent = sesi.soal_aktif_index < 0 ? "▶️ Rilis Soal #1" : "▶️ Rilis Soal Berikutnya";
+}
+
+async function rilisSoalBerikutnya(){
+  const total = (sesi.soal || []).length;
+  const nextIndex = sesi.soal_aktif_index + 1;
+  if (nextIndex >= total) return;
+  await supabase.from("battle_sesi").update({
+    soal_aktif_index: nextIndex,
+    soal_dirilis_at: new Date().toISOString()
+  }).eq("id", sesi.id);
+}
+
+async function akhiriBattle(){
+  if (!confirm("Akhiri battle sekarang? Siswa tidak bisa menjawab lagi.")) return;
+  await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", sesi.id);
+}
+
+async function loadLeaderboard(){
+  const { data } = await supabase
+    .from("battle_peserta")
+    .select("profile_id, nama, skor_total")
+    .eq("sesi_id", sesi.id)
+    .order("skor_total", { ascending: false });
+  const box = document.getElementById("leaderBox");
+  if (!data || data.length === 0) { box.innerHTML = "Belum ada peserta."; return; }
+  box.innerHTML = data.map((p, i) => `
+    <div class="bg-leader-row">
+      <div class="r">${i+1}</div>
+      <div class="n">${escapeHtml(p.nama)}</div>
+      <div class="s">${p.skor_total}</div>
+    </div>`).join("");
+}
+
+function escapeHtml(s){
+  return (s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
