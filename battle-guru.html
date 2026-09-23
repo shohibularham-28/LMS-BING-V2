@@ -12,6 +12,8 @@
   .bg-import-box.dragover{ border-color:#7C5CFC; background:#F1EEFF; }
   .bg-import-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
   .bg-import-row input[type="file"]{ flex:1; min-width:200px; font-size:12.5px; }
+  .bg-import-row select{ flex:1; min-width:200px; padding:9px 10px; border:1px solid #E7E9F2; border-radius:9px; font-size:12.5px; font-family:inherit; }
+  .bg-import-row input[type="text"]{ flex:1; min-width:180px; padding:9px 10px; border:1px solid #E7E9F2; border-radius:9px; font-size:12.5px; font-family:inherit; }
   .bg-import-summary{ margin-top:10px; font-size:12.5px; color:#333750; }
   .bg-import-summary b{ color:#161927; }
   .bg-import-summary .warn{ color:#B45309; }
@@ -175,7 +177,25 @@
     </div>
 
     <div class="bg-card">
-      <h3>3. Soal — Import dari Word atau Ketik Manual</h3>
+      <h3>3. Soal — Bank Soal, Import Word, atau Ketik Manual</h3>
+
+      <div class="bg-import-box" id="bankBox">
+        <div style="font-weight:700; font-size:12.5px; color:#333750; margin-bottom:8px;">📚 Bank Soal — pakai soal yang sudah pernah disimpan</div>
+        <div class="bg-import-row">
+          <select id="bankSelect"><option value="">— pilih paket soal tersimpan —</option></select>
+          <button class="bg-btn bg-btn-outline" onclick="muatDariBank()">📥 Muat ke Daftar</button>
+          <button class="bg-btn bg-btn-danger" onclick="hapusBank()" title="Hapus paket terpilih">🗑️</button>
+        </div>
+        <div class="bg-import-row" style="margin-top:10px;">
+          <input type="text" id="bankNamaInput" placeholder="Nama paket baru, mis. Vocabulary Bab 3">
+          <button class="bg-btn bg-btn-primary" onclick="simpanKeBank()">💾 Simpan Soal Saat Ini ke Bank</button>
+        </div>
+        <div style="font-size:12px; color:#8A90A3; margin-top:8px;">
+          Simpan soal di sini supaya bisa dipakai lagi untuk battle lain kapan saja, tanpa ketik ulang.
+        </div>
+        <div class="bg-import-summary" id="bankMsg"></div>
+      </div>
+
       <div class="bg-import-box" id="importBox">
         <div class="bg-import-row">
           <input type="file" id="docxInput" accept=".docx" onchange="handleDocxImport(this.files[0])">
@@ -252,11 +272,13 @@ let modeAktif = "leaderboard"; // 'leaderboard' | 'kelompok'
 let rilisModeAktif = "manual"; // 'manual' | 'otomatis'
 let autoTickInterval = null;
 let autoAdvancing = false;
+let bankData = {};
 
 (async function init(){
   profile = await requireTeacherLogin();
   if (!profile) return;
   await loadKelasOptions();
+  await loadBankOptions();
   tambahSoal(); // mulai dengan 1 form soal kosong
   tambahTim("Tim A");
   tambahTim("Tim B");
@@ -311,6 +333,65 @@ async function loadKelasOptions(){
     opt.value = k.id; opt.textContent = k.nama;
     sel.appendChild(opt);
   });
+}
+
+async function loadBankOptions(){
+  const { data, error } = await supabase
+    .from("battle_bank_paket")
+    .select("id, nama, soal")
+    .eq("guru_id", profile.id)
+    .order("nama");
+  const sel = document.getElementById("bankSelect");
+  sel.innerHTML = '<option value="">— pilih paket soal tersimpan —</option>';
+  bankData = {};
+  if (error) return;
+  (data || []).forEach(row => {
+    bankData[row.id] = row;
+    const opt = document.createElement("option");
+    opt.value = row.id;
+    opt.textContent = `${row.nama} (${(row.soal || []).length} soal)`;
+    sel.appendChild(opt);
+  });
+}
+
+function muatDariBank(){
+  const id = document.getElementById("bankSelect").value;
+  const msg = document.getElementById("bankMsg");
+  if (!id || !bankData[id]) { msg.innerHTML = '<span class="err">Pilih dulu paket soal yang mau dipakai.</span>'; return; }
+  const soalList = bankData[id].soal || [];
+  if (soalList.length === 0) { msg.innerHTML = '<span class="warn">Paket ini belum berisi soal.</span>'; return; }
+  soalList.forEach(q => tambahSoal({ prompt: q.prompt, options: q.options, correct: q.correct }));
+  msg.innerHTML = `<b>✅ ${soalList.length} soal dari "${escapeHtml(bankData[id].nama)}"</b> ditambahkan ke daftar di bawah.`;
+}
+
+async function simpanKeBank(){
+  const msg = document.getElementById("bankMsg");
+  const nama = document.getElementById("bankNamaInput").value.trim();
+  if (!nama) { msg.innerHTML = '<span class="err">Isi dulu nama paket soal.</span>'; return; }
+
+  const { soal, errors } = kumpulkanSoal();
+  if (soal.length === 0) { msg.innerHTML = '<span class="err">Belum ada soal lengkap untuk disimpan.</span>'; return; }
+  if (errors.length > 0) { msg.innerHTML = `<span class="err">${errors.join(" ")}</span>`; return; }
+
+  const { error } = await supabase.from("battle_bank_paket").insert({ guru_id: profile.id, nama, soal });
+  if (error) { msg.innerHTML = `<span class="err">Gagal menyimpan: ${escapeHtml(error.message)}</span>`; return; }
+
+  msg.innerHTML = `<b>✅ Tersimpan ke Bank Soal sebagai "${escapeHtml(nama)}"</b> (${soal.length} soal). Bisa dipakai lagi kapan saja untuk battle lain.`;
+  document.getElementById("bankNamaInput").value = "";
+  await loadBankOptions();
+}
+
+async function hapusBank(){
+  const id = document.getElementById("bankSelect").value;
+  const msg = document.getElementById("bankMsg");
+  if (!id || !bankData[id]) { msg.innerHTML = '<span class="err">Pilih dulu paket soal yang mau dihapus.</span>'; return; }
+  if (!confirm(`Hapus paket soal "${bankData[id].nama}" dari Bank Soal? Battle yang sudah pernah memakai soal ini tidak akan terpengaruh.`)) return;
+
+  const { error } = await supabase.from("battle_bank_paket").delete().eq("id", id);
+  if (error) { msg.innerHTML = `<span class="err">Gagal menghapus: ${escapeHtml(error.message)}</span>`; return; }
+
+  msg.innerHTML = "🗑️ Paket soal dihapus dari Bank Soal.";
+  await loadBankOptions();
 }
 
 function tambahSoal(prefill){

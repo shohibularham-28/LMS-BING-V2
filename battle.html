@@ -38,6 +38,8 @@
   .bt-btn:active{ transform:scale(.97); }
   .bt-btn-primary{ background:linear-gradient(135deg,#7C5CFC,#4CC9F0); color:#fff; width:100%; margin-top:12px; }
   .bt-btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+  .bt-btn-outline{ background:#fff; border:1px solid #E7E9F2; color:#5D6478; width:auto; margin-top:0; }
+  .bt-btn-outline:hover{ border-color:#FF6B5E; color:#FF6B5E; }
 
   .bt-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; background:#F1F2F6; color:#5D6478; }
   .bt-status-pill.live{ background:#FFECEA; color:#FF6B5E; }
@@ -180,7 +182,10 @@
 
           <!-- PILIH KELOMPOK: tampil sebelum arena kalau sesi mode = kelompok -->
           <div class="bt-join-card" id="timPickCard" style="display:none;">
-            <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#161927;">Pilih kelompokmu</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">Pilih kelompokmu</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="exitBattle()">🚪 Keluar</button>
+            </div>
             <div style="font-size:12.5px; color:#8A90A3; margin-bottom:14px;">Battle ini dimainkan berkelompok — skormu akan ditambahkan ke skor timmu.</div>
             <div id="timPickList" style="display:grid; gap:10px;"></div>
           </div>
@@ -189,7 +194,10 @@
           <div id="roomArea" style="display:none;">
             <div class="bt-room-top">
               <div id="statusPill" class="bt-status-pill">⏳ Menunggu guru memulai…</div>
-              <div style="font-size:12.5px; color:#8A90A3; font-weight:600;">Kode: <b id="roomKode" style="color:#161927;"></b></div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="font-size:12.5px; color:#8A90A3; font-weight:600;">Kode: <b id="roomKode" style="color:#161927;"></b></div>
+                <button class="bt-btn bt-btn-outline" style="padding:7px 12px; font-size:12px;" onclick="exitBattle()">🚪 Keluar</button>
+              </div>
             </div>
             <div id="rilisModeInfo" style="font-size:11.5px; color:#8A90A3; font-weight:600; margin:-8px 0 12px;"></div>
 
@@ -319,6 +327,28 @@ async function pilihTimSiswa(key){
     .eq("sesi_id", sesi.id).eq("profile_id", profile.id);
   document.getElementById("timPickCard").style.display = "none";
   masukArena();
+}
+
+function exitBattle(){
+  const ok = confirm("Yakin mau keluar dari battle ini?\n\nKamu masih bisa join lagi pakai kode yang sama, tapi soal yang dirilis selama kamu keluar tidak akan bisa kamu jawab.");
+  if (!ok) return;
+
+  stopTimer();
+  stopResultCountdown();
+  if (channel) { supabase.removeChannel(channel); channel = null; }
+  sessionStorage.removeItem("battle_kode_aktif");
+
+  sesi = null;
+  currentQIndex = -1;
+  currentQStart = null;
+  answered = false;
+
+  document.getElementById("roomArea").style.display = "none";
+  document.getElementById("timPickCard").style.display = "none";
+  document.getElementById("joinCard").style.display = "block";
+  document.getElementById("kodeInput").value = "";
+  document.getElementById("joinError").textContent = "";
+  showToast("🚪 Kamu sudah keluar dari battle.");
 }
 
 function masukArena(){
