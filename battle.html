@@ -72,7 +72,9 @@
   .bt-waiting{ padding:50px 20px; text-align:center; color:#8A90A3; }
   .bt-waiting .big{ font-size:40px; margin-bottom:10px; }
 
-  .bt-leader{ background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:18px; margin-top:18px; }
+  .bt-leader{ background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:18px; margin-top:18px; display:none; }
+  @keyframes btLeaderReveal{ from{ opacity:0; transform:translateY(18px) scale(.97);} to{ opacity:1; transform:none;} }
+  .bt-leader.reveal{ animation:btLeaderReveal .5s cubic-bezier(.34,1.4,.64,1); }
   .bt-leader h3{ margin:0 0 12px; font-family:'Space Grotesk',sans-serif; font-size:15px; color:#161927; display:flex; align-items:center; gap:6px; }
   .bt-row{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:12px; }
   .bt-row.me{ background:#F1EEFF; }
@@ -354,11 +356,31 @@ function exitBattle(){
 function masukArena(){
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("roomKode").textContent = sesi.kode;
+  hideLeaderboardReveal();
 
   renderStatus();
   renderQuestionState();
   loadLeaderboard();
   subscribeRealtime();
+}
+
+// ===== Papan peringkat: tampil TERPISAH dari soal, hanya muncul setelah
+// durasi soal habis (bukan barengan waktu siswa sedang menjawab). =====
+function showLeaderboardReveal(){
+  const card = document.getElementById("leaderCard");
+  if (!card) return;
+  const wasHidden = card.style.display === "none" || card.style.display === "";
+  card.style.display = "block";
+  if (wasHidden) {
+    card.classList.remove("reveal");
+    void card.offsetWidth; // reflow supaya animasi bisa diulang
+    card.classList.add("reveal");
+  }
+  loadLeaderboard();
+}
+function hideLeaderboardReveal(){
+  const card = document.getElementById("leaderCard");
+  if (card) { card.style.display = "none"; card.classList.remove("reveal"); }
 }
 
 function renderStatus(){
@@ -404,6 +426,7 @@ function renderQuestionState(){
     arena.innerHTML = `<div class="bt-waiting"><div class="big">🕹️</div><div>Bersiap-siap! Soal akan segera dirilis guru…</div></div>`;
     stopTimer();
     stopResultCountdown();
+    hideLeaderboardReveal();
     return;
   }
 
@@ -416,6 +439,7 @@ function renderQuestionState(){
   currentQStart = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : Date.now();
   answered = false;
   stopResultCountdown();
+  if (isNewQuestion) hideLeaderboardReveal(); // soal baru dimulai -> sembunyikan hasil soal sebelumnya
 
   const optsHtml = (q.options || []).map(o => `
     <button class="bt-opt" data-key="${o.key}" onclick="submitAnswer('${o.key}')">
@@ -469,6 +493,7 @@ function startTimer(){
       stopTimer();
       if (!answered) lockOptions(null, false, false);
       startResultCountdown();
+      showLeaderboardReveal(); // durasi habis -> tampilkan papan peringkat terpisah, bukan barengan soal
     }
   }, 100);
 }
@@ -649,7 +674,7 @@ async function loadLeaderboard(){
 function showFinal(){
   stopTimer();
   stopResultCountdown();
-  loadLeaderboard();
+  showLeaderboardReveal();
   const arena = document.getElementById("arena");
   arena.innerHTML = `
     <div class="bt-final">
