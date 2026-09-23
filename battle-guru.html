@@ -5,8 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kontrol Battle Kelas — Dashboard Guru</title>
 <link rel="stylesheet" href="assets/style.css">
+<script src="https://cdn.jsdelivr.net/npm/mammoth/mammoth.browser.min.js"></script>
 <style>
   body{ background:var(--page-bg); }
+  .bg-import-box{ border:2px dashed #C9C2FF; border-radius:14px; padding:18px; background:#FAF9FF; margin-bottom:14px; }
+  .bg-import-box.dragover{ border-color:#7C5CFC; background:#F1EEFF; }
+  .bg-import-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .bg-import-row input[type="file"]{ flex:1; min-width:200px; font-size:12.5px; }
+  .bg-import-summary{ margin-top:10px; font-size:12.5px; color:#333750; }
+  .bg-import-summary b{ color:#161927; }
+  .bg-import-summary .warn{ color:#B45309; }
+  .bg-import-summary .err{ color:#FF6B5E; }
+  .bg-tpl-link{ font-size:12px; color:#7C5CFC; font-weight:700; text-decoration:none; }
   .bg-wrap{ max-width:980px; margin:0 auto; padding:24px 18px 60px; }
   .bg-topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
   .bg-topbar a{ font-size:13px; color:#7C5CFC; font-weight:700; text-decoration:none; }
@@ -84,9 +94,23 @@
     </div>
 
     <div class="bg-card">
-      <h3>2. Susun Soal (Pilihan Ganda)</h3>
+      <h3>2. Soal — Import dari Word atau Ketik Manual</h3>
+      <div class="bg-import-box" id="importBox">
+        <div class="bg-import-row">
+          <input type="file" id="docxInput" accept=".docx" onchange="handleDocxImport(this.files[0])">
+          <a class="bg-tpl-link" href="Template_Soal_Upload_LMS.docx" download>📄 Unduh contoh format template</a>
+        </div>
+        <div style="font-size:12px; color:#8A90A3; margin-top:8px;">
+          Upload file <b>.docx</b> berisi soal format <code>--- SOAL n (PILIHAN GANDA) ---</code> dengan opsi
+          <code>A) ... B) ... [BENAR]</code>. Tipe soal lain (pilihan ganda &gt;1 jawaban, klasifikasi) otomatis
+          dilewati karena battle hanya mendukung 1 jawaban benar per soal. Soal hasil import akan
+          <b>ditambahkan</b> ke daftar di bawah (soal manual yang sudah ada tidak terhapus).
+        </div>
+        <div class="bg-import-summary" id="importSummary"></div>
+      </div>
+
       <div id="soalListBox"></div>
-      <button class="bg-btn bg-btn-outline" onclick="tambahSoal()">➕ Tambah Soal</button>
+      <button class="bg-btn bg-btn-outline" onclick="tambahSoal()">➕ Tambah Soal Manual</button>
     </div>
 
     <button class="bg-btn bg-btn-primary" style="width:100%; padding:14px;" onclick="buatSesi()">🚀 Buat &amp; Mulai Battle</button>
@@ -128,6 +152,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabaseClient.js"></script>
 <script src="assets/app.js"></script>
+<script src="assets/soal-import.js"></script>
 <script>
 let profile = null;
 let sesi = null;
@@ -151,27 +176,75 @@ async function loadKelasOptions(){
   });
 }
 
-function tambahSoal(){
+function tambahSoal(prefill){
   soalCount++;
   const id = "s" + soalCount;
   const box = document.getElementById("soalListBox");
   const div = document.createElement("div");
   div.className = "bg-soal-item";
   div.id = id;
+  const promptVal = prefill ? escapeHtml(prefill.prompt) : "";
+  const badge = prefill ? `<span style="display:inline-block; background:#EFEAFF; color:#7C5CFC; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; margin-bottom:8px;">📄 dari Word</span><br>` : "";
   div.innerHTML = `
     <button class="bg-remove" onclick="document.getElementById('${id}').remove()">✕ hapus</button>
+    ${badge}
     <div class="bg-field">
       <label>Pertanyaan</label>
-      <textarea rows="2" class="q-prompt" placeholder="Tulis pertanyaan di sini..."></textarea>
+      <textarea rows="2" class="q-prompt" placeholder="Tulis pertanyaan di sini...">${promptVal}</textarea>
     </div>
-    ${['A','B','C','D'].map(k => `
+    ${['A','B','C','D'].map(k => {
+      const opt = prefill ? (prefill.options.find(o => o.key === k) || { text: "" }) : { text: "" };
+      const checked = prefill ? (prefill.correct === k ? "checked" : "") : (k === "A" ? "checked" : "");
+      return `
       <div class="bg-opt-row">
-        <input type="radio" name="correct_${id}" value="${k}" ${k==='A'?'checked':''}>
+        <input type="radio" name="correct_${id}" value="${k}" ${checked}>
         <span style="width:16px; font-weight:700; color:#7C5CFC; font-size:12px;">${k}</span>
-        <input type="text" class="q-opt" data-key="${k}" placeholder="Opsi ${k}">
-      </div>`).join("")}
+        <input type="text" class="q-opt" data-key="${k}" placeholder="Opsi ${k}" value="${escapeHtml(opt.text || '')}">
+      </div>`;
+    }).join("")}
   `;
   box.appendChild(div);
+}
+
+async function handleDocxImport(file){
+  const summaryBox = document.getElementById("importSummary");
+  if (!file) return;
+  summaryBox.innerHTML = "⏳ Membaca file...";
+
+  try {
+    const rawText = await readDocxAsRawText(file);
+    const parsed = parseSoalDocx(rawText);
+
+    // Kumpulkan semua soal dari semua "TEKS", ambil yang tipe single saja
+    // (pilihan ganda 1 jawaban) — sesuai batasan format soal battle.
+    let allQuestions = [];
+    parsed.data.forEach(sec => { allQuestions = allQuestions.concat(sec.questions); });
+
+    const singleOnly = allQuestions.filter(q => q.type === "single" && q.prompt && q.correct && q.options.length >= 2);
+    const skippedCount = allQuestions.length - singleOnly.length;
+
+    if (singleOnly.length === 0) {
+      summaryBox.innerHTML = `<span class="err">Tidak ada soal Pilihan Ganda (1 jawaban) yang valid ditemukan di file ini.</span>`;
+      return;
+    }
+
+    singleOnly.forEach(q => {
+      tambahSoal({
+        prompt: q.prompt,
+        options: q.options.map(o => ({ key: o.k, text: o.t })),
+        correct: q.correct
+      });
+    });
+
+    let msg = `<b>✅ ${singleOnly.length} soal berhasil diimpor</b> dan ditambahkan ke daftar di bawah.`;
+    if (skippedCount > 0) msg += `<br><span class="warn">⚠️ ${skippedCount} soal dilewati (bukan tipe Pilihan Ganda 1 jawaban).</span>`;
+    if (parsed.errors.length > 0) msg += `<br><span class="err">${parsed.errors.length} masalah format ditemukan (soal terkait mungkin tidak terimpor lengkap).</span>`;
+    summaryBox.innerHTML = msg;
+
+    document.getElementById("docxInput").value = "";
+  } catch (e) {
+    summaryBox.innerHTML = `<span class="err">Gagal membaca file: ${escapeHtml(e.message || String(e))}</span>`;
+  }
 }
 
 function kumpulkanSoal(){
