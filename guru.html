@@ -3732,7 +3732,7 @@
 
     let query = supabase
       .from('sesi_ujian')
-      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, paused, jadwal_ujian:jadwal_ujian_id ( judul ), bank_soal:bank_soal_id ( judul )')
+      .select('id, nama, kelas, pelanggaran, started_at, last_ping_at, paused, locked, jadwal_ujian:jadwal_ujian_id ( judul ), bank_soal:bank_soal_id ( judul )')
       .eq('status', 'mengerjakan')
       .order('started_at', { ascending: true });
     if (jadwalUjianId) query = query.eq('jadwal_ujian_id', jadwalUjianId);
@@ -3764,6 +3764,7 @@
           ${currentSedangUjianRows.map(r => {
             const stale = (now - new Date(r.last_ping_at).getTime()) > SEDANG_UJIAN_STALE_MS;
             const isPaused = !!r.paused;
+            const isLocked = !!r.locked;
             return `
             <tr>
               <td>${esc(r.nama)}</td>
@@ -3772,11 +3773,13 @@
               <td>
                 ${stale ? '<span class="score-pill status-belum">Tidak Merespon</span>' : '<span class="score-pill status-tuntas">🟢 Aktif</span>'}
                 ${isPaused ? '<br><span class="score-pill status-belum">⏸ Dijeda</span>' : ''}
+                ${isLocked ? '<br><span class="score-pill status-belum">🔒 Terkunci</span>' : ''}
               </td>
               <td>${r.pelanggaran || 0}</td>
               <td>${fmtDurasiSejak(r.started_at)}</td>
               <td>${fmtDurasiSejak(r.last_ping_at)}</td>
               <td style="white-space:nowrap;">
+                ${isLocked ? `<button type="button" class="btn-secondary-sm btn-unlock-ujian" data-id="${esc(r.id)}" data-nama="${esc(r.nama)}">🔓 Buka Kunci</button>` : ''}
                 <button type="button" class="btn-secondary-sm btn-pause-ujian" data-id="${esc(r.id)}" data-paused="${isPaused ? '1' : '0'}">${isPaused ? '▶ Lanjutkan' : '⏸ Pause'}</button>
                 <button type="button" class="btn-danger-sm btn-keluarkan-ujian" data-id="${esc(r.id)}" data-nama="${esc(r.nama)}">🚪 Keluarkan</button>
               </td>
@@ -3790,6 +3793,17 @@
         const nowPaused = btn.dataset.paused === '1';
         btn.disabled = true;
         const { error } = await supabase.from('sesi_ujian').update({ paused: !nowPaused }).eq('id', btn.dataset.id);
+        if (error) { alert('Gagal: ' + error.message); btn.disabled = false; return; }
+        loadSedangUjian();
+      });
+    });
+
+    wrap.querySelectorAll('.btn-unlock-ujian').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nama = btn.dataset.nama;
+        if (!confirm(`Buka kunci ujian ${nama}? Siswa akan langsung bisa melanjutkan mengerjakan ujian ini lagi.`)) return;
+        btn.disabled = true;
+        const { error } = await supabase.from('sesi_ujian').update({ locked: false }).eq('id', btn.dataset.id);
         if (error) { alert('Gagal: ' + error.message); btn.disabled = false; return; }
         loadSedangUjian();
       });

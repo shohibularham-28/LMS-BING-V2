@@ -562,6 +562,17 @@
   </div>
 </div>
 
+<!-- Modal: ujian terkunci otomatis (keluar tab/fullscreen) — hanya guru yang bisa membuka -->
+<div id="lockModal" class="violation-modal">
+  <div class="violation-card">
+    <div class="vicon">🔒</div>
+    <h2>Ujian Terkunci</h2>
+    <p id="lockMsg">Ujian dikunci otomatis karena kamu berpindah tab/aplikasi atau keluar dari fullscreen. Jawabanmu tetap tersimpan. Hubungi gurumu — hanya guru yang bisa membuka kunci ini lewat dashboard monitoring.</p>
+    <div class="vcount" id="lockCount">Pelanggaran ke-1</div>
+    <p style="font-size:13px; color:#888; margin-top:8px;">Halaman ini akan otomatis lanjut begitu guru membuka kunci. Jangan tutup tab ini.</p>
+  </div>
+</div>
+
 <!-- Modal: dikeluarkan oleh guru dari ujian yang sedang berjalan -->
 <div id="kickedModal" class="violation-modal">
   <div class="violation-card">
@@ -1151,6 +1162,27 @@ const SESI_PING_INTERVAL_MS = 20000; // kirim heartbeat tiap 20 detik
 async function mulaiSesiUjian(){
   if(!currentProfile || !JADWAL_UJIAN_ID) return;
   try{
+    // Cek dulu apakah sudah ada sesi yang TERKUNCI untuk siswa ini. Kalau
+    // ya, JANGAN buka paksa lewat upsert (supaya siswa tidak bisa lolos
+    // dari kunci cuma dengan reload halaman) — langsung tampilkan layar
+    // terkunci dan tunggu guru membuka lewat dashboard.
+    const { data: existing } = await supabase
+      .from('sesi_ujian')
+      .select('id, locked, pelanggaran')
+      .eq('jadwal_ujian_id', JADWAL_UJIAN_ID)
+      .eq('profile_id', currentProfile.id)
+      .maybeSingle();
+
+    if(existing && existing.locked){
+      SESI_ID = existing.id;
+      violationCount = existing.pelanggaran || violationCount;
+      updateViolationBadge();
+      showLockOverlay(violationCount);
+      startGuruControlPolling();
+      refreshCachedAccessToken();
+      return;
+    }
+
     const stuClass = document.getElementById('stuClass').value.trim() || (currentProfile.kelas ? currentProfile.kelas.nama : '-');
     const { data, error } = await supabase
       .from('sesi_ujian')
@@ -1164,7 +1196,8 @@ async function mulaiSesiUjian(){
         pelanggaran: violationCount,
         last_ping_at: new Date().toISOString(),
         force_exit: false,
-        paused: false
+        paused: false,
+        locked: false
       }, { onConflict: 'jadwal_ujian_id,profile_id' })
       .select('id')
       .single();
@@ -1246,11 +1279,15 @@ function stopGuruControlPolling(){
 }
 
 async function checkGuruControl(){
-  if(!SESI_ID || submitted || !isExamRunning()) return;
+  if(!SESI_ID || submitted) return;
+  // Selagi terkunci, examActive sengaja dimatikan (lihat showLockOverlay),
+  // jadi jangan pakai isExamRunning() di sini — polling kunci harus tetap
+  // jalan supaya begitu guru membuka kunci, layar siswa otomatis lanjut.
+  if(!isLocked && !isExamRunning()) return;
   try{
     const { data, error } = await supabase
       .from('sesi_ujian')
-      .select('paused, force_exit')
+      .select('paused, force_exit, locked')
       .eq('id', SESI_ID)
       .single();
     if(error || !data) return;
@@ -1259,6 +1296,13 @@ async function checkGuruControl(){
       handleForceExit();
       return;
     }
+
+    if(isLocked && !data.locked){
+      // Guru sudah membuka kunci lewat dashboard -> lanjutkan ujian.
+      hideLockOverlay();
+      return;
+    }
+    if(isLocked) return; // masih terkunci, jangan proses paused/lain dulu
 
     if(data.paused && !pausedByGuru){
       pausedByGuru = true;
@@ -1582,6 +1626,45 @@ function updateFullscreenButton(){
   btn.style.display = (isExamRunning() && !isFullscreenActive()) ? '' : 'none';
 }
 
+let isLocked = false; // true begitu ujian terkunci (menunggu guru membuka)
+
+/* Tampilkan layar kunci: blokir total pengerjaan, hentikan timer, dan
+   biarkan polling guru (checkGuruControl) yang memantau sampai guru
+   membuka kunci dari dashboard. Ujian TIDAK bisa dilanjutkan sendiri
+   oleh siswa dalam kondisi ini. */
+function showLockOverlay(count){
+  isLocked = true;
+  examActive = false; // hentikan interaksi/timer selagi terkunci
+  pauseTimer();
+  document.getElementById('violationModal').classList.remove('show');
+  document.getElementById('lockCount').textContent = `Pelanggaran ke-${count}`;
+  document.getElementById('lockModal').classList.add('show');
+}
+
+function hideLockOverlay(){
+  isLocked = false;
+  document.getElementById('lockModal').classList.remove('show');
+  examActive = true;
+  requestExamFullscreen();
+  updateFullscreenButton();
+  if(navigator.onLine) resumeTimer();
+  saveState();
+  startSesiPing();
+}
+
+async function kunciSesiUjian(){
+  if(!SESI_ID) return;
+  try{
+    await supabase.from('sesi_ujian').update({
+      locked: true,
+      status: 'mengerjakan',
+      pelanggaran: violationCount,
+      last_ping_at: new Date().toISOString()
+    }).eq('id', SESI_ID);
+  }catch(err){ /* koneksi bermasalah — overlay lokal tetap tampil, akan
+    dicoba tersinkron lagi lewat ping/poll berikutnya */ }
+}
+
 function registerViolation(reason){
   if(!isExamRunning()) return;
   const now = Date.now();
@@ -1594,33 +1677,11 @@ function registerViolation(reason){
   playAlarm();
   saveState();
 
-  const modal = document.getElementById('violationModal');
-  const msg = document.getElementById('violationMsg');
-  const countEl = document.getElementById('violationCount');
-  msg.textContent = PENALTI_AKTIF
-    ? `Terdeteksi: ${reason}. Ujian TIDAK otomatis dikirim, tapi ${VIOLATION_PENALTY} poin telah dikurangi dari nilaimu.`
-    : `Terdeteksi: ${reason}. Pelanggaran ini dicatat, tapi nilaimu TIDAK dikurangi.`;
-  countEl.textContent = PENALTI_AKTIF
-    ? `Pelanggaran ke-${violationCount} — Total pengurangan: -${violationCount*VIOLATION_PENALTY} poin`
-    : `Pelanggaran ke-${violationCount} — Tidak ada pengurangan nilai`;
-  modal.classList.add('show');
+  // Kunci otomatis: siswa TIDAK bisa lanjut mengerjakan sendiri.
+  // Hanya guru yang bisa membuka lewat dashboard monitoring "Sedang Ujian".
+  showLockOverlay(violationCount);
+  kunciSesiUjian();
 }
-
-document.getElementById('violationOkBtn').addEventListener('click', ()=>{
-  document.getElementById('violationModal').classList.remove('show');
-  requestExamFullscreen();
-});
-
-document.getElementById('violationExitBtn').addEventListener('click', ()=>{
-  document.getElementById('violationModal').classList.remove('show');
-  saveState();
-  keluarUjianTanpaSubmit();
-  if(isFullscreenActive()){
-    const exitFs = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-    if(exitFs) exitFs.call(document).catch(()=>{});
-  }
-  window.location.href = 'worksheet.html?tab=ujian';
-});
 
 document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
   requestExamFullscreen();
