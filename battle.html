@@ -292,6 +292,7 @@ let currentQStart = null;
 let answered = false;
 let timerInterval = null;
 let resultInterval = null;
+let leaderboardPollInterval = null;
 const TIMER_RADIUS = 36;
 const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
 
@@ -418,6 +419,7 @@ function exitBattle(){
 
   stopTimer();
   stopResultCountdown();
+  stopLeaderboardPoll();
   if (channel) { supabase.removeChannel(channel); channel = null; }
   sessionStorage.removeItem("battle_kode_aktif");
 
@@ -464,11 +466,30 @@ function showLeaderboardReveal(){
     card.classList.add("reveal");
   }
   loadLeaderboard();
+  startLeaderboardPoll();
 }
 function hideLeaderboardReveal(){
   const card = document.getElementById("leaderCard");
   if (card) { card.style.display = "none"; card.classList.remove("reveal"); }
+  stopLeaderboardPoll();
 }
+
+// Jaring pengaman kedua: selagi papan skor kebuka, cek berkala ke server
+// (bukan cuma andalkan event realtime) supaya papan skor pasti ketutup begitu
+// guru sudah lanjut ke soal berikutnya / battle diakhiri, walau koneksi realtime sempat putus.
+function startLeaderboardPoll(){
+  stopLeaderboardPoll();
+  if (!sesi) return;
+  leaderboardPollInterval = setInterval(async () => {
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (data && (data.soal_aktif_index !== sesi.soal_aktif_index || data.status !== sesi.status)) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+    }
+  }, 3000);
+}
+function stopLeaderboardPoll(){ if (leaderboardPollInterval) clearInterval(leaderboardPollInterval); leaderboardPollInterval = null; }
 
 function renderStatus(){
   const pill = document.getElementById("statusPill");
@@ -592,13 +613,15 @@ function startResultCountdown(){
   const jeda = sesi.jeda_hasil_detik || 5;
   const endAt = (currentQStart || Date.now()) + (sesi.durasi_soal_detik * 1000) + (jeda * 1000);
   resultInterval = setInterval(() => {
-    const info = document.getElementById("autoNextInfo");
-    if (!info) { stopResultCountdown(); return; }
     const sisa = Math.ceil((endAt - Date.now()) / 1000);
+    const info = document.getElementById("autoNextInfo");
     if (sisa > 0) {
-      info.textContent = `⏭️ Soal berikutnya otomatis dalam ${sisa}s…`;
+      if (info) info.textContent = `⏭️ Soal berikutnya otomatis dalam ${sisa}s…`;
     } else {
-      info.textContent = `⏭️ Menyiapkan soal berikutnya…`;
+      if (info) info.textContent = `⏭️ Menyiapkan soal berikutnya…`;
+      // Jaring pengaman: tutup papan skor berdasar hitungan waktu lokal, jangan
+      // cuma andalkan event realtime dari server (bisa telat/putus sebentar).
+      hideLeaderboardReveal();
       stopResultCountdown();
     }
   }, 250);
@@ -764,6 +787,7 @@ function showFinal(){
   stopTimer();
   stopResultCountdown();
   showLeaderboardReveal();
+  stopLeaderboardPoll(); // battle sudah selesai, tidak perlu polling lagi
   const arena = document.getElementById("arena");
   arena.innerHTML = `
     <div class="bt-final">
