@@ -100,6 +100,14 @@
   .bt-tim-opt .nm{ font-weight:700; font-size:14px; color:#161927; flex:1; }
   .bt-tim-opt .ct{ font-size:11.5px; color:#8A90A3; font-weight:600; }
 
+  .bt-karakter-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media(max-width:480px){ .bt-karakter-grid{ grid-template-columns:repeat(3,1fr); } }
+  .bt-karakter-opt{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 6px; border-radius:14px; border:2px solid #E7E9F2; background:#F8F9FC; cursor:pointer; font-family:inherit; transition:all .15s ease; }
+  .bt-karakter-opt:hover{ border-color:#7C5CFC; transform:translateY(-2px); }
+  .bt-karakter-opt .kav{ width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .bt-karakter-opt .kn{ font-size:11px; font-weight:700; color:#5D6478; }
+  .bt-my-karakter{ display:inline-flex; align-items:center; gap:4px; font-size:16px; }
+
   .bt-my-tim{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#333750; }
   .bt-my-tim .sw{ width:10px; height:10px; border-radius:3px; }
   .bt-tim-group{ margin-bottom:14px; }
@@ -182,6 +190,16 @@
             <div id="joinError" style="color:#FF6B5E; font-size:12.5px; margin-top:10px; font-weight:600;"></div>
           </div>
 
+          <!-- PILIH KARAKTER: tampil setelah join, sebelum masuk arena -->
+          <div class="bt-join-card" id="karakterPickCard" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">Pilih karaktermu 🎮</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="exitBattle()">🚪 Keluar</button>
+            </div>
+            <div style="font-size:12.5px; color:#8A90A3; margin-bottom:14px;">Karakter ini bakal tampil di papan peringkat &amp; layar guru selama battle ini.</div>
+            <div class="bt-karakter-grid" id="karakterPickList"></div>
+          </div>
+
           <!-- PILIH KELOMPOK: tampil sebelum arena kalau sesi mode = kelompok -->
           <div class="bt-join-card" id="timPickCard" style="display:none;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
@@ -197,6 +215,7 @@
             <div class="bt-room-top">
               <div id="statusPill" class="bt-status-pill">⏳ Menunggu guru memulai…</div>
               <div style="display:flex; align-items:center; gap:10px;">
+                <span class="bt-my-karakter" id="myKarakterBadge" title="Karaktermu"></span>
                 <div style="font-size:12.5px; color:#8A90A3; font-weight:600;">Kode: <b id="roomKode" style="color:#161927;"></b></div>
                 <button class="bt-btn bt-btn-outline" style="padding:7px 12px; font-size:12px;" onclick="exitBattle()">🚪 Keluar</button>
               </div>
@@ -236,8 +255,33 @@
 <script src="assets/supabaseClient.js"></script>
 <script src="assets/app.js"></script>
 <script>
+// ===== Daftar karakter lucu buat dipilih siswa tiap join battle =====
+const KARAKTER_LIST = [
+  { key:"kucing",  emoji:"🐱", nama:"Kucing",  warna:"#FFE1EC" },
+  { key:"anjing",  emoji:"🐶", nama:"Anjing",  warna:"#FFE8CC" },
+  { key:"panda",   emoji:"🐼", nama:"Panda",   warna:"#E7E9F2" },
+  { key:"rubah",   emoji:"🦊", nama:"Rubah",   warna:"#FFDAB3" },
+  { key:"kelinci", emoji:"🐰", nama:"Kelinci", warna:"#FFDCEF" },
+  { key:"singa",   emoji:"🦁", nama:"Singa",   warna:"#FFEBB0" },
+  { key:"koala",   emoji:"🐨", nama:"Koala",   warna:"#DCE6F0" },
+  { key:"kera",    emoji:"🐵", nama:"Kera",    warna:"#F0DCC4" },
+  { key:"unicorn", emoji:"🦄", nama:"Unicorn", warna:"#E6D6FF" },
+  { key:"naga",    emoji:"🐲", nama:"Naga",    warna:"#CDF5D4" },
+  { key:"robot",   emoji:"🤖", nama:"Robot",   warna:"#CFE8FF" },
+  { key:"alien",   emoji:"👽", nama:"Alien",   warna:"#D8FCD3" },
+];
+function karakterByKey(key){ return KARAKTER_LIST.find(k => k.key === key); }
+function avatarHtml(p, size){
+  const sz = size || 34;
+  const k = p && p.karakter ? karakterByKey(p.karakter) : null;
+  if (k) return `<div class="bt-avatar" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.55)}px;background:${k.warna};">${k.emoji}</div>`;
+  return `<div class="bt-avatar" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.4)}px;">${(p && p.nama || '?').charAt(0).toUpperCase()}</div>`;
+}
+
 let profile = null;
 let sesi = null;              // baris battle_sesi aktif
+let myTimKey = null;
+let myKarakter = null;
 let channel = null;
 let currentQIndex = -1;
 let currentQStart = null;
@@ -299,15 +343,48 @@ async function joinBattle(){
   // Daftarkan diri sebagai peserta (aman kalau sudah pernah, kena unique constraint -> upsert).
   const { data: pesertaRow } = await supabase.from("battle_peserta").upsert({
     sesi_id: sesi.id, profile_id: profile.id, nama: profile.nama
-  }, { onConflict: "sesi_id,profile_id" }).select("tim_key").single();
+  }, { onConflict: "sesi_id,profile_id" }).select("tim_key, karakter").single();
 
   document.getElementById("joinCard").style.display = "none";
 
-  if (sesi.mode === "kelompok" && !(pesertaRow && pesertaRow.tim_key)) {
+  myTimKey = pesertaRow && pesertaRow.tim_key;
+  myKarakter = pesertaRow && pesertaRow.karakter;
+
+  // Karakter dipilih tiap kali join battle (belum ada karakter tersimpan utk sesi ini).
+  if (!myKarakter) {
+    tampilkanPilihanKarakter();
+    return;
+  }
+
+  if (sesi.mode === "kelompok" && !myTimKey) {
     tampilkanPilihanTim();
     return;
   }
 
+  masukArena();
+}
+
+function tampilkanPilihanKarakter(){
+  const card = document.getElementById("karakterPickCard");
+  const list = document.getElementById("karakterPickList");
+  list.innerHTML = KARAKTER_LIST.map(k => `
+    <button type="button" class="bt-karakter-opt" onclick="pilihKarakterSiswa('${k.key}')">
+      <span class="kav" style="background:${k.warna};">${k.emoji}</span>
+      <span class="kn">${k.nama}</span>
+    </button>`).join("");
+  card.style.display = "block";
+}
+
+async function pilihKarakterSiswa(key){
+  await supabase.from("battle_peserta").update({ karakter: key })
+    .eq("sesi_id", sesi.id).eq("profile_id", profile.id);
+  myKarakter = key;
+  document.getElementById("karakterPickCard").style.display = "none";
+
+  if (sesi.mode === "kelompok" && !myTimKey) {
+    tampilkanPilihanTim();
+    return;
+  }
   masukArena();
 }
 
@@ -344,8 +421,11 @@ function exitBattle(){
   currentQIndex = -1;
   currentQStart = null;
   answered = false;
+  myTimKey = null;
+  myKarakter = null;
 
   document.getElementById("roomArea").style.display = "none";
+  document.getElementById("karakterPickCard").style.display = "none";
   document.getElementById("timPickCard").style.display = "none";
   document.getElementById("joinCard").style.display = "block";
   document.getElementById("kodeInput").value = "";
@@ -356,6 +436,9 @@ function exitBattle(){
 function masukArena(){
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("roomKode").textContent = sesi.kode;
+  const badge = document.getElementById("myKarakterBadge");
+  const k = myKarakter ? karakterByKey(myKarakter) : null;
+  if (badge) badge.textContent = k ? k.emoji : "";
   hideLeaderboardReveal();
 
   renderStatus();
@@ -625,7 +708,7 @@ function animateLeaderboardRows(container, items, keyFn, renderFn){
 async function loadLeaderboard(){
   const { data } = await supabase
     .from("battle_peserta")
-    .select("profile_id, nama, skor_total, streak, tim_key")
+    .select("profile_id, nama, skor_total, streak, tim_key, karakter")
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
 
@@ -648,7 +731,7 @@ async function loadLeaderboard(){
       const anggotaHtml = t.anggota
         .sort((a, b) => b.skor_total - a.skor_total)
         .map(p => `<div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" style="padding-left:4px;">
-            <div class="bt-avatar" style="width:26px;height:26px;font-size:11px;">${(p.nama||'?').charAt(0).toUpperCase()}</div>
+            ${avatarHtml(p, 26)}
             <div class="bt-row-name" style="font-size:12.5px;">${escapeHtml(p.nama)}</div>
             <div class="bt-row-score" style="font-size:12.5px;">${p.skor_total}</div>
           </div>`).join("");
@@ -664,7 +747,7 @@ async function loadLeaderboard(){
   animateLeaderboardRows(list, data, p => p.profile_id, (p, i, dir) => `
     <div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" data-lb-key="${p.profile_id}">
       <div class="bt-rank ${medalClass[i] || ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : (i+1)}</div>
-      <div class="bt-avatar">${(p.nama||'?').charAt(0).toUpperCase()}</div>
+      ${avatarHtml(p, 34)}
       <div class="bt-row-name">${escapeHtml(p.nama)} ${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''} ${p.streak >= 2 ? `<span class="bt-row-streak">🔥${p.streak}</span>` : ''}</div>
       <div class="bt-row-score">${p.skor_total}</div>
     </div>

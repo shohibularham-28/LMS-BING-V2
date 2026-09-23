@@ -56,6 +56,7 @@
 
   .bg-leader-row{ display:flex; align-items:center; gap:10px; padding:8px 6px; border-bottom:1px solid #F1F2F6; font-size:13px; }
   .bg-leader-row .r{ width:22px; color:#8A90A3; font-weight:700; }
+  .bg-leader-row .av{ width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; background:linear-gradient(135deg,#7C5CFC,#4CC9F0); flex:0 0 auto; }
   .bg-leader-row .n{ flex:1; font-weight:600; color:#333750; }
   .bg-leader-row .s{ font-weight:800; color:#7C5CFC; }
 
@@ -263,6 +264,28 @@
 <script src="assets/app.js"></script>
 <script src="assets/soal-import.js"></script>
 <script>
+// ===== Daftar karakter lucu (harus sama dengan battle.html) =====
+const KARAKTER_LIST = [
+  { key:"kucing",  emoji:"🐱", nama:"Kucing",  warna:"#FFE1EC" },
+  { key:"anjing",  emoji:"🐶", nama:"Anjing",  warna:"#FFE8CC" },
+  { key:"panda",   emoji:"🐼", nama:"Panda",   warna:"#E7E9F2" },
+  { key:"rubah",   emoji:"🦊", nama:"Rubah",   warna:"#FFDAB3" },
+  { key:"kelinci", emoji:"🐰", nama:"Kelinci", warna:"#FFDCEF" },
+  { key:"singa",   emoji:"🦁", nama:"Singa",   warna:"#FFEBB0" },
+  { key:"koala",   emoji:"🐨", nama:"Koala",   warna:"#DCE6F0" },
+  { key:"kera",    emoji:"🐵", nama:"Kera",    warna:"#F0DCC4" },
+  { key:"unicorn", emoji:"🦄", nama:"Unicorn", warna:"#E6D6FF" },
+  { key:"naga",    emoji:"🐲", nama:"Naga",    warna:"#CDF5D4" },
+  { key:"robot",   emoji:"🤖", nama:"Robot",   warna:"#CFE8FF" },
+  { key:"alien",   emoji:"👽", nama:"Alien",   warna:"#D8FCD3" },
+];
+function karakterByKey(key){ return KARAKTER_LIST.find(k => k.key === key); }
+function avatarSmallHtml(p){
+  const k = p && p.karakter ? karakterByKey(p.karakter) : null;
+  if (k) return `<div class="av" style="background:${k.warna};">${k.emoji}</div>`;
+  return `<div class="av">${(p && p.nama || '?').charAt(0).toUpperCase()}</div>`;
+}
+
 let profile = null;
 let sesi = null;
 let channel = null;
@@ -712,7 +735,7 @@ function animateLeaderboardRows(container, items, keyFn, renderFn){
 async function loadLeaderboard(){
   const { data } = await supabase
     .from("battle_peserta")
-    .select("profile_id, nama, skor_total, tim_key")
+    .select("profile_id, nama, skor_total, tim_key, karakter")
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
   const box = document.getElementById("leaderBox");
@@ -740,7 +763,7 @@ async function loadLeaderboard(){
           <div class="name">${escapeHtml(t.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}</div>
           <div class="score">${t.total}</div>
         </div>
-        <div class="members">${t.anggota.length} anggota${t.anggota.length ? ': ' + t.anggota.map(a => escapeHtml(a.nama)).join(', ') : ''}</div>
+        <div class="members">${t.anggota.length} anggota${t.anggota.length ? ': ' + t.anggota.map(a => (a.karakter && karakterByKey(a.karakter) ? karakterByKey(a.karakter).emoji + ' ' : '') + escapeHtml(a.nama)).join(', ') : ''}</div>
       </div>`);
 
     if (belumPilih > 0) {
@@ -755,6 +778,7 @@ async function loadLeaderboard(){
   animateLeaderboardRows(box, data, p => p.profile_id, (p, i, dir) => `
     <div class="bg-leader-row" data-lb-key="${p.profile_id}">
       <div class="r">${i+1}</div>
+      ${avatarSmallHtml(p)}
       <div class="n">${escapeHtml(p.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}</div>
       <div class="s">${p.skor_total}</div>
     </div>`);
