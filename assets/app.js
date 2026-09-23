@@ -58,17 +58,28 @@ async function doLogout() {
 }
 
 // Render sidebar/topbar siswa. activePage: 'pengumuman' | 'materi' | 'worksheet'
+// Elemen sidebar/topbar dicek dulu (pakai ?.) karena halaman standalone seperti
+// battle.html sengaja tidak punya sidebar/topbar aplikasi utama -- renderShell
+// tetap dipanggil di sana supaya badge obrolan & data profil lain tetap jalan.
 function renderShell(profile, activePage) {
   const kelasNama = profile.kelas ? profile.kelas.nama : "—";
   const level = profile.kelas ? profile.kelas.level : getLevel(kelasNama);
 
-  document.getElementById("topName").textContent = profile.nama;
-  document.getElementById("sideName").textContent = profile.nama;
-  document.getElementById("userAvatar").textContent = profile.nama.charAt(0).toUpperCase();
-  document.getElementById("sideClass").textContent = "Kelas " + kelasNama;
-  document.getElementById("topLevel").textContent = level;
-  document.getElementById("topKelasName").textContent = kelasNama;
-  document.getElementById("topDate").textContent = new Date().toLocaleDateString("id-ID", {
+  const topName = document.getElementById("topName");
+  const sideName = document.getElementById("sideName");
+  const userAvatar = document.getElementById("userAvatar");
+  const sideClass = document.getElementById("sideClass");
+  const topLevel = document.getElementById("topLevel");
+  const topKelasName = document.getElementById("topKelasName");
+  const topDate = document.getElementById("topDate");
+
+  if (topName) topName.textContent = profile.nama;
+  if (sideName) sideName.textContent = profile.nama;
+  if (userAvatar) userAvatar.textContent = profile.nama.charAt(0).toUpperCase();
+  if (sideClass) sideClass.textContent = "Kelas " + kelasNama;
+  if (topLevel) topLevel.textContent = level;
+  if (topKelasName) topKelasName.textContent = kelasNama;
+  if (topDate) topDate.textContent = new Date().toLocaleDateString("id-ID", {
     weekday: "long", day: "numeric", month: "long", year: "numeric",
   });
 
