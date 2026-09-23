@@ -77,6 +77,21 @@
   .bg-tim-leader-card .name{ font-weight:700; font-size:13.5px; color:#161927; flex:1; }
   .bg-tim-leader-card .score{ font-weight:800; color:#7C5CFC; font-family:'Space Grotesk',sans-serif; }
   .bg-tim-leader-card .members{ font-size:11.5px; color:#8A90A3; padding-left:20px; }
+
+  /* Leaderboard FLIP animation */
+  [data-lb-key]{ will-change:transform; }
+  .lb-enter{ animation:lbEnter .45s ease; }
+  @keyframes lbEnter{ from{ opacity:0; transform:translateY(14px) scale(.96);} to{ opacity:1; transform:none;} }
+  .lb-moved-up{ animation:lbUp .9s ease; border-radius:10px; }
+  .lb-moved-down{ animation:lbDown .9s ease; border-radius:10px; }
+  @keyframes lbUp{ 0%{ background:#E9FBEF; box-shadow:0 0 0 0 rgba(34,197,94,.35);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(34,197,94,0);} }
+  @keyframes lbDown{ 0%{ background:#FFECEA; box-shadow:0 0 0 0 rgba(255,107,94,.3);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(255,107,94,0);} }
+  .lb-arrow{ display:inline-block; font-size:10.5px; font-weight:800; margin-left:4px; }
+  .lb-arrow.up{ color:#22C55E; }
+  .lb-arrow.down{ color:#FF6B5E; }
+
+  /* Rilis mode */
+  .bg-status-badge.hasil{ background:#FEF3C7; color:#B45309; }
 </style>
 </head>
 <body>
@@ -140,6 +155,26 @@
     </div>
 
     <div class="bg-card">
+      <h3>2b. Metode Perilisan Soal</h3>
+      <div class="bg-mode-grid">
+        <div class="bg-mode-card active" id="rilisCardManual" onclick="pilihRilisMode('manual')">
+          <div class="em">🖐️</div>
+          <div class="t">Diatur Guru</div>
+          <div class="d">Guru klik "Rilis Soal Berikutnya" secara manual setiap mau lanjut soal.</div>
+        </div>
+        <div class="bg-mode-card" id="rilisCardOtomatis" onclick="pilihRilisMode('otomatis')">
+          <div class="em">⏱️</div>
+          <div class="t">Otomatis Sesuai Durasi</div>
+          <div class="d">Soal lanjut sendiri begitu waktu habis, setelah menampilkan jawaban sebentar.</div>
+        </div>
+      </div>
+      <div class="bg-field" id="jedaCard" style="display:none; margin-top:12px;">
+        <label>Jeda tampilkan jawaban sebelum lanjut (detik)</label>
+        <input type="number" id="jedaInput" value="5" min="2" max="30">
+      </div>
+    </div>
+
+    <div class="bg-card">
       <h3>3. Soal — Import dari Word atau Ketik Manual</h3>
       <div class="bg-import-box" id="importBox">
         <div class="bg-import-row">
@@ -182,12 +217,17 @@
     <div class="bg-card">
       <h3>Kontrol Soal</h3>
       <div class="bg-qctrl">
-        <div class="bg-qnow">Soal saat ini: <b id="qNowLabel">Belum dirilis</b></div>
-        <div style="display:flex; gap:8px;">
+        <div class="bg-qnow">
+          Soal saat ini: <b id="qNowLabel">Belum dirilis</b>
+          <span id="faseBadge" class="bg-status-badge" style="margin-left:8px; display:none;"></span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
           <button class="bg-btn bg-btn-primary" id="nextBtn" onclick="rilisSoalBerikutnya()">▶️ Rilis Soal Berikutnya</button>
+          <button class="bg-btn bg-btn-outline" id="skipBtn" onclick="rilisSoalBerikutnya()" style="display:none;">⏭️ Lewati Sekarang</button>
           <button class="bg-btn bg-btn-danger" onclick="akhiriBattle()">🏁 Akhiri Battle</button>
         </div>
       </div>
+      <div id="autoInfo" style="font-size:12.5px; color:#7C5CFC; font-weight:700; margin-bottom:8px; display:none;"></div>
       <div id="qPreview" style="font-size:13.5px; color:#333750;"></div>
     </div>
 
@@ -209,6 +249,9 @@ let channel = null;
 let soalCount = 0;
 let timCount = 0;
 let modeAktif = "leaderboard"; // 'leaderboard' | 'kelompok'
+let rilisModeAktif = "manual"; // 'manual' | 'otomatis'
+let autoTickInterval = null;
+let autoAdvancing = false;
 
 (async function init(){
   profile = await requireTeacherLogin();
@@ -224,6 +267,13 @@ function pilihMode(mode){
   document.getElementById("modeCardLeaderboard").classList.toggle("active", mode === "leaderboard");
   document.getElementById("modeCardKelompok").classList.toggle("active", mode === "kelompok");
   document.getElementById("timCard").style.display = mode === "kelompok" ? "block" : "none";
+}
+
+function pilihRilisMode(mode){
+  rilisModeAktif = mode;
+  document.getElementById("rilisCardManual").classList.toggle("active", mode === "manual");
+  document.getElementById("rilisCardOtomatis").classList.toggle("active", mode === "otomatis");
+  document.getElementById("jedaCard").style.display = mode === "otomatis" ? "block" : "none";
 }
 
 function tambahTim(namaAwal){
@@ -369,11 +419,14 @@ async function buatSesi(){
   }
 
   const kode = "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase();
+  const jeda = rilisModeAktif === "otomatis"
+    ? (parseInt(document.getElementById("jedaInput").value, 10) || 5)
+    : 5;
 
   const { data, error } = await supabase.from("battle_sesi").insert({
     kode, judul, guru_id: profile.id, kelas_id: kelasId,
     status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi,
-    mode: modeAktif, tim
+    mode: modeAktif, tim, rilis_mode: rilisModeAktif, jeda_hasil_detik: jeda
   }).select().single();
 
   if (error) { errBox.textContent = "Gagal membuat sesi: " + error.message; return; }
@@ -412,45 +465,167 @@ function updateRoomUI(){
   const badge = document.getElementById("statusBadge");
   badge.textContent = sesi.status;
   badge.className = "bg-status-badge " + (sesi.status === "berjalan" ? "live" : sesi.status === "selesai" ? "selesai" : "");
-  document.getElementById("modeLabel").textContent = sesi.mode === "kelompok" ? "👥 Mode Kelompok" : "🏆 Mode Leaderboard";
+  document.getElementById("modeLabel").textContent =
+    (sesi.mode === "kelompok" ? "👥 Mode Kelompok" : "🏆 Mode Leaderboard") +
+    " · " + (sesi.rilis_mode === "otomatis" ? "⏱️ Rilis Otomatis" : "🖐️ Rilis Manual");
 
   const total = (sesi.soal || []).length;
   const label = document.getElementById("qNowLabel");
   const preview = document.getElementById("qPreview");
   const nextBtn = document.getElementById("nextBtn");
+  const skipBtn = document.getElementById("skipBtn");
+  const faseBadge = document.getElementById("faseBadge");
+  const autoInfo = document.getElementById("autoInfo");
 
   if (sesi.status === "selesai") {
     label.textContent = "Battle sudah selesai";
-    nextBtn.disabled = true;
+    nextBtn.style.display = "none";
+    skipBtn.style.display = "none";
+    faseBadge.style.display = "none";
+    autoInfo.style.display = "none";
     preview.innerHTML = "";
+    stopAutoTick();
     return;
   }
 
-  if (sesi.soal_aktif_index < 0) {
+  const otomatis = sesi.rilis_mode === "otomatis";
+  const sudahRilis = sesi.soal_aktif_index >= 0;
+
+  if (!sudahRilis) {
     label.textContent = `Belum dirilis (total ${total} soal)`;
     preview.innerHTML = "";
+    nextBtn.style.display = "inline-block";
+    nextBtn.disabled = false;
+    nextBtn.textContent = "🚀 Rilis Soal #1";
+    skipBtn.style.display = "none";
+    faseBadge.style.display = "none";
+    autoInfo.style.display = "none";
   } else {
     const q = sesi.soal[sesi.soal_aktif_index];
     label.textContent = `Soal ${sesi.soal_aktif_index + 1} dari ${total}`;
     preview.innerHTML = `<b>${escapeHtml(q.prompt)}</b><br><span style="color:#8A90A3;">Jawaban benar: ${q.correct}</span>`;
+    const isLast = sesi.soal_aktif_index >= total - 1;
+    if (otomatis) {
+      nextBtn.style.display = "none";
+      skipBtn.style.display = "inline-block";
+      skipBtn.textContent = isLast ? "⏭️ Akhiri Sekarang" : "⏭️ Lewati Sekarang";
+    } else {
+      nextBtn.style.display = "inline-block";
+      nextBtn.disabled = isLast;
+      nextBtn.textContent = "▶️ Rilis Soal Berikutnya";
+      skipBtn.style.display = "none";
+    }
   }
-  nextBtn.disabled = sesi.soal_aktif_index >= total - 1;
-  nextBtn.textContent = sesi.soal_aktif_index < 0 ? "▶️ Rilis Soal #1" : "▶️ Rilis Soal Berikutnya";
+
+  manageAutoTick();
+}
+
+function stopAutoTick(){
+  if (autoTickInterval) clearInterval(autoTickInterval);
+  autoTickInterval = null;
+}
+
+function manageAutoTick(){
+  stopAutoTick();
+  if (!sesi || sesi.rilis_mode !== "otomatis" || sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) return;
+  autoAdvancing = false;
+  autoTickInterval = setInterval(tickAuto, 250);
+  tickAuto();
+}
+
+function tickAuto(){
+  if (!sesi || sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) { stopAutoTick(); return; }
+  const releaseMs = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : Date.now();
+  const durasiMs = (sesi.durasi_soal_detik || 20) * 1000;
+  const jedaMs = (sesi.jeda_hasil_detik || 5) * 1000;
+  const now = Date.now();
+  const endJawab = releaseMs + durasiMs;
+  const endHasil = endJawab + jedaMs;
+  const faseBadge = document.getElementById("faseBadge");
+  const autoInfo = document.getElementById("autoInfo");
+
+  if (now < endJawab) {
+    faseBadge.style.display = "inline-block";
+    faseBadge.textContent = "🟢 Soal berjalan";
+    faseBadge.className = "bg-status-badge live";
+    autoInfo.style.display = "none";
+  } else if (now < endHasil) {
+    faseBadge.style.display = "inline-block";
+    faseBadge.textContent = "🟡 Menampilkan hasil";
+    faseBadge.className = "bg-status-badge hasil";
+    const sisa = Math.ceil((endHasil - now) / 1000);
+    autoInfo.style.display = "block";
+    autoInfo.textContent = `⏭️ Lanjut otomatis ke soal berikutnya dalam ${sisa}s…`;
+  } else {
+    autoInfo.style.display = "none";
+    if (!autoAdvancing) {
+      autoAdvancing = true;
+      stopAutoTick();
+      rilisSoalBerikutnya();
+    }
+  }
 }
 
 async function rilisSoalBerikutnya(){
+  stopAutoTick();
   const total = (sesi.soal || []).length;
   const nextIndex = sesi.soal_aktif_index + 1;
-  if (nextIndex >= total) return;
+  if (nextIndex >= total) { await akhiriBattle(true); return; }
   await supabase.from("battle_sesi").update({
     soal_aktif_index: nextIndex,
     soal_dirilis_at: new Date().toISOString()
   }).eq("id", sesi.id);
 }
 
-async function akhiriBattle(){
-  if (!confirm("Akhiri battle sekarang? Siswa tidak bisa menjawab lagi.")) return;
+async function akhiriBattle(auto){
+  if (!auto && !confirm("Akhiri battle sekarang? Siswa tidak bisa menjawab lagi.")) return;
+  stopAutoTick();
   await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", sesi.id);
+}
+
+// ===== FLIP animation util: animasi geser posisi + highlight saat peringkat berubah =====
+function animateLeaderboardRows(container, items, keyFn, renderFn){
+  const oldRects = {};
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    oldRects[el.getAttribute("data-lb-key")] = el.getBoundingClientRect();
+  });
+  const oldRanks = container.__lbRanks || {};
+  const newRanks = {};
+  items.forEach((it, i) => { newRanks[keyFn(it, i)] = i; });
+
+  container.innerHTML = items.map((it, i) => {
+    const key = keyFn(it, i);
+    const oldRank = oldRanks[key];
+    const dir = (oldRank !== undefined && oldRank !== i) ? (i < oldRank ? "up" : "down") : null;
+    return renderFn(it, i, dir);
+  }).join("");
+
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    const key = el.getAttribute("data-lb-key");
+    const newRect = el.getBoundingClientRect();
+    const old = oldRects[key];
+    if (old) {
+      const dy = old.top - newRect.top;
+      if (Math.abs(dy) > 1) {
+        el.style.transition = "none";
+        el.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => {
+          el.style.transition = "transform .55s cubic-bezier(.34,1.2,.64,1)";
+          el.style.transform = "";
+        });
+      }
+      const oldRank = oldRanks[key];
+      const newRank = newRanks[key];
+      if (oldRank !== undefined && oldRank !== newRank) {
+        el.classList.add(newRank < oldRank ? "lb-moved-up" : "lb-moved-down");
+        setTimeout(() => el.classList.remove("lb-moved-up", "lb-moved-down"), 900);
+      }
+    } else {
+      el.classList.add("lb-enter");
+      setTimeout(() => el.classList.remove("lb-enter"), 500);
+    }
+  });
+  container.__lbRanks = newRanks;
 }
 
 async function loadLeaderboard(){
@@ -460,7 +635,7 @@ async function loadLeaderboard(){
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
   const box = document.getElementById("leaderBox");
-  if (!data || data.length === 0) { box.innerHTML = "Belum ada peserta."; return; }
+  if (!data || data.length === 0) { box.innerHTML = "Belum ada peserta."; box.__lbRanks = null; return; }
 
   if (sesi.mode === "kelompok") {
     const timList = sesi.tim || [];
@@ -476,26 +651,32 @@ async function loadLeaderboard(){
       }
     });
     const ranked = timList.map(t => ({ ...t, ...agg[t.key] })).sort((a, b) => b.total - a.total);
-    let html = ranked.map(t => `
-      <div class="bg-tim-leader-card">
+
+    animateLeaderboardRows(box, ranked, t => t.key, (t, i, dir) => `
+      <div class="bg-tim-leader-card" data-lb-key="${t.key}">
         <div class="head">
           <span class="swatch" style="background:${t.warna || '#7C5CFC'};"></span>
-          <div class="name">${escapeHtml(t.nama)}</div>
+          <div class="name">${escapeHtml(t.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}</div>
           <div class="score">${t.total}</div>
         </div>
         <div class="members">${t.anggota.length} anggota${t.anggota.length ? ': ' + t.anggota.map(a => escapeHtml(a.nama)).join(', ') : ''}</div>
-      </div>`).join("");
-    if (belumPilih > 0) html += `<div style="font-size:12px; color:#B45309; margin-top:6px;">⏳ ${belumPilih} siswa sudah join tapi belum memilih kelompok.</div>`;
-    box.innerHTML = html;
+      </div>`);
+
+    if (belumPilih > 0) {
+      const warn = document.createElement("div");
+      warn.style.cssText = "font-size:12px; color:#B45309; margin-top:6px;";
+      warn.textContent = `⏳ ${belumPilih} siswa sudah join tapi belum memilih kelompok.`;
+      box.appendChild(warn);
+    }
     return;
   }
 
-  box.innerHTML = data.map((p, i) => `
-    <div class="bg-leader-row">
+  animateLeaderboardRows(box, data, p => p.profile_id, (p, i, dir) => `
+    <div class="bg-leader-row" data-lb-key="${p.profile_id}">
       <div class="r">${i+1}</div>
-      <div class="n">${escapeHtml(p.nama)}</div>
+      <div class="n">${escapeHtml(p.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}</div>
       <div class="s">${p.skor_total}</div>
-    </div>`).join("");
+    </div>`);
 }
 
 function escapeHtml(s){

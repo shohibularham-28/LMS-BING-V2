@@ -102,6 +102,18 @@
   .bt-tim-group-head{ display:flex; align-items:center; gap:8px; padding:8px 6px; font-weight:800; font-size:13px; color:#161927; }
   .bt-tim-group-head .sw{ width:12px; height:12px; border-radius:4px; }
   .bt-tim-group-head .sc{ margin-left:auto; color:#7C5CFC; font-family:'Space Grotesk',sans-serif; }
+
+  /* Leaderboard FLIP animation */
+  [data-lb-key]{ will-change:transform; }
+  .lb-enter{ animation:lbEnter .45s ease; }
+  @keyframes lbEnter{ from{ opacity:0; transform:translateY(14px) scale(.96);} to{ opacity:1; transform:none;} }
+  .lb-moved-up{ animation:lbUp .9s ease; border-radius:12px; }
+  .lb-moved-down{ animation:lbDown .9s ease; border-radius:12px; }
+  @keyframes lbUp{ 0%{ background:#E9FBEF; box-shadow:0 0 0 0 rgba(34,197,94,.35);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(34,197,94,0);} }
+  @keyframes lbDown{ 0%{ background:#FFECEA; box-shadow:0 0 0 0 rgba(255,107,94,.3);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(255,107,94,0);} }
+  .lb-arrow{ display:inline-block; font-size:10.5px; font-weight:800; margin-left:4px; }
+  .lb-arrow.up{ color:#22C55E; }
+  .lb-arrow.down{ color:#FF6B5E; }
 </style>
 </head>
 <body>
@@ -179,6 +191,7 @@
               <div id="statusPill" class="bt-status-pill">⏳ Menunggu guru memulai…</div>
               <div style="font-size:12.5px; color:#8A90A3; font-weight:600;">Kode: <b id="roomKode" style="color:#161927;"></b></div>
             </div>
+            <div id="rilisModeInfo" style="font-size:11.5px; color:#8A90A3; font-weight:600; margin:-8px 0 12px;"></div>
 
             <div class="bt-arena" id="arena">
               <div class="bt-waiting" id="waitingBox">
@@ -220,6 +233,7 @@ let currentQIndex = -1;
 let currentQStart = null;
 let answered = false;
 let timerInterval = null;
+let resultInterval = null;
 const TIMER_RADIUS = 36;
 const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
 
@@ -329,6 +343,8 @@ function renderStatus(){
     pill.className = "bt-status-pill";
     pill.textContent = "⏳ Menunggu guru memulai…";
   }
+  const info = document.getElementById("rilisModeInfo");
+  if (info) info.textContent = sesi.rilis_mode === "otomatis" ? "⏱️ Soal lanjut otomatis sesuai durasi" : "🖐️ Soal dirilis manual oleh guru";
 }
 
 function subscribeRealtime(){
@@ -357,6 +373,7 @@ function renderQuestionState(){
   if (sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) {
     arena.innerHTML = `<div class="bt-waiting"><div class="big">🕹️</div><div>Bersiap-siap! Soal akan segera dirilis guru…</div></div>`;
     stopTimer();
+    stopResultCountdown();
     return;
   }
 
@@ -368,6 +385,7 @@ function renderQuestionState(){
   currentQIndex = sesi.soal_aktif_index;
   currentQStart = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : Date.now();
   answered = false;
+  stopResultCountdown();
 
   const optsHtml = (q.options || []).map(o => `
     <button class="bt-opt" data-key="${o.key}" onclick="submitAnswer('${o.key}')">
@@ -387,6 +405,7 @@ function renderQuestionState(){
     <p class="bt-prompt">${escapeHtml(q.prompt)}</p>
     <div class="bt-options" id="optsBox">${optsHtml}</div>
     <div class="bt-feedback" id="feedbackBox"></div>
+    <div id="autoNextInfo" style="font-size:12px; color:#8A90A3; margin-top:8px; font-weight:600;"></div>
   `;
 
   if (isNewQuestion) {
@@ -419,10 +438,30 @@ function startTimer(){
     if (remaining <= 0) {
       stopTimer();
       if (!answered) lockOptions(null, false, false);
+      startResultCountdown();
     }
   }, 100);
 }
 function stopTimer(){ if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
+
+function startResultCountdown(){
+  stopResultCountdown();
+  if (!sesi || sesi.rilis_mode !== "otomatis") return;
+  const jeda = sesi.jeda_hasil_detik || 5;
+  const endAt = (currentQStart || Date.now()) + (sesi.durasi_soal_detik * 1000) + (jeda * 1000);
+  resultInterval = setInterval(() => {
+    const info = document.getElementById("autoNextInfo");
+    if (!info) { stopResultCountdown(); return; }
+    const sisa = Math.ceil((endAt - Date.now()) / 1000);
+    if (sisa > 0) {
+      info.textContent = `⏭️ Soal berikutnya otomatis dalam ${sisa}s…`;
+    } else {
+      info.textContent = `⏭️ Menyiapkan soal berikutnya…`;
+      stopResultCountdown();
+    }
+  }, 250);
+}
+function stopResultCountdown(){ if (resultInterval) clearInterval(resultInterval); resultInterval = null; }
 
 async function submitAnswer(key){
   if (answered) return;
@@ -483,6 +522,51 @@ function lockOptions(pickedKey, benar, silent){
   }
 }
 
+// ===== FLIP animation util: animasi geser posisi + highlight saat peringkat berubah =====
+function animateLeaderboardRows(container, items, keyFn, renderFn){
+  const oldRects = {};
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    oldRects[el.getAttribute("data-lb-key")] = el.getBoundingClientRect();
+  });
+  const oldRanks = container.__lbRanks || {};
+  const newRanks = {};
+  items.forEach((it, i) => { newRanks[keyFn(it, i)] = i; });
+
+  container.innerHTML = items.map((it, i) => {
+    const key = keyFn(it, i);
+    const oldRank = oldRanks[key];
+    const dir = (oldRank !== undefined && oldRank !== i) ? (i < oldRank ? "up" : "down") : null;
+    return renderFn(it, i, dir);
+  }).join("");
+
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    const key = el.getAttribute("data-lb-key");
+    const newRect = el.getBoundingClientRect();
+    const old = oldRects[key];
+    if (old) {
+      const dy = old.top - newRect.top;
+      if (Math.abs(dy) > 1) {
+        el.style.transition = "none";
+        el.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => {
+          el.style.transition = "transform .55s cubic-bezier(.34,1.2,.64,1)";
+          el.style.transform = "";
+        });
+      }
+      const oldRank = oldRanks[key];
+      const newRank = newRanks[key];
+      if (oldRank !== undefined && oldRank !== newRank) {
+        el.classList.add(newRank < oldRank ? "lb-moved-up" : "lb-moved-down");
+        setTimeout(() => el.classList.remove("lb-moved-up", "lb-moved-down"), 900);
+      }
+    } else {
+      el.classList.add("lb-enter");
+      setTimeout(() => el.classList.remove("lb-enter"), 500);
+    }
+  });
+  container.__lbRanks = newRanks;
+}
+
 async function loadLeaderboard(){
   const { data } = await supabase
     .from("battle_peserta")
@@ -493,7 +577,7 @@ async function loadLeaderboard(){
   const list = document.getElementById("leaderList");
   const leaderTitle = document.querySelector("#leaderCard h3");
   if (!list) return;
-  if (!data || data.length === 0) { list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Belum ada peserta.</div>"; return; }
+  if (!data || data.length === 0) { list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Belum ada peserta.</div>"; list.__lbRanks = null; return; }
 
   const medalClass = ["gold","silver","bronze"];
 
@@ -504,7 +588,8 @@ async function loadLeaderboard(){
     timList.forEach(t => { agg[t.key] = { ...t, total: 0, anggota: [] }; });
     data.forEach(p => { if (p.tim_key && agg[p.tim_key]) { agg[p.tim_key].total += p.skor_total; agg[p.tim_key].anggota.push(p); } });
     const ranked = Object.values(agg).sort((a, b) => b.total - a.total);
-    list.innerHTML = ranked.map(t => {
+
+    animateLeaderboardRows(list, ranked, t => t.key, (t, i, dir) => {
       const anggotaHtml = t.anggota
         .sort((a, b) => b.skor_total - a.skor_total)
         .map(p => `<div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" style="padding-left:4px;">
@@ -512,27 +597,28 @@ async function loadLeaderboard(){
             <div class="bt-row-name" style="font-size:12.5px;">${escapeHtml(p.nama)}</div>
             <div class="bt-row-score" style="font-size:12.5px;">${p.skor_total}</div>
           </div>`).join("");
-      return `<div class="bt-tim-group">
-          <div class="bt-tim-group-head"><span class="sw" style="background:${t.warna || '#7C5CFC'};"></span>${escapeHtml(t.nama)}<span class="sc">${t.total}</span></div>
+      return `<div class="bt-tim-group" data-lb-key="${t.key}">
+          <div class="bt-tim-group-head"><span class="sw" style="background:${t.warna || '#7C5CFC'};"></span>${escapeHtml(t.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}<span class="sc">${t.total}</span></div>
           ${anggotaHtml || '<div style="font-size:12px; color:#8A90A3; padding-left:20px;">Belum ada anggota.</div>'}
         </div>`;
-    }).join("");
+    });
     return;
   }
 
   if (leaderTitle) leaderTitle.textContent = "🏆 Papan Peringkat";
-  list.innerHTML = data.map((p, i) => `
-    <div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}">
+  animateLeaderboardRows(list, data, p => p.profile_id, (p, i, dir) => `
+    <div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" data-lb-key="${p.profile_id}">
       <div class="bt-rank ${medalClass[i] || ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : (i+1)}</div>
       <div class="bt-avatar">${(p.nama||'?').charAt(0).toUpperCase()}</div>
-      <div class="bt-row-name">${escapeHtml(p.nama)} ${p.streak >= 2 ? `<span class="bt-row-streak">🔥${p.streak}</span>` : ''}</div>
+      <div class="bt-row-name">${escapeHtml(p.nama)} ${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''} ${p.streak >= 2 ? `<span class="bt-row-streak">🔥${p.streak}</span>` : ''}</div>
       <div class="bt-row-score">${p.skor_total}</div>
     </div>
-  `).join("");
+  `);
 }
 
 function showFinal(){
   stopTimer();
+  stopResultCountdown();
   loadLeaderboard();
   const arena = document.getElementById("arena");
   arena.innerHTML = `
