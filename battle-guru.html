@@ -750,16 +750,24 @@ async function rilisSoalBerikutnya(){
   const total = (sesi.soal || []).length;
   const nextIndex = sesi.soal_aktif_index + 1;
   if (nextIndex >= total) { await akhiriBattle(true); return; }
-  await supabase.from("battle_sesi").update({
+  const { error } = await supabase.from("battle_sesi").update({
     soal_aktif_index: nextIndex,
     soal_dirilis_at: new Date().toISOString()
   }).eq("id", sesi.id);
+  if (error) {
+    alert("Gagal merilis soal: " + error.message + "\n\nKemungkinan ada migrasi SQL battle yang belum dijalankan di Supabase (cek MIGRASI_BATTLE_JAM_SERVER.sql, MIGRASI_BATTLE_RILIS_OTOMATIS.sql, MIGRASI_BATTLE_MODE_KELOMPOK.sql).");
+    console.error("rilisSoalBerikutnya error:", error);
+  }
 }
 
 async function akhiriBattle(auto){
   if (!auto && !confirm("Akhiri battle sekarang? Siswa tidak bisa menjawab lagi.")) return;
   stopAutoTick();
-  await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", sesi.id);
+  const { error } = await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", sesi.id);
+  if (error) {
+    alert("Gagal mengakhiri battle: " + error.message);
+    console.error("akhiriBattle error:", error);
+  }
 }
 
 // ===== FLIP animation util: animasi geser posisi + highlight saat peringkat berubah =====
