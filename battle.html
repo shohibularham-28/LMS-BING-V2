@@ -21,6 +21,24 @@
     #app-screen .content{ padding-bottom:80px; }
   }
 
+  /* ===== Tampilan standalone: battle jadi halamannya sendiri, tanpa sidebar/topbar
+     aplikasi utama -- sama seperti soal.html saat ujian. ===== */
+  .bt-standalone-shell{ background:#F6F7FB; }
+  .bt-standalone-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 20px; background:#fff; border-bottom:1px solid #E7E9F2;
+    position:sticky; top:0; z-index:50;
+    padding-top:calc(14px + env(safe-area-inset-top, 0px));
+  }
+  .bt-standalone-back{
+    display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+    color:#5b5f73; font-weight:700; font-size:13px; padding:8px 12px;
+    border-radius:10px; background:#F1F2F6; white-space:nowrap;
+  }
+  .bt-standalone-back:hover{ background:#E7E9F2; }
+  .bt-standalone-title{ font-weight:800; font-size:14.5px; color:#161927; }
+
+
   /* ===== Battle UI (gamified) ===== */
   .battle-wrap{ max-width:920px; margin:0 auto; }
   .bt-hero{
@@ -153,56 +171,18 @@
 <body>
 
 <div id="app-screen">
-  <div class="shell">
-    <div class="sidebar">
-      <div class="brand">
-        <div class="brand-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 5.5C4 4.67157 4.67157 4 5.5 4H10.5C11.3284 4 12 4.67157 12 5.5V19.5C12 18.6716 11.3284 18 10.5 18H4V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/><path d="M20 5.5C20 4.67157 19.3284 4 18.5 4H13.5C12.6716 4 12 4.67157 12 5.5V19.5C12 18.6716 12.6716 18 13.5 18H20V5.5Z" stroke="white" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
-        <div class="brand-name display">English Class</div>
-      </div>
-      <div class="user-card">
-        <div class="avatar" id="userAvatar">D</div>
-        <div class="name" id="sideName">—</div>
-        <span class="kelas-tag" id="sideClass">Kelas —</span>
-      </div>
-      <div class="nav-section-label">Menu Utama</div>
-      <a class="nav-item" data-page="pengumuman" href="pengumuman.html" title="Pengumuman & Nilai"><span class="icon">📣</span> <span class="label">Pengumuman &amp; Nilai</span></a>
-      <a class="nav-item" data-page="materi" href="materi.html" title="Materi"><span class="icon">📘</span> <span class="label">Materi</span></a>
-      <a class="nav-item" data-page="worksheet" href="worksheet.html" title="Worksheet"><span class="icon">📝</span> <span class="label">Worksheet</span></a>
-      <a class="nav-item active" data-page="battle" href="battle.html" title="Battle Kelas"><span class="icon">⚔️</span> <span class="label">Battle Kelas</span></a>
-      <a class="nav-item" data-page="obrolan" href="obrolan.html" title="Obrolan Kelas"><span class="icon">💬</span> <span class="label">Obrolan Kelas</span></a>
-      <a class="nav-item" data-page="bintang" href="bintang.html" title="Koleksi Bintang"><span class="icon">⭐</span> <span class="label">Koleksi Bintang</span></a>
-      <div class="nav-section-label">Akun</div>
-      <a class="nav-item" data-page="pengaturan" href="pengaturan.html" title="Pengaturan"><span class="icon">⚙️</span> <span class="label">Pengaturan</span></a>
-      <div class="sidebar-footer">
-        <button class="logout-btn" onclick="doLogout()" title="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> <span class="logout-label">Keluar</span></button>
-      </div>
-    </div>
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
+  <div class="shell bt-standalone-shell">
     <div class="main">
-      <div class="topbar">
-        <div class="topbar-left">
-          <button class="nav-toggle-btn" id="navToggle" type="button" aria-label="Buka/tutup menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
-          <div class="topbar-userinfo">
-            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
-            <div class="date" id="topDate"></div>
-          </div>
-        </div>
-        <div class="topbar-right">
-          <div class="notif-wrap">
-            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
-            <div class="notif-dropdown" id="notifDropdown"><div class="notif-header">Notifikasi</div><div id="notifList">Memuat…</div></div>
-          </div>
-          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
-        </div>
+      <div class="bt-standalone-bar">
+        <a href="worksheet.html" class="bt-standalone-back">&larr; Worksheet</a>
+        <div class="bt-standalone-title">⚔️ Battle Kelas</div>
+        <div style="width:1px;"></div>
       </div>
+
 
       <div class="content">
         <div class="battle-wrap">
-          <div class="bt-hero">
-            <h1>⚔️ Battle Kelas</h1>
-            <p>Mode Leaderboard — jawab secepat &amp; setepat mungkin, kumpulkan skor tertinggi!</p>
-          </div>
+          <p style="text-align:center; color:#8A90A3; font-size:13px; font-weight:600; margin:-4px 0 18px;">Mode Leaderboard — jawab secepat &amp; setepat mungkin, kumpulkan skor tertinggi!</p>
 
           <!-- LOBI: masukkan kode battle -->
           <div class="bt-join-card" id="joinCard">
@@ -266,15 +246,6 @@
 
 <div class="bt-toast" id="toast"></div>
 
-<nav class="mobile-bottom-nav">
-  <a href="pengumuman.html" data-page="pengumuman"><span class="mbn-icon">📣</span>Pengumuman</a>
-  <a href="materi.html" data-page="materi"><span class="mbn-icon">📘</span>Materi</a>
-  <a href="worksheet.html" data-page="worksheet"><span class="mbn-icon">📝</span>Worksheet</a>
-  <a href="battle.html" data-page="battle" class="active"><span class="mbn-icon">⚔️</span>Battle</a>
-  <a href="obrolan.html" data-page="obrolan"><span class="mbn-icon">💬</span>Obrolan</a>
-  <a href="pengaturan.html" data-page="pengaturan"><span class="mbn-icon">⚙️</span>Akun</a>
-</nav>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/supabaseClient.js"></script>
 <script src="assets/app.js"></script>
@@ -313,6 +284,7 @@ let answered = false;
 let timerInterval = null;
 let resultInterval = null;
 let leaderboardPollInterval = null;
+let sesiSafetyPollInterval = null;
 const TIMER_RADIUS = 36;
 const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
 
@@ -440,6 +412,7 @@ function exitBattle(){
   stopTimer();
   stopResultCountdown();
   stopLeaderboardPoll();
+  stopSesiSafetyPoll();
   if (channel) { supabase.removeChannel(channel); channel = null; }
   sessionStorage.removeItem("battle_kode_aktif");
 
@@ -471,6 +444,7 @@ function masukArena(){
   renderQuestionState();
   loadLeaderboard();
   subscribeRealtime();
+  startSesiSafetyPoll();
 }
 
 // ===== Papan peringkat: tampil TERPISAH dari soal, hanya muncul setelah
@@ -549,6 +523,33 @@ function launchCelebration(big){
     inner.classList.add("bt-shake");
   }
 }
+
+// Jaring pengaman UTAMA: cek berkala ke server SELAMA battle berlangsung —
+// termasuk saat layar masih "Bersiap-siap! Soal akan segera dirilis guru…",
+// yang sebelumnya 100% cuma mengandalkan event realtime tanpa cadangan sama
+// sekali. Kalau koneksi guru/siswa lambat atau realtime sempat putus, soal
+// baru tetap sampai maksimal ~4 detik kemudian lewat poll ini, bukan
+// menunggu tanpa batas.
+const SESI_SAFETY_POLL_MS = 4000;
+function startSesiSafetyPoll(){
+  stopSesiSafetyPoll();
+  if (!sesi) return;
+  sesiSafetyPollInterval = setInterval(async () => {
+    if (!sesi) return;
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (!data) return;
+    const berubah = data.soal_aktif_index !== sesi.soal_aktif_index
+      || data.status !== sesi.status
+      || data.soal_dirilis_at !== sesi.soal_dirilis_at;
+    if (berubah) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+    }
+    if (sesi.status === "selesai") stopSesiSafetyPoll();
+  }, SESI_SAFETY_POLL_MS);
+}
+function stopSesiSafetyPoll(){ if (sesiSafetyPollInterval) clearInterval(sesiSafetyPollInterval); sesiSafetyPollInterval = null; }
 
 // Jaring pengaman kedua: selagi papan skor kebuka, cek berkala ke server
 // (bukan cuma andalkan event realtime) supaya papan skor pasti ketutup begitu
@@ -864,6 +865,7 @@ function showFinal(){
   stopResultCountdown();
   showLeaderboardReveal(true); // versi lebih meriah untuk hasil akhir
   stopLeaderboardPoll(); // battle sudah selesai, tidak perlu polling lagi
+  stopSesiSafetyPoll();
   const arena = document.getElementById("arena");
   arena.innerHTML = `
     <div class="bt-final">
