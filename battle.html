@@ -72,10 +72,12 @@
   .bt-waiting{ padding:50px 20px; text-align:center; color:#8A90A3; }
   .bt-waiting .big{ font-size:40px; margin-bottom:10px; }
 
-  .bt-leader{ background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:18px; margin-top:18px; display:none; }
-  @keyframes btLeaderReveal{ from{ opacity:0; transform:translateY(18px) scale(.97);} to{ opacity:1; transform:none;} }
-  .bt-leader.reveal{ animation:btLeaderReveal .5s cubic-bezier(.34,1.4,.64,1); }
-  .bt-leader h3{ margin:0 0 12px; font-family:'Space Grotesk',sans-serif; font-size:15px; color:#161927; display:flex; align-items:center; gap:6px; }
+  .bt-leader{ display:none; position:fixed; inset:0; z-index:2000; background:rgba(18,20,35,0.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+  .bt-leader.show{ display:flex; }
+  .bt-leader-inner{ background:#fff; border-radius:24px; padding:26px 22px; width:100%; max-width:440px; max-height:88vh; overflow-y:auto; box-shadow:0 25px 70px rgba(0,0,0,0.4); }
+  @keyframes btLeaderPop{ 0%{ opacity:0; transform:scale(.35) translateY(40px); } 55%{ opacity:1; transform:scale(1.07) translateY(0); } 80%{ transform:scale(.97); } 100%{ opacity:1; transform:scale(1); } }
+  .bt-leader.reveal .bt-leader-inner{ animation:btLeaderPop .6s cubic-bezier(.34,1.56,.64,1); }
+  .bt-leader h3{ margin:0 0 14px; font-family:'Space Grotesk',sans-serif; font-size:18px; color:#161927; display:flex; align-items:center; gap:6px; justify-content:center; text-align:center; }
   .bt-row{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:12px; }
   .bt-row.me{ background:#F1EEFF; }
   .bt-rank{ width:26px; text-align:center; font-weight:800; font-size:13px; color:#8A90A3; }
@@ -230,8 +232,10 @@
             </div>
 
             <div class="bt-leader" id="leaderCard">
-              <h3>🏆 Papan Peringkat</h3>
-              <div id="leaderList">Memuat…</div>
+              <div class="bt-leader-inner">
+                <h3>🏆 Papan Peringkat</h3>
+                <div id="leaderList">Memuat…</div>
+              </div>
             </div>
           </div>
         </div>
@@ -453,7 +457,7 @@ function showLeaderboardReveal(){
   const card = document.getElementById("leaderCard");
   if (!card) return;
   const wasHidden = card.style.display === "none" || card.style.display === "";
-  card.style.display = "block";
+  card.style.display = "flex";
   if (wasHidden) {
     card.classList.remove("reveal");
     void card.offsetWidth; // reflow supaya animasi bisa diulang
@@ -604,7 +608,9 @@ function stopResultCountdown(){ if (resultInterval) clearInterval(resultInterval
 async function submitAnswer(key){
   if (answered) return;
   answered = true;
-  stopTimer();
+  // NOTE: timer TIDAK dihentikan di sini — dibiarkan tetap jalan sampai
+  // durasi soal benar-benar habis, supaya papan peringkat tetap muncul
+  // serentak buat semua siswa (termasuk yang sudah jawab duluan).
 
   const soalList = sesi.soal || [];
   const q = soalList[currentQIndex];

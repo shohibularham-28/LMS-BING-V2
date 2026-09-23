@@ -95,6 +95,28 @@
 
   /* Rilis mode */
   .bg-status-badge.hasil{ background:#FEF3C7; color:#B45309; }
+
+  /* ===== Proyektor: papan nilai full layar buat ditayangkan ke kelas ===== */
+  .bg-projector{ display:none; position:fixed; inset:0; z-index:3000; background:linear-gradient(160deg,#1B1730 0%,#0F1220 100%); color:#fff; flex-direction:column; align-items:center; padding:36px 5vw 50px; box-sizing:border-box; overflow-y:auto; }
+  .bg-projector.show{ display:flex; }
+  .bg-projector-close{ position:fixed; top:20px; right:24px; background:rgba(255,255,255,.12); border:none; color:#fff; font-weight:700; padding:10px 16px; border-radius:10px; cursor:pointer; font-size:13.5px; z-index:3001; }
+  .bg-projector-close:hover{ background:rgba(255,255,255,.24); }
+  .bg-projector-header{ text-align:center; margin-bottom:30px; }
+  .bg-projector-title{ font-family:'Space Grotesk',sans-serif; font-size:clamp(24px,4vw,42px); font-weight:700; }
+  .bg-projector-kode{ font-size:clamp(13px,1.6vw,17px); opacity:.7; margin-top:8px; }
+  .bg-projector-status{ display:inline-block; margin-top:12px; padding:7px 18px; border-radius:999px; background:rgba(255,255,255,.12); font-size:clamp(12.5px,1.4vw,15px); font-weight:700; }
+  .bg-projector-board{ max-width:780px; width:100%; margin:0 auto; }
+  .bg-projector .bg-leader-row{ background:rgba(255,255,255,.07); border-radius:14px; margin-bottom:12px; padding:16px 20px; border-bottom:none; font-size:clamp(15px,2vw,20px); }
+  .bg-projector .bg-leader-row .r{ width:38px; font-size:clamp(16px,2.2vw,24px); color:#C9C2FF; }
+  .bg-projector .bg-leader-row .av{ width:46px; height:46px; font-size:22px; }
+  .bg-projector .bg-leader-row .n{ color:#fff; }
+  .bg-projector .bg-leader-row .s{ color:#8CE99A; font-size:clamp(16px,2.2vw,24px); }
+  .bg-projector .bg-tim-leader-card{ background:rgba(255,255,255,.07); border:none; border-radius:14px; padding:16px 20px; margin-bottom:14px; }
+  .bg-projector .bg-tim-leader-card .name{ color:#fff; font-size:clamp(15px,2vw,20px); }
+  .bg-projector .bg-tim-leader-card .score{ color:#8CE99A; font-size:clamp(16px,2.2vw,24px); }
+  .bg-projector .bg-tim-leader-card .members{ color:rgba(255,255,255,.6); }
+  .bg-projector .lb-arrow.up{ color:#8CE99A; }
+  .bg-projector .lb-arrow.down{ color:#FF9B90; }
 </style>
 </head>
 <body>
@@ -233,6 +255,7 @@
         </div>
       </div>
       <div style="font-size:12.5px; color:#8A90A3;">Bagikan kode ini ke siswa untuk join di menu <b>Battle Kelas</b>.</div>
+      <button class="bg-btn bg-btn-primary" style="width:100%; margin-top:14px;" onclick="showProjector()">🖥️ Tampilkan Papan Nilai — Full Layar (Proyektor)</button>
     </div>
 
     <div class="bg-card">
@@ -257,6 +280,17 @@
       <div id="leaderBox">Belum ada peserta.</div>
     </div>
   </div>
+</div>
+
+<!-- PROYEKTOR: papan nilai full layar, dibuka guru pas mulai battle -->
+<div class="bg-projector" id="projectorView">
+  <button class="bg-projector-close" onclick="hideProjector()">✕ Tutup</button>
+  <div class="bg-projector-header">
+    <div class="bg-projector-title">⚔️ <span id="projectorJudul">Battle Kelas</span></div>
+    <div class="bg-projector-kode">Kode Battle: <b id="projectorKode">—</b></div>
+    <div class="bg-projector-status" id="projectorStatus">Menunggu…</div>
+  </div>
+  <div class="bg-projector-board" id="projectorBoard">Memuat…</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -565,6 +599,45 @@ function subscribeRealtime(){
   loadLeaderboard();
 }
 
+// ===== Tampilan Papan Nilai Full Layar (buat diproyeksikan ke proyektor kelas) =====
+function updateProjectorStatus(){
+  const el = document.getElementById("projectorStatus");
+  if (!el || !sesi) return;
+  const total = (sesi.soal || []).length;
+  if (sesi.status === "selesai") {
+    el.textContent = "🏁 Battle Selesai";
+  } else if (sesi.soal_aktif_index < 0) {
+    el.textContent = "⏳ Menunggu guru merilis soal pertama…";
+  } else {
+    el.textContent = `🔴 Live — Soal ${sesi.soal_aktif_index + 1} dari ${total}`;
+  }
+}
+
+function showProjector(){
+  if (!sesi) return;
+  const el = document.getElementById("projectorView");
+  document.getElementById("projectorJudul").textContent = sesi.judul || "Battle Kelas";
+  document.getElementById("projectorKode").textContent = sesi.kode;
+  updateProjectorStatus();
+  el.classList.add("show");
+  loadLeaderboard();
+  // Coba masuk mode fullscreen beneran di layar/proyektor (aman kalau ditolak browser).
+  if (el.requestFullscreen) { el.requestFullscreen().catch(() => {}); }
+}
+
+function hideProjector(){
+  const el = document.getElementById("projectorView");
+  el.classList.remove("show");
+  if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); }
+}
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    const el = document.getElementById("projectorView");
+    if (el) el.classList.remove("show");
+  }
+});
+
 function updateRoomUI(){
   const badge = document.getElementById("statusBadge");
   badge.textContent = sesi.status;
@@ -572,6 +645,8 @@ function updateRoomUI(){
   document.getElementById("modeLabel").textContent =
     (sesi.mode === "kelompok" ? "👥 Mode Kelompok" : "🏆 Mode Leaderboard") +
     " · " + (sesi.rilis_mode === "otomatis" ? "⏱️ Rilis Otomatis" : "🖐️ Rilis Manual");
+
+  updateProjectorStatus();
 
   const total = (sesi.soal || []).length;
   const label = document.getElementById("qNowLabel");
@@ -738,8 +813,11 @@ async function loadLeaderboard(){
     .select("profile_id, nama, skor_total, tim_key, karakter")
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
-  const box = document.getElementById("leaderBox");
-  if (!data || data.length === 0) { box.innerHTML = "Belum ada peserta."; box.__lbRanks = null; return; }
+  const boxes = [document.getElementById("leaderBox"), document.getElementById("projectorBoard")].filter(Boolean);
+  if (!data || data.length === 0) {
+    boxes.forEach(b => { b.innerHTML = "Belum ada peserta."; b.__lbRanks = null; });
+    return;
+  }
 
   if (sesi.mode === "kelompok") {
     const timList = sesi.tim || [];
@@ -755,8 +833,7 @@ async function loadLeaderboard(){
       }
     });
     const ranked = timList.map(t => ({ ...t, ...agg[t.key] })).sort((a, b) => b.total - a.total);
-
-    animateLeaderboardRows(box, ranked, t => t.key, (t, i, dir) => `
+    const renderTim = (t, i, dir) => `
       <div class="bg-tim-leader-card" data-lb-key="${t.key}">
         <div class="head">
           <span class="swatch" style="background:${t.warna || '#7C5CFC'};"></span>
@@ -764,24 +841,28 @@ async function loadLeaderboard(){
           <div class="score">${t.total}</div>
         </div>
         <div class="members">${t.anggota.length} anggota${t.anggota.length ? ': ' + t.anggota.map(a => (a.karakter && karakterByKey(a.karakter) ? karakterByKey(a.karakter).emoji + ' ' : '') + escapeHtml(a.nama)).join(', ') : ''}</div>
-      </div>`);
+      </div>`;
 
-    if (belumPilih > 0) {
-      const warn = document.createElement("div");
-      warn.style.cssText = "font-size:12px; color:#B45309; margin-top:6px;";
-      warn.textContent = `⏳ ${belumPilih} siswa sudah join tapi belum memilih kelompok.`;
-      box.appendChild(warn);
-    }
+    boxes.forEach(box => {
+      animateLeaderboardRows(box, ranked, t => t.key, renderTim);
+      if (belumPilih > 0) {
+        const warn = document.createElement("div");
+        warn.style.cssText = "font-size:12px; color:#B45309; margin-top:6px;";
+        warn.textContent = `⏳ ${belumPilih} siswa sudah join tapi belum memilih kelompok.`;
+        box.appendChild(warn);
+      }
+    });
     return;
   }
 
-  animateLeaderboardRows(box, data, p => p.profile_id, (p, i, dir) => `
+  const renderIndividu = (p, i, dir) => `
     <div class="bg-leader-row" data-lb-key="${p.profile_id}">
       <div class="r">${i+1}</div>
       ${avatarSmallHtml(p)}
       <div class="n">${escapeHtml(p.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}</div>
       <div class="s">${p.skor_total}</div>
-    </div>`);
+    </div>`;
+  boxes.forEach(box => animateLeaderboardRows(box, data, p => p.profile_id, renderIndividu));
 }
 
 function escapeHtml(s){
