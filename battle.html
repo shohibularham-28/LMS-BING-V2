@@ -89,6 +89,19 @@
 
   .bt-toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:#161927; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:700; z-index:1000; box-shadow:0 8px 20px rgba(0,0,0,0.2); opacity:0; pointer-events:none; transition:opacity .2s ease, top .2s ease; }
   .bt-toast.show{ opacity:1; top:24px; }
+
+  .bt-tim-opt{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; border:2px solid #E7E9F2; background:#F8F9FC; cursor:pointer; text-align:left; font-family:inherit; }
+  .bt-tim-opt:hover{ border-color:#7C5CFC; }
+  .bt-tim-opt .swatch{ width:16px; height:16px; border-radius:5px; flex:0 0 auto; }
+  .bt-tim-opt .nm{ font-weight:700; font-size:14px; color:#161927; flex:1; }
+  .bt-tim-opt .ct{ font-size:11.5px; color:#8A90A3; font-weight:600; }
+
+  .bt-my-tim{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#333750; }
+  .bt-my-tim .sw{ width:10px; height:10px; border-radius:3px; }
+  .bt-tim-group{ margin-bottom:14px; }
+  .bt-tim-group-head{ display:flex; align-items:center; gap:8px; padding:8px 6px; font-weight:800; font-size:13px; color:#161927; }
+  .bt-tim-group-head .sw{ width:12px; height:12px; border-radius:4px; }
+  .bt-tim-group-head .sc{ margin-left:auto; color:#7C5CFC; font-family:'Space Grotesk',sans-serif; }
 </style>
 </head>
 <body>
@@ -151,6 +164,13 @@
             <input type="text" id="kodeInput" placeholder="mis. BTL-7F3K" maxlength="12">
             <button class="bt-btn bt-btn-primary" id="joinBtn" onclick="joinBattle()">🚪 Gabung Battle</button>
             <div id="joinError" style="color:#FF6B5E; font-size:12.5px; margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <!-- PILIH KELOMPOK: tampil sebelum arena kalau sesi mode = kelompok -->
+          <div class="bt-join-card" id="timPickCard" style="display:none;">
+            <div style="font-weight:700; font-size:14px; margin-bottom:4px; color:#161927;">Pilih kelompokmu</div>
+            <div style="font-size:12.5px; color:#8A90A3; margin-bottom:14px;">Battle ini dimainkan berkelompok — skormu akan ditambahkan ke skor timmu.</div>
+            <div id="timPickList" style="display:grid; gap:10px;"></div>
           </div>
 
           <!-- ROOM: tampil setelah join -->
@@ -253,11 +273,41 @@ async function joinBattle(){
   sessionStorage.setItem("battle_kode_aktif", kodeRaw);
 
   // Daftarkan diri sebagai peserta (aman kalau sudah pernah, kena unique constraint -> upsert).
-  await supabase.from("battle_peserta").upsert({
+  const { data: pesertaRow } = await supabase.from("battle_peserta").upsert({
     sesi_id: sesi.id, profile_id: profile.id, nama: profile.nama
-  }, { onConflict: "sesi_id,profile_id" });
+  }, { onConflict: "sesi_id,profile_id" }).select("tim_key").single();
 
   document.getElementById("joinCard").style.display = "none";
+
+  if (sesi.mode === "kelompok" && !(pesertaRow && pesertaRow.tim_key)) {
+    tampilkanPilihanTim();
+    return;
+  }
+
+  masukArena();
+}
+
+function tampilkanPilihanTim(){
+  const card = document.getElementById("timPickCard");
+  const list = document.getElementById("timPickList");
+  const timList = sesi.tim || [];
+  list.innerHTML = timList.map(t => `
+    <button class="bt-tim-opt" onclick="pilihTimSiswa('${t.key}')">
+      <span class="swatch" style="background:${t.warna || '#7C5CFC'};"></span>
+      <span class="nm">${escapeHtml(t.nama)}</span>
+      <span class="ct">Gabung →</span>
+    </button>`).join("");
+  card.style.display = "block";
+}
+
+async function pilihTimSiswa(key){
+  await supabase.from("battle_peserta").update({ tim_key: key })
+    .eq("sesi_id", sesi.id).eq("profile_id", profile.id);
+  document.getElementById("timPickCard").style.display = "none";
+  masukArena();
+}
+
+function masukArena(){
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("roomKode").textContent = sesi.kode;
 
@@ -436,15 +486,41 @@ function lockOptions(pickedKey, benar, silent){
 async function loadLeaderboard(){
   const { data } = await supabase
     .from("battle_peserta")
-    .select("profile_id, nama, skor_total, streak")
+    .select("profile_id, nama, skor_total, streak, tim_key")
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
 
   const list = document.getElementById("leaderList");
+  const leaderTitle = document.querySelector("#leaderCard h3");
   if (!list) return;
   if (!data || data.length === 0) { list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Belum ada peserta.</div>"; return; }
 
   const medalClass = ["gold","silver","bronze"];
+
+  if (sesi.mode === "kelompok") {
+    if (leaderTitle) leaderTitle.textContent = "🏆 Peringkat Kelompok";
+    const timList = sesi.tim || [];
+    const agg = {};
+    timList.forEach(t => { agg[t.key] = { ...t, total: 0, anggota: [] }; });
+    data.forEach(p => { if (p.tim_key && agg[p.tim_key]) { agg[p.tim_key].total += p.skor_total; agg[p.tim_key].anggota.push(p); } });
+    const ranked = Object.values(agg).sort((a, b) => b.total - a.total);
+    list.innerHTML = ranked.map(t => {
+      const anggotaHtml = t.anggota
+        .sort((a, b) => b.skor_total - a.skor_total)
+        .map(p => `<div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" style="padding-left:4px;">
+            <div class="bt-avatar" style="width:26px;height:26px;font-size:11px;">${(p.nama||'?').charAt(0).toUpperCase()}</div>
+            <div class="bt-row-name" style="font-size:12.5px;">${escapeHtml(p.nama)}</div>
+            <div class="bt-row-score" style="font-size:12.5px;">${p.skor_total}</div>
+          </div>`).join("");
+      return `<div class="bt-tim-group">
+          <div class="bt-tim-group-head"><span class="sw" style="background:${t.warna || '#7C5CFC'};"></span>${escapeHtml(t.nama)}<span class="sc">${t.total}</span></div>
+          ${anggotaHtml || '<div style="font-size:12px; color:#8A90A3; padding-left:20px;">Belum ada anggota.</div>'}
+        </div>`;
+    }).join("");
+    return;
+  }
+
+  if (leaderTitle) leaderTitle.textContent = "🏆 Papan Peringkat";
   list.innerHTML = data.map((p, i) => `
     <div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}">
       <div class="bt-rank ${medalClass[i] || ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : (i+1)}</div>

@@ -56,6 +56,27 @@
   .bg-leader-row .r{ width:22px; color:#8A90A3; font-weight:700; }
   .bg-leader-row .n{ flex:1; font-weight:600; color:#333750; }
   .bg-leader-row .s{ font-weight:800; color:#7C5CFC; }
+
+  .bg-mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .bg-mode-grid{ grid-template-columns:1fr; } }
+  .bg-mode-card{ border:2px solid #E7E9F2; border-radius:14px; padding:16px; cursor:pointer; transition:all .15s ease; }
+  .bg-mode-card:hover{ border-color:#C9C2FF; }
+  .bg-mode-card.active{ border-color:#7C5CFC; background:#F8F7FF; }
+  .bg-mode-card .em{ font-size:22px; }
+  .bg-mode-card .t{ font-weight:700; font-size:14px; color:#161927; margin:6px 0 3px; }
+  .bg-mode-card .d{ font-size:12px; color:#8A90A3; }
+
+  .bg-tim-row{ display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .bg-tim-row input[type="text"]{ flex:1; }
+  .bg-tim-row .swatch{ width:14px; height:14px; border-radius:4px; flex:0 0 auto; }
+  .bg-tim-remove{ background:none; border:none; color:#FF6B5E; font-weight:700; cursor:pointer; font-size:12px; }
+
+  .bg-tim-leader-card{ border:1px solid #E7E9F2; border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .bg-tim-leader-card .head{ display:flex; align-items:center; gap:8px; margin-bottom:2px; }
+  .bg-tim-leader-card .swatch{ width:12px; height:12px; border-radius:4px; }
+  .bg-tim-leader-card .name{ font-weight:700; font-size:13.5px; color:#161927; flex:1; }
+  .bg-tim-leader-card .score{ font-weight:800; color:#7C5CFC; font-family:'Space Grotesk',sans-serif; }
+  .bg-tim-leader-card .members{ font-size:11.5px; color:#8A90A3; padding-left:20px; }
 </style>
 </head>
 <body>
@@ -67,14 +88,39 @@
   </div>
 
   <div class="bg-hero">
-    <h1>Battle Mode: Leaderboard</h1>
-    <p>Semua siswa jawab soal yang sama secara live. Benar + cepat = skor lebih tinggi.</p>
+    <h1>Battle Kelas</h1>
+    <p>Pilih mode battle, susun soal, lalu bagikan kode ke siswa. Benar + cepat = skor lebih tinggi.</p>
   </div>
 
   <!-- SETUP: belum ada sesi aktif -->
   <div id="setupArea">
     <div class="bg-card">
-      <h3>1. Buat Sesi Battle</h3>
+      <h3>1. Pilih Mode Battle</h3>
+      <div class="bg-mode-grid">
+        <div class="bg-mode-card active" id="modeCardLeaderboard" onclick="pilihMode('leaderboard')">
+          <div class="em">🏆</div>
+          <div class="t">Leaderboard Individu</div>
+          <div class="d">Semua siswa main sendiri-sendiri. Benar + cepat = skor tertinggi menang.</div>
+        </div>
+        <div class="bg-mode-card" id="modeCardKelompok" onclick="pilihMode('kelompok')">
+          <div class="em">👥</div>
+          <div class="t">Battle Kelompok (Tim)</div>
+          <div class="d">Siswa gabung ke kelompok pilihan mereka. Skor anggota diakumulasi jadi skor tim.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-card" id="timCard" style="display:none;">
+      <h3>1b. Buat Daftar Kelompok</h3>
+      <div id="timListBox"></div>
+      <button class="bg-btn bg-btn-outline" onclick="tambahTim()">➕ Tambah Kelompok</button>
+      <div style="font-size:12px; color:#8A90A3; margin-top:10px;">
+        Siswa akan memilih sendiri salah satu kelompok ini setelah join dengan kode battle.
+      </div>
+    </div>
+
+    <div class="bg-card">
+      <h3>2. Buat Sesi Battle</h3>
       <div class="bg-row2">
         <div class="bg-field">
           <label>Judul Battle</label>
@@ -94,7 +140,7 @@
     </div>
 
     <div class="bg-card">
-      <h3>2. Soal — Import dari Word atau Ketik Manual</h3>
+      <h3>3. Soal — Import dari Word atau Ketik Manual</h3>
       <div class="bg-import-box" id="importBox">
         <div class="bg-import-row">
           <input type="file" id="docxInput" accept=".docx" onchange="handleDocxImport(this.files[0])">
@@ -125,7 +171,10 @@
           <div style="font-size:11.5px; color:#8A90A3; font-weight:700;">KODE BATTLE</div>
           <div class="kode" id="kodeTampil">—</div>
         </div>
-        <div style="margin-left:auto;"><span class="bg-status-badge" id="statusBadge">lobi</span></div>
+        <div style="margin-left:auto; text-align:right;">
+          <span class="bg-status-badge" id="statusBadge">lobi</span><br>
+          <span style="font-size:11px; color:#8A90A3; font-weight:600;" id="modeLabel"></span>
+        </div>
       </div>
       <div style="font-size:12.5px; color:#8A90A3;">Bagikan kode ini ke siswa untuk join di menu <b>Battle Kelas</b>.</div>
     </div>
@@ -158,13 +207,51 @@ let profile = null;
 let sesi = null;
 let channel = null;
 let soalCount = 0;
+let timCount = 0;
+let modeAktif = "leaderboard"; // 'leaderboard' | 'kelompok'
 
 (async function init(){
   profile = await requireTeacherLogin();
   if (!profile) return;
   await loadKelasOptions();
   tambahSoal(); // mulai dengan 1 form soal kosong
+  tambahTim("Tim A");
+  tambahTim("Tim B");
 })();
+
+function pilihMode(mode){
+  modeAktif = mode;
+  document.getElementById("modeCardLeaderboard").classList.toggle("active", mode === "leaderboard");
+  document.getElementById("modeCardKelompok").classList.toggle("active", mode === "kelompok");
+  document.getElementById("timCard").style.display = mode === "kelompok" ? "block" : "none";
+}
+
+function tambahTim(namaAwal){
+  timCount++;
+  const id = "t" + timCount;
+  const box = document.getElementById("timListBox");
+  const div = document.createElement("div");
+  div.className = "bg-tim-row";
+  div.id = id;
+  const warna = ["#7C5CFC","#4CC9F0","#FF6B5E","#22C55E","#EAB308","#EC4899"][(timCount - 1) % 6];
+  div.innerHTML = `
+    <span class="swatch" style="background:${warna};"></span>
+    <input type="text" class="t-nama" value="${escapeHtml(namaAwal || ('Tim ' + timCount))}" placeholder="Nama kelompok">
+    <button class="bg-tim-remove" onclick="document.getElementById('${id}').remove()">✕</button>
+  `;
+  div.dataset.warna = warna;
+  box.appendChild(div);
+}
+
+function kumpulkanTim(){
+  const rows = document.querySelectorAll("#timListBox .bg-tim-row");
+  const tim = [];
+  rows.forEach((row, idx) => {
+    const nama = row.querySelector(".t-nama").value.trim();
+    if (nama) tim.push({ key: "tim_" + (idx + 1), nama, warna: row.dataset.warna || "#7C5CFC" });
+  });
+  return tim;
+}
 
 async function loadKelasOptions(){
   const { data } = await supabase.from("kelas").select("id, nama").order("nama");
@@ -275,11 +362,18 @@ async function buatSesi(){
   if (soal.length === 0) { errBox.textContent = "Tambahkan minimal 1 soal yang lengkap."; return; }
   if (errors.length > 0) { errBox.textContent = errors.join(" "); return; }
 
+  let tim = [];
+  if (modeAktif === "kelompok") {
+    tim = kumpulkanTim();
+    if (tim.length < 2) { errBox.textContent = "Mode Kelompok butuh minimal 2 kelompok dengan nama terisi."; return; }
+  }
+
   const kode = "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase();
 
   const { data, error } = await supabase.from("battle_sesi").insert({
     kode, judul, guru_id: profile.id, kelas_id: kelasId,
-    status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi
+    status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi,
+    mode: modeAktif, tim
   }).select().single();
 
   if (error) { errBox.textContent = "Gagal membuat sesi: " + error.message; return; }
@@ -318,6 +412,7 @@ function updateRoomUI(){
   const badge = document.getElementById("statusBadge");
   badge.textContent = sesi.status;
   badge.className = "bg-status-badge " + (sesi.status === "berjalan" ? "live" : sesi.status === "selesai" ? "selesai" : "");
+  document.getElementById("modeLabel").textContent = sesi.mode === "kelompok" ? "👥 Mode Kelompok" : "🏆 Mode Leaderboard";
 
   const total = (sesi.soal || []).length;
   const label = document.getElementById("qNowLabel");
@@ -361,11 +456,40 @@ async function akhiriBattle(){
 async function loadLeaderboard(){
   const { data } = await supabase
     .from("battle_peserta")
-    .select("profile_id, nama, skor_total")
+    .select("profile_id, nama, skor_total, tim_key")
     .eq("sesi_id", sesi.id)
     .order("skor_total", { ascending: false });
   const box = document.getElementById("leaderBox");
   if (!data || data.length === 0) { box.innerHTML = "Belum ada peserta."; return; }
+
+  if (sesi.mode === "kelompok") {
+    const timList = sesi.tim || [];
+    const agg = {}; // key -> { total, anggota: [{nama, skor}] }
+    timList.forEach(t => { agg[t.key] = { total: 0, anggota: [] }; });
+    let belumPilih = 0;
+    data.forEach(p => {
+      if (p.tim_key && agg[p.tim_key]) {
+        agg[p.tim_key].total += p.skor_total;
+        agg[p.tim_key].anggota.push(p);
+      } else {
+        belumPilih++;
+      }
+    });
+    const ranked = timList.map(t => ({ ...t, ...agg[t.key] })).sort((a, b) => b.total - a.total);
+    let html = ranked.map(t => `
+      <div class="bg-tim-leader-card">
+        <div class="head">
+          <span class="swatch" style="background:${t.warna || '#7C5CFC'};"></span>
+          <div class="name">${escapeHtml(t.nama)}</div>
+          <div class="score">${t.total}</div>
+        </div>
+        <div class="members">${t.anggota.length} anggota${t.anggota.length ? ': ' + t.anggota.map(a => escapeHtml(a.nama)).join(', ') : ''}</div>
+      </div>`).join("");
+    if (belumPilih > 0) html += `<div style="font-size:12px; color:#B45309; margin-top:6px;">⏳ ${belumPilih} siswa sudah join tapi belum memilih kelompok.</div>`;
+    box.innerHTML = html;
+    return;
+  }
+
   box.innerHTML = data.map((p, i) => `
     <div class="bg-leader-row">
       <div class="r">${i+1}</div>
