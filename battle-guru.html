@@ -130,6 +130,24 @@
   .bg-projector .bg-tim-leader-card .members{ color:rgba(255,255,255,.6); }
   .bg-projector .lb-arrow.up{ color:#8CE99A; }
   .bg-projector .lb-arrow.down{ color:#FF9B90; }
+
+  /* ===== Battle Tersimpan & Publish ke Kelas ===== */
+  .bs-list-empty{ font-size:12.5px; color:#8A90A3; padding:4px 2px; }
+  .bs-item{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; border:1px solid #E7E9F2; border-radius:12px; padding:12px 14px; margin-bottom:10px; }
+  .bs-item .info{ flex:1; min-width:200px; }
+  .bs-item .judul{ font-weight:700; font-size:13.5px; color:#161927; }
+  .bs-item .meta{ font-size:12px; color:#8A90A3; margin-top:3px; }
+  .bs-item .acts{ display:flex; gap:6px; flex-wrap:wrap; }
+  .bs-btn-sm{ padding:7px 12px; font-size:12px; }
+  .bs-editing{ display:none; background:#FEF3C7; color:#B45309; border-radius:12px; padding:10px 14px; font-size:12.5px; font-weight:700; margin-bottom:18px; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .bs-modal-bg{ display:none; position:fixed; inset:0; background:rgba(22,25,39,.55); z-index:4000; align-items:center; justify-content:center; padding:18px; }
+  .bs-modal-bg.show{ display:flex; }
+  .bs-modal{ background:#fff; border-radius:16px; padding:22px; width:100%; max-width:460px; max-height:88vh; overflow-y:auto; }
+  .bs-kelas-group{ font-size:11.5px; font-weight:800; color:#7C5CFC; text-transform:uppercase; letter-spacing:.4px; margin:12px 0 6px; }
+  .bs-kelas-opt{ display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid #E7E9F2; border-radius:10px; margin-bottom:6px; cursor:pointer; font-size:13.5px; font-weight:600; color:#333750; }
+  .bs-kelas-opt input{ width:18px; height:18px; }
+  .bs-kelas-opt.disabled{ opacity:.55; cursor:not-allowed; }
+  .bs-kelas-opt small{ margin-left:auto; font-size:11px; color:#8A90A3; font-weight:600; }
 </style>
 </head>
 <body>
@@ -147,6 +165,25 @@
 
   <!-- SETUP: belum ada sesi aktif -->
   <div id="setupArea">
+    <div class="bg-card" id="publishedCard" style="display:none;">
+      <h3>📡 Battle yang Sudah Dipublish</h3>
+      <div id="publishedListBox"></div>
+    </div>
+
+    <div class="bg-card">
+      <h3>📂 Battle Tersimpan</h3>
+      <div id="rencanaListBox"><div class="bs-list-empty">Memuat…</div></div>
+      <div style="font-size:12px; color:#8A90A3; margin-top:6px;">
+        Susun battle di bawah, klik <b>Simpan Battle</b>, lalu <b>Publish</b> ke kelas saat mau dipakai.
+        Siswa tidak bisa melihat battle yang hanya tersimpan.
+      </div>
+    </div>
+
+    <div class="bs-editing" id="editBanner">
+      <span id="editBannerText">✏️ Sedang mengedit battle tersimpan.</span>
+      <button class="bg-btn bg-btn-outline bs-btn-sm" onclick="lepasEdit()">Lepas — simpan sebagai battle baru</button>
+    </div>
+
     <div class="bg-card">
       <h3>1. Pilih Mode Battle</h3>
       <div class="bg-mode-grid">
@@ -178,14 +215,14 @@
     </div>
 
     <div class="bg-card">
-      <h3>2. Buat Sesi Battle</h3>
+      <h3>2. Pengaturan Battle</h3>
       <div class="bg-row2">
         <div class="bg-field">
           <label>Judul Battle</label>
           <input type="text" id="judulInput" placeholder="mis. Battle Vocabulary Bab 3" value="Battle Kelas">
         </div>
         <div class="bg-field">
-          <label>Target Kelas</label>
+          <label>Target Kelas <span style="font-weight:500; color:#8A90A3;">(hanya untuk "Buat &amp; Mulai Sekarang" — untuk Publish, kelas dipilih saat publish)</span></label>
           <select id="kelasInput"><option value="">Semua kelas</option></select>
         </div>
       </div>
@@ -255,12 +292,19 @@
       <button class="bg-btn bg-btn-outline" onclick="tambahSoal()">➕ Tambah Soal Manual</button>
     </div>
 
-    <button class="bg-btn bg-btn-primary" style="width:100%; padding:14px;" onclick="buatSesi()">🚀 Buat &amp; Mulai Battle</button>
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="bg-btn bg-btn-outline" style="flex:1; min-width:180px; padding:14px;" onclick="simpanRencana(false)">💾 Simpan Battle</button>
+      <button class="bg-btn bg-btn-primary" style="flex:1; min-width:180px; padding:14px;" onclick="simpanRencana(true)">📤 Simpan &amp; Publish ke Kelas</button>
+    </div>
+    <button class="bg-btn bg-btn-outline" style="width:100%; padding:12px; margin-top:10px;" onclick="buatSesi()">🚀 Buat &amp; Mulai Sekarang (tanpa disimpan)</button>
     <div id="setupError" style="color:#FF6B5E; font-size:12.5px; margin-top:8px; font-weight:600;"></div>
   </div>
 
   <!-- ROOM: sesi sedang berjalan/lobi -->
   <div id="roomArea" style="display:none;">
+    <div style="margin-bottom:12px;">
+      <button class="bg-btn bg-btn-outline bs-btn-sm" onclick="keluarRoom()">⬅️ Kembali ke Daftar Battle</button>
+    </div>
     <div class="bg-card">
       <div class="bg-kode-box">
         <div>
@@ -308,6 +352,25 @@
         <button class="bg-btn bg-btn-outline" id="cupTutupBtn" style="display:none;" onclick="tutupBabakIni()">🏁 Tutup Babak &amp; Hitung Pemenang</button>
         <button class="bg-btn bg-btn-primary" id="cupLanjutBtn" style="display:none;" onclick="lanjutBabakBerikutnya()">🚀 Lanjut ke Babak Berikutnya</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PUBLISH: pilih kelas tujuan -->
+<div class="bs-modal-bg" id="publishModal">
+  <div class="bs-modal">
+    <h3 style="margin:0 0 4px; font-family:'Space Grotesk',sans-serif; font-size:16px; color:#161927;">📤 Publish ke Kelas</h3>
+    <div style="font-size:12.5px; color:#5D6478; font-weight:600; margin-bottom:10px;" id="publishModalInfo"></div>
+    <button class="bg-btn bg-btn-outline bs-btn-sm" onclick="toggleSemuaKelas()">☑️ Pilih / lepas semua kelas</button>
+    <div id="publishKelasBox" style="margin-top:4px;">Memuat kelas…</div>
+    <div style="font-size:12px; color:#8A90A3; margin:10px 0 14px;">
+      Tiap kelas yang dipilih mendapat ruang battle sendiri (kode &amp; papan peringkat terpisah).
+      Battle langsung muncul di menu Battle Kelas milik siswa kelas itu. Soal baru dirilis saat kamu membuka kontrol &amp; klik rilis.
+    </div>
+    <div id="publishMsg" style="font-size:12.5px; margin-bottom:12px; line-height:1.6;"></div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button class="bg-btn bg-btn-outline" id="publishCloseBtn" onclick="tutupPublish()">Batal</button>
+      <button class="bg-btn bg-btn-primary" id="publishGoBtn" onclick="jalankanPublish()">📤 Publish</button>
     </div>
   </div>
 </div>
@@ -362,6 +425,10 @@ let autoAdvancing = false;
 let bankData = {};
 let cupBracket = [];     // baris battle_cup_bracket sesi ini
 let cupPerwakilan = [];  // baris battle_cup_perwakilan sesi ini
+let kelasList = [];      // [{id, nama, level}] semua kelas
+let rencanaList = {};    // battle tersimpan milik guru: id -> baris battle_rencana
+let rencanaAktifId = null; // id battle tersimpan yang sedang diedit di form (null = form baru)
+let publishTargetId = null; // id battle tersimpan yang sedang di-publish (modal terbuka)
 
 (async function init(){
   profile = await requireTeacherLogin();
@@ -371,6 +438,7 @@ let cupPerwakilan = [];  // baris battle_cup_perwakilan sesi ini
   tambahSoal(); // mulai dengan 1 form soal kosong
   tambahTim("Tim A");
   tambahTim("Tim B");
+  await muatDaftarBattle();
 })();
 
 function pilihMode(mode){
@@ -407,14 +475,14 @@ function pilihRilisMode(mode){
   document.getElementById("jedaCard").style.display = mode === "otomatis" ? "block" : "none";
 }
 
-function tambahTim(namaAwal){
+function tambahTim(namaAwal, warnaAwal){
   timCount++;
   const id = "t" + timCount;
   const box = document.getElementById("timListBox");
   const div = document.createElement("div");
   div.className = "bg-tim-row";
   div.id = id;
-  const warna = ["#7C5CFC","#4CC9F0","#FF6B5E","#22C55E","#EAB308","#EC4899"][(timCount - 1) % 6];
+  const warna = warnaAwal || ["#7C5CFC","#4CC9F0","#FF6B5E","#22C55E","#EAB308","#EC4899"][(timCount - 1) % 6];
   div.innerHTML = `
     <span class="swatch" style="background:${warna};"></span>
     <input type="text" class="t-nama" value="${escapeHtml(namaAwal || ('Tim ' + timCount))}" placeholder="Nama kelompok">
@@ -436,7 +504,8 @@ function kumpulkanTim(){
 }
 
 async function loadKelasOptions(){
-  const { data } = await supabase.from("kelas").select("id, nama").order("nama");
+  const { data } = await supabase.from("kelas").select("id, nama, level").order("nama");
+  kelasList = data || [];
   const sel = document.getElementById("kelasInput");
   (data || []).forEach(k => {
     const opt = document.createElement("option");
@@ -504,7 +573,7 @@ async function hapusBank(){
   await loadBankOptions();
 }
 
-function tambahSoal(prefill){
+function tambahSoal(prefill, sumberLabel){
   soalCount++;
   const id = "s" + soalCount;
   const box = document.getElementById("soalListBox");
@@ -512,7 +581,8 @@ function tambahSoal(prefill){
   div.className = "bg-soal-item";
   div.id = id;
   const promptVal = prefill ? escapeHtml(prefill.prompt) : "";
-  const badge = prefill ? `<span style="display:inline-block; background:#EFEAFF; color:#7C5CFC; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; margin-bottom:8px;">📄 dari Word</span><br>` : "";
+  const labelSumber = (sumberLabel === undefined) ? "📄 dari Word" : sumberLabel;
+  const badge = (prefill && labelSumber) ? `<span style="display:inline-block; background:#EFEAFF; color:#7C5CFC; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:999px; margin-bottom:8px;">${labelSumber}</span><br>` : "";
   div.innerHTML = `
     <button class="bg-remove" onclick="document.getElementById('${id}').remove()">✕ hapus</button>
     ${badge}
@@ -592,69 +662,386 @@ function kumpulkanSoal(){
   return { soal, errors };
 }
 
-async function buatSesi(){
-  const errBox = document.getElementById("setupError");
-  errBox.textContent = "";
+// ===== Ambil & validasi konfigurasi battle dari form (dipakai Simpan, Publish, dan Buat & Mulai) =====
+function tampilPesanSetup(teks, ok){
+  const box = document.getElementById("setupError");
+  box.textContent = teks || "";
+  box.style.color = ok ? "#22C55E" : "#FF6B5E";
+}
+
+function ambilKonfigurasi(){
   const judul = document.getElementById("judulInput").value.trim() || "Battle Kelas";
-  const kelasId = document.getElementById("kelasInput").value || null;
   const durasi = parseInt(document.getElementById("durasiInput").value, 10) || 20;
 
   const { soal, errors } = kumpulkanSoal();
-  if (soal.length === 0) { errBox.textContent = "Tambahkan minimal 1 soal yang lengkap."; return; }
-  if (errors.length > 0) { errBox.textContent = errors.join(" "); return; }
+  if (soal.length === 0) return { error: "Tambahkan minimal 1 soal yang lengkap." };
+  if (errors.length > 0) return { error: errors.join(" ") };
 
   let tim = [];
   let totalBabak = 1;
   if (modeAktif === "kelompok") {
     tim = kumpulkanTim();
-    if (tim.length < 2) { errBox.textContent = "Mode Kelompok butuh minimal 2 kelompok dengan nama terisi."; return; }
+    if (tim.length < 2) return { error: "Mode Kelompok butuh minimal 2 kelompok dengan nama terisi." };
   } else if (modeAktif === "grup_cup") {
     tim = kumpulkanTim();
-    if (tim.length < 4) { errBox.textContent = "Mode Grup Cup butuh minimal 4 tim dengan nama terisi."; return; }
+    if (tim.length < 4) return { error: "Mode Grup Cup butuh minimal 4 tim dengan nama terisi." };
     totalBabak = hitungTotalBabak(tim.length);
     if (soal.length < totalBabak * 3) {
-      errBox.textContent = `Mode Grup Cup dengan ${tim.length} tim butuh ${totalBabak} babak = minimal ${totalBabak * 3} soal (3 soal/babak). Saat ini baru ${soal.length} soal.`;
-      return;
+      return { error: `Mode Grup Cup dengan ${tim.length} tim butuh ${totalBabak} babak = minimal ${totalBabak * 3} soal (3 soal/babak). Saat ini baru ${soal.length} soal.` };
     }
   }
 
-  const kode = "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase();
   const jeda = rilisModeAktif === "otomatis"
     ? (parseInt(document.getElementById("jedaInput").value, 10) || 5)
     : 5;
 
-  const { data, error } = await supabase.from("battle_sesi").insert({
-    kode, judul, guru_id: profile.id, kelas_id: kelasId,
-    status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi,
-    mode: modeAktif, tim, rilis_mode: rilisModeAktif, jeda_hasil_detik: jeda,
-    babak_saat_ini: 1, total_babak: totalBabak
-  }).select().single();
+  return { cfg: { judul, durasi, soal, tim, totalBabak, mode: modeAktif, rilis_mode: rilisModeAktif, jeda } };
+}
+
+// Bentuk konfigurasi yang sama, tapi dari baris battle tersimpan (buat Publish langsung dari daftar).
+function cfgDariRencana(r){
+  const tim = r.tim || [];
+  return {
+    judul: r.judul, durasi: r.durasi_soal_detik, soal: r.soal || [], tim,
+    totalBabak: r.mode === "grup_cup" ? hitungTotalBabak(tim.length) : 1,
+    mode: r.mode, rilis_mode: r.rilis_mode, jeda: r.jeda_hasil_detik
+  };
+}
+
+// Insert battle_sesi; kalau kode acak kebetulan bentrok (unique), coba lagi dengan kode baru.
+async function insertSesiDenganRetry(cfg, opts){
+  let res = null;
+  for (let i = 0; i < 5; i++) {
+    const payload = {
+      kode: "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase(),
+      judul: cfg.judul, guru_id: profile.id, kelas_id: opts.kelasId || null,
+      status: opts.status || "lobi", soal: cfg.soal, soal_aktif_index: -1, durasi_soal_detik: cfg.durasi,
+      mode: cfg.mode, tim: cfg.tim, rilis_mode: cfg.rilis_mode, jeda_hasil_detik: cfg.jeda,
+      babak_saat_ini: 1, total_babak: cfg.totalBabak
+    };
+    // Kolom ini baru ada setelah MIGRASI_BATTLE_SIMPAN_PUBLISH.sql — jangan dikirim kalau tidak perlu,
+    // supaya "Buat & Mulai Sekarang" tetap jalan walau migrasinya belum dijalankan.
+    if (opts.rencanaId) payload.rencana_id = opts.rencanaId;
+    if (opts.publish) payload.publish_at = new Date().toISOString();
+    res = await supabase.from("battle_sesi").insert(payload).select().single();
+    if (!res.error || res.error.code !== "23505") return res;
+  }
+  return res;
+}
+
+// "Buat & Mulai Sekarang": sesi langsung jalan tanpa disimpan / dipublish (alur lama).
+async function buatSesi(){
+  tampilPesanSetup("");
+  const kelasId = document.getElementById("kelasInput").value || null;
+  const { cfg, error: cfgErr } = ambilKonfigurasi();
+  if (cfgErr) { tampilPesanSetup(cfgErr); return; }
+
+  const { data, error } = await insertSesiDenganRetry(cfg, { kelasId, status: "lobi" });
 
   if (error) {
-    errBox.textContent = "Gagal membuat sesi: " + error.message +
-      (modeAktif === "grup_cup" ? " (pastikan MIGRASI_BATTLE_MODE_GRUP_CUP.sql sudah dijalankan di Supabase)" : "");
+    tampilPesanSetup("Gagal membuat sesi: " + error.message +
+      (cfg.mode === "grup_cup" ? " (pastikan MIGRASI_BATTLE_MODE_GRUP_CUP.sql sudah dijalankan di Supabase)" : ""));
     return;
   }
 
   sesi = data;
 
-  if (modeAktif === "grup_cup") {
-    const { error: bracketErr } = await buatBracketAwal(sesi.id, tim);
+  if (cfg.mode === "grup_cup") {
+    const { error: bracketErr } = await buatBracketAwal(sesi.id, cfg.tim);
     if (bracketErr) {
-      errBox.textContent = "Sesi dibuat tapi gagal membuat bagan turnamen: " + bracketErr.message;
+      tampilPesanSetup("Sesi dibuat tapi gagal membuat bagan turnamen: " + bracketErr.message);
       return;
     }
   }
 
+  masukRoom();
+
+  // Battle langsung berstatus "berjalan" begitu dibuat, tapi soal belum
+  // dirilis (soal_aktif_index -1) supaya guru bisa rilis manual saat siap.
+  await supabase.from("battle_sesi").update({ status: "berjalan" }).eq("id", sesi.id);
+}
+
+function masukRoom(){
   document.getElementById("setupArea").style.display = "none";
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("kodeTampil").textContent = sesi.kode;
   updateRoomUI();
   subscribeRealtime();
+}
 
-  // Battle langsung berstatus "berjalan" begitu dibuat, tapi soal belum
-  // dirilis (soal_aktif_index -1) supaya guru bisa rilis manual saat siap.
-  await supabase.from("battle_sesi").update({ status: "berjalan" }).eq("id", sesi.id);
+// ===== Battle Tersimpan: simpan / edit / hapus =====
+function labelMode(m){
+  return m === "kelompok" ? "👥 Kelompok" : m === "grup_cup" ? "🏆 Grup Cup" : "🏅 Leaderboard";
+}
+function labelKelas(id){
+  const k = kelasList.find(x => x.id === id);
+  return k ? k.nama : "Semua kelas";
+}
+
+async function muatDaftarBattle(){
+  await Promise.all([muatRencana(), muatPublished()]);
+}
+
+async function muatRencana(){
+  const box = document.getElementById("rencanaListBox");
+  const { data, error } = await supabase.from("battle_rencana")
+    .select("*").eq("guru_id", profile.id).order("updated_at", { ascending: false });
+  if (error) {
+    rencanaList = {};
+    box.innerHTML = `<div class="bs-list-empty" style="color:#FF6B5E;">Fitur simpan belum aktif: jalankan <b>MIGRASI_BATTLE_SIMPAN_PUBLISH.sql</b> di Supabase SQL Editor dulu. (${escapeHtml(error.message)})</div>`;
+    return;
+  }
+  rencanaList = {};
+  (data || []).forEach(r => { rencanaList[r.id] = r; });
+  if (!data || data.length === 0) {
+    box.innerHTML = '<div class="bs-list-empty">Belum ada battle tersimpan. Susun battle di bawah lalu klik <b>Simpan Battle</b>.</div>';
+    return;
+  }
+  box.innerHTML = data.map(r => `
+    <div class="bs-item">
+      <div class="info">
+        <div class="judul">${escapeHtml(r.judul)}${r.id === rencanaAktifId ? ' <span class="bg-status-badge hasil" style="margin-left:6px;">sedang diedit</span>' : ''}</div>
+        <div class="meta">${labelMode(r.mode)} · ${(r.soal || []).length} soal · ${r.durasi_soal_detik}s/soal · ${r.rilis_mode === "otomatis" ? "rilis otomatis" : "rilis manual"}${r.mode !== "leaderboard" ? ` · ${(r.tim || []).length} tim` : ""}</div>
+      </div>
+      <div class="acts">
+        <button class="bg-btn bg-btn-primary bs-btn-sm" onclick="bukaPublish('${r.id}')">📤 Publish</button>
+        <button class="bg-btn bg-btn-outline bs-btn-sm" onclick="editRencana('${r.id}')">✏️ Edit</button>
+        <button class="bg-btn bg-btn-danger bs-btn-sm" onclick="hapusRencana('${r.id}')" title="Hapus battle tersimpan">🗑️</button>
+      </div>
+    </div>`).join("");
+}
+
+async function simpanRencana(langsungPublish){
+  tampilPesanSetup("");
+  const { cfg, error: cfgErr } = ambilKonfigurasi();
+  if (cfgErr) { tampilPesanSetup(cfgErr); return; }
+
+  const row = {
+    judul: cfg.judul, mode: cfg.mode, tim: cfg.tim, soal: cfg.soal,
+    durasi_soal_detik: cfg.durasi, rilis_mode: cfg.rilis_mode, jeda_hasil_detik: cfg.jeda
+  };
+  let res;
+  if (rencanaAktifId) {
+    res = await supabase.from("battle_rencana")
+      .update({ ...row, updated_at: new Date().toISOString() })
+      .eq("id", rencanaAktifId).select().single();
+  } else {
+    res = await supabase.from("battle_rencana")
+      .insert({ guru_id: profile.id, ...row }).select().single();
+  }
+  if (res.error) {
+    tampilPesanSetup("Gagal menyimpan: " + res.error.message + " (pastikan MIGRASI_BATTLE_SIMPAN_PUBLISH.sql sudah dijalankan di Supabase)");
+    return;
+  }
+
+  const baru = !rencanaAktifId;
+  rencanaAktifId = res.data.id;
+  tampilBannerEdit(res.data.judul);
+  await muatRencana();
+  tampilPesanSetup(`✅ Battle "${cfg.judul}" ${baru ? "tersimpan" : "diperbarui"}. Belum terlihat siswa sampai kamu Publish.`, true);
+
+  if (langsungPublish) await bukaPublish(res.data.id);
+}
+
+function tampilBannerEdit(judul){
+  const b = document.getElementById("editBanner");
+  document.getElementById("editBannerText").textContent = `✏️ Sedang mengedit: "${judul}" — Simpan akan memperbarui battle ini.`;
+  b.style.display = "flex";
+}
+
+function lepasEdit(){
+  rencanaAktifId = null;
+  document.getElementById("editBanner").style.display = "none";
+  tampilPesanSetup("Form dilepas dari battle tersimpan. Klik Simpan Battle untuk menyimpannya sebagai battle baru.", true);
+  muatRencana();
+}
+
+function editRencana(id){
+  const r = rencanaList[id];
+  if (!r) return;
+  rencanaAktifId = id;
+
+  document.getElementById("judulInput").value = r.judul || "Battle Kelas";
+  document.getElementById("durasiInput").value = r.durasi_soal_detik || 20;
+  document.getElementById("jedaInput").value = r.jeda_hasil_detik || 5;
+  pilihRilisMode(r.rilis_mode || "manual");
+
+  document.getElementById("timListBox").innerHTML = "";
+  timCount = 0;
+  const timArr = r.tim || [];
+  if (timArr.length > 0) timArr.forEach(t => tambahTim(t.nama, t.warna));
+  else { tambahTim("Tim A"); tambahTim("Tim B"); }
+  pilihMode(r.mode || "leaderboard");
+
+  document.getElementById("soalListBox").innerHTML = "";
+  (r.soal || []).forEach(q => tambahSoal({ prompt: q.prompt, options: q.options, correct: q.correct }, ""));
+
+  tampilBannerEdit(r.judul);
+  tampilPesanSetup("");
+  muatRencana();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function hapusRencana(id){
+  const r = rencanaList[id];
+  if (!r) return;
+  if (!confirm(`Hapus battle tersimpan "${r.judul}"?\n\nBattle yang sudah pernah dipublish dari paket ini tidak terpengaruh.`)) return;
+  const { error } = await supabase.from("battle_rencana").delete().eq("id", id);
+  if (error) { alert("Gagal menghapus: " + error.message); return; }
+  if (rencanaAktifId === id) {
+    rencanaAktifId = null;
+    document.getElementById("editBanner").style.display = "none";
+  }
+  await muatRencana();
+}
+
+// ===== Publish ke kelas =====
+async function bukaPublish(id){
+  const r = rencanaList[id];
+  if (!r) return;
+  publishTargetId = id;
+  document.getElementById("publishModalInfo").textContent =
+    `"${r.judul}" · ${labelMode(r.mode)} · ${(r.soal || []).length} soal`;
+  document.getElementById("publishMsg").innerHTML = "";
+  document.getElementById("publishGoBtn").disabled = false;
+  document.getElementById("publishGoBtn").textContent = "📤 Publish";
+  document.getElementById("publishGoBtn").style.display = "inline-block";
+  document.getElementById("publishCloseBtn").textContent = "Batal";
+  document.getElementById("publishKelasBox").innerHTML = "Memuat kelas…";
+  document.getElementById("publishModal").classList.add("show");
+
+  // Kelas yang sudah punya sesi aktif dari battle ini dinonaktifkan supaya tidak terpublish dobel.
+  const { data: aktif } = await supabase.from("battle_sesi")
+    .select("kelas_id, kode").eq("rencana_id", id).in("status", ["lobi", "berjalan"]);
+  const aktifMap = {};
+  (aktif || []).forEach(a => { if (a.kelas_id) aktifMap[a.kelas_id] = a.kode; });
+
+  if (kelasList.length === 0) {
+    document.getElementById("publishKelasBox").innerHTML = '<div class="bs-list-empty">Belum ada kelas. Tambahkan kelas dulu di dashboard guru.</div>';
+    return;
+  }
+  let html = "";
+  ["X", "XI", "XII"].forEach(lv => {
+    const ks = kelasList.filter(k => k.level === lv);
+    if (ks.length === 0) return;
+    html += `<div class="bs-kelas-group">Tingkat ${lv}</div>`;
+    html += ks.map(k => {
+      const sudah = aktifMap[k.id];
+      return `<label class="bs-kelas-opt ${sudah ? "disabled" : ""}">
+        <input type="checkbox" value="${k.id}" ${sudah ? "disabled" : ""}>
+        <span>${escapeHtml(k.nama)}</span>
+        ${sudah ? `<small>sudah dipublish · ${escapeHtml(sudah)}</small>` : ""}
+      </label>`;
+    }).join("");
+  });
+  document.getElementById("publishKelasBox").innerHTML = html;
+}
+
+function tutupPublish(){
+  document.getElementById("publishModal").classList.remove("show");
+  publishTargetId = null;
+}
+
+function toggleSemuaKelas(){
+  const boxes = [...document.querySelectorAll("#publishKelasBox input[type=checkbox]:not(:disabled)")];
+  if (boxes.length === 0) return;
+  const semuaTercentang = boxes.every(b => b.checked);
+  boxes.forEach(b => { b.checked = !semuaTercentang; });
+}
+
+async function jalankanPublish(){
+  const r = rencanaList[publishTargetId];
+  const msg = document.getElementById("publishMsg");
+  if (!r) return;
+  const kelasIds = [...document.querySelectorAll("#publishKelasBox input[type=checkbox]:checked")].map(b => b.value);
+  if (kelasIds.length === 0) { msg.innerHTML = '<span style="color:#FF6B5E; font-weight:700;">Pilih minimal 1 kelas.</span>'; return; }
+
+  const goBtn = document.getElementById("publishGoBtn");
+  goBtn.disabled = true; goBtn.textContent = "Mempublish…";
+  msg.innerHTML = "";
+
+  const cfg = cfgDariRencana(r);
+  const baris = [];
+  for (const kelasId of kelasIds) {
+    const namaKelas = escapeHtml(labelKelas(kelasId));
+    const { data, error } = await insertSesiDenganRetry(cfg, { kelasId, status: "berjalan", rencanaId: r.id, publish: true });
+    if (error) {
+      baris.push(`<div style="color:#FF6B5E;">❌ ${namaKelas} — gagal: ${escapeHtml(error.message)}</div>`);
+      continue;
+    }
+    if (cfg.mode === "grup_cup") {
+      const { error: bracketErr } = await buatBracketAwal(data.id, cfg.tim);
+      if (bracketErr) {
+        // Jangan biarkan sesi setengah jadi tampil ke siswa tanpa bagan turnamen.
+        await supabase.from("battle_sesi").delete().eq("id", data.id);
+        baris.push(`<div style="color:#FF6B5E;">❌ ${namaKelas} — gagal membuat bagan turnamen: ${escapeHtml(bracketErr.message)}</div>`);
+        continue;
+      }
+    }
+    baris.push(`<div>✅ <b>${namaKelas}</b> — kode <b>${escapeHtml(data.kode)}</b></div>`);
+  }
+
+  msg.innerHTML = baris.join("") +
+    `<div style="color:#8A90A3; margin-top:8px;">Buka <b>Battle yang Sudah Dipublish</b> di halaman ini untuk membuka kontrol & merilis soal.</div>`;
+  goBtn.style.display = "none";
+  document.getElementById("publishCloseBtn").textContent = "Tutup";
+  await muatPublished();
+}
+
+// ===== Daftar battle yang sudah dipublish: buka kontrol / tutup =====
+async function muatPublished(){
+  const card = document.getElementById("publishedCard");
+  const box = document.getElementById("publishedListBox");
+  const { data, error } = await supabase.from("battle_sesi")
+    .select("id, kode, judul, mode, status, kelas_id, publish_at")
+    .eq("guru_id", profile.id).not("publish_at", "is", null)
+    .order("publish_at", { ascending: false }).limit(12);
+  if (error || !data || data.length === 0) { card.style.display = "none"; box.innerHTML = ""; return; }
+  card.style.display = "block";
+  box.innerHTML = data.map(x => {
+    const aktif = x.status !== "selesai";
+    const badgeCls = x.status === "berjalan" ? "live" : x.status === "selesai" ? "selesai" : "";
+    return `<div class="bs-item">
+      <div class="info">
+        <div class="judul">${escapeHtml(x.judul)} <span class="bg-status-badge ${badgeCls}" style="margin-left:6px;">${x.status}</span></div>
+        <div class="meta">Kelas ${escapeHtml(labelKelas(x.kelas_id))} · kode <b>${escapeHtml(x.kode)}</b> · ${labelMode(x.mode)}</div>
+      </div>
+      <div class="acts">
+        <button class="bg-btn bg-btn-primary bs-btn-sm" onclick="bukaSesi('${x.id}')">${aktif ? "🎛️ Buka Kontrol" : "📊 Lihat Hasil"}</button>
+        ${aktif ? `<button class="bg-btn bg-btn-danger bs-btn-sm" onclick="tutupBattlePublish('${x.id}')" title="Tutup battle ini untuk siswa">🚫 Tutup</button>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function tutupBattlePublish(id){
+  if (!confirm("Tutup battle ini? Siswa tidak bisa menjawab lagi dan battle hilang dari daftar Battle Kelas mereka.")) return;
+  const { error } = await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", id);
+  if (error) { alert("Gagal menutup battle: " + error.message); return; }
+  await muatPublished();
+}
+
+async function bukaSesi(id){
+  const { data, error } = await supabase.from("battle_sesi").select("*").eq("id", id).maybeSingle();
+  if (error || !data) { alert("Gagal membuka battle: " + (error ? error.message : "sesi tidak ditemukan")); return; }
+  sesi = data;
+  cupBracket = [];
+  cupPerwakilan = [];
+  masukRoom();
+}
+
+function keluarRoom(){
+  if (sesi && sesi.status === "berjalan" && sesi.rilis_mode === "otomatis" && sesi.soal_aktif_index >= 0 &&
+      !confirm("Battle ini memakai rilis otomatis, dan soal berikutnya hanya lanjut sendiri selama halaman kontrol ini terbuka.\n\nTetap kembali ke daftar battle?")) return;
+  stopAutoTick();
+  hideProjector();
+  if (channel) { supabase.removeChannel(channel); channel = null; }
+  sesi = null;
+  cupBracket = [];
+  cupPerwakilan = [];
+  document.getElementById("roomArea").style.display = "none";
+  document.getElementById("setupArea").style.display = "block";
+  muatDaftarBattle();
 }
 
 // ===== Grup Cup: bikin bagan single-elimination penuh (semua babak, termasuk slot kosong) =====

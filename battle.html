@@ -192,6 +192,15 @@
             <div id="joinError" style="color:#FF6B5E; font-size:12.5px; margin-top:10px; font-weight:600;"></div>
           </div>
 
+          <!-- DAFTAR BATTLE: battle yang dipublish guru untuk kelas siswa -->
+          <div class="bt-join-card" id="daftarBattleCard" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">📣 Battle untuk kelasmu</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="muatDaftarBattle()">🔄 Segarkan</button>
+            </div>
+            <div id="daftarBattleList" style="display:grid; gap:10px;"></div>
+          </div>
+
           <!-- PILIH KARAKTER: tampil setelah join, sebelum masuk arena -->
           <div class="bt-join-card" id="karakterPickCard" style="display:none;">
             <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
@@ -297,6 +306,7 @@ const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
   profile = await requireLogin();
   if (!profile) return;
   renderShell(profile, "battle");
+  mulaiDaftarBattle();
 
   // Kalau sebelumnya sudah join sesi ini (refresh halaman), coba lanjutkan.
   const savedKode = sessionStorage.getItem("battle_kode_aktif");
@@ -311,6 +321,60 @@ function showToast(msg){
   t.textContent = msg;
   t.classList.add("show");
   setTimeout(()=> t.classList.remove("show"), 1800);
+}
+
+// ===== Daftar battle yang dipublish guru untuk kelas ini =====
+let daftarBattlePollInterval = null;
+
+function labelModeBattle(m){
+  return m === "kelompok" ? "👥 Kelompok" : m === "grup_cup" ? "🏆 Grup Cup" : "🏅 Leaderboard";
+}
+
+async function muatDaftarBattle(){
+  const card = document.getElementById("daftarBattleCard");
+  const box = document.getElementById("daftarBattleList");
+  if (!card || sesi) return; // sudah di dalam battle -> tidak perlu daftar
+  // Kolom `soal` sengaja tidak diambil: daftar ini tidak butuh isi soal / kunci jawaban.
+  const { data, error } = await supabase.from("battle_sesi")
+    .select("id, kode, judul, mode, status, kelas_id, publish_at")
+    .not("publish_at", "is", null)
+    .in("status", ["lobi", "berjalan"])
+    .order("publish_at", { ascending: false })
+    .limit(10);
+  if (sesi) return; // siswa sudah join saat query berjalan -> jangan tampilkan daftar lagi
+  if (error) { card.style.display = "none"; return; } // migrasi publish belum dijalankan -> sembunyikan diam-diam
+  const list = (data || []).filter(x => !x.kelas_id || x.kelas_id === profile.kelas_id);
+  card.style.display = "block";
+  if (list.length === 0) {
+    box.innerHTML = '<div style="font-size:12.5px; color:#8A90A3;">Belum ada battle dari gurumu untuk kelas ini. Kalau guru membagikan kode, masukkan di atas.</div>';
+    return;
+  }
+  box.innerHTML = list.map(x => `
+    <div style="display:flex; align-items:center; gap:12px; border:1px solid #E7E9F2; border-radius:12px; padding:12px 14px;">
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:14px; color:#161927;">${escapeHtml(x.judul)}</div>
+        <div style="font-size:12px; color:#8A90A3; margin-top:2px;">${labelModeBattle(x.mode)} · ${x.status === "berjalan" ? "🔴 sedang berlangsung" : "⏳ menunggu dimulai"}</div>
+      </div>
+      <button class="bt-btn bt-btn-primary" style="width:auto; margin-top:0; padding:9px 16px; font-size:13px;" onclick="gabungDariDaftar('${escapeHtml(x.kode)}')">Gabung</button>
+    </div>`).join("");
+}
+
+function mulaiDaftarBattle(){
+  if (daftarBattlePollInterval) clearInterval(daftarBattlePollInterval);
+  muatDaftarBattle();
+  daftarBattlePollInterval = setInterval(muatDaftarBattle, 8000);
+}
+
+function hentikanDaftarBattle(){
+  if (daftarBattlePollInterval) clearInterval(daftarBattlePollInterval);
+  daftarBattlePollInterval = null;
+  const card = document.getElementById("daftarBattleCard");
+  if (card) card.style.display = "none";
+}
+
+function gabungDariDaftar(kode){
+  document.getElementById("kodeInput").value = kode;
+  joinBattle();
 }
 
 async function joinBattle(){
@@ -338,6 +402,10 @@ async function joinBattle(){
     errBox.textContent = "Battle ini sudah selesai.";
     return;
   }
+  if (found.kelas_id && profile.kelas_id && found.kelas_id !== profile.kelas_id) {
+    errBox.textContent = "Battle ini khusus untuk kelas lain.";
+    return;
+  }
 
   sesi = found;
   sessionStorage.setItem("battle_kode_aktif", kodeRaw);
@@ -348,6 +416,7 @@ async function joinBattle(){
   }, { onConflict: "sesi_id,profile_id" }).select("tim_key, karakter").single();
 
   document.getElementById("joinCard").style.display = "none";
+  hentikanDaftarBattle();
 
   myTimKey = pesertaRow && pesertaRow.tim_key;
   myKarakter = pesertaRow && pesertaRow.karakter;
@@ -441,6 +510,7 @@ function exitBattle(){
   document.getElementById("joinCard").style.display = "block";
   document.getElementById("kodeInput").value = "";
   document.getElementById("joinError").textContent = "";
+  mulaiDaftarBattle();
   showToast("🚪 Kamu sudah keluar dari battle.");
 }
 
