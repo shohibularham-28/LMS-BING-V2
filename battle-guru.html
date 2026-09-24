@@ -96,6 +96,19 @@
   /* Rilis mode */
   .bg-status-badge.hasil{ background:#FEF3C7; color:#B45309; }
 
+  /* ===== Bagan turnamen Grup Cup ===== */
+  .cup-bracket-grid{ display:flex; gap:22px; padding-bottom:6px; min-width:min-content; }
+  .cup-round-col{ display:flex; flex-direction:column; justify-content:space-around; gap:14px; min-width:190px; }
+  .cup-round-title{ font-size:11.5px; font-weight:800; color:#7C5CFC; text-align:center; text-transform:uppercase; letter-spacing:.4px; }
+  .cup-match{ border:1.5px solid #E7E9F2; border-radius:12px; padding:10px 12px; background:#fff; }
+  .cup-match.cup-berjalan{ border-color:#7C5CFC; box-shadow:0 0 0 3px rgba(124,92,252,.12); }
+  .cup-match.cup-selesai{ background:#F8F9FC; }
+  .cup-team{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:600; color:#5D6478; padding:3px 0; }
+  .cup-team.win{ color:#161927; font-weight:800; }
+  .cup-team.win::before{ content:"👑 "; }
+  .cup-team b{ color:#7C5CFC; }
+  .cup-vs{ font-size:10px; color:#C7CAD6; text-align:center; font-weight:700; }
+
   /* ===== Proyektor: papan nilai full layar buat ditayangkan ke kelas ===== */
   .bg-projector{ display:none; position:fixed; inset:0; z-index:3000; background:linear-gradient(160deg,#1B1730 0%,#0F1220 100%); color:#fff; flex-direction:column; align-items:center; padding:36px 5vw 50px; box-sizing:border-box; overflow-y:auto; }
   .bg-projector.show{ display:flex; }
@@ -147,14 +160,19 @@
           <div class="t">Battle Kelompok (Tim)</div>
           <div class="d">Siswa gabung ke kelompok pilihan mereka. Skor anggota diakumulasi jadi skor tim.</div>
         </div>
+        <div class="bg-mode-card" id="modeCardGrupCup" onclick="pilihMode('grup_cup')">
+          <div class="em">🏆</div>
+          <div class="t">Grup Cup (Turnamen)</div>
+          <div class="d">Tim diadu sistem gugur (bracket). Tiap babak 3 soal, tim pilih 1 perwakilan per soal.</div>
+        </div>
       </div>
     </div>
 
     <div class="bg-card" id="timCard" style="display:none;">
-      <h3>1b. Buat Daftar Kelompok</h3>
+      <h3 id="timCardTitle">1b. Buat Daftar Kelompok</h3>
       <div id="timListBox"></div>
       <button class="bg-btn bg-btn-outline" onclick="tambahTim()">➕ Tambah Kelompok</button>
-      <div style="font-size:12px; color:#8A90A3; margin-top:10px;">
+      <div style="font-size:12px; color:#8A90A3; margin-top:10px;" id="timCardHint">
         Siswa akan memilih sendiri salah satu kelompok ini setelah join dengan kode battle.
       </div>
     </div>
@@ -275,9 +293,21 @@
       <div id="qPreview" style="font-size:13.5px; color:#333750;"></div>
     </div>
 
-    <div class="bg-card">
+    <div class="bg-card" id="leaderCard">
       <h3>🏆 Papan Peringkat Live</h3>
       <div id="leaderBox">Belum ada peserta.</div>
+    </div>
+
+    <div class="bg-card" id="cupCard" style="display:none;">
+      <h3>🏆 Bagan Turnamen — Grup Cup</h3>
+      <div id="cupBracketBox" style="overflow-x:auto;"></div>
+      <hr style="border:none; border-top:1px solid #E7E9F2; margin:16px 0;">
+      <h3 style="margin-bottom:10px;">Kontrol Babak</h3>
+      <div id="cupControlBox"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+        <button class="bg-btn bg-btn-outline" id="cupTutupBtn" style="display:none;" onclick="tutupBabakIni()">🏁 Tutup Babak &amp; Hitung Pemenang</button>
+        <button class="bg-btn bg-btn-primary" id="cupLanjutBtn" style="display:none;" onclick="lanjutBabakBerikutnya()">🚀 Lanjut ke Babak Berikutnya</button>
+      </div>
     </div>
   </div>
 </div>
@@ -325,11 +355,13 @@ let sesi = null;
 let channel = null;
 let soalCount = 0;
 let timCount = 0;
-let modeAktif = "leaderboard"; // 'leaderboard' | 'kelompok'
+let modeAktif = "leaderboard"; // 'leaderboard' | 'kelompok' | 'grup_cup'
 let rilisModeAktif = "manual"; // 'manual' | 'otomatis'
 let autoTickInterval = null;
 let autoAdvancing = false;
 let bankData = {};
+let cupBracket = [];     // baris battle_cup_bracket sesi ini
+let cupPerwakilan = [];  // baris battle_cup_perwakilan sesi ini
 
 (async function init(){
   profile = await requireTeacherLogin();
@@ -345,7 +377,27 @@ function pilihMode(mode){
   modeAktif = mode;
   document.getElementById("modeCardLeaderboard").classList.toggle("active", mode === "leaderboard");
   document.getElementById("modeCardKelompok").classList.toggle("active", mode === "kelompok");
-  document.getElementById("timCard").style.display = mode === "kelompok" ? "block" : "none";
+  document.getElementById("modeCardGrupCup").classList.toggle("active", mode === "grup_cup");
+  document.getElementById("timCard").style.display = (mode === "kelompok" || mode === "grup_cup") ? "block" : "none";
+  document.getElementById("timCardTitle").textContent = mode === "grup_cup" ? "1b. Daftar Tim Turnamen (min. 4 tim)" : "1b. Buat Daftar Kelompok";
+  document.getElementById("timCardHint").textContent = mode === "grup_cup"
+    ? "Minimal 4 tim (idealnya kelipatan 2/4 spy bagan pas, kalau ganjil sistem otomatis kasih BYE). Siswa memilih tim ini setelah join dengan kode battle."
+    : "Siswa akan memilih sendiri salah satu kelompok ini setelah join dengan kode battle.";
+  updateSoalKebutuhanHint();
+}
+
+// Menghitung berapa babak & berapa soal minimal dibutuhkan buat mode Grup Cup
+// (tiap babak = 3 soal, jumlah babak = log2 dibulatkan ke atas dari jumlah tim).
+function nextPow2(n){ let p = 1; while (p < n) p *= 2; return p; }
+function hitungTotalBabak(jumlahTim){ return Math.max(1, Math.log2(nextPow2(Math.max(1, jumlahTim)))); }
+function updateSoalKebutuhanHint(){
+  const hint = document.getElementById("timCardHint");
+  if (!hint || modeAktif !== "grup_cup") return;
+  const jumlahTim = kumpulkanTim().length;
+  if (jumlahTim >= 2) {
+    const totalBabak = hitungTotalBabak(jumlahTim);
+    hint.textContent = `${jumlahTim} tim → ${totalBabak} babak (bracket ${nextPow2(jumlahTim)} slot). Siapkan minimal ${totalBabak * 3} soal (3 soal/babak) di bagian bawah.`;
+  }
 }
 
 function pilihRilisMode(mode){
@@ -366,10 +418,11 @@ function tambahTim(namaAwal){
   div.innerHTML = `
     <span class="swatch" style="background:${warna};"></span>
     <input type="text" class="t-nama" value="${escapeHtml(namaAwal || ('Tim ' + timCount))}" placeholder="Nama kelompok">
-    <button class="bg-tim-remove" onclick="document.getElementById('${id}').remove()">✕</button>
+    <button class="bg-tim-remove" onclick="document.getElementById('${id}').remove(); updateSoalKebutuhanHint();">✕</button>
   `;
   div.dataset.warna = warna;
   box.appendChild(div);
+  updateSoalKebutuhanHint();
 }
 
 function kumpulkanTim(){
@@ -551,9 +604,18 @@ async function buatSesi(){
   if (errors.length > 0) { errBox.textContent = errors.join(" "); return; }
 
   let tim = [];
+  let totalBabak = 1;
   if (modeAktif === "kelompok") {
     tim = kumpulkanTim();
     if (tim.length < 2) { errBox.textContent = "Mode Kelompok butuh minimal 2 kelompok dengan nama terisi."; return; }
+  } else if (modeAktif === "grup_cup") {
+    tim = kumpulkanTim();
+    if (tim.length < 4) { errBox.textContent = "Mode Grup Cup butuh minimal 4 tim dengan nama terisi."; return; }
+    totalBabak = hitungTotalBabak(tim.length);
+    if (soal.length < totalBabak * 3) {
+      errBox.textContent = `Mode Grup Cup dengan ${tim.length} tim butuh ${totalBabak} babak = minimal ${totalBabak * 3} soal (3 soal/babak). Saat ini baru ${soal.length} soal.`;
+      return;
+    }
   }
 
   const kode = "BTL-" + Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -564,12 +626,26 @@ async function buatSesi(){
   const { data, error } = await supabase.from("battle_sesi").insert({
     kode, judul, guru_id: profile.id, kelas_id: kelasId,
     status: "lobi", soal, soal_aktif_index: -1, durasi_soal_detik: durasi,
-    mode: modeAktif, tim, rilis_mode: rilisModeAktif, jeda_hasil_detik: jeda
+    mode: modeAktif, tim, rilis_mode: rilisModeAktif, jeda_hasil_detik: jeda,
+    babak_saat_ini: 1, total_babak: totalBabak
   }).select().single();
 
-  if (error) { errBox.textContent = "Gagal membuat sesi: " + error.message; return; }
+  if (error) {
+    errBox.textContent = "Gagal membuat sesi: " + error.message +
+      (modeAktif === "grup_cup" ? " (pastikan MIGRASI_BATTLE_MODE_GRUP_CUP.sql sudah dijalankan di Supabase)" : "");
+    return;
+  }
 
   sesi = data;
+
+  if (modeAktif === "grup_cup") {
+    const { error: bracketErr } = await buatBracketAwal(sesi.id, tim);
+    if (bracketErr) {
+      errBox.textContent = "Sesi dibuat tapi gagal membuat bagan turnamen: " + bracketErr.message;
+      return;
+    }
+  }
+
   document.getElementById("setupArea").style.display = "none";
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("kodeTampil").textContent = sesi.kode;
@@ -579,6 +655,33 @@ async function buatSesi(){
   // Battle langsung berstatus "berjalan" begitu dibuat, tapi soal belum
   // dirilis (soal_aktif_index -1) supaya guru bisa rilis manual saat siap.
   await supabase.from("battle_sesi").update({ status: "berjalan" }).eq("id", sesi.id);
+}
+
+// ===== Grup Cup: bikin bagan single-elimination penuh (semua babak, termasuk slot kosong) =====
+async function buatBracketAwal(sesiId, timArr){
+  const N = timArr.length;
+  const size = nextPow2(N);
+  const totalRonde = Math.log2(size);
+  const byes = size - N;
+  const shuffled = [...timArr].sort(() => Math.random() - 0.5);
+  const byeTeams = shuffled.slice(0, byes);
+  const restTeams = shuffled.slice(byes);
+
+  const rows = [];
+  let slot = 0;
+  byeTeams.forEach(t => {
+    rows.push({ sesi_id: sesiId, ronde: 1, slot: slot++, tim_a_key: t.key, tim_b_key: null, status: "selesai", pemenang_key: t.key });
+  });
+  for (let i = 0; i < restTeams.length; i += 2) {
+    rows.push({ sesi_id: sesiId, ronde: 1, slot: slot++, tim_a_key: restTeams[i].key, tim_b_key: restTeams[i + 1].key, status: "berjalan" });
+  }
+  for (let r = 2; r <= totalRonde; r++) {
+    const jumlahMatch = size / Math.pow(2, r);
+    for (let s = 0; s < jumlahMatch; s++) {
+      rows.push({ sesi_id: sesiId, ronde: r, slot: s, status: "menunggu" });
+    }
+  }
+  return await supabase.from("battle_cup_bracket").insert(rows);
 }
 
 function subscribeRealtime(){
@@ -595,8 +698,159 @@ function subscribeRealtime(){
     .on("postgres_changes", { event: "*", schema: "public", table: "battle_jawaban", filter: `sesi_id=eq.${sesi.id}` }, () => {
       loadLeaderboard();
     })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_bracket", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadBracket();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_perwakilan", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadBracket();
+    })
     .subscribe();
   loadLeaderboard();
+  if (sesi.mode === "grup_cup") loadBracket();
+}
+
+// ===== Grup Cup: muat & render bagan + panel kontrol babak =====
+function timNamaByKey(key){
+  const t = (sesi.tim || []).find(x => x.key === key);
+  return t ? t.nama : (key || "—");
+}
+function getPerwakilan(matchId, timKey, soalKe){
+  return cupPerwakilan.find(p => p.match_id === matchId && p.tim_key === timKey && p.soal_ke === soalKe) || null;
+}
+
+async function loadBracket(){
+  if (!sesi || sesi.mode !== "grup_cup") return;
+  const [{ data: bracket }, { data: perwakilan }] = await Promise.all([
+    supabase.from("battle_cup_bracket").select("*").eq("sesi_id", sesi.id).order("ronde").order("slot"),
+    supabase.from("battle_cup_perwakilan").select("*").eq("sesi_id", sesi.id)
+  ]);
+  cupBracket = bracket || [];
+  cupPerwakilan = perwakilan || [];
+  renderBracket();
+  renderCupControl();
+}
+
+function renderBracket(){
+  const box = document.getElementById("cupBracketBox");
+  if (!box || !sesi) return;
+  const totalRonde = sesi.total_babak || 1;
+  let html = '<div class="cup-bracket-grid">';
+  for (let r = 1; r <= totalRonde; r++) {
+    const label = r === totalRonde ? "🏆 Final" : (r === totalRonde - 1 ? "Semifinal" : `Babak ${r}`);
+    const matches = cupBracket.filter(m => m.ronde === r).sort((a, b) => a.slot - b.slot);
+    html += `<div class="cup-round-col"><div class="cup-round-title">${label}</div>`;
+    matches.forEach(m => {
+      const aNama = m.tim_a_key ? timNamaByKey(m.tim_a_key) : "—";
+      const bNama = m.tim_b_key ? timNamaByKey(m.tim_b_key) : (m.status === "selesai" ? "BYE" : "—");
+      const aWin = m.pemenang_key && m.pemenang_key === m.tim_a_key;
+      const bWin = m.pemenang_key && m.pemenang_key === m.tim_b_key;
+      html += `<div class="cup-match cup-${m.status}">
+        <div class="cup-team ${aWin ? 'win' : ''}"><span>${escapeHtml(aNama)}</span><b>${m.status !== "menunggu" ? m.skor_a : ''}</b></div>
+        <div class="cup-vs">vs</div>
+        <div class="cup-team ${bWin ? 'win' : ''}"><span>${escapeHtml(bNama)}</span><b>${m.status !== "menunggu" ? m.skor_b : ''}</b></div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function renderCupControl(){
+  const box = document.getElementById("cupControlBox");
+  const tutupBtn = document.getElementById("cupTutupBtn");
+  const lanjutBtn = document.getElementById("cupLanjutBtn");
+  if (!box || !sesi || sesi.mode !== "grup_cup") return;
+
+  const ronde = sesi.babak_saat_ini || 1;
+  const aktifMatches = cupBracket.filter(m => m.ronde === ronde && m.status === "berjalan");
+  const soalIndex = sesi.soal_aktif_index;
+  const sudahDiBabakIni = soalIndex >= 0 && (Math.floor(soalIndex / 3) + 1) === ronde;
+  const nextIndex = soalIndex + 1;
+  const nextSoalKe = (Math.floor(nextIndex / 3) + 1) === ronde ? nextIndex % 3 : 0;
+
+  let html = `<div style="font-weight:700; margin-bottom:8px;">Babak ${ronde} dari ${sesi.total_babak}${ronde === sesi.total_babak ? ' (Final)' : ''}</div>`;
+  if (aktifMatches.length === 0) {
+    html += `<div style="color:#8A90A3; font-size:12.5px;">Tidak ada match berjalan di babak ini (semua BYE atau sudah selesai).</div>`;
+  } else {
+    html += aktifMatches.map(m => {
+      const aRep = getPerwakilan(m.id, m.tim_a_key, nextSoalKe);
+      const bRep = getPerwakilan(m.id, m.tim_b_key, nextSoalKe);
+      return `<div class="bg-soal-item" style="padding:10px 14px; margin-bottom:8px;">
+        <b>${escapeHtml(timNamaByKey(m.tim_a_key))}</b> vs <b>${escapeHtml(timNamaByKey(m.tim_b_key))}</b>
+        <div style="font-size:12px; color:#8A90A3; margin-top:4px;">Perwakilan soal #${nextSoalKe + 1}:
+          ${escapeHtml(timNamaByKey(m.tim_a_key))} → ${aRep ? '✅ ' + escapeHtml(aRep.nama) : '<span style="color:#FF6B5E;font-weight:700;">belum pilih</span>'} ·
+          ${escapeHtml(timNamaByKey(m.tim_b_key))} → ${bRep ? '✅ ' + escapeHtml(bRep.nama) : '<span style="color:#FF6B5E;font-weight:700;">belum pilih</span>'}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  box.innerHTML = html;
+
+  const semuaSelesaiDiBabakIni = cupBracket.filter(m => m.ronde === ronde).every(m => m.status === "selesai");
+  if (tutupBtn) tutupBtn.style.display = (aktifMatches.length > 0 && sudahDiBabakIni && soalIndex % 3 === 2) ? "inline-block" : "none";
+  if (lanjutBtn) lanjutBtn.style.display = (semuaSelesaiDiBabakIni && sesi.status !== "selesai") ? "inline-block" : "none";
+  if (lanjutBtn) lanjutBtn.textContent = ronde >= sesi.total_babak ? "🏆 Selesaikan Turnamen" : "🚀 Lanjut ke Babak Berikutnya";
+
+  if (semuaSelesaiDiBabakIni && sesi.status !== "selesai") {
+    const nextBtn = document.getElementById("nextBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    if (nextBtn) nextBtn.disabled = true;
+    if (skipBtn) skipBtn.disabled = true;
+  }
+}
+
+async function tutupBabakIni(){
+  if (!confirm("Tutup babak ini & hitung pemenang tiap match berdasarkan skor 3 soal?")) return;
+  const ronde = sesi.babak_saat_ini || 1;
+  const base = (ronde - 1) * 3;
+  const indices = [base, base + 1, base + 2];
+  const aktifMatches = cupBracket.filter(m => m.ronde === ronde && m.status === "berjalan");
+
+  const { data: jawabanRows } = await supabase.from("battle_jawaban")
+    .select("profile_id, soal_index, skor_didapat, waktu_ms")
+    .eq("sesi_id", sesi.id).in("soal_index", indices);
+
+  for (const m of aktifMatches) {
+    const repsA = [0, 1, 2].map(k => getPerwakilan(m.id, m.tim_a_key, k)).filter(Boolean).map(r => r.profile_id);
+    const repsB = [0, 1, 2].map(k => getPerwakilan(m.id, m.tim_b_key, k)).filter(Boolean).map(r => r.profile_id);
+    let skorA = 0, skorB = 0, waktuA = 0, waktuB = 0;
+    (jawabanRows || []).forEach(j => {
+      if (repsA.includes(j.profile_id)) { skorA += j.skor_didapat; waktuA += j.waktu_ms; }
+      if (repsB.includes(j.profile_id)) { skorB += j.skor_didapat; waktuB += j.waktu_ms; }
+    });
+    // Kalau skor seri, tim yang total waktu jawabnya lebih cepat yang menang.
+    const pemenang = skorA !== skorB ? (skorA > skorB ? m.tim_a_key : m.tim_b_key) : (waktuA <= waktuB ? m.tim_a_key : m.tim_b_key);
+    await supabase.from("battle_cup_bracket").update({ skor_a: skorA, skor_b: skorB, pemenang_key: pemenang, status: "selesai" }).eq("id", m.id);
+  }
+  await loadBracket();
+  alert("✅ Babak selesai dihitung. Lihat bagan untuk tim yang maju.");
+}
+
+async function lanjutBabakBerikutnya(){
+  const ronde = sesi.babak_saat_ini || 1;
+  const babakIni = cupBracket.filter(m => m.ronde === ronde);
+  if (!babakIni.every(m => m.status === "selesai")) { alert("Masih ada match yang belum ditutup di babak ini."); return; }
+
+  if (ronde >= sesi.total_babak) {
+    const finalMatch = babakIni[0];
+    await supabase.from("battle_sesi").update({ status: "selesai" }).eq("id", sesi.id);
+    alert("🏆 Turnamen selesai! Juara: " + timNamaByKey(finalMatch?.pemenang_key));
+    return;
+  }
+
+  const currentMatches = babakIni.sort((a, b) => a.slot - b.slot);
+  const nextRondeMatches = cupBracket.filter(m => m.ronde === ronde + 1).sort((a, b) => a.slot - b.slot);
+  for (let i = 0; i < nextRondeMatches.length; i++) {
+    const feeder1 = currentMatches[i * 2];
+    const feeder2 = currentMatches[i * 2 + 1];
+    await supabase.from("battle_cup_bracket").update({
+      tim_a_key: feeder1 ? feeder1.pemenang_key : null,
+      tim_b_key: feeder2 ? feeder2.pemenang_key : null,
+      status: "berjalan"
+    }).eq("id", nextRondeMatches[i].id);
+  }
+  await supabase.from("battle_sesi").update({ babak_saat_ini: ronde + 1 }).eq("id", sesi.id);
 }
 
 // ===== Tampilan Papan Nilai Full Layar (buat diproyeksikan ke proyektor kelas) =====
@@ -643,8 +897,12 @@ function updateRoomUI(){
   badge.textContent = sesi.status;
   badge.className = "bg-status-badge " + (sesi.status === "berjalan" ? "live" : sesi.status === "selesai" ? "selesai" : "");
   document.getElementById("modeLabel").textContent =
-    (sesi.mode === "kelompok" ? "👥 Mode Kelompok" : "🏆 Mode Leaderboard") +
+    (sesi.mode === "kelompok" ? "👥 Mode Kelompok" : sesi.mode === "grup_cup" ? "🏆 Mode Grup Cup" : "🏆 Mode Leaderboard") +
     " · " + (sesi.rilis_mode === "otomatis" ? "⏱️ Rilis Otomatis" : "🖐️ Rilis Manual");
+
+  document.getElementById("cupCard").style.display = sesi.mode === "grup_cup" ? "block" : "none";
+  document.getElementById("leaderCard").style.display = sesi.mode === "grup_cup" ? "none" : "block";
+  if (sesi.mode === "grup_cup") { if (cupBracket.length === 0) loadBracket(); else { renderBracket(); renderCupControl(); } }
 
   updateProjectorStatus();
 
@@ -671,7 +929,9 @@ function updateRoomUI(){
   const sudahRilis = sesi.soal_aktif_index >= 0;
 
   if (!sudahRilis) {
-    label.textContent = `Belum dirilis (total ${total} soal)`;
+    label.textContent = sesi.mode === "grup_cup"
+      ? `Babak ${sesi.babak_saat_ini} dari ${sesi.total_babak} — siap rilis soal #1`
+      : `Belum dirilis (total ${total} soal)`;
     preview.innerHTML = "";
     nextBtn.style.display = "inline-block";
     nextBtn.disabled = false;
@@ -681,7 +941,9 @@ function updateRoomUI(){
     autoInfo.style.display = "none";
   } else {
     const q = sesi.soal[sesi.soal_aktif_index];
-    label.textContent = `Soal ${sesi.soal_aktif_index + 1} dari ${total}`;
+    label.textContent = sesi.mode === "grup_cup"
+      ? `Babak ${Math.floor(sesi.soal_aktif_index / 3) + 1} — Soal ${(sesi.soal_aktif_index % 3) + 1} dari 3`
+      : `Soal ${sesi.soal_aktif_index + 1} dari ${total}`;
     preview.innerHTML = `<b>${escapeHtml(q.prompt)}</b><br><span style="color:#8A90A3;">Jawaban benar: ${q.correct}</span>`;
     const isLast = sesi.soal_aktif_index >= total - 1;
     if (otomatis) {
@@ -750,12 +1012,33 @@ async function rilisSoalBerikutnya(){
   const total = (sesi.soal || []).length;
   const nextIndex = sesi.soal_aktif_index + 1;
   if (nextIndex >= total) { await akhiriBattle(true); return; }
+
+  if (sesi.mode === "grup_cup") {
+    await loadBracket(); // pastikan data perwakilan terbaru sebelum dicek
+    const ronde = Math.floor(nextIndex / 3) + 1;
+    const soalKe = nextIndex % 3;
+    if (ronde !== (sesi.babak_saat_ini || 1)) {
+      alert("⛔ Babak " + ronde + " belum dimulai. Tutup babak ini & klik \"Lanjut ke Babak Berikutnya\" dulu.");
+      return;
+    }
+    const aktifMatches = cupBracket.filter(m => m.ronde === ronde && m.status === "berjalan");
+    const belum = [];
+    aktifMatches.forEach(m => {
+      if (!getPerwakilan(m.id, m.tim_a_key, soalKe)) belum.push(timNamaByKey(m.tim_a_key));
+      if (!getPerwakilan(m.id, m.tim_b_key, soalKe)) belum.push(timNamaByKey(m.tim_b_key));
+    });
+    if (belum.length > 0) {
+      alert("⛔ Belum bisa rilis soal #" + (soalKe + 1) + ".\nTim berikut belum pilih perwakilan:\n- " + belum.join("\n- "));
+      return;
+    }
+  }
+
   const { error } = await supabase.from("battle_sesi").update({
     soal_aktif_index: nextIndex,
     soal_dirilis_at: new Date().toISOString()
   }).eq("id", sesi.id);
   if (error) {
-    alert("Gagal merilis soal: " + error.message + "\n\nKemungkinan ada migrasi SQL battle yang belum dijalankan di Supabase (cek MIGRASI_BATTLE_JAM_SERVER.sql, MIGRASI_BATTLE_RILIS_OTOMATIS.sql, MIGRASI_BATTLE_MODE_KELOMPOK.sql).");
+    alert("Gagal merilis soal: " + error.message + "\n\nKemungkinan ada migrasi SQL battle yang belum dijalankan di Supabase (cek MIGRASI_BATTLE_JAM_SERVER.sql, MIGRASI_BATTLE_RILIS_OTOMATIS.sql, MIGRASI_BATTLE_MODE_KELOMPOK.sql, MIGRASI_BATTLE_MODE_GRUP_CUP.sql).");
     console.error("rilisSoalBerikutnya error:", error);
   }
 }

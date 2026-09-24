@@ -224,6 +224,8 @@
             </div>
             <div id="rilisModeInfo" style="font-size:11.5px; color:#8A90A3; font-weight:600; margin:-8px 0 12px;"></div>
 
+            <div class="bt-join-card" id="cupPanelBox" style="display:none;"></div>
+
             <div class="bt-arena" id="arena">
               <div class="bt-waiting" id="waitingBox">
                 <div class="big">🕹️</div>
@@ -285,6 +287,9 @@ let timerInterval = null;
 let resultInterval = null;
 let leaderboardPollInterval = null;
 let sesiSafetyPollInterval = null;
+let cupBracket = [];      // baris battle_cup_bracket sesi ini
+let cupPerwakilan = [];   // baris battle_cup_perwakilan sesi ini
+let myMatchNow = null;    // match tim kita yang sedang berjalan di babak ini
 const TIMER_RADIUS = 36;
 const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
 
@@ -353,7 +358,7 @@ async function joinBattle(){
     return;
   }
 
-  if (sesi.mode === "kelompok" && !myTimKey) {
+  if ((sesi.mode === "kelompok" || sesi.mode === "grup_cup") && !myTimKey) {
     tampilkanPilihanTim();
     return;
   }
@@ -378,7 +383,7 @@ async function pilihKarakterSiswa(key){
   myKarakter = key;
   document.getElementById("karakterPickCard").style.display = "none";
 
-  if (sesi.mode === "kelompok" && !myTimKey) {
+  if ((sesi.mode === "kelompok" || sesi.mode === "grup_cup") && !myTimKey) {
     tampilkanPilihanTim();
     return;
   }
@@ -388,6 +393,10 @@ async function pilihKarakterSiswa(key){
 function tampilkanPilihanTim(){
   const card = document.getElementById("timPickCard");
   const list = document.getElementById("timPickList");
+  const desc = card.querySelector("div[style*='margin-bottom:14px']");
+  if (desc) desc.textContent = sesi.mode === "grup_cup"
+    ? "Battle ini turnamen antar tim (Grup Cup) — timmu akan diadu tim lain lewat bagan gugur."
+    : "Battle ini dimainkan berkelompok — skormu akan ditambahkan ke skor timmu.";
   const timList = sesi.tim || [];
   list.innerHTML = timList.map(t => `
     <button class="bt-tim-opt" onclick="pilihTimSiswa('${t.key}')">
@@ -422,6 +431,9 @@ function exitBattle(){
   answered = false;
   myTimKey = null;
   myKarakter = null;
+  cupBracket = [];
+  cupPerwakilan = [];
+  myMatchNow = null;
 
   document.getElementById("roomArea").style.display = "none";
   document.getElementById("karakterPickCard").style.display = "none";
@@ -441,6 +453,7 @@ function masukArena(){
   hideLeaderboardReveal();
 
   renderStatus();
+  if (sesi.mode === "grup_cup") loadCupData();
   renderQuestionState();
   loadLeaderboard();
   subscribeRealtime();
@@ -600,11 +613,105 @@ function subscribeRealtime(){
     .on("postgres_changes", { event: "*", schema: "public", table: "battle_peserta", filter: `sesi_id=eq.${sesi.id}` }, () => {
       loadLeaderboard();
     })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_bracket", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadCupData();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_perwakilan", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadCupData();
+    })
     .subscribe();
+}
+
+// ===== Grup Cup: muat bagan + siapa perwakilan tim kita sekarang =====
+function timNamaByKey(key){
+  const t = (sesi.tim || []).find(x => x.key === key);
+  return t ? t.nama : (key || "—");
+}
+function getPerwakilan(matchId, timKey, soalKe){
+  return cupPerwakilan.find(p => p.match_id === matchId && p.tim_key === timKey && p.soal_ke === soalKe) || null;
+}
+function soalKeSekarang(){
+  return sesi.soal_aktif_index >= 0 ? sesi.soal_aktif_index % 3 : 0;
+}
+function rondeSekarang(){
+  return sesi.soal_aktif_index >= 0 ? Math.floor(sesi.soal_aktif_index / 3) + 1 : (sesi.babak_saat_ini || 1);
+}
+
+async function loadCupData(){
+  if (!sesi || sesi.mode !== "grup_cup") return;
+  const [{ data: bracket }, { data: perwakilan }] = await Promise.all([
+    supabase.from("battle_cup_bracket").select("*").eq("sesi_id", sesi.id).order("ronde").order("slot"),
+    supabase.from("battle_cup_perwakilan").select("*").eq("sesi_id", sesi.id)
+  ]);
+  cupBracket = bracket || [];
+  cupPerwakilan = perwakilan || [];
+  const ronde = rondeSekarang();
+  myMatchNow = cupBracket.find(m => m.ronde === ronde && m.status === "berjalan" && (m.tim_a_key === myTimKey || m.tim_b_key === myTimKey)) || null;
+  renderCupPanel();
+}
+
+function isTimA(){ return myMatchNow && myMatchNow.tim_a_key === myTimKey; }
+function lawanNama(){
+  if (!myMatchNow) return "—";
+  return timNamaByKey(isTimA() ? myMatchNow.tim_b_key : myMatchNow.tim_a_key);
+}
+function isSayaPerwakilanSekarang(){
+  if (!myMatchNow) return false;
+  const rep = getPerwakilan(myMatchNow.id, myTimKey, soalKeSekarang());
+  return rep && rep.profile_id === profile.id;
+}
+function perwakilanSayaSekarang(){
+  if (!myMatchNow) return null;
+  return getPerwakilan(myMatchNow.id, myTimKey, soalKeSekarang());
+}
+
+async function pilihPerwakilan(pid, nama){
+  if (!myMatchNow) return;
+  await supabase.from("battle_cup_perwakilan").upsert({
+    sesi_id: sesi.id, match_id: myMatchNow.id, tim_key: myTimKey,
+    soal_ke: soalKeSekarang(), profile_id: pid, nama
+  }, { onConflict: "match_id,tim_key,soal_ke" });
+}
+
+async function renderCupPanel(){
+  const box = document.getElementById("cupPanelBox");
+  if (!box || !sesi || sesi.mode !== "grup_cup") return;
+
+  if (sesi.status === "selesai") {
+    const finalMatch = cupBracket.find(m => m.ronde === (sesi.total_babak || 1));
+    box.innerHTML = `<div class="bt-waiting"><div class="big">🏆</div><div>Turnamen selesai! Juara: <b>${escapeHtml(timNamaByKey(finalMatch?.pemenang_key))}</b></div></div>`;
+    return;
+  }
+
+  if (!myMatchNow) {
+    box.innerHTML = `<div class="bt-waiting"><div class="big">⏳</div><div>Tim <b>${escapeHtml(timNamaByKey(myTimKey))}</b> sedang menunggu babak berikutnya atau sudah gugur. Tetap simak soal yang tayang ya!</div></div>`;
+    return;
+  }
+
+  const soalKe = soalKeSekarang();
+  const rep = getPerwakilan(myMatchNow.id, myTimKey, soalKe);
+  const belumRilis = sesi.soal_aktif_index < 0 || rondeSekarang() !== myMatchNow.ronde;
+
+  let html = `<div style="font-size:12.5px; color:#8A90A3; font-weight:700; margin-bottom:8px;">⚔️ Babak ${myMatchNow.ronde} — Timmu vs <b style="color:#161927;">${escapeHtml(lawanNama())}</b></div>`;
+
+  if (!rep) {
+    const { data: anggota } = await supabase.from("battle_peserta").select("profile_id, nama").eq("sesi_id", sesi.id).eq("tim_key", myTimKey);
+    html += `<div style="font-weight:700; font-size:13.5px; margin-bottom:8px;">Pilih perwakilan tim untuk soal #${soalKe + 1}:</div>`;
+    html += `<div style="display:grid; gap:8px;">` + (anggota || []).map(a => `
+      <button class="bt-btn bt-btn-outline" style="text-align:left;" onclick="pilihPerwakilan('${a.profile_id}','${escapeHtml(a.nama).replace(/'/g,"\\'")}')">👤 ${escapeHtml(a.nama)}</button>
+    `).join('') + `</div>`;
+  } else {
+    html += `<div class="bt-waiting" style="padding:14px;"><div class="big">${rep.profile_id === profile.id ? '🎤' : '👀'}</div>
+      <div>Perwakilan soal #${soalKe + 1}: <b>${escapeHtml(rep.nama)}</b>${rep.profile_id === profile.id ? ' (kamu!)' : ''}</div></div>`;
+  }
+  box.innerHTML = html;
 }
 
 function renderQuestionState(){
   const arena = document.getElementById("arena");
+  const cupBox = document.getElementById("cupPanelBox");
+  if (cupBox) cupBox.style.display = sesi.mode === "grup_cup" ? "block" : "none";
+  if (sesi.mode === "grup_cup") renderCupPanel();
   if (sesi.status === "selesai") { showFinal(); return; }
 
   if (sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) {
@@ -626,10 +733,22 @@ function renderQuestionState(){
   stopResultCountdown();
   if (isNewQuestion) hideLeaderboardReveal(); // soal baru dimulai -> sembunyikan hasil soal sebelumnya
 
-  const optsHtml = (q.options || []).map(o => `
-    <button class="bt-opt" data-key="${o.key}" onclick="submitAnswer('${o.key}')">
-      <span class="k">${o.key}</span><span>${escapeHtml(o.text)}</span>
-    </button>`).join("");
+  const isCup = sesi.mode === "grup_cup";
+  const cupBisaJawab = !isCup || isSayaPerwakilanSekarang();
+  const optsHtml = (q.options || []).map(o => cupBisaJawab
+    ? `<button class="bt-opt" data-key="${o.key}" onclick="submitAnswer('${o.key}')">
+        <span class="k">${o.key}</span><span>${escapeHtml(o.text)}</span>
+      </button>`
+    : `<button class="bt-opt" data-key="${o.key}" disabled>
+        <span class="k">${o.key}</span><span>${escapeHtml(o.text)}</span>
+      </button>`
+  ).join("");
+
+  const cupNote = isCup
+    ? (cupBisaJawab
+        ? `<div style="text-align:center; font-size:12.5px; font-weight:700; color:#7C5CFC; margin-bottom:8px;">🎤 Giliranmu jadi perwakilan — jawab soal ini!</div>`
+        : `<div style="text-align:center; font-size:12.5px; font-weight:700; color:#8A90A3; margin-bottom:8px;">👀 ${escapeHtml((perwakilanSayaSekarang() || {}).nama || 'Perwakilan timmu')} sedang menjawab untuk timmu.</div>`)
+    : "";
 
   arena.innerHTML = `
     <div class="bt-timer-ring">
@@ -640,7 +759,8 @@ function renderQuestionState(){
       </svg>
       <div class="bt-timer-num" id="timerNum">${sesi.durasi_soal_detik}</div>
     </div>
-    <div class="bt-qnum">Soal #${sesi.soal_aktif_index + 1}</div>
+    <div class="bt-qnum">${isCup ? `Babak ${Math.floor(sesi.soal_aktif_index / 3) + 1} — Soal ${(sesi.soal_aktif_index % 3) + 1}/3` : `Soal #${sesi.soal_aktif_index + 1}`}</div>
+    ${cupNote}
     <p class="bt-prompt">${escapeHtml(q.prompt)}</p>
     <div class="bt-options" id="optsBox">${optsHtml}</div>
     <div class="bt-feedback" id="feedbackBox"></div>
@@ -824,6 +944,28 @@ async function loadLeaderboard(){
   if (!data || data.length === 0) { list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Belum ada peserta.</div>"; list.__lbRanks = null; return; }
 
   const medalClass = ["gold","silver","bronze"];
+
+  if (sesi.mode === "grup_cup") {
+    if (leaderTitle) leaderTitle.textContent = "🏆 Skor Babak Ini";
+    if (!myMatchNow) {
+      list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Timmu tidak sedang bertanding di babak ini.</div>";
+      return;
+    }
+    const base = (myMatchNow.ronde - 1) * 3;
+    const indices = [base, base + 1, base + 2];
+    const { data: jawabanRows } = await supabase.from("battle_jawaban")
+      .select("profile_id, skor_didapat").eq("sesi_id", sesi.id).in("soal_index", indices);
+    const repsA = [0, 1, 2].map(k => getPerwakilan(myMatchNow.id, myMatchNow.tim_a_key, k)).filter(Boolean).map(r => r.profile_id);
+    const repsB = [0, 1, 2].map(k => getPerwakilan(myMatchNow.id, myMatchNow.tim_b_key, k)).filter(Boolean).map(r => r.profile_id);
+    let skorA = 0, skorB = 0;
+    (jawabanRows || []).forEach(j => { if (repsA.includes(j.profile_id)) skorA += j.skor_didapat; if (repsB.includes(j.profile_id)) skorB += j.skor_didapat; });
+    list.innerHTML = `<div style="display:flex; justify-content:space-around; align-items:center; padding:10px 0;">
+        <div style="text-align:center;"><div style="font-weight:700;">${escapeHtml(timNamaByKey(myMatchNow.tim_a_key))}</div><div style="font-size:22px; font-weight:800; color:#7C5CFC;">${skorA}</div></div>
+        <div style="font-weight:700; color:#C7CAD6;">VS</div>
+        <div style="text-align:center;"><div style="font-weight:700;">${escapeHtml(timNamaByKey(myMatchNow.tim_b_key))}</div><div style="font-size:22px; font-weight:800; color:#7C5CFC;">${skorB}</div></div>
+      </div>`;
+    return;
+  }
 
   if (sesi.mode === "kelompok") {
     if (leaderTitle) leaderTitle.textContent = "🏆 Peringkat Kelompok";
