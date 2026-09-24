@@ -351,13 +351,15 @@ async function muatDaftarBattle(){
     box.innerHTML = '<div style="font-size:12.5px; color:#8A90A3;">Belum ada battle dari gurumu untuk kelas ini. Kalau guru membagikan kode, masukkan di atas.</div>';
     return;
   }
+  // Sengaja TIDAK ada tombol "Gabung" di sini -- siswa wajib minta kode ke guru
+  // dan mengetikkannya sendiri di kolom kode di atas, baru bisa gabung.
   box.innerHTML = list.map(x => `
     <div style="display:flex; align-items:center; gap:12px; border:1px solid #E7E9F2; border-radius:12px; padding:12px 14px;">
       <div style="flex:1; min-width:0;">
         <div style="font-weight:700; font-size:14px; color:#161927;">${escapeHtml(x.judul)}</div>
         <div style="font-size:12px; color:#8A90A3; margin-top:2px;">${labelModeBattle(x.mode)} · ${x.status === "berjalan" ? "🔴 sedang berlangsung" : "⏳ menunggu dimulai"}</div>
       </div>
-      <button class="bt-btn bt-btn-primary" style="width:auto; margin-top:0; padding:9px 16px; font-size:13px;" onclick="gabungDariDaftar('${escapeHtml(x.kode)}')">Gabung</button>
+      <div style="font-size:11.5px; color:#8A90A3; font-weight:600; white-space:nowrap;">Minta kode ke guru →</div>
     </div>`).join("");
 }
 
@@ -372,11 +374,6 @@ function hentikanDaftarBattle(){
   daftarBattlePollInterval = null;
   const card = document.getElementById("daftarBattleCard");
   if (card) card.style.display = "none";
-}
-
-function gabungDariDaftar(kode){
-  document.getElementById("kodeInput").value = kode;
-  joinBattle();
 }
 
 async function joinBattle(){
