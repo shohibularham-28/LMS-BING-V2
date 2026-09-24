@@ -412,6 +412,16 @@ async function joinBattle(){
   sesi = found;
   sessionStorage.setItem("battle_kode_aktif", kodeRaw);
 
+  // Mulai dengarkan realtime + jaring pengaman poll SEDINI MUNGKIN -- begitu sesi ketemu,
+  // bukan menunggu sampai siswa selesai pilih karakter/kelompok. Sebelumnya ini baru dimulai
+  // di masukArena(), padahal mode Kelompok/Grup Cup punya langkah "pilih kelompok" ekstra
+  // sebelum sampai di masukArena(). Selama siswa masih di layar pilih-kelompok itu, soal yang
+  // dirilis guru lewat begitu saja tanpa terdeteksi -> siswa harus refresh manual & timer sudah
+  // kepotong. Dengan realtime+poll aktif dari sini, soal yang keluar saat siswa masih memilih
+  // karakter/kelompok tetap ketangkep dan langsung tampil begitu mereka masuk arena.
+  subscribeRealtime();
+  startSesiSafetyPoll();
+
   // Daftarkan diri sebagai peserta (aman kalau sudah pernah, kena unique constraint -> upsert).
   const { data: pesertaRow } = await supabase.from("battle_peserta").upsert({
     sesi_id: sesi.id, profile_id: profile.id, nama: profile.nama
@@ -524,10 +534,10 @@ async function masukArena(){
   if (badge) badge.textContent = k ? k.emoji : "";
   hideLeaderboardReveal();
 
-  // Mulai mendengarkan perubahan DULU, baru ambil status terbaru. `sesi` yang kita pegang berasal dari
-  // saat siswa join — kalau guru sudah merilis soal selagi siswa memilih karakter/tim, datanya sudah basi.
-  subscribeRealtime();
-  startSesiSafetyPoll();
+  // Realtime + safety poll sudah berjalan sejak joinBattle() (lihat komentar di sana). Di sini
+  // tinggal pastikan data sesi yang kita pegang sudah yang terbaru sebelum dirender -- kalau guru
+  // merilis soal selagi siswa memilih karakter/tim, `sesi` lokal yang kita pegang sejak awal join
+  // sudah basi walau realtime tetap menangkap perubahannya secara live.
   const { data: terbaru } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
   if (terbaru && terbaru.soal_aktif_index >= sesi.soal_aktif_index) sesi = terbaru; // jangan menimpa data lebih baru dari realtime
 
