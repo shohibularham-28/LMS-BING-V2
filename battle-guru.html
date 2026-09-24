@@ -425,6 +425,24 @@ let autoAdvancing = false;
 let bankData = {};
 let cupBracket = [];     // baris battle_cup_bracket sesi ini
 let cupPerwakilan = [];  // baris battle_cup_perwakilan sesi ini
+// ===== Jam server: rilis otomatis dihitung dari soal_dirilis_at (jam server), jadi pakai jam server juga =====
+let serverOffsetMs = 0; // server - perangkat guru (ms)
+function nowServer(){ return Date.now() + serverOffsetMs; }
+async function sinkronJamServer(){
+  try {
+    let terbaik = null;
+    for (let i = 0; i < 3; i++) {
+      const t0 = Date.now();
+      const { data, error } = await supabase.rpc("battle_waktu_server");
+      const t1 = Date.now();
+      if (error || !data) return;
+      const rtt = t1 - t0;
+      if (!terbaik || rtt < terbaik.rtt) terbaik = { rtt, offset: new Date(data).getTime() - (t0 + t1) / 2 };
+    }
+    if (terbaik) serverOffsetMs = terbaik.offset;
+  } catch (e) { /* jam server gagal diambil -> pakai jam perangkat */ }
+}
+
 let kelasList = [];      // [{id, nama, level}] semua kelas
 let rencanaList = {};    // battle tersimpan milik guru: id -> baris battle_rencana
 let rencanaAktifId = null; // id battle tersimpan yang sedang diedit di form (null = form baru)
@@ -433,6 +451,8 @@ let publishTargetId = null; // id battle tersimpan yang sedang di-publish (modal
 (async function init(){
   profile = await requireTeacherLogin();
   if (!profile) return;
+  await sinkronJamServer();
+  setInterval(sinkronJamServer, 60000);
   await loadKelasOptions();
   await loadBankOptions();
   tambahSoal(); // mulai dengan 1 form soal kosong
@@ -1363,10 +1383,10 @@ function manageAutoTick(){
 
 function tickAuto(){
   if (!sesi || sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) { stopAutoTick(); return; }
-  const releaseMs = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : Date.now();
+  const releaseMs = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : nowServer();
   const durasiMs = (sesi.durasi_soal_detik || 20) * 1000;
   const jedaMs = (sesi.jeda_hasil_detik || 5) * 1000;
-  const now = Date.now();
+  const now = nowServer();
   const endJawab = releaseMs + durasiMs;
   const endHasil = endJawab + jedaMs;
   const faseBadge = document.getElementById("faseBadge");

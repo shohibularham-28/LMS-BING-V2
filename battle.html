@@ -306,6 +306,8 @@ const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
   profile = await requireLogin();
   if (!profile) return;
   renderShell(profile, "battle");
+  await sinkronJamServer();
+  setInterval(sinkronJamServer, 60000);
   mulaiDaftarBattle();
 
   // Kalau sebelumnya sudah join sesi ini (refresh halaman), coba lanjutkan.
@@ -514,7 +516,7 @@ function exitBattle(){
   showToast("🚪 Kamu sudah keluar dari battle.");
 }
 
-function masukArena(){
+async function masukArena(){
   document.getElementById("roomArea").style.display = "block";
   document.getElementById("roomKode").textContent = sesi.kode;
   const badge = document.getElementById("myKarakterBadge");
@@ -522,12 +524,17 @@ function masukArena(){
   if (badge) badge.textContent = k ? k.emoji : "";
   hideLeaderboardReveal();
 
+  // Mulai mendengarkan perubahan DULU, baru ambil status terbaru. `sesi` yang kita pegang berasal dari
+  // saat siswa join — kalau guru sudah merilis soal selagi siswa memilih karakter/tim, datanya sudah basi.
+  subscribeRealtime();
+  startSesiSafetyPoll();
+  const { data: terbaru } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+  if (terbaru && terbaru.soal_aktif_index >= sesi.soal_aktif_index) sesi = terbaru; // jangan menimpa data lebih baru dari realtime
+
   renderStatus();
   if (sesi.mode === "grup_cup") loadCupData();
   renderQuestionState();
   loadLeaderboard();
-  subscribeRealtime();
-  startSesiSafetyPoll();
 }
 
 // ===== Papan peringkat: tampil TERPISAH dari soal, hanya muncul setelah
@@ -614,6 +621,26 @@ function launchCelebration(big){
 // baru tetap sampai maksimal ~4 detik kemudian lewat poll ini, bukan
 // menunggu tanpa batas.
 const SESI_SAFETY_POLL_MS = 4000;
+
+// ===== Jam server: semua hitungan waktu soal memakai jam SERVER, bukan jam perangkat siswa =====
+// soal_dirilis_at dicatat oleh database (server). Kalau timer dibandingkan dengan jam HP/laptop
+// siswa yang selisih beberapa detik, hitung mundur & skor kecepatan jadi beda-beda antar perangkat.
+let serverOffsetMs = 0; // server - perangkat (ms)
+function nowServer(){ return Date.now() + serverOffsetMs; }
+async function sinkronJamServer(){
+  try {
+    let terbaik = null;
+    for (let i = 0; i < 3; i++) {           // ambil 3 sampel, pakai yang paling cepat pulang-pergi
+      const t0 = Date.now();
+      const { data, error } = await supabase.rpc("battle_waktu_server");
+      const t1 = Date.now();
+      if (error || !data) return;           // RPC belum ada (migrasi belum jalan) -> pakai jam perangkat seperti biasa
+      const rtt = t1 - t0;
+      if (!terbaik || rtt < terbaik.rtt) terbaik = { rtt, offset: new Date(data).getTime() - (t0 + t1) / 2 };
+    }
+    if (terbaik) serverOffsetMs = terbaik.offset;
+  } catch (e) { /* jam server gagal diambil -> pakai jam perangkat */ }
+}
 function startSesiSafetyPoll(){
   stopSesiSafetyPoll();
   if (!sesi) return;
@@ -667,6 +694,14 @@ function renderStatus(){
   if (info) info.textContent = sesi.rilis_mode === "otomatis" ? "⏱️ Soal lanjut otomatis sesuai durasi" : "🖐️ Soal dirilis manual oleh guru";
 }
 
+// Banyak siswa menjawab hampir bersamaan -> gabungkan jadi satu pembaruan papan skor, supaya
+// server tidak dibanjiri query dan siaran soal berikutnya tidak ikut tertahan.
+let leaderboardDebounce = null;
+function jadwalkanLeaderboard(){
+  if (leaderboardDebounce) return;
+  leaderboardDebounce = setTimeout(() => { leaderboardDebounce = null; loadLeaderboard(); }, 800);
+}
+
 function subscribeRealtime(){
   if (channel) supabase.removeChannel(channel);
   channel = supabase
@@ -678,10 +713,10 @@ function subscribeRealtime(){
       if (sesi.status === "selesai") showFinal();
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "battle_jawaban", filter: `sesi_id=eq.${sesi.id}` }, () => {
-      loadLeaderboard();
+      jadwalkanLeaderboard();
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "battle_peserta", filter: `sesi_id=eq.${sesi.id}` }, () => {
-      loadLeaderboard();
+      jadwalkanLeaderboard();
     })
     .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_bracket", filter: `sesi_id=eq.${sesi.id}` }, () => {
       loadCupData();
@@ -798,7 +833,7 @@ function renderQuestionState(){
 
   const isNewQuestion = sesi.soal_aktif_index !== currentQIndex;
   currentQIndex = sesi.soal_aktif_index;
-  currentQStart = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : Date.now();
+  currentQStart = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : nowServer();
   answered = false;
   stopResultCountdown();
   if (isNewQuestion) hideLeaderboardReveal(); // soal baru dimulai -> sembunyikan hasil soal sebelumnya
@@ -858,7 +893,7 @@ function startTimer(){
   stopTimer();
   const total = sesi.durasi_soal_detik;
   timerInterval = setInterval(() => {
-    const elapsed = (Date.now() - currentQStart) / 1000;
+    const elapsed = (nowServer() - currentQStart) / 1000;
     const remaining = Math.max(0, total - elapsed);
     const numEl = document.getElementById("timerNum");
     const arcEl = document.getElementById("timerArc");
@@ -878,9 +913,9 @@ function startResultCountdown(){
   stopResultCountdown();
   if (!sesi || sesi.rilis_mode !== "otomatis") return;
   const jeda = sesi.jeda_hasil_detik || 5;
-  const endAt = (currentQStart || Date.now()) + (sesi.durasi_soal_detik * 1000) + (jeda * 1000);
+  const endAt = (currentQStart || nowServer()) + (sesi.durasi_soal_detik * 1000) + (jeda * 1000);
   resultInterval = setInterval(() => {
-    const sisa = Math.ceil((endAt - Date.now()) / 1000);
+    const sisa = Math.ceil((endAt - nowServer()) / 1000);
     const info = document.getElementById("autoNextInfo");
     if (sisa > 0) {
       if (info) info.textContent = `⏭️ Soal berikutnya otomatis dalam ${sisa}s…`;
@@ -904,7 +939,7 @@ async function submitAnswer(key){
 
   const soalList = sesi.soal || [];
   const q = soalList[currentQIndex];
-  const waktuMs = Date.now() - currentQStart;
+  const waktuMs = Math.max(0, nowServer() - currentQStart);
   const benar = key === q.correct;
 
   // Skor: makin cepat & benar makin tinggi. Basis 1000, dikurangi berdasar
