@@ -318,6 +318,39 @@ const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
   }
 })();
 
+// ===== Sinkron ulang begitu HP siswa kembali aktif =====
+// Di kelas dengan banyak siswa (mis. 36 siswa dibagi 4 grup), HP mereka sering layar mati
+// sebentar, pindah aplikasi (WA/lainnya), atau tab browser dipindah selagi menunggu soal
+// berikutnya. Browser HP membekukan setInterval (jadi jaring pengaman poll ikut berhenti)
+// dan bisa memutus koneksi realtime demi hemat baterai selagi halaman tidak terlihat --
+// Supabase TIDAK mengirim ulang event yang terlewat begitu koneksinya nyambung lagi, jadi
+// tanpa ini soal baru akan nyangkut sampai siswa refresh manual. Begitu halaman terlihat
+// lagi, langsung sambungkan ulang realtime + ambil status sesi terbaru dari server.
+let sedangSyncKembali = false;
+async function syncSetelahKembaliAktif(){
+  if (!sesi || sedangSyncKembali) return;
+  sedangSyncKembali = true;
+  try {
+    subscribeRealtime();     // koneksi lama bisa sudah putus diam-diam -> sambungkan ulang
+    startSesiSafetyPoll();   // interval lama bisa sudah dibekukan browser -> mulai ulang
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (data) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+      if (sesi.mode === "grup_cup") loadCupData();
+      loadLeaderboard();
+    }
+  } finally {
+    sedangSyncKembali = false;
+  }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") syncSetelahKembaliAktif();
+});
+window.addEventListener("focus", syncSetelahKembaliAktif);
+window.addEventListener("pageshow", (e) => { if (e.persisted) syncSetelahKembaliAktif(); });
+
 function showToast(msg){
   const t = document.getElementById("toast");
   t.textContent = msg;
