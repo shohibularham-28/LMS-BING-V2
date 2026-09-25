@@ -3373,7 +3373,7 @@
     // di JS lewat normKelas().
     let query = supabase
       .from('hasil_worksheet')
-      .select('id, worksheet_slug, jenis, nama, anggota, kelas, nilai, nilai_maks, status, created_at, updated_at')
+      .select('id, worksheet_slug, jenis, nama, anggota, kelas, nilai, nilai_maks, status, jawaban, created_at, updated_at')
       .order('updated_at', { ascending: false });
     if (slug) query = query.eq('worksheet_slug', slug);
     if (jenisFilter) query = query.eq('jenis', jenisFilter);
@@ -3447,6 +3447,7 @@
                 nilai: null,
                 nilai_maks: null,
                 status: 'belum',
+                jawaban: null,
                 created_at: null,
                 updated_at: null,
               }))
@@ -3505,7 +3506,10 @@
               <td>${(r.nilai ?? null) !== null ? (r.nilai + (r.nilai_maks != null ? ' / ' + r.nilai_maks : '')) : '-'}</td>
               <td>${statusBadge(r.status)}</td>
               <td>${(r.updated_at || r.created_at) ? new Date(r.updated_at || r.created_at).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '-'}</td>
-              <td>${r.id ? `<button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button>` : '<span style="color:#c8cbd6;">-</span>'}</td>
+              <td style="white-space:nowrap;">
+                ${(r.id && r.jawaban) ? `<button class="btn-secondary-sm" data-jawaban-id="${r.id}">👁️ Jawaban</button>` : ''}
+                ${r.id ? `<button class="btn-danger-sm" data-id="${r.id}">🗑️ Hapus</button>` : '<span style="color:#c8cbd6;">-</span>'}
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -3521,6 +3525,56 @@
         await loadHasilWorksheet();
       });
     });
+
+    wrap.querySelectorAll('[data-jawaban-id]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const row = currentHasilWsRows.find(r => String(r.id) === btn.dataset.jawabanId);
+        if (!row) { alert('Data tidak ditemukan.'); return; }
+        alert(`Jawaban — ${row.nama} (${row.kelas})\n${'='.repeat(30)}\n\n` + formatJawabanWorksheet(row.jawaban));
+      });
+    });
+  }
+
+  // Format isi kolom hasil_worksheet.jawaban (jsonb) jadi teks yang enak
+  // dibaca lewat alert(). Mendukung 2 bentuk yang dipakai worksheet-worksheet
+  // di aplikasi ini:
+  //  1) Array bagian: [{ name, correct, total, details:[{label, your, correct, ok}] }, ...]
+  //     (dipakai worksheet essay/reflektif spt Goose Girl, Past Continuous, dll.)
+  //  2) Object bertahap: { tahapX: { jawaban_siswa:{...}, kunci_jawaban:{...} }, ... }
+  //     (dipakai worksheet gamified spt Recount Text)
+  function formatJawabanWorksheet(jawaban) {
+    if (!jawaban) return 'Tidak ada detail jawaban tersimpan untuk worksheet ini.';
+    const lines = [];
+    if (Array.isArray(jawaban)) {
+      jawaban.forEach(part => {
+        lines.push(`— ${part.name || '(bagian)'}${(part.correct !== undefined && part.total !== undefined) ? ` (${part.correct}/${part.total} benar)` : ''}`);
+        (part.details || []).forEach(d => {
+          lines.push(`  • ${d.label || ''}`);
+          lines.push(`    Jawaban: ${d.your === undefined || d.your === '' ? '(kosong)' : d.your}`);
+          if (d.ok === false && d.correct !== undefined) lines.push(`    Kunci: ${d.correct}`);
+        });
+        lines.push('');
+      });
+      return lines.join('\n').trim() || 'Tidak ada detail jawaban.';
+    }
+    if (typeof jawaban === 'object') {
+      Object.entries(jawaban).forEach(([key, val]) => {
+        const title = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        if (val && typeof val === 'object' && (val.jawaban_siswa || val.kunci_jawaban)) {
+          lines.push(`— ${title}`);
+          Object.entries(val.jawaban_siswa || {}).forEach(([k, v]) => {
+            const vTxt = (v && typeof v === 'object') ? JSON.stringify(v) : (v === null || v === '' ? '(kosong)' : v);
+            lines.push(`  • ${k.replace(/_/g, ' ')}: ${vTxt}`);
+          });
+          lines.push('');
+        } else {
+          const vTxt = (val && typeof val === 'object') ? JSON.stringify(val) : val;
+          lines.push(`${title}: ${vTxt}`);
+        }
+      });
+      return lines.join('\n').trim() || 'Tidak ada detail jawaban.';
+    }
+    return String(jawaban);
   }
 
   async function hapusSemuaHasilWs() {
