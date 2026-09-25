@@ -601,7 +601,15 @@
             <div class="form-field"><label>Mulai Bisa Dibuka (opsional)</label><input type="datetime-local" id="wsMulaiInput"></div>
             <div class="form-field"><label>Deadline (opsional)</label><input type="date" id="wsDeadlineInput"></div>
           </div>
-          <div class="hint">Pilih "Semua Kelas Tingkat X/XI/XII" untuk menyasar satu tingkat penuh, atau pilih kelas tertentu (mis. "X-IPA 1") di bawah tingkatnya kalau hanya untuk kelas itu saja. Kosongkan "Mulai Bisa Dibuka" kalau worksheet boleh langsung dikerjakan siswa sejak diterbitkan.</div>
+          <div class="form-row">
+            <div class="form-field"><label>Status</label>
+              <select id="wsStatusSelect">
+                <option value="draft">📝 Simpan sebagai Draft (belum terlihat siswa)</option>
+                <option value="publish">🚀 Terbitkan langsung ke siswa</option>
+              </select>
+            </div>
+          </div>
+          <div class="hint">Pilih "Semua Kelas Tingkat X/XI/XII" untuk menyasar satu tingkat penuh, atau pilih kelas tertentu (mis. "X-IPA 1") di bawah tingkatnya kalau hanya untuk kelas itu saja. Kosongkan "Mulai Bisa Dibuka" kalau worksheet boleh langsung dikerjakan siswa sejak diterbitkan. Simpan sebagai <b>Draft</b> dulu kalau masih menyiapkan worksheet-nya — draft tidak akan muncul sama sekali di daftar siswa sampai kamu klik "🚀 Terbitkan" di bawah.</div>
           <button class="btn-secondary-sm" id="btnTambahWorksheet">+ Tambahkan Worksheet</button>
           <p class="login-error" id="wsError" style="display:none;"></p>
 
@@ -2282,7 +2290,7 @@
     const el = document.getElementById('worksheetList');
     const { data } = await supabase
       .from('worksheet')
-      .select('id, judul, url, mulai, deadline, level, kelas_id, kelas:kelas_id ( nama )')
+      .select('id, judul, url, mulai, deadline, level, kelas_id, published, kelas:kelas_id ( nama )')
       .order('created_at', { ascending: false });
     const list = data || [];
     const now = new Date();
@@ -2295,8 +2303,10 @@
       if (w.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(w.mulai));
       if (w.deadline) metaBits.push('Deadline ' + w.deadline);
       let statusPill = '';
-      if (belumMulai) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>';
+      if (!w.published) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">📝 Draft</span>';
+      else if (belumMulai) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">Belum Dibuka</span>';
       else if (sudahTutup) statusPill = '<span class="score-pill status-belum" style="margin-left:8px;">Sudah Ditutup</span>';
+      else statusPill = '<span class="score-pill status-tuntas" style="margin-left:8px;">✅ Terbit</span>';
       return `
       <div class="list-row" style="flex-direction:column; align-items:stretch;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap;">
@@ -2305,8 +2315,9 @@
             ${statusPill}
             <div style="font-size:12px;color:#999;word-break:break-all;">${esc(w.url)}</div>
           </div>
-          <div style="display:flex; gap:8px; flex-shrink:0;">
+          <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
             ${w.url ? `<a class="btn-secondary-sm" style="text-decoration:none;display:inline-block;white-space:nowrap;" href="${esc(w.url)}" target="_blank" rel="noopener">🔗 Buka</a>` : ''}
+            <button class="btn-secondary-sm" data-toggle-publish="${w.id}" data-current="${w.published}">${w.published ? '↩️ Jadikan Draft' : '🚀 Terbitkan'}</button>
             <button class="btn-secondary-sm" data-edit="${w.id}">✏️ Edit</button>
             <button class="btn-danger-sm" data-id="${w.id}">Hapus</button>
           </div>
@@ -2345,6 +2356,20 @@
       btn.addEventListener('click', async () => {
         if (!confirm('Hapus worksheet ini?')) return;
         await supabase.from('worksheet').delete().eq('id', btn.dataset.id);
+        await renderWorksheetList();
+      });
+    });
+
+    el.querySelectorAll('[data-toggle-publish]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.togglePublish;
+        const isPublished = btn.dataset.current === 'true';
+        const willPublish = !isPublished;
+        if (willPublish && !confirm('Terbitkan worksheet ini? Setelah ini akan langsung terlihat oleh siswa di kelas/tingkat sasarannya.')) return;
+        if (!willPublish && !confirm('Jadikan draft lagi? Worksheet ini akan langsung disembunyikan dari daftar siswa.')) return;
+        btn.disabled = true;
+        const { error } = await supabase.from('worksheet').update({ published: willPublish }).eq('id', id);
+        if (error) { alert('Gagal mengubah status: ' + error.message); btn.disabled = false; return; }
         await renderWorksheetList();
       });
     });
@@ -2411,6 +2436,7 @@
     const mulaiRaw = document.getElementById('wsMulaiInput').value;
     const mulai = mulaiRaw ? new Date(mulaiRaw).toISOString() : null;
     const deadline = document.getElementById('wsDeadlineInput').value || null;
+    const published = document.getElementById('wsStatusSelect').value === 'publish';
     const err = document.getElementById('wsError');
     err.style.display = 'none';
 
@@ -2424,13 +2450,14 @@
       err.style.display = 'block';
       return;
     }
-    const { error } = await supabase.from('worksheet').insert({ judul, url, level, kelas_id: kelasId, mulai, deadline });
+    const { error } = await supabase.from('worksheet').insert({ judul, url, level, kelas_id: kelasId, mulai, deadline, published });
     if (error) { err.textContent = 'Gagal menambah worksheet: ' + error.message; err.style.display = 'block'; return; }
 
     document.getElementById('wsJudulInput').value = '';
     document.getElementById('wsUrlInput').value = '';
     document.getElementById('wsMulaiInput').value = '';
     document.getElementById('wsDeadlineInput').value = '';
+    document.getElementById('wsStatusSelect').value = 'draft';
     await renderWorksheetList();
   });
 

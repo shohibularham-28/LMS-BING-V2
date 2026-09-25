@@ -63,11 +63,13 @@ create table if not exists public.worksheet (
   level text check (level in ('X','XI','XII')), -- target 1 tingkat (semua kelas di tingkat itu)
   mulai timestamptz,       -- tanggal & jam worksheet mulai bisa dibuka (null = langsung terbuka)
   deadline date,
+  published boolean not null default false, -- false = draft (belum terlihat siswa), true = sudah diterbitkan
   created_at timestamptz default now()
 );
 -- Kalau tabel worksheet sudah ada dari versi sebelumnya, jalankan baris-baris ini sekali di SQL Editor:
 alter table public.worksheet add column if not exists level text check (level in ('X','XI','XII'));
 alter table public.worksheet alter column kelas_id drop not null;
+alter table public.worksheet add column if not exists published boolean not null default true;
 
 -- ---------- NILAI ----------
 create table if not exists public.nilai (
@@ -148,11 +150,17 @@ create policy "materi_write_guru" on public.materi for insert with check (public
 create policy "materi_update_guru" on public.materi for update using (public.is_guru());
 create policy "materi_delete_guru" on public.materi for delete using (public.is_guru());
 
--- WORKSHEET: siswa lihat worksheet untuk tingkatnya, atau kelas spesifiknya; guru lihat & tulis semua
+-- WORKSHEET: siswa lihat worksheet yang sudah diterbitkan (published) untuk
+-- tingkatnya atau kelas spesifiknya; guru lihat & tulis semua (termasuk draft)
 create policy "worksheet_select" on public.worksheet for select using (
-  kelas_id = (select kelas_id from public.profiles where id = auth.uid())
-  or level = (select k.level from public.profiles p join public.kelas k on k.id = p.kelas_id where p.id = auth.uid())
-  or public.is_guru()
+  public.is_guru()
+  or (
+    published = true
+    and (
+      kelas_id = (select kelas_id from public.profiles where id = auth.uid())
+      or level = (select k.level from public.profiles p join public.kelas k on k.id = p.kelas_id where p.id = auth.uid())
+    )
+  )
 );
 create policy "worksheet_write_guru" on public.worksheet for insert with check (public.is_guru());
 create policy "worksheet_update_guru" on public.worksheet for update using (public.is_guru());
