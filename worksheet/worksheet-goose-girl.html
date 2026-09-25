@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Goose Girl — Aktivitas 3-5</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --card:#ffffff; --ink:#2b2b25; --sub:#6b6a5e;
+  --pink:#f4b8c6; --pink-d:#e28ea3; --green:#a9d8c4; --green-d:#5fae8e;
+  --accent:#3f7d63; --accent2:#c0567a; --line:#e3ddd0;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1b17; --card:#26241f; --ink:#efece3; --sub:#a8a494; --line:#3a382f;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1b17; --card:#26241f; --ink:#efece3; --sub:#a8a494; --line:#3a382f;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Poppins',system-ui,sans-serif;line-height:1.5;}
+header{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px;text-align:center;}
+header h1{margin:0 0 2px;font-size:1.15rem;}
+header p{margin:0;font-size:.8rem;opacity:.9;font-family:'Lora',serif;font-style:italic;}
+nav{display:flex;gap:8px;justify-content:center;max-width:720px;margin:14px auto 0;padding:0 12px;flex-wrap:wrap;}
+nav button{flex:1;min-width:100px;padding:10px 8px;border:none;border-radius:10px;background:var(--card);
+  color:var(--ink);font-weight:600;cursor:pointer;font-size:.85rem;box-shadow:0 1px 3px rgba(0,0,0,.12);}
+nav button.active{background:var(--accent2);color:#fff;}
+main{max-width:720px;margin:0 auto;padding:16px 14px 40px;}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.intro{background:var(--green);color:#1c3b2c;}
+.intro h2{margin:0 0 6px;font-size:1.05rem;}
+.intro p{margin:0;font-size:.9rem;}
+h3.group{font-size:.95rem;color:var(--accent2);margin:20px 0 8px;text-transform:uppercase;letter-spacing:.03em;}
+.q{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.q:last-child{border-bottom:none;}
+.q label{display:block;font-size:.92rem;margin-bottom:6px;font-weight:600;}
+.q textarea{width:100%;min-height:56px;padding:9px 10px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font-family:inherit;font-size:.88rem;resize:vertical;}
+.q textarea:focus{outline:2px solid var(--accent2);}
+.saved{font-size:.72rem;color:var(--accent);opacity:0;transition:opacity .3s;}
+.saved.show{opacity:1;}
+.progress-wrap{background:var(--line);border-radius:8px;height:8px;overflow:hidden;margin:10px 0 4px;}
+.progress-bar{height:100%;background:var(--accent2);width:0%;transition:width .3s;}
+.progress-label{font-size:.75rem;color:var(--sub);text-align:right;}
+
+.match-wrap{display:flex;gap:10px;flex-wrap:wrap;}
+.match-col{flex:1;min-width:150px;display:flex;flex-direction:column;gap:8px;}
+.mcard{border-radius:10px;padding:10px 12px;font-size:.83rem;cursor:pointer;border:2px solid transparent;
+  position:relative;transition:transform .1s;}
+.mcard:active{transform:scale(.98);}
+.mcard.left{background:var(--pink);color:#5c1f30;}
+.mcard.right{background:var(--green);color:#1c3b2c;}
+.mcard.selected{border-color:var(--accent2);}
+.mcard.correct{border-color:var(--green-d);box-shadow:0 0 0 2px var(--green-d) inset;}
+.mcard.wrong{border-color:#c0392b;box-shadow:0 0 0 2px #c0392b inset;}
+.tag{position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;font-size:.7rem;
+  border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.btnrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+button.action{border:none;padding:9px 16px;border-radius:20px;font-weight:600;cursor:pointer;font-size:.85rem;}
+.btn-primary{background:var(--accent2);color:#fff;}
+.btn-secondary{background:var(--line);color:var(--ink);}
+#matchScore{font-size:.85rem;margin-top:10px;font-weight:600;}
+
+table{width:100%;border-collapse:collapse;font-size:.83rem;}
+th{background:var(--pink);color:#5c1f30;padding:8px 6px;text-align:left;border-radius:6px 6px 0 0;}
+td{padding:6px 5px;border-bottom:1px solid var(--line);vertical-align:top;}
+table input{width:100%;padding:6px 7px;border-radius:6px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font-size:.82rem;font-family:inherit;}
+.overflow-x{overflow-x:auto;}
+.chipbank{margin-top:14px;}
+.chipbank h4{font-size:.82rem;margin:10px 0 6px;color:var(--sub);}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--line);border:none;border-radius:14px;padding:5px 11px;font-size:.76rem;
+  cursor:pointer;color:var(--ink);}
+.chip:hover{background:var(--green);}
+footer{text-align:center;color:var(--sub);font-size:.72rem;padding:10px 0 20px;}
+.hidden{display:none;}
+
+/* ---- identity / LMS connection ---- */
+.id-card{background:var(--card);border-radius:14px;padding:14px 16px;margin:14px auto 0;max-width:720px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);border:1.5px solid var(--pink-d);}
+.id-card h2{margin:0 0 8px;font-size:.95rem;color:var(--accent2);}
+.id-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.id-field{flex:1;min-width:140px;}
+.id-field label{display:block;font-size:.78rem;font-weight:600;margin-bottom:4px;color:var(--sub);}
+.id-field input,.id-field select{width:100%;padding:8px 9px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font-family:inherit;font-size:.85rem;}
+.id-field input:focus,.id-field select:focus{outline:2px solid var(--accent2);}
+.id-field input[readonly]{background:var(--green);opacity:.85;}
+.member-row{display:flex;gap:6px;margin-bottom:6px;}
+.member-row input{flex:1;}
+.member-row button{border:none;background:var(--pink);color:#5c1f30;border-radius:8px;padding:0 10px;
+  font-weight:700;cursor:pointer;}
+.add-member{background:none;border:1px dashed var(--accent2);color:var(--accent2);border-radius:8px;
+  padding:6px 10px;font-size:.78rem;font-weight:600;cursor:pointer;}
+.lms-note{font-size:.76rem;background:var(--green);color:#1c3b2c;border-radius:8px;padding:6px 9px;margin-bottom:8px;}
+.id-warn{font-size:.78rem;color:#a93226;margin-top:4px;display:none;}
+.id-warn.show{display:block;}
+
+.submit-bar{position:sticky;bottom:0;z-index:5;background:var(--card);border-top:2px solid var(--pink-d);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;
+  gap:6px;align-items:center;}
+.submit-bar button{border:none;padding:11px 22px;border-radius:22px;font-weight:700;font-size:.88rem;
+  cursor:pointer;background:var(--accent2);color:#fff;width:100%;max-width:460px;}
+.submit-bar button:disabled{opacity:.55;cursor:default;}
+.submit-status{font-size:.78rem;text-align:center;max-width:460px;}
+.submit-status.ok{color:var(--accent);}
+.submit-status.err{color:#a93226;}
+main{padding-bottom:8px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🪿 The Goose Girl</h1>
+  <p>Unit 2 | Fairy Tale — Media Interaktif Aktivitas 3, 4 & 5</p>
+</header>
+
+<div class="id-card">
+  <h2>👤 Identitas Pengerjaan</h2>
+  <div id="lmsNote"></div>
+  <div class="id-row">
+    <div class="id-field">
+      <label>Jenis Pengerjaan</label>
+      <select id="jenisSelect">
+        <option value="individu">Individu</option>
+        <option value="kelompok">Kelompok</option>
+      </select>
+    </div>
+    <div class="id-field">
+      <label>Kelas</label>
+      <input type="text" id="kelasInput" placeholder="mis. XI A">
+    </div>
+  </div>
+  <div id="individuFields" class="id-row">
+    <div class="id-field">
+      <label>Nama</label>
+      <input type="text" id="namaIndividu" placeholder="Nama lengkap kamu">
+    </div>
+  </div>
+  <div id="kelompokFields" class="hidden">
+    <div class="id-row">
+      <div class="id-field">
+        <label>Nama Kelompok</label>
+        <input type="text" id="namaKelompok" placeholder="mis. Kelompok 1">
+      </div>
+    </div>
+    <label style="font-size:.78rem;font-weight:600;color:var(--sub);display:block;margin-bottom:4px;">Anggota Kelompok</label>
+    <div id="memberList"></div>
+    <button type="button" class="add-member" id="addMemberBtn">+ Tambah anggota</button>
+  </div>
+  <div class="id-warn" id="idWarn"></div>
+</div>
+
+<nav>
+  <button class="active" data-tab="a3">Aktivitas 3</button>
+  <button data-tab="a4">Aktivitas 4</button>
+  <button data-tab="a5">Aktivitas 5</button>
+</nav>
+
+<main>
+
+<!-- ACTIVITY 3 -->
+<section id="a3">
+  <div class="card intro">
+    <h2>Aktivitas 3</h2>
+    <p>Read "The Goose Girl" story again. Answer the questions. Compare and discuss your answers with your classmates.</p>
+  </div>
+  <div class="card">
+    <div class="progress-wrap"><div class="progress-bar" id="pbar3"></div></div>
+    <div class="progress-label" id="plabel3">0/13 terisi</div>
+
+    <h3 class="group">Access and retrieve</h3>
+    <div class="q" data-id="a3-1"><label>1. What is the story about?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-2"><label>2. What special abilities did the main character have that other characters in the story did not?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-3"><label>3. Why wasn't Ani appointed as Kildenree queen even though she was the first child in the family?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-4"><label>4. Explain how 'the goose girl' got her name.</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-5"><label>5. What was Selia's plan to abolish Kildenree?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-6"><label>6. How did Ani finally get her identity back?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+
+    <h3 class="group">Integrate and interpret</h3>
+    <div class="q" data-id="a3-7"><label>1. How did Ani's character change in the story?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-8"><label>2. Describe Ani's and the queen's characteristics. What differences and similarities are there?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-9"><label>3. The queen did not appoint Ani as the future queen. What do you think of the queen's deed — a betrayal, a political move, or a selfish act? Explain.</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-10"><label>4. What lessons can you learn from the story?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+
+    <h3 class="group">Reflect and evaluate</h3>
+    <div class="q" data-id="a3-11"><label>1. Have you ever found a character similar to Selia around you? Tell us the person's characteristics and the advice you would give.</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-12"><label>2. Have you ever been surprised with a reward for good deeds, or a warning/punishment for bad things? Describe your experience.</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+    <div class="q" data-id="a3-13"><label>3. After reading "The Goose Girl" story, how do you understand fairy tales?</label><textarea></textarea><div class="saved">Tersimpan ✓</div></div>
+  </div>
+</section>
+
+<!-- ACTIVITY 4 -->
+<section id="a4" class="hidden">
+  <div class="card intro">
+    <h2>Aktivitas 4</h2>
+    <p>Match the sentence beginnings (1-5) with the endings (a-e). Tap a number, then tap the matching ending. Rewrite the complete sentences in your notebook.</p>
+  </div>
+  <div class="card">
+    <div class="match-wrap">
+      <div class="match-col" id="leftCol">
+        <div class="mcard left" data-id="1">1. Kildenree was an old kingdom where we could still find people who were gifted with ...</div>
+        <div class="mcard left" data-id="2">2. Being gifted with special abilities, abandoned by her aunt and father, and overshadowed by her mother's figure made Ani live in ...</div>
+        <div class="mcard left" data-id="3">3. Ani was devastated when the position of queen was given to her sister and she had to leave the palace for ...</div>
+        <div class="mcard left" data-id="4">4. Being betrayed by his own lady-in-waiting and best friend, Ani got lost, wandering in ...</div>
+        <div class="mcard left" data-id="5">5. Getting a job as a goose keeper at the palace brought Ani closer to ...</div>
+      </div>
+      <div class="match-col" id="rightCol">
+        <div class="mcard right" data-id="a">a. hesitation, restlessness, and burden.</div>
+        <div class="mcard right" data-id="b">b. the ability to talk to animals and nature.</div>
+        <div class="mcard right" data-id="c">c. a certain mission that wasn't even for her.</div>
+        <div class="mcard right" data-id="d">d. her goal of reclaiming her identity from Selia.</div>
+        <div class="mcard right" data-id="e">e. a lush and dark forest, stumbling and struggling for help.</div>
+      </div>
+    </div>
+    <div class="btnrow">
+      <button class="action btn-primary" id="checkMatch">Cek Jawaban</button>
+      <button class="action btn-secondary" id="resetMatch">Ulangi</button>
+    </div>
+    <div id="matchScore"></div>
+  </div>
+</section>
+
+<!-- ACTIVITY 5 -->
+<section id="a5" class="hidden">
+  <div class="card intro">
+    <h2>Aktivitas 5</h2>
+    <p>Learn expressions used to introduce characters and settings in a tale. Take notes below — the first row is given as an example.</p>
+  </div>
+  <div class="card">
+    <div class="overflow-x">
+    <table>
+      <thead><tr><th>Characters</th><th>Setting of Time</th><th>Setting of place</th></tr></thead>
+      <tbody id="tbl5">
+        <tr>
+          <td><input value="A very beautiful princess" disabled></td>
+          <td><input value="Once upon a time," disabled></td>
+          <td><input value="in the kingdom of Kildenree" disabled></td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="btnrow">
+      <button class="action btn-secondary" id="addRow5">+ Tambah baris</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="submit-bar">
+  <button type="button" id="submitBtn">📤 Kirim Tugas ke Guru</button>
+  <div class="submit-status" id="submitStatus"></div>
+</div>
+
+<footer>Bahasa Inggris Tingkat Lanjut untuk SMA Kelas XI · Unit 2 | Fairy Tale</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---- storage helpers ----
+function safeGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function safeSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+
+// ---- tabs ----
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['a3','a4','a5'].forEach(id=>document.getElementById(id).classList.toggle('hidden', id!==btn.dataset.tab));
+  });
+});
+
+// ---- Activity 3: textareas ----
+const qs = document.querySelectorAll('#a3 .q');
+qs.forEach(q=>{
+  const id=q.dataset.id, ta=q.querySelector('textarea'), sv=q.querySelector('.saved');
+  const stored = safeGet(id);
+  if(stored) ta.value = stored;
+  let t;
+  ta.addEventListener('input',()=>{
+    safeSet(id, ta.value);
+    sv.classList.add('show');
+    clearTimeout(t);
+    t=setTimeout(()=>sv.classList.remove('show'),1200);
+    updateProgress3();
+  });
+});
+function updateProgress3(){
+  let filled=0;
+  qs.forEach(q=>{ if(q.querySelector('textarea').value.trim().length>0) filled++; });
+  document.getElementById('pbar3').style.width = (filled/qs.length*100)+'%';
+  document.getElementById('plabel3').textContent = filled+'/'+qs.length+' terisi';
+}
+updateProgress3();
+
+// ---- Activity 4: matching ----
+const key = {1:'b',2:'a',3:'c',4:'e',5:'d'};
+let pairs = {}; // num -> letter
+let selectedNum = null;
+const colors = ['#3f7d63','#c0567a','#8a6fbf','#c98a2e','#3182bd'];
+
+function render4(){
+  document.querySelectorAll('#leftCol .mcard').forEach(c=>{
+    c.classList.remove('selected','correct','wrong');
+    const num=c.dataset.id;
+    const existingTag = c.querySelector('.tag'); if(existingTag) existingTag.remove();
+    if(pairs[num]){
+      const tag=document.createElement('span'); tag.className='tag'; tag.textContent=pairs[num];
+      c.appendChild(tag);
+    }
+    if(num===selectedNum) c.classList.add('selected');
+  });
+  document.querySelectorAll('#rightCol .mcard').forEach(c=>{
+    const existingTag = c.querySelector('.tag'); if(existingTag) existingTag.remove();
+    const letter=c.dataset.id;
+    const num = Object.keys(pairs).find(n=>pairs[n]===letter);
+    if(num){
+      const tag=document.createElement('span'); tag.className='tag'; tag.textContent=num;
+    c.appendChild(tag);
+    }
+  });
+}
+document.querySelectorAll('#leftCol .mcard').forEach(c=>{
+  c.addEventListener('click',()=>{ selectedNum = c.dataset.id; render4(); });
+});
+document.querySelectorAll('#rightCol .mcard').forEach(c=>{
+  c.addEventListener('click',()=>{
+    if(!selectedNum) return;
+    // unpair this letter from any other number
+    Object.keys(pairs).forEach(n=>{ if(pairs[n]===c.dataset.id) delete pairs[n]; });
+    pairs[selectedNum]=c.dataset.id;
+    selectedNum=null;
+    render4();
+  });
+});
+document.getElementById('checkMatch').addEventListener('click',()=>{
+  let correct=0;
+  document.querySelectorAll('#leftCol .mcard').forEach(c=>{
+    const num=c.dataset.id;
+    c.classList.remove('correct','wrong');
+    if(pairs[num]){
+      if(pairs[num]===key[num]){ c.classList.add('correct'); correct++; }
+      else c.classList.add('wrong');
+    }
+  });
+  document.getElementById('matchScore').textContent = 'Skor: '+correct+' dari 5 benar.';
+});
+document.getElementById('resetMatch').addEventListener('click',()=>{
+  pairs={}; selectedNum=null; render4();
+  document.getElementById('matchScore').textContent='';
+});
+render4();
+
+// ---- Activity 5: table ----
+document.getElementById('addRow5').addEventListener('click',()=>{
+  const tbody=document.getElementById('tbl5');
+  const tr=document.createElement('tr');
+  tr.innerHTML = '<td><input placeholder="..."></td><td><input placeholder="..."></td><td><input placeholder="..."></td>';
+  tbody.appendChild(tr);
+});
+// start with 4 empty rows
+for(let i=0;i<4;i++) document.getElementById('addRow5').click();
+
+// ==================================================================
+// KONEKSI LMS — kirim hasil ke tabel hasil_worksheet (Supabase)
+// ==================================================================
+const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WORKSHEET_SLUG = "goose-girl";
+
+let loggedInProfile = null; // { id, nama, kelas }
+let submitted = false;
+
+(async function detectLmsLogin(){
+  try{
+    const { data: { user } } = await sb.auth.getUser();
+    if(!user) return;
+    const { data: profile } = await sb.from('profiles')
+      .select('id, nama, kelas:kelas_id ( nama )').eq('id', user.id).single();
+    if(!profile) return;
+    loggedInProfile = { id: profile.id, nama: profile.nama, kelas: profile.kelas ? profile.kelas.nama : '' };
+    applyLoggedInIdentity();
+  }catch(e){ /* dibuka tanpa login LMS — form manual tetap jalan */ }
+})();
+
+function applyLoggedInIdentity(){
+  if(!loggedInProfile) return;
+  const namaInput = document.getElementById('namaIndividu');
+  const kelasInput = document.getElementById('kelasInput');
+  if(namaInput){ namaInput.value = loggedInProfile.nama || ''; namaInput.readOnly = true; }
+  if(kelasInput){ kelasInput.value = loggedInProfile.kelas || ''; kelasInput.readOnly = true; }
+  const note = document.getElementById('lmsNote');
+  if(note) note.innerHTML = `<div class="lms-note">✅ Masuk sebagai ${loggedInProfile.nama} — nama & kelas otomatis diisi, hasil akan tersimpan di Riwayat Worksheet kamu.</div>`;
+}
+
+// ---- Jenis pengerjaan: individu / kelompok ----
+const jenisSelect = document.getElementById('jenisSelect');
+const individuFields = document.getElementById('individuFields');
+const kelompokFields = document.getElementById('kelompokFields');
+const memberList = document.getElementById('memberList');
+
+function addMemberRow(){
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.innerHTML = '<input type="text" class="memberInput" placeholder="Nama anggota"><button type="button">✕</button>';
+  row.querySelector('button').addEventListener('click', ()=> row.remove());
+  memberList.appendChild(row);
+}
+addMemberRow();
+document.getElementById('addMemberBtn').addEventListener('click', addMemberRow);
+
+jenisSelect.addEventListener('change', ()=>{
+  const kelompok = jenisSelect.value === 'kelompok';
+  individuFields.classList.toggle('hidden', kelompok);
+  kelompokFields.classList.toggle('hidden', !kelompok);
+});
+
+function getIdentitas(){
+  const kelas = document.getElementById('kelasInput').value.trim();
+  const jenis = jenisSelect.value;
+  if(jenis === 'individu'){
+    return { jenis, nama: document.getElementById('namaIndividu').value.trim(), anggota: null, kelas };
+  }
+  const anggota = Array.from(document.querySelectorAll('.memberInput')).map(i=>i.value.trim()).filter(Boolean).join(', ');
+  return { jenis, nama: document.getElementById('namaKelompok').value.trim(), anggota, kelas };
+}
+
+function validateIdentitas(){
+  const d = getIdentitas();
+  const warn = document.getElementById('idWarn');
+  let msg = '';
+  if(!d.kelas) msg = 'Isi dulu Kelas kamu.';
+  else if(d.jenis === 'individu' && !d.nama) msg = 'Isi dulu Nama kamu.';
+  else if(d.jenis === 'kelompok' && !d.nama) msg = 'Isi dulu Nama Kelompok.';
+  else if(d.jenis === 'kelompok' && !d.anggota) msg = 'Tambahkan minimal satu Anggota Kelompok.';
+  if(msg){ warn.textContent = msg; warn.classList.add('show'); return null; }
+  warn.classList.remove('show');
+  return d;
+}
+
+// ---- Kumpulkan jawaban Aktivitas 3 (esai) ----
+function collectActivity3(){
+  let currentGroup = 'Umum';
+  const details = [];
+  document.querySelectorAll('#a3 .card > *').forEach(el=>{
+    if(el.classList && el.classList.contains('group')){ currentGroup = el.textContent.trim(); }
+    if(el.classList && el.classList.contains('q')){
+      const label = el.querySelector('label').textContent.trim();
+      const val = el.querySelector('textarea').value.trim();
+      details.push({ label: `[${currentGroup}] ${label}`, your: val || '(kosong)', ok: true });
+    }
+  });
+  const filled = details.filter(d=>d.your !== '(kosong)').length;
+  return { name:'Aktivitas 3 — Reading Response', details, filled, total: details.length };
+}
+
+// ---- Kumpulkan jawaban Aktivitas 4 (matching, auto-dinilai) ----
+function collectActivity4(){
+  let correct = 0;
+  const details = [];
+  document.querySelectorAll('#leftCol .mcard').forEach(c=>{
+    const num = c.dataset.id;
+    const yourLetter = pairs[num] || '';
+    const ok = yourLetter === key[num];
+    if(ok) correct++;
+    const rightText = l => (document.querySelector(`#rightCol .mcard[data-id="${l}"]`)||{}).textContent || '';
+    details.push({
+      label: c.textContent.replace(/^\d+\.\s*/,'').trim(),
+      your: yourLetter ? `${yourLetter}. ${rightText(yourLetter).replace(/^[a-e]\.\s*/,'')}` : '(kosong)',
+      correct: `${key[num]}. ${rightText(key[num]).replace(/^[a-e]\.\s*/,'')}`,
+      ok
+    });
+  });
+  return { name:'Aktivitas 4 — Matching', correct, total: 5, details };
+}
+
+// ---- Kumpulkan jawaban Aktivitas 5 (tabel catatan) ----
+function collectActivity5(){
+  const details = [];
+  document.querySelectorAll('#tbl5 tr').forEach((tr, i)=>{
+    const inputs = tr.querySelectorAll('input');
+    const vals = Array.from(inputs).map(inp=>inp.value.trim());
+    if(vals.some(v=>v)){
+      details.push({ label:`Baris ${i+1}`, your:`Characters: ${vals[0]||'-'} | Time: ${vals[1]||'-'} | Place: ${vals[2]||'-'}`, ok:true });
+    }
+  });
+  return { name:'Aktivitas 5 — Expressions Notes', details };
+}
+
+// ---- Submit ke LMS ----
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  if(submitted) return;
+  const identitas = validateIdentitas();
+  if(!identitas) return;
+
+  const submitBtn = document.getElementById('submitBtn');
+  const statusEl = document.getElementById('submitStatus');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Mengirim...';
+
+  const a3 = collectActivity3();
+  const a4 = collectActivity4();
+  const a5 = collectActivity5();
+  const jawaban = [a3, a4, a5];
+
+  const payload = {
+    worksheet_slug: WORKSHEET_SLUG,
+    jenis: identitas.jenis,
+    nama: identitas.nama,
+    anggota: identitas.anggota,
+    kelas: identitas.kelas,
+    nilai: null,
+    nilai_maks: null,
+    status: 'selesai',
+    siswa_id: loggedInProfile ? loggedInProfile.id : null,
+    jawaban
+  };
+
+  try{
+    const { error } = await sb.from('hasil_worksheet').insert(payload);
+    if(error) throw error;
+    submitted = true;
+    submitBtn.textContent = 'Terkirim ✓';
+    statusEl.textContent = `Tugas terkirim ke guru (${a3.filled}/${a3.total} pertanyaan Aktivitas 3 terisi, Aktivitas 4: ${a4.correct}/5 benar). Jawaban esai akan dinilai manual oleh guru.`;
+    statusEl.className = 'submit-status ok';
+  }catch(err){
+    submitBtn.disabled = false;
+    submitBtn.textContent = '📤 Kirim Tugas ke Guru';
+    statusEl.textContent = 'Gagal mengirim (' + (err.message || 'kesalahan jaringan') + '). Coba lagi.';
+    statusEl.className = 'submit-status err';
+  }
+});
+</script>
+</body>
+</html>
