@@ -428,6 +428,154 @@ body{
 .shell.nav-collapsed .logout-btn{padding:11px 0;}
 .shell.nav-collapsed .logout-btn .logout-label{display:none;}
 
+/* ===================== SIDEBAR SISWA: MODE GRID (app-drawer ala Android) ===================== */
+.sidebar.sidebar-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  align-content:start;
+}
+.sidebar.sidebar-grid > .brand,
+.sidebar.sidebar-grid > .user-card,
+.sidebar.sidebar-grid > .nav-section-label,
+.sidebar.sidebar-grid > .sidebar-footer{
+  grid-column:1 / -1;
+}
+.sidebar.sidebar-grid .nav-item{
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  padding:16px 6px;
+  margin-bottom:0;
+  border-radius:16px;
+  background:var(--panel);
+  border:1px solid var(--line);
+  text-align:center;
+}
+.sidebar.sidebar-grid .nav-item .icon{
+  width:42px; height:42px;
+  border-radius:13px;
+  background:linear-gradient(135deg, var(--lime), var(--sky));
+  font-size:19px;
+  color:#0B0E14;
+}
+.sidebar.sidebar-grid .nav-item .label{
+  font-size:11px;
+  font-weight:600;
+  white-space:normal;
+  line-height:1.25;
+}
+.sidebar.sidebar-grid .nav-item:hover{background:var(--bg); border-color:var(--violet);}
+.sidebar.sidebar-grid .nav-item.active{background:var(--violet); border-color:var(--violet);}
+.sidebar.sidebar-grid .nav-item.active .icon{background:rgba(255,255,255,0.22); color:#fff;}
+.sidebar.sidebar-grid .nav-item.active .label{color:#fff;}
+.sidebar.sidebar-grid .nav-item{position:relative;}
+
+/* Mode rail ikon-saja (desktop di-collapse) tetap 1 kolom seperti semula */
+.shell.nav-collapsed .sidebar.sidebar-grid{display:flex; flex-direction:column;}
+.shell.nav-collapsed .sidebar.sidebar-grid .nav-item{
+  flex-direction:row; justify-content:center; padding:12px 0;
+  background:transparent; border:none; border-radius:10px;
+}
+.shell.nav-collapsed .sidebar.sidebar-grid .nav-item .icon{
+  width:22px; height:22px; border-radius:0; background:none; font-size:16px; color:inherit;
+}
+.shell.nav-collapsed .sidebar.sidebar-grid .nav-item.active{background:var(--violet);}
+.shell.nav-collapsed .sidebar.sidebar-grid .nav-item.active .icon{background:none; color:#fff;}
+
+/* ===================== NAVIGASI SISWA: tanpa sidebar, grid app-drawer di bawah layar (semua ukuran layar) ===================== */
+.mobile-bottom-nav.mobile-bottom-nav-grid{
+  display:grid !important;
+  position:fixed;
+  left:0; right:0; bottom:0;
+  background:#fff;
+  border-top:1px solid #E7E9F2;
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+  z-index:999;
+  box-shadow:0 -2px 16px rgba(20,20,40,0.08);
+  grid-template-columns:repeat(auto-fit, minmax(72px, 92px));
+  justify-content:center;
+  gap:4px 12px;
+}
+.mobile-bottom-nav.mobile-bottom-nav-grid a{
+  flex:none;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:3px;
+  padding:4px 2px 6px;
+  text-decoration:none;
+  color:#8A90A3;
+  font-size:10.5px;
+  font-weight:600;
+  border-radius:10px;
+}
+.mobile-bottom-nav.mobile-bottom-nav-grid a .mbn-icon{
+  width:38px; height:38px;
+  margin:0 auto;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px;
+  background:#F1F2F6;
+  font-size:17px;
+  line-height:1;
+}
+.mobile-bottom-nav.mobile-bottom-nav-grid a.active{ color:#1f2937; }
+.mobile-bottom-nav.mobile-bottom-nav-grid a.active .mbn-icon{ background:#1f2937; filter:brightness(1.4); }
+
+/* Ruang konten di bawah, biar tidak ketutupan bar navigasi yang fixed */
+#app-screen.no-sidebar .content{ padding-bottom:104px; }
+
+/* Tombol keluar di topbar (menggantikan tombol keluar yang sebelumnya di sidebar) */
+.topbar-logout-btn{
+  width:40px; height:40px;
+  border-radius:12px;
+  border:1px solid #E7E9F2;
+  background:#fff;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  color:#5a6172;
+  padding:0;
+  transition:background .15s, color .15s, border-color .15s;
+}
+.topbar-logout-btn:hover{ background:#FAFBFE; color:#e5533d; border-color:#f3c7c0; }
+.topbar-logout-btn svg{ width:17px; height:17px; display:block; }
+@media (max-width:600px){
+  .topbar-logout-btn{ width:36px; height:36px; }
+}
+
+/* ===================== HALAMAN "MENU": app-drawer besar ala grid aplikasi Android ===================== */
+.app-drawer{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:16px;
+}
+.app-drawer .ad-tile{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:12px;
+  padding:28px 12px;
+  background:#fff;
+  border:1px solid #E7E9F2;
+  border-radius:20px;
+  text-decoration:none;
+  color:#161927;
+  transition:transform .15s, box-shadow .15s, border-color .15s;
+}
+.app-drawer .ad-tile:hover{ transform:translateY(-3px); box-shadow:0 10px 24px rgba(20,20,40,0.08); border-color:#c9cdda; }
+.app-drawer .ad-tile .ad-icon{
+  width:58px; height:58px;
+  border-radius:18px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:27px;
+}
+.app-drawer .ad-tile .ad-label{ font-size:13.5px; font-weight:700; }
+.app-drawer .ad-tile .ad-desc{ font-size:11.5px; color:#8A90A3; line-height:1.4; }
+@media (max-width:700px){
+  .app-drawer{ grid-template-columns:repeat(2, 1fr); gap:12px; }
+  .app-drawer .ad-tile{ padding:22px 10px; }
+}
+
 .main{flex:1; min-width:0;}
 .topbar{
   background:#fff;

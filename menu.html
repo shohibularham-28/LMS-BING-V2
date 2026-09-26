@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Materi — English Learning Hub</title>
+<title>Menu — English Learning Hub</title>
 <link rel="stylesheet" href="assets/style.css">
 <style>
   /* ===== Mobile bottom nav (menu siswa di bawah layar) ===== */
@@ -67,22 +67,59 @@
 
       <div class="content">
         <div class="page-header">
-          <div class="eyebrow">Learn</div>
-          <h1>Materi Pembelajaran</h1>
+          <div class="eyebrow">Beranda</div>
+          <h1>Menu</h1>
         </div>
-        <div class="materi-grid" id="materi-container">Memuat…</div>
+
+        <div class="app-drawer">
+          <a class="ad-tile" href="pengumuman.html">
+            <div class="ad-icon" style="background:#eef1ff; color:#4f5bd5;">📣</div>
+            <div class="ad-label">Pengumuman &amp; Nilai</div>
+            <div class="ad-desc">Info terbaru &amp; hasil ujian kamu</div>
+          </a>
+          <a class="ad-tile" href="materi.html">
+            <div class="ad-icon" style="background:#e9f6ff; color:#0f8ecf;">📘</div>
+            <div class="ad-label">Materi</div>
+            <div class="ad-desc">Bahan belajar tiap topik</div>
+          </a>
+          <a class="ad-tile" href="worksheet.html">
+            <div class="ad-icon" style="background:#eafaf0; color:#1fa15a;">📝</div>
+            <div class="ad-label">Worksheet</div>
+            <div class="ad-desc">Latihan &amp; soal-soal kamu</div>
+          </a>
+          <a class="ad-tile" href="battle.html">
+            <div class="ad-icon" style="background:#fff0ee; color:#e5533d;">⚔️</div>
+            <div class="ad-label">Battle Kelas</div>
+            <div class="ad-desc">Kuis seru lawan teman sekelas</div>
+          </a>
+          <a class="ad-tile" href="obrolan.html">
+            <div class="ad-icon" style="background:#f1edff; color:#7a4fd5;">💬</div>
+            <div class="ad-label">Obrolan Kelas</div>
+            <div class="ad-desc">Ngobrol bareng satu kelas</div>
+          </a>
+          <a class="ad-tile" href="bintang.html">
+            <div class="ad-icon" style="background:#fff8e0; color:#c48b00;">⭐</div>
+            <div class="ad-label">Koleksi Bintang</div>
+            <div class="ad-desc">Apresiasi yang kamu kumpulkan</div>
+          </a>
+          <a class="ad-tile" href="pengaturan.html">
+            <div class="ad-icon" style="background:#f1f2f6; color:#5a6172;">⚙️</div>
+            <div class="ad-label">Pengaturan</div>
+            <div class="ad-desc">Profil &amp; akun kamu</div>
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
 <nav class="mobile-bottom-nav mobile-bottom-nav-grid">
-  <a href="menu.html" data-page="menu"><span class="mbn-icon">🏠</span>Menu</a>
+  <a href="menu.html" data-page="menu" class="active"><span class="mbn-icon">🏠</span>Menu</a>
   <a href="pengumuman.html" data-page="pengumuman"><span class="mbn-icon">📣</span>Pengumuman</a>
-  <a href="materi.html" data-page="materi" class="active"><span class="mbn-icon">📘</span>Materi</a>
+  <a href="materi.html" data-page="materi"><span class="mbn-icon">📘</span>Materi</a>
   <a href="worksheet.html" data-page="worksheet"><span class="mbn-icon">📝</span>Worksheet</a>
   <a href="battle.html" data-page="battle"><span class="mbn-icon">⚔️</span>Battle</a>
-    <a href="obrolan.html" data-page="obrolan"><span class="mbn-icon">💬</span>Obrolan</a>
+  <a href="obrolan.html" data-page="obrolan"><span class="mbn-icon">💬</span>Obrolan</a>
   <a href="bintang.html" data-page="bintang"><span class="mbn-icon">⭐</span>Bintang</a>
   <a href="pengaturan.html" data-page="pengaturan"><span class="mbn-icon">⚙️</span>Akun</a>
 </nav>
@@ -94,27 +131,9 @@
 (async function () {
   const profile = await requireLogin();
   if (!profile) return;
-  renderShell(profile, 'materi');
+  renderShell(profile, 'menu');
   initNotifDropdown();
   await loadStudentNotifications(profile);
-
-  const materiC = document.getElementById('materi-container');
-  const level = profile.kelas ? profile.kelas.level : getLevel(profile.kelas ? profile.kelas.nama : '');
-  const { data } = await supabase
-    .from('materi')
-    .select('tag, judul, deskripsi, url')
-    .or(`and(kelas_id.is.null,level.is.null),kelas_id.eq.${profile.kelas_id},level.eq.${level}`)
-    .order('created_at', { ascending: true });
-
-  const materi = data || [];
-  materiC.innerHTML = materi.length ? materi.map(m => `
-    <div class="materi-card">
-      <div class="tag">${esc(m.tag || 'Materi')}</div>
-      <h3>${esc(m.judul)}</h3>
-      <p>${esc(m.deskripsi || '')}</p>
-      <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
-    </div>
-  `).join('') : emptyState("Belum ada materi", "Materi pembelajaran akan diunggah oleh guru di sini.", "📘");
 })();
 </script>
 
