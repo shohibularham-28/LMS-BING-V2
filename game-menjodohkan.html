@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menjodohkan — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{ background:#F6F7FB; }
+  .mj-wrap{ max-width:640px; margin:0 auto; padding:18px 16px 60px; }
+  .mj-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .mj-top a{ color:#4f5bd5; font-weight:700; text-decoration:none; font-size:13.5px; }
+  .mj-progress{ font-size:12.5px; color:#8A90A3; font-weight:700; }
+  .mj-card{ background:#fff; border-radius:18px; padding:22px 18px; box-shadow:0 8px 24px rgba(20,20,40,0.06); }
+  .mj-instruksi{ font-size:12.5px; color:#8A90A3; margin-bottom:16px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+
+  .mj-board{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+  .mj-col-label{ font-size:11px; font-weight:700; color:#8A90A3; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+  .mj-item{
+    background:#F1F2F6; border:2px solid #E7E9F2; border-radius:12px; padding:12px 14px; font-weight:600; font-size:14px;
+    cursor:pointer; user-select:none; transition:background .12s, border-color .12s, transform .1s; margin-bottom:10px;
+    min-height:22px; display:flex; align-items:center;
+  }
+  .mj-item:hover{ background:#E7E9F2; }
+  .mj-item.selected{ border-color:#4f5bd5; background:#eef1ff; color:#3138a0; }
+  .mj-item.matched{ background:#eafaf0; border-color:#1fa15a; color:#1a8a4d; cursor:default; opacity:.85; }
+  .mj-item.wrong{ animation:mjShake .35s; border-color:#e5533d; background:#fff0ee; }
+  @keyframes mjShake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+
+  .mj-final{ text-align:center; padding:30px 10px; }
+  .mj-final .skor-besar{ font-size:44px; font-weight:800; color:#4f5bd5; margin:12px 0; }
+  .mj-final button{ margin-top:16px; padding:12px 22px; border-radius:11px; border:none; background:#1f2937; color:#fff; font-weight:700; cursor:pointer; }
+  .mj-loading{ text-align:center; padding:60px 10px; color:#8A90A3; }
+</style>
+</head>
+<body>
+
+<div class="mj-wrap">
+  <div class="mj-top">
+    <a href="menu-game.html">‹ Keluar</a>
+    <div class="mj-progress" id="mjProgress"></div>
+  </div>
+  <div id="mjContainer"><div class="mj-loading">Memuat soal…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const MODE = params.get('mode');           // 'mandiri' | 'live'
+const BANK_ID = params.get('id');
+const KODE = (params.get('kode') || '').toUpperCase();
+
+let PROFILE = null;
+let RONDE_LIST = [];           // semua ronde: [{judul, pasangan:[{kiri,kanan}]}]
+let RONDE_IDX = 0;             // ronde yang sedang dikerjakan sekarang
+let RONDE_OFFSET = 0;          // total pasangan di ronde-ronde SEBELUM ronde sekarang (buat soal_index unik lintas ronde)
+let TOTAL_PASANGAN = 0;        // total semua pasangan di semua ronde
+let PAIRS = [];                // pasangan ronde aktif [{kiri, kanan}] (index lokal = soal_index - RONDE_OFFSET)
+let BANK_GAME_ID = null;
+let SESI = null;              // hanya kalau mode live
+let PESERTA = null;           // hanya kalau mode live
+
+let kiriList = [];            // [{pid, text}] urutan tampil kolom kiri
+let kananList = [];           // [{pid, text}] urutan tampil kolom kanan (diacak)
+let matchedIds = new Set();   // pid yang sudah cocok
+let selectedKiri = null;      // pid yang sedang dipilih di kolom kiri
+let skorTotal = 0;
+let gameStartTime = 0;
+let sudahSelesai = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildBoard(isFirstRonde) {
+  kiriList = PAIRS.map((p, i) => ({ pid: i, text: p.kiri }));
+  let kanan = PAIRS.map((p, i) => ({ pid: i, text: p.kanan }));
+  kananList = shuffle(kanan);
+  // pastikan urutan kolom kanan beda dari kolom kiri kalau soal > 1
+  if (kananList.length > 1) {
+    let tries = 0;
+    while (kananList.map(k => k.pid).join(',') === kiriList.map(k => k.pid).join(',') && tries < 8) {
+      kananList = shuffle(kanan);
+      tries++;
+    }
+  }
+  matchedIds = new Set();
+  selectedKiri = null;
+  if (isFirstRonde) skorTotal = 0;
+  gameStartTime = Date.now();
+  sudahSelesai = false;
+}
+
+function renderSoal() {
+  const c = document.getElementById('mjContainer');
+  const instruksi = RONDE_LIST.length > 1
+    ? `${esc(RONDE_LIST[RONDE_IDX].judul)} (${RONDE_IDX + 1}/${RONDE_LIST.length}) — Jodohkan pasangan yang benar`
+    : `Jodohkan pasangan yang benar — ketuk salah satu di kiri, lalu pasangannya di kanan`;
+  c.innerHTML = `
+    <div class="mj-card">
+      <div class="mj-instruksi">${instruksi}</div>
+      <div class="mj-board">
+        <div>
+          <div class="mj-col-label">Kolom A</div>
+          <div id="mjKiri"></div>
+        </div>
+        <div>
+          <div class="mj-col-label">Kolom B</div>
+          <div id="mjKanan"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  renderColumns();
+  updateProgress();
+}
+
+function updateProgress() {
+  document.getElementById('mjProgress').textContent = `Cocok ${RONDE_OFFSET + matchedIds.size} / ${TOTAL_PASANGAN} · Skor: ${skorTotal}`;
+}
+
+// Setelah 1 ronde selesai: lanjut ke ronde berikutnya (kalau ada), atau tampilkan hasil akhir.
+function lanjutRondeAtauSelesai() {
+  if (RONDE_IDX < RONDE_LIST.length - 1) {
+    RONDE_OFFSET += PAIRS.length;
+    RONDE_IDX += 1;
+    PAIRS = RONDE_LIST[RONDE_IDX].pasangan;
+    buildBoard(false);
+    renderSoal();
+  } else {
+    tampilkanHasilAkhir();
+  }
+}
+
+function renderColumns() {
+  const kiriEl = document.getElementById('mjKiri');
+  const kananEl = document.getElementById('mjKanan');
+  if (!kiriEl || !kananEl) return;
+
+  kiriEl.innerHTML = kiriList.map(k => `
+    <div class="mj-item ${matchedIds.has(k.pid) ? 'matched' : ''} ${selectedKiri === k.pid ? 'selected' : ''}" data-pid="${k.pid}" data-side="kiri">${esc(k.text)}</div>
+  `).join('');
+  kananEl.innerHTML = kananList.map(k => `
+    <div class="mj-item ${matchedIds.has(k.pid) ? 'matched' : ''}" data-pid="${k.pid}" data-side="kanan">${esc(k.text)}</div>
+  `).join('');
+
+  kiriEl.querySelectorAll('.mj-item:not(.matched)').forEach(el => {
+    el.addEventListener('click', () => {
+      const pid = Number(el.dataset.pid);
+      selectedKiri = (selectedKiri === pid) ? null : pid;
+      renderColumns();
+    });
+  });
+  kananEl.querySelectorAll('.mj-item:not(.matched)').forEach(el => {
+    el.addEventListener('click', () => onPilihKanan(Number(el.dataset.pid), el));
+  });
+}
+
+async function onPilihKanan(pidKanan, el) {
+  if (selectedKiri === null) return;
+  const pidKiri = selectedKiri;
+  if (pidKiri === pidKanan) {
+    matchedIds.add(pidKiri);
+    selectedKiri = null;
+    skorTotal += 10;
+    updateProgress();
+    renderColumns();
+
+    if (MODE === 'live' && PESERTA) {
+      const waktuMs = Date.now() - gameStartTime;
+      try {
+        await supabase.from('game_jawaban').insert({
+          sesi_id: SESI.id, peserta_id: PESERTA.id, soal_index: RONDE_OFFSET + pidKiri,
+          benar: true, waktu_ms: waktuMs, skor_didapat: 10
+        });
+      } catch (e) { /* mungkin sudah pernah dijawab, abaikan */ }
+      const soalSelesaiBaru = RONDE_OFFSET + matchedIds.size;
+      await supabase.from('game_peserta')
+        .update({ skor_total: skorTotal, soal_selesai: soalSelesaiBaru, status: soalSelesaiBaru >= TOTAL_PASANGAN ? 'selesai' : 'main' })
+        .eq('id', PESERTA.id);
+    }
+
+    if (matchedIds.size >= PAIRS.length && !sudahSelesai) {
+      sudahSelesai = true;
+      setTimeout(lanjutRondeAtauSelesai, 400);
+    }
+  } else {
+    // salah — animasi shake sebentar lalu balik netral
+    const kiriEl = document.querySelector(`#mjKiri .mj-item[data-pid="${pidKiri}"]`);
+    if (kiriEl) kiriEl.classList.add('wrong');
+    el.classList.add('wrong');
+    selectedKiri = null;
+    setTimeout(renderColumns, 350);
+  }
+}
+
+async function tampilkanHasilAkhir() {
+  const c = document.getElementById('mjContainer');
+  document.getElementById('mjProgress').textContent = '';
+  const totalMax = TOTAL_PASANGAN * 10;
+  c.innerHTML = `
+    <div class="mj-card mj-final">
+      <div style="font-size:44px;">🎉</div>
+      <div>Kerja bagus!</div>
+      <div class="skor-besar">${skorTotal} / ${totalMax}</div>
+      <div style="color:#8A90A3; font-size:13px;">${TOTAL_PASANGAN} pasangan berhasil kamu jodohkan${RONDE_LIST.length > 1 ? ' (' + RONDE_LIST.length + ' ronde)' : ''}</div>
+      <div>
+        ${MODE === 'mandiri' ? '<button id="btnMainLagi">🔁 Main Lagi</button>' : ''}
+        <button onclick="location.href='menu-game.html'" style="background:#F1F2F6; color:#1f2937;">Kembali ke Menu</button>
+      </div>
+    </div>
+  `;
+  if (MODE === 'mandiri') {
+    document.getElementById('btnMainLagi').addEventListener('click', () => {
+      RONDE_IDX = 0; RONDE_OFFSET = 0; PAIRS = RONDE_LIST[0].pasangan;
+      buildBoard(true); renderSoal();
+    });
+    await supabase.from('hasil_game_mandiri').insert({
+      bank_game_id: BANK_GAME_ID, profile_id: PROFILE.id, jenis: 'jodoh',
+      skor: skorTotal, total_soal: TOTAL_PASANGAN
+    });
+  }
+}
+
+async function initMandiri() {
+  const { data, error } = await supabase.from('bank_game').select('id, judul, data').eq('id', BANK_ID).maybeSingle();
+  RONDE_LIST = jodohRondeFromData(data && data.data);
+  if (error || !data || !RONDE_LIST.length) {
+    document.getElementById('mjContainer').innerHTML = emptyState('Materi tidak ditemukan', 'Materi ini mungkin sudah dihapus gurumu.', '🔗');
+    return;
+  }
+  BANK_GAME_ID = data.id;
+  RONDE_IDX = 0;
+  RONDE_OFFSET = 0;
+  TOTAL_PASANGAN = jodohTotalPasangan(RONDE_LIST);
+  PAIRS = RONDE_LIST[0].pasangan;
+  buildBoard(true);
+  renderSoal();
+}
+
+async function initLive() {
+  const c = document.getElementById('mjContainer');
+  const { data: sesi, error } = await supabase.from('game_sesi')
+    .select('id, kode, status, mode, jenis, bank_game_id')
+    .eq('kode', KODE).maybeSingle();
+  if (error || !sesi || sesi.status !== 'berjalan' || sesi.mode !== 'mandiri_live') {
+    c.innerHTML = emptyState('Sesi tidak tersedia', 'Kode sesi salah atau sesi sudah selesai.', '🔴');
+    return;
+  }
+  SESI = sesi;
+  const { data: bank } = await supabase.from('bank_game').select('id, data').eq('id', sesi.bank_game_id).maybeSingle();
+  if (!bank) { c.innerHTML = emptyState('Materi tidak ditemukan', '', '🔗'); return; }
+  RONDE_LIST = jodohRondeFromData(bank.data);
+  if (!RONDE_LIST.length) { c.innerHTML = emptyState('Materi tidak ditemukan', '', '🔗'); return; }
+  TOTAL_PASANGAN = jodohTotalPasangan(RONDE_LIST);
+
+  // cari / buat peserta
+  const { data: existing } = await supabase.from('game_peserta')
+    .select('id, skor_total, soal_selesai, status')
+    .eq('sesi_id', sesi.id).eq('profile_id', PROFILE.id).maybeSingle();
+
+  // tentukan mulai dari ronde mana berdasarkan progres tersimpan (soal_selesai kumulatif lintas ronde)
+  const soalSelesaiTersimpan = existing ? (existing.soal_selesai || 0) : 0;
+  RONDE_IDX = 0; RONDE_OFFSET = 0;
+  while (RONDE_IDX < RONDE_LIST.length - 1 && RONDE_OFFSET + RONDE_LIST[RONDE_IDX].pasangan.length <= soalSelesaiTersimpan) {
+    RONDE_OFFSET += RONDE_LIST[RONDE_IDX].pasangan.length;
+    RONDE_IDX += 1;
+  }
+  PAIRS = RONDE_LIST[RONDE_IDX].pasangan;
+
+  buildBoard(true);
+
+  if (existing) {
+    PESERTA = existing;
+    skorTotal = existing.skor_total || 0;
+    if (existing.status === 'selesai' || soalSelesaiTersimpan >= TOTAL_PASANGAN) {
+      await tampilkanHasilAkhir();
+      return;
+    }
+    // tandai pasangan yang sudah pernah benar sebelumnya di ronde ini (mis. reload halaman)
+    const { data: jawabanLama } = await supabase.from('game_jawaban')
+      .select('soal_index, benar').eq('sesi_id', sesi.id).eq('peserta_id', existing.id).eq('benar', true);
+    (jawabanLama || []).forEach(j => {
+      const localIdx = j.soal_index - RONDE_OFFSET;
+      if (localIdx >= 0 && localIdx < PAIRS.length) matchedIds.add(localIdx);
+    });
+  } else {
+    const { data: created, error: cErr } = await supabase.from('game_peserta')
+      .insert({ sesi_id: sesi.id, profile_id: PROFILE.id, nama: PROFILE.nama })
+      .select('id, skor_total, soal_selesai, status').single();
+    if (cErr || !created) { c.innerHTML = emptyState('Gagal bergabung', 'Coba muat ulang halaman.', '⚠️'); return; }
+    PESERTA = created;
+  }
+  renderSoal();
+}
+
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  PROFILE = profile;
+
+  if (MODE === 'mandiri' && BANK_ID) {
+    await initMandiri();
+  } else if (MODE === 'live' && KODE) {
+    await initLive();
+  } else {
+    document.getElementById('mjContainer').innerHTML = emptyState('Halaman tidak valid', 'Silakan masuk lewat menu Game.', '⚠️');
+  }
+})();
+</script>
+
+</body>
+</html>

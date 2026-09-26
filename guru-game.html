@@ -34,6 +34,9 @@
   .roster-chip{ background:#F1F2F6; border:1px solid #E7E9F2; border-radius:99px; padding:8px 16px; font-weight:600; font-size:13.5px; cursor:pointer; }
   .roster-chip:hover{ background:#E7E9F2; }
   .roster-chip.done{ background:#eafaf0; border-color:#c7ecd6; }
+  .roster-chip.picked{ background:#eef1ff; border-color:#4f5bd5; color:#3138a0; }
+  button.btn-launch-ipd:disabled{ opacity:.45; cursor:not-allowed; }
+  .gg-ronde-box{ border:1px solid #E7E9F2; border-radius:12px; padding:12px; margin-bottom:12px; background:#FAFBFF; }
 
   .sk-answer-row{ min-height:52px; border:2px dashed #D6D9E6; border-radius:12px; padding:8px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
   .sk-answer-row.benar{ border-color:#1fa15a; background:#eafaf0; }
@@ -79,6 +82,23 @@
     70%{ transform:scale(1.08); opacity:1; }
     100%{ transform:scale(1); }
   }
+  .gg-jenis-tabs{ display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .gg-jenis-tab{ padding:9px 16px; border-radius:10px; border:1px solid #E7E9F2; background:#fff; color:#5a6172; font-weight:700; font-size:13px; cursor:pointer; }
+  .gg-jenis-tab.active{ background:#1f2937; color:#fff; border-color:#1f2937; }
+
+  /* ===== Menjodohkan: papan 2 kolom (form guru, IPD besar) ===== */
+  .mj-board{ display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; }
+  .mj-col-label{ font-size:11px; font-weight:700; color:#8A90A3; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+  .mj-item{
+    background:#F1F2F6; border:2px solid #E7E9F2; border-radius:12px; padding:12px 14px; font-weight:600; font-size:14px;
+    cursor:pointer; user-select:none; transition:background .12s, border-color .12s; margin-bottom:10px; display:flex; align-items:center;
+  }
+  .mj-item:hover{ background:#E7E9F2; }
+  .mj-item.selected{ border-color:#4f5bd5; background:#eef1ff; color:#3138a0; }
+  .mj-item.matched{ background:#eafaf0; border-color:#1fa15a; color:#1a8a4d; cursor:default; opacity:.85; }
+  .mj-item.wrong{ animation:mjShakeGg .35s; border-color:#e5533d; background:#fff0ee; }
+  @keyframes mjShakeGg{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-6px); } 75%{ transform:translateX(6px); } }
+  .mj-item.ipd-big{ font-size:19px !important; padding:16px 18px !important; border-radius:14px !important; }
 </style>
 </head>
 <body>
@@ -100,34 +120,59 @@ let PROFILE = null;
 let KELAS_LIST = [];
 let ACTIVE_SESI = null;   // sesi yang sedang di-launch di layar ini
 let ACTIVE_BANK = null;
+let ACTIVE_JENIS = 'susun_kata'; // jenis materi yang sedang aktif di layar ini (susun_kata | jodoh)
+let JENIS_AKTIF = 'susun_kata';  // tab jenis yang sedang dipilih di daftar materi
 let realtimeChannel = null;
+
+const JENIS_LABEL = { susun_kata: 'Susun Kata', jodoh: 'Menjodohkan' };
+const JENIS_ICON = { susun_kata: '🔤', jodoh: '🔗' };
+const JENIS_SATUAN = { susun_kata: 'soal', jodoh: 'pasangan' };
 
 function fmtKode() {
   return 'GM-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
 // ============ VIEW: DAFTAR MATERI ============
-async function renderDaftarMateri() {
+async function renderDaftarMateri(jenis) {
+  if (jenis) JENIS_AKTIF = jenis;
+  const jenisAktif = JENIS_AKTIF;
   const c = document.getElementById('ggContainer');
   document.getElementById('ggTitle').textContent = '🎮 Game Kelas';
   c.innerHTML = `
-    <div class="section-label">Susun Kata — Materi</div>
-    <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambah Materi Susun Kata</button>
+    <div class="gg-jenis-tabs" id="ggJenisTabs">
+      <button class="gg-jenis-tab ${jenisAktif === 'susun_kata' ? 'active' : ''}" data-jenis="susun_kata">🔤 Susun Kata</button>
+      <button class="gg-jenis-tab ${jenisAktif === 'jodoh' ? 'active' : ''}" data-jenis="jodoh">🔗 Menjodohkan</button>
+    </div>
+    <div class="section-label">${JENIS_LABEL[jenisAktif]} — Materi</div>
+    <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambah Materi ${JENIS_LABEL[jenisAktif]}</button>
     <div id="ggMateriListSlot" style="margin-top:6px;">Memuat…</div>
   `;
-  document.getElementById('btnTambahMateri').addEventListener('click', () => renderFormMateri(null));
+  document.getElementById('ggJenisTabs').querySelectorAll('.gg-jenis-tab').forEach(btn => {
+    btn.addEventListener('click', () => renderDaftarMateri(btn.dataset.jenis));
+  });
+  document.getElementById('btnTambahMateri').addEventListener('click', () => renderFormMateri(null, jenisAktif));
 
   const { data: materi } = await supabase.from('bank_game')
     .select('id, judul, data, kelas_id, level, published, kelas:kelas_id(nama)')
-    .eq('jenis', 'susun_kata')
+    .eq('jenis', jenisAktif)
     .order('created_at', { ascending: false });
 
   const list = materi || [];
   const slot = document.getElementById('ggMateriListSlot');
-  slot.innerHTML = list.length ? `<div class="gg-materi-list">${list.map(m => `
+  slot.innerHTML = list.length ? `<div class="gg-materi-list">${list.map(m => {
+    let metaJumlah;
+    if (jenisAktif === 'jodoh') {
+      const ronde = jodohRondeFromData(m.data);
+      metaJumlah = ronde.length > 1
+        ? `${ronde.length} ronde · ${jodohTotalPasangan(ronde)} pasangan`
+        : `${jodohTotalPasangan(ronde)} pasangan`;
+    } else {
+      metaJumlah = `${(m.data || []).length} ${JENIS_SATUAN[jenisAktif]}`;
+    }
+    return `
     <div class="gg-card">
       <h4>${esc(m.judul)}</h4>
-      <div class="gg-meta">${(m.data || []).length} soal · ${m.kelas ? esc(m.kelas.nama) : (m.level ? 'Tingkat ' + m.level : 'Semua kelas')}</div>
+      <div class="gg-meta">${metaJumlah} · ${m.kelas ? esc(m.kelas.nama) : (m.level ? 'Tingkat ' + m.level : 'Semua kelas')}</div>
       <div class="gg-card-actions">
         <button class="btn-launch-ipd" data-id="${m.id}" data-mode="ipd">🖥️ Launch IPD</button>
         <button class="btn-launch-live" data-id="${m.id}" data-mode="mandiri_live">📱 Launch Live HP</button>
@@ -137,26 +182,133 @@ async function renderDaftarMateri() {
         <button class="btn-hapus-sm" data-hapus="${m.id}">🗑️ Hapus</button>
       </div>
     </div>
-  `).join('')}</div>` : emptyState('Belum ada materi', 'Tambahkan materi Susun Kata pertama lewat tombol di atas.', '🔤');
+  `;
+  }).join('')}</div>` : emptyState('Belum ada materi', `Tambahkan materi ${JENIS_LABEL[jenisAktif]} pertama lewat tombol di atas.`, JENIS_ICON[jenisAktif]);
 
   slot.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.addEventListener('click', () => bukaFormLaunch(btn.dataset.id, btn.dataset.mode, list.find(x => x.id === btn.dataset.id)));
+    btn.addEventListener('click', () => bukaFormLaunch(btn.dataset.id, btn.dataset.mode, list.find(x => x.id === btn.dataset.id), jenisAktif));
   });
   slot.querySelectorAll('[data-edit]').forEach(btn => {
-    btn.addEventListener('click', () => renderFormMateri(list.find(x => x.id === btn.dataset.edit)));
+    btn.addEventListener('click', () => renderFormMateri(list.find(x => x.id === btn.dataset.edit), jenisAktif));
   });
   slot.querySelectorAll('[data-hapus]').forEach(btn => {
     btn.addEventListener('click', async () => {
       if (!confirm('Hapus materi ini? Sesi lama yang sudah pernah dimainkan tidak ikut terhapus.')) return;
       await supabase.from('bank_game').delete().eq('id', btn.dataset.hapus);
-      renderDaftarMateri();
+      renderDaftarMateri(jenisAktif);
     });
   });
 }
 
 // ============ VIEW: FORM TAMBAH/EDIT MATERI ============
-function renderFormMateri(existing) {
+function renderFormMateri(existing, jenis) {
   const c = document.getElementById('ggContainer');
+  if (jenis === 'jodoh') {
+    const rondeAwal = existing ? jodohRondeFromData(existing.data) : [];
+    let rondeDraft = rondeAwal.length
+      ? rondeAwal.map(r => ({ judul: r.judul, teks: (r.pasangan || []).map(p => `${p.kiri} = ${p.kanan}`).join('\n') }))
+      : [{ judul: 'Ronde 1', teks: '' }];
+
+    function tampilkanRondeBoxes() {
+      return rondeDraft.map((r, i) => `
+        <div class="gg-ronde-box" data-ronde-i="${i}">
+          <div class="form-row" style="align-items:flex-end;">
+            <div class="form-field" style="flex:1;"><label>Judul Ronde</label><input type="text" class="fRondeJudul" data-i="${i}" value="${esc(r.judul || `Ronde ${i + 1}`)}" placeholder="mis. Ronde ${i + 1}"></div>
+            ${rondeDraft.length > 1 ? `<button class="btn-hapus-sm btnHapusRonde" type="button" data-i="${i}" style="flex:0 0 auto;">🗑️ Hapus Ronde</button>` : ''}
+          </div>
+          <div class="form-field">
+            <label>Daftar Pasangan Ronde Ini (1 pasangan per baris, format: Kiri = Kanan)</label>
+            <textarea class="fRondeTeks" data-i="${i}" placeholder="Cat = Kucing&#10;Dog = Anjing&#10;Bird = Burung">${esc(r.teks)}</textarea>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function ikatEventRonde() {
+      document.querySelectorAll('.fRondeJudul').forEach(el => {
+        el.addEventListener('input', () => { rondeDraft[Number(el.dataset.i)].judul = el.value; });
+      });
+      document.querySelectorAll('.fRondeTeks').forEach(el => {
+        el.addEventListener('input', () => { rondeDraft[Number(el.dataset.i)].teks = el.value; });
+      });
+      document.querySelectorAll('.btnHapusRonde').forEach(el => {
+        el.addEventListener('click', () => {
+          rondeDraft.splice(Number(el.dataset.i), 1);
+          gambarUlangRonde();
+        });
+      });
+    }
+
+    function gambarUlangRonde() {
+      document.getElementById('rondeSlot').innerHTML = tampilkanRondeBoxes();
+      ikatEventRonde();
+    }
+
+    c.innerHTML = `
+      <a class="btn-text-sm" id="btnBackList" style="cursor:pointer;">‹ Kembali ke daftar materi</a>
+      <div class="gg-form" style="margin-top:10px;">
+        <div class="form-row">
+          <div class="form-field" style="flex:2;"><label>Judul Materi</label><input type="text" id="fJudul" value="${existing ? esc(existing.judul) : ''}" placeholder="mis. Vocabulary - Animals"></div>
+          <div class="form-field"><label>Target Kelas</label><select id="fKelas"><option value="">Semua Kelas</option></select></div>
+        </div>
+        <div class="hint" style="margin-bottom:10px;">Materi bisa dibagi jadi beberapa ronde. Setiap kali ada giliran siswa maju, mereka akan mengerjakan 1 ronde saja (bergantian ronde di giliran berikutnya) — bukan langsung semua pasangan sekaligus.</div>
+        <div id="rondeSlot">${tampilkanRondeBoxes()}</div>
+        <button class="btn-secondary-sm" id="btnTambahRonde" type="button" style="margin-bottom:14px;">+ Tambah Ronde</button>
+        <button class="btn-secondary-sm" id="btnSimpanMateri">💾 Simpan Materi</button>
+        <p class="login-error" id="fError" style="display:none;"></p>
+      </div>
+    `;
+    document.getElementById('btnBackList').addEventListener('click', () => renderDaftarMateri('jodoh'));
+    ikatEventRonde();
+    document.getElementById('btnTambahRonde').addEventListener('click', () => {
+      rondeDraft.push({ judul: `Ronde ${rondeDraft.length + 1}`, teks: '' });
+      gambarUlangRonde();
+    });
+
+    const sel = document.getElementById('fKelas');
+    KELAS_LIST.forEach(k => {
+      const opt = document.createElement('option');
+      opt.value = k.id; opt.textContent = k.nama;
+      if (existing && existing.kelas_id === k.id) opt.selected = true;
+      sel.appendChild(opt);
+    });
+
+    document.getElementById('btnSimpanMateri').addEventListener('click', async () => {
+      const judul = document.getElementById('fJudul').value.trim();
+      const kelasId = document.getElementById('fKelas').value || null;
+      const errEl = document.getElementById('fError');
+      errEl.style.display = 'none';
+
+      const data = [];
+      for (let i = 0; i < rondeDraft.length; i++) {
+        const r = rondeDraft[i];
+        const judulRonde = (r.judul || '').trim() || `Ronde ${i + 1}`;
+        const lines = (r.teks || '').split('\n').map(s => s.trim()).filter(Boolean);
+        const pasangan = [];
+        for (const line of lines) {
+          const idx = line.indexOf('=');
+          if (idx === -1) { errEl.textContent = `${judulRonde}: baris "${line}" tidak berformat "Kiri = Kanan".`; errEl.style.display = ''; return; }
+          const kiri = line.slice(0, idx).trim();
+          const kanan = line.slice(idx + 1).trim();
+          if (!kiri || !kanan) { errEl.textContent = `${judulRonde}: baris "${line}" tidak lengkap.`; errEl.style.display = ''; return; }
+          pasangan.push({ kiri, kanan });
+        }
+        if (!pasangan.length) { errEl.textContent = `${judulRonde}: minimal 1 pasangan.`; errEl.style.display = ''; return; }
+        data.push({ judul: judulRonde, pasangan });
+      }
+      if (!judul) { errEl.textContent = 'Judul wajib diisi.'; errEl.style.display = ''; return; }
+      if (!data.length) { errEl.textContent = 'Minimal 1 ronde.'; errEl.style.display = ''; return; }
+
+      if (existing) {
+        await supabase.from('bank_game').update({ judul, kelas_id: kelasId, data }).eq('id', existing.id);
+      } else {
+        await supabase.from('bank_game').insert({ jenis: 'jodoh', judul, kelas_id: kelasId, data, guru_id: PROFILE.id, published: true });
+      }
+      renderDaftarMateri('jodoh');
+    });
+    return;
+  }
+
   const kalimatAwal = existing ? (existing.data || []).map(d => d.kalimat).join('\n') : '';
   c.innerHTML = `
     <a class="btn-text-sm" id="btnBackList" style="cursor:pointer;">‹ Kembali ke daftar materi</a>
@@ -174,7 +326,7 @@ function renderFormMateri(existing) {
       <p class="login-error" id="fError" style="display:none;"></p>
     </div>
   `;
-  document.getElementById('btnBackList').addEventListener('click', renderDaftarMateri);
+  document.getElementById('btnBackList').addEventListener('click', () => renderDaftarMateri('susun_kata'));
 
   const sel = document.getElementById('fKelas');
   KELAS_LIST.forEach(k => {
@@ -198,12 +350,12 @@ function renderFormMateri(existing) {
     } else {
       await supabase.from('bank_game').insert({ jenis: 'susun_kata', judul, kelas_id: kelasId, data, guru_id: PROFILE.id, published: true });
     }
-    renderDaftarMateri();
+    renderDaftarMateri('susun_kata');
   });
 }
 
 // ============ VIEW: FORM LAUNCH (pilih kelas dulu) ============
-function bukaFormLaunch(bankId, mode, bank) {
+function bukaFormLaunch(bankId, mode, bank, jenis) {
   const c = document.getElementById('ggContainer');
   c.innerHTML = `
     <a class="btn-text-sm" id="btnBackList2" style="cursor:pointer;">‹ Batal</a>
@@ -216,7 +368,7 @@ function bukaFormLaunch(bankId, mode, bank) {
       <button class="btn-secondary-sm" id="btnMulaiSesi">🚀 Mulai Sesi</button>
     </div>
   `;
-  document.getElementById('btnBackList2').addEventListener('click', renderDaftarMateri);
+  document.getElementById('btnBackList2').addEventListener('click', () => renderDaftarMateri(jenis));
   const sel = document.getElementById('fLaunchKelas');
   KELAS_LIST.forEach(k => {
     const opt = document.createElement('option'); opt.value = k.id; opt.textContent = k.nama;
@@ -227,13 +379,18 @@ function bukaFormLaunch(bankId, mode, bank) {
     const kelasId = document.getElementById('fLaunchKelas').value || null;
     const kode = fmtKode();
     const { data: sesi, error } = await supabase.from('game_sesi').insert({
-      kode, jenis: 'susun_kata', bank_game_id: bankId, guru_id: PROFILE.id, kelas_id: kelasId, mode, status: 'berjalan'
+      kode, jenis, bank_game_id: bankId, guru_id: PROFILE.id, kelas_id: kelasId, mode, status: 'berjalan'
     }).select().single();
     if (error || !sesi) { alert('Gagal membuat sesi.'); return; }
     ACTIVE_SESI = sesi;
+    ACTIVE_JENIS = jenis;
     const { data: bankFull } = await supabase.from('bank_game').select('id, data').eq('id', bankId).maybeSingle();
     ACTIVE_BANK = bankFull;
-    if (mode === 'ipd') renderLiveIpd(); else renderLiveMandiri();
+    if (mode === 'ipd') {
+      if (jenis === 'jodoh') renderLiveIpdJodoh(); else renderLiveIpd();
+    } else {
+      renderLiveMandiri();
+    }
   });
 }
 
@@ -241,8 +398,10 @@ function bukaFormLaunch(bankId, mode, bank) {
 // Alur: daftar nama -> pilih anak -> konfirmasi "Mulai" -> soal tampil besar
 // (daftar nama disembunyikan) -> jawab -> animasi (bintang kalau benar) -> otomatis balik ke daftar nama.
 let ipdItems = [];
-let ipdPicked = null;      // { id, nama } siswa yang lagi dipilih (sebelum/selama giliran)
+let ipdPicked = null;      // { ids, anggota, nama, peserta } siswa/tim yang lagi dipilih (sebelum/selama giliran)
 let ipdPool = [], ipdAnswer = [], ipdDijawab = false, ipdStart = 0;
+let ipdSelected = new Set();     // profile_id yang lagi dicentang buat giliran berikutnya (bisa >1 = kerja tim)
+let ipdRosterMap = new Map();    // profile_id -> nama, buat gabungkan nama tim
 
 async function renderLiveIpd() {
   const c = document.getElementById('ggContainer');
@@ -271,15 +430,23 @@ async function renderIpdRoster() {
   gv.style.display = 'none';
   gv.innerHTML = '';
   rv.style.display = '';
+  ipdSelected = new Set();
 
   const totalSoal = ipdItems.length;
   const idx = ACTIVE_SESI.giliran_soal_index || 0;
   rv.innerHTML = `
-    <div class="hint">Soal berikutnya: <b>ke-${(idx % totalSoal) + 1} dari ${totalSoal}</b> · Pilih siswa yang maju sekarang:</div>
+    <div class="hint">Soal berikutnya: <b>ke-${(idx % totalSoal) + 1} dari ${totalSoal}</b> · Pilih 1 siswa (atau lebih untuk kerja tim, dua siswa maju bersama dengan skor yang sama):</div>
     <div class="roster-list" id="ipdRosterList"></div>
+    <div class="gg-actions-row" style="margin-top:10px;">
+      <button class="btn-launch-ipd" id="btnMulaiGiliranSusun" disabled>▶️ Mulai Giliran (0 siswa)</button>
+    </div>
     <div class="section-label" style="margin-top:22px;">Papan Skor</div>
     <div id="ipdBoardSlot">Memuat…</div>
   `;
+  document.getElementById('btnMulaiGiliranSusun').addEventListener('click', () => {
+    if (!ipdSelected.size) return;
+    renderIpdKonfirmasi();
+  });
   await loadRosterChips();
   await refreshBoard('ipdBoardSlot');
 }
@@ -290,19 +457,32 @@ async function loadRosterChips() {
   let q = supabase.from('profiles').select('id, nama').eq('role', 'siswa').order('nama');
   if (ACTIVE_SESI.kelas_id) q = q.eq('kelas_id', ACTIVE_SESI.kelas_id);
   const { data: roster } = await q;
-  const { data: sudahMain } = await supabase.from('game_peserta').select('profile_id, soal_selesai').eq('sesi_id', ACTIVE_SESI.id);
-  const doneMap = new Map((sudahMain || []).map(p => [p.profile_id, p.soal_selesai]));
+  ipdRosterMap = new Map((roster || []).map(s => [s.id, s.nama]));
+  const { data: sudahMain } = await supabase.from('game_peserta').select('profile_id, anggota').eq('sesi_id', ACTIVE_SESI.id);
+  const doneSet = new Set();
+  (sudahMain || []).forEach(p => {
+    (p.anggota && p.anggota.length ? p.anggota.map(a => a.profile_id) : [p.profile_id]).forEach(id => { if (id) doneSet.add(id); });
+  });
   slot.innerHTML = (roster || []).map(s => `
-    <span class="roster-chip ${doneMap.has(s.id) ? 'done' : ''}" data-pid="${s.id}" data-nama="${esc(s.nama)}">${doneMap.has(s.id) ? '✅ ' : ''}${esc(s.nama)}${doneMap.has(s.id) ? ' (' + doneMap.get(s.id) + 'x maju)' : ''}</span>
+    <span class="roster-chip ${doneSet.has(s.id) ? 'done' : ''} ${ipdSelected.has(s.id) ? 'picked' : ''}" data-pid="${s.id}" data-nama="${esc(s.nama)}">${doneSet.has(s.id) ? '✅ ' : ''}${esc(s.nama)}</span>
   `).join('');
   slot.querySelectorAll('.roster-chip').forEach(chip => {
-    chip.addEventListener('click', () => renderIpdKonfirmasi(chip.dataset.pid, chip.dataset.nama));
+    chip.addEventListener('click', () => {
+      const pid = chip.dataset.pid;
+      if (ipdSelected.has(pid)) ipdSelected.delete(pid); else ipdSelected.add(pid);
+      chip.classList.toggle('picked');
+      const btn = document.getElementById('btnMulaiGiliranSusun');
+      if (btn) { btn.disabled = !ipdSelected.size; btn.textContent = `▶️ Mulai Giliran (${ipdSelected.size} siswa)`; }
+    });
   });
 }
 
 // ---- Sub-view 2: konfirmasi "Mulai" sebelum soal muncul ----
-function renderIpdKonfirmasi(profileId, nama) {
-  ipdPicked = { id: profileId, nama };
+function renderIpdKonfirmasi() {
+  const ids = [...ipdSelected];
+  const anggota = ids.map(id => ({ profile_id: id, nama: ipdRosterMap.get(id) || '' }));
+  const nama = namaTim(anggota);
+  ipdPicked = { ids, anggota, nama };
   const rv = document.getElementById('ipdRosterView');
   const gv = document.getElementById('ipdGameView');
   rv.style.display = 'none';
@@ -323,9 +503,15 @@ function renderIpdKonfirmasi(profileId, nama) {
 }
 
 async function mulaiGiliranSoal() {
-  let { data: existing } = await supabase.from('game_peserta').select('*').eq('sesi_id', ACTIVE_SESI.id).eq('profile_id', ipdPicked.id).maybeSingle();
+  const { data: semuaPeserta } = await supabase.from('game_peserta').select('*').eq('sesi_id', ACTIVE_SESI.id);
+  let existing = cariPesertaTim(semuaPeserta, ipdPicked.ids);
   if (!existing) {
-    const { data: created } = await supabase.from('game_peserta').insert({ sesi_id: ACTIVE_SESI.id, profile_id: ipdPicked.id, nama: ipdPicked.nama }).select().single();
+    const { data: created } = await supabase.from('game_peserta').insert({
+      sesi_id: ACTIVE_SESI.id,
+      profile_id: ipdPicked.ids.length === 1 ? ipdPicked.ids[0] : null,
+      nama: ipdPicked.nama,
+      anggota: ipdPicked.anggota
+    }).select().single();
     existing = created;
   }
   ipdPicked.peserta = existing;
@@ -439,6 +625,268 @@ function tampilkanCelebrationLalu(benar, kalimatBenar, callback) {
   }, benar ? 1900 : 2600);
 }
 
+// ============ VIEW: LIVE — mode IPD untuk Menjodohkan (giliran maju) ============
+let ipdJodohRondeList = [];   // semua ronde: [{judul, pasangan}]
+let ipdJodohPairs = [];       // pasangan di ronde yang lagi dikerjakan sekarang
+let ipdJodohOffset = 0;       // total pasangan di ronde-ronde SEBELUM ronde sekarang (buat soal_index unik lintas ronde)
+let ipdJodohStartSoalSelesai = 0; // soal_selesai tim ini sebelum ronde sekarang dimulai (buat akumulasi lintas ronde)
+let ipdJodohKiri = [], ipdJodohKanan = [];
+let ipdJodohMatched = new Set(), ipdJodohSelected = null, ipdJodohStart = 0;
+let ipdJodohPicked = null; // { ids, anggota, nama, peserta }
+let ipdJodohSelectedSet = new Set(); // profile_id yang lagi dicentang buat giliran berikutnya (bisa >1 = kerja tim)
+let ipdJodohRosterMap = new Map();   // profile_id -> nama, buat gabungkan nama tim
+
+async function renderLiveIpdJodoh() {
+  const c = document.getElementById('ggContainer');
+  ipdJodohRondeList = jodohRondeFromData(ACTIVE_BANK.data);
+
+  c.innerHTML = `
+    <div class="gg-form">
+      <div class="section-label">Kode Sesi: <b>${ACTIVE_SESI.kode}</b></div>
+      <div id="ipdJodohRosterView"></div>
+      <div id="ipdJodohGameView" style="display:none;"></div>
+      <div class="gg-actions-row" style="margin-top:16px;">
+        <button class="btn-hapus-sm" id="btnAkhiriIpdJodoh">⏹️ Akhiri Sesi</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnAkhiriIpdJodoh').addEventListener('click', akhiriSesi);
+  await renderIpdJodohRoster();
+  subscribeSesiJodoh();
+}
+
+// ---- Sub-view 1: daftar nama (+ papan skor) ----
+async function renderIpdJodohRoster() {
+  const rv = document.getElementById('ipdJodohRosterView');
+  const gv = document.getElementById('ipdJodohGameView');
+  if (!rv) return;
+  gv.style.display = 'none';
+  gv.innerHTML = '';
+  rv.style.display = '';
+  ipdJodohSelectedSet = new Set();
+
+  const totalRonde = ipdJodohRondeList.length;
+  const rondeIdx = (ACTIVE_SESI.giliran_soal_index || 0) % totalRonde;
+  const rondeSekarang = ipdJodohRondeList[rondeIdx];
+  rv.innerHTML = `
+    <div class="hint">Ronde berikutnya: <b>${esc(rondeSekarang.judul)} (ke-${rondeIdx + 1} dari ${totalRonde})</b> · ${rondeSekarang.pasangan.length} pasangan · Pilih 1 siswa (atau lebih untuk kerja tim, dua siswa maju bersama dengan skor yang sama):</div>
+    <div class="roster-list" id="ipdJodohRosterList"></div>
+    <div class="gg-actions-row" style="margin-top:10px;">
+      <button class="btn-launch-ipd" id="btnMulaiGiliranJodohRoster" disabled>▶️ Mulai Giliran (0 siswa)</button>
+    </div>
+    <div class="section-label" style="margin-top:22px;">Papan Skor</div>
+    <div id="ipdJodohBoardSlot">Memuat…</div>
+  `;
+  document.getElementById('btnMulaiGiliranJodohRoster').addEventListener('click', () => {
+    if (!ipdJodohSelectedSet.size) return;
+    renderIpdJodohKonfirmasi();
+  });
+  await loadRosterChipsJodoh();
+  await refreshBoard('ipdJodohBoardSlot');
+}
+
+async function loadRosterChipsJodoh() {
+  const slot = document.getElementById('ipdJodohRosterList');
+  if (!slot) return;
+  let q = supabase.from('profiles').select('id, nama').eq('role', 'siswa').order('nama');
+  if (ACTIVE_SESI.kelas_id) q = q.eq('kelas_id', ACTIVE_SESI.kelas_id);
+  const { data: roster } = await q;
+  ipdJodohRosterMap = new Map((roster || []).map(s => [s.id, s.nama]));
+  const { data: sudahMain } = await supabase.from('game_peserta').select('profile_id, anggota').eq('sesi_id', ACTIVE_SESI.id);
+  const doneSet = new Set();
+  (sudahMain || []).forEach(p => {
+    (p.anggota && p.anggota.length ? p.anggota.map(a => a.profile_id) : [p.profile_id]).forEach(id => { if (id) doneSet.add(id); });
+  });
+  slot.innerHTML = (roster || []).map(s => `
+    <span class="roster-chip ${doneSet.has(s.id) ? 'done' : ''} ${ipdJodohSelectedSet.has(s.id) ? 'picked' : ''}" data-pid="${s.id}" data-nama="${esc(s.nama)}">${doneSet.has(s.id) ? '✅ ' : ''}${esc(s.nama)}</span>
+  `).join('');
+  slot.querySelectorAll('.roster-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const pid = chip.dataset.pid;
+      if (ipdJodohSelectedSet.has(pid)) ipdJodohSelectedSet.delete(pid); else ipdJodohSelectedSet.add(pid);
+      chip.classList.toggle('picked');
+      const btn = document.getElementById('btnMulaiGiliranJodohRoster');
+      if (btn) { btn.disabled = !ipdJodohSelectedSet.size; btn.textContent = `▶️ Mulai Giliran (${ipdJodohSelectedSet.size} siswa)`; }
+    });
+  });
+}
+
+// ---- Sub-view 2: konfirmasi "Mulai" sebelum papan muncul ----
+function renderIpdJodohKonfirmasi() {
+  const ids = [...ipdJodohSelectedSet];
+  const anggota = ids.map(id => ({ profile_id: id, nama: ipdJodohRosterMap.get(id) || '' }));
+  const nama = namaTim(anggota);
+  ipdJodohPicked = { ids, anggota, nama };
+  const rv = document.getElementById('ipdJodohRosterView');
+  const gv = document.getElementById('ipdJodohGameView');
+  rv.style.display = 'none';
+  gv.style.display = '';
+  const totalRonde = ipdJodohRondeList.length;
+  const rondeIdx = (ACTIVE_SESI.giliran_soal_index || 0) % totalRonde;
+  const rondeSekarang = ipdJodohRondeList[rondeIdx];
+  gv.innerHTML = `
+    <div class="ipd-confirm">
+      <div class="ipd-confirm-nama">🙋 ${esc(nama)}</div>
+      <div class="hint">Siap mengerjakan ${esc(rondeSekarang.judul)} (${rondeSekarang.pasangan.length} pasangan)?</div>
+      <div class="gg-actions-row" style="margin-top:14px;">
+        <button class="btn-edit-sm" id="btnBatalGiliranJodoh">‹ Batal</button>
+        <button class="btn-launch-ipd" id="btnMulaiGiliranJodoh">▶️ Mulai</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnBatalGiliranJodoh').addEventListener('click', renderIpdJodohRoster);
+  document.getElementById('btnMulaiGiliranJodoh').addEventListener('click', mulaiGiliranJodoh);
+}
+
+async function mulaiGiliranJodoh() {
+  const { data: semuaPeserta } = await supabase.from('game_peserta').select('*').eq('sesi_id', ACTIVE_SESI.id);
+  let existing = cariPesertaTim(semuaPeserta, ipdJodohPicked.ids);
+  if (!existing) {
+    const { data: created } = await supabase.from('game_peserta').insert({
+      sesi_id: ACTIVE_SESI.id,
+      profile_id: ipdJodohPicked.ids.length === 1 ? ipdJodohPicked.ids[0] : null,
+      nama: ipdJodohPicked.nama,
+      anggota: ipdJodohPicked.anggota
+    }).select().single();
+    existing = created;
+  }
+  ipdJodohPicked.peserta = existing;
+  renderIpdJodohBoard();
+}
+
+// ---- Sub-view 3: papan menjodohkan tampil BESAR (daftar nama disembunyikan) ----
+function renderIpdJodohBoard() {
+  const totalRonde = ipdJodohRondeList.length;
+  const rondeIdx = (ACTIVE_SESI.giliran_soal_index || 0) % totalRonde;
+  const rondeSekarang = ipdJodohRondeList[rondeIdx];
+  ipdJodohPairs = rondeSekarang.pasangan;
+  ipdJodohOffset = ipdJodohRondeList.slice(0, rondeIdx).reduce((s, r) => s + r.pasangan.length, 0);
+  ipdJodohStartSoalSelesai = ipdJodohPicked.peserta.soal_selesai || 0;
+
+  ipdJodohKiri = ipdJodohPairs.map((p, i) => ({ pid: i, text: p.kiri }));
+  let kanan = ipdJodohPairs.map((p, i) => ({ pid: i, text: p.kanan }));
+  ipdJodohKanan = shuffleArr(kanan);
+  if (ipdJodohKanan.length > 1) {
+    let tries = 0;
+    while (ipdJodohKanan.map(k => k.pid).join(',') === ipdJodohKiri.map(k => k.pid).join(',') && tries < 8) {
+      ipdJodohKanan = shuffleArr(kanan);
+      tries++;
+    }
+  }
+  ipdJodohMatched = new Set();
+  ipdJodohSelected = null;
+  ipdJodohStart = Date.now();
+
+  const gv = document.getElementById('ipdJodohGameView');
+  gv.innerHTML = `
+    <div class="ipd-big-header">
+      <div class="ipd-big-nama">🙋 ${esc(ipdJodohPicked.nama)}</div>
+      <div class="ipd-big-progress" id="ipdJodohProgress"></div>
+    </div>
+    <div class="ipd-big-instruksi">${esc(rondeSekarang.judul)} — Jodohkan pasangan yang benar</div>
+    <div class="mj-board">
+      <div><div class="mj-col-label">Kolom A</div><div id="ipdJodohKiriSlot"></div></div>
+      <div><div class="mj-col-label">Kolom B</div><div id="ipdJodohKananSlot"></div></div>
+    </div>
+  `;
+  renderIpdJodohColumns();
+  updateIpdJodohProgress();
+}
+
+function updateIpdJodohProgress() {
+  const el = document.getElementById('ipdJodohProgress');
+  if (el) el.textContent = `Cocok ${ipdJodohMatched.size} / ${ipdJodohPairs.length}`;
+}
+
+function renderIpdJodohColumns() {
+  const kiriEl = document.getElementById('ipdJodohKiriSlot');
+  const kananEl = document.getElementById('ipdJodohKananSlot');
+  if (!kiriEl || !kananEl) return;
+  kiriEl.innerHTML = ipdJodohKiri.map(k => `
+    <div class="mj-item ipd-big ${ipdJodohMatched.has(k.pid) ? 'matched' : ''} ${ipdJodohSelected === k.pid ? 'selected' : ''}" data-pid="${k.pid}">${esc(k.text)}</div>
+  `).join('');
+  kananEl.innerHTML = ipdJodohKanan.map(k => `
+    <div class="mj-item ipd-big ${ipdJodohMatched.has(k.pid) ? 'matched' : ''}" data-pid="${k.pid}">${esc(k.text)}</div>
+  `).join('');
+  kiriEl.querySelectorAll('.mj-item:not(.matched)').forEach(el => {
+    el.addEventListener('click', () => {
+      const pid = Number(el.dataset.pid);
+      ipdJodohSelected = (ipdJodohSelected === pid) ? null : pid;
+      renderIpdJodohColumns();
+    });
+  });
+  kananEl.querySelectorAll('.mj-item:not(.matched)').forEach(el => {
+    el.addEventListener('click', () => onPilihKananIpd(Number(el.dataset.pid), el));
+  });
+}
+
+async function onPilihKananIpd(pidKanan, el) {
+  if (ipdJodohSelected === null) return;
+  const pidKiri = ipdJodohSelected;
+  if (pidKiri === pidKanan) {
+    ipdJodohMatched.add(pidKiri);
+    ipdJodohSelected = null;
+    updateIpdJodohProgress();
+    renderIpdJodohColumns();
+
+    const peserta = ipdJodohPicked.peserta;
+    const waktuMs = Date.now() - ipdJodohStart;
+    try {
+      await supabase.from('game_jawaban').insert({ sesi_id: ACTIVE_SESI.id, peserta_id: peserta.id, soal_index: ipdJodohOffset + pidKiri, benar: true, waktu_ms: waktuMs, skor_didapat: 10 });
+    } catch (e) { /* mungkin sudah pernah dijawab, abaikan */ }
+    const skorBaru = (peserta.skor_total || 0) + 10;
+    const rondeSelesai = ipdJodohMatched.size >= ipdJodohPairs.length;
+    const selesaiBaru = ipdJodohStartSoalSelesai + ipdJodohMatched.size;
+    await supabase.from('game_peserta').update({ skor_total: skorBaru, soal_selesai: selesaiBaru, status: rondeSelesai ? 'selesai' : 'main' }).eq('id', peserta.id);
+    peserta.skor_total = skorBaru;
+    peserta.soal_selesai = selesaiBaru;
+
+    if (rondeSelesai) {
+      const totalRonde = ipdJodohRondeList.length;
+      const rondeIdxSekarang = (ACTIVE_SESI.giliran_soal_index || 0) % totalRonde;
+      const rondeBerikutnya = (rondeIdxSekarang + 1) % totalRonde;
+      await supabase.from('game_sesi').update({ giliran_soal_index: rondeBerikutnya }).eq('id', ACTIVE_SESI.id);
+      ACTIVE_SESI.giliran_soal_index = rondeBerikutnya;
+      tampilkanCelebrationJodohSelesai(async () => {
+        ipdJodohPicked = null;
+        await renderIpdJodohRoster();
+      });
+    }
+  } else {
+    const kiriEl = document.querySelector(`#ipdJodohKiriSlot .mj-item[data-pid="${pidKiri}"]`);
+    if (kiriEl) kiriEl.classList.add('wrong');
+    el.classList.add('wrong');
+    ipdJodohSelected = null;
+    setTimeout(renderIpdJodohColumns, 350);
+  }
+}
+
+function subscribeSesiJodoh() {
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
+  realtimeChannel = supabase.channel('game_admin_' + ACTIVE_SESI.id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_peserta', filter: `sesi_id=eq.${ACTIVE_SESI.id}` }, () => {
+      if (!ipdJodohPicked) { refreshBoard('ipdJodohBoardSlot'); loadRosterChipsJodoh(); }
+    })
+    .subscribe();
+}
+
+// ---- Animasi selesai papan Menjodohkan (semua pasangan cocok) ----
+function tampilkanCelebrationJodohSelesai(callback) {
+  const overlay = document.createElement('div');
+  overlay.className = 'celebrate-overlay';
+  let stars = '';
+  for (let i = 0; i < 24; i++) {
+    const left = Math.random() * 100;
+    const delay = (Math.random() * 0.4).toFixed(2);
+    const size = 18 + Math.round(Math.random() * 22);
+    const dur = (1.1 + Math.random() * 0.8).toFixed(2);
+    stars += `<span class="celebrate-star" style="left:${left}%; animation-delay:${delay}s; animation-duration:${dur}s; font-size:${size}px;">${['⭐','🌟','✨'][i % 3]}</span>`;
+  }
+  overlay.innerHTML = `${stars}<div class="celebrate-text celebrate-benar">🎉 Semua Pasangan Cocok!</div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => { overlay.remove(); callback(); }, 1900);
+}
+
 // ============ VIEW: LIVE — mode mandiri_live (HP siswa, papan live) ============
 async function renderLiveMandiri() {
   const c = document.getElementById('ggContainer');
@@ -461,7 +909,9 @@ async function renderLiveMandiri() {
 async function refreshBoard(slotId) {
   const slot = document.getElementById(slotId);
   if (!slot) return;
-  const totalSoal = (ACTIVE_BANK.data || []).length;
+  const totalSoal = ACTIVE_JENIS === 'jodoh'
+    ? jodohTotalPasangan(jodohRondeFromData(ACTIVE_BANK.data))
+    : (ACTIVE_BANK.data || []).length;
   const { data: peserta } = await supabase.from('game_peserta')
     .select('nama, skor_total, soal_selesai, status')
     .eq('sesi_id', ACTIVE_SESI.id)
@@ -499,8 +949,9 @@ async function akhiriSesi() {
   if (!confirm('Akhiri sesi ini? Siswa tidak akan bisa melanjutkan lagi.')) return;
   await supabase.from('game_sesi').update({ status: 'selesai' }).eq('id', ACTIVE_SESI.id);
   if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
+  const jenisTadi = ACTIVE_JENIS;
   ACTIVE_SESI = null; ACTIVE_BANK = null;
-  renderDaftarMateri();
+  renderDaftarMateri(jenisTadi);
 }
 
 (async function () {
@@ -509,7 +960,7 @@ async function akhiriSesi() {
   PROFILE = profile;
   const { data: kelas } = await supabase.from('kelas').select('id, nama').order('nama');
   KELAS_LIST = kelas || [];
-  renderDaftarMateri();
+  renderDaftarMateri('susun_kata');
 })();
 </script>
 

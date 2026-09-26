@@ -281,6 +281,46 @@ function linkify(str) {
   });
 }
 
+// ===================== GAME: util Menjodohkan (ronde) =====================
+// Normalisasi kolom bank_game.data (jenis 'jodoh') jadi array ronde:
+// [{ judul, pasangan:[{kiri,kanan}, ...] }, ...]
+// Mendukung format lama (data = array pasangan langsung, tanpa pembungkus ronde)
+// supaya materi lama yang sudah dibuat guru tetap bisa dimainkan.
+function jodohRondeFromData(data) {
+  const arr = Array.isArray(data) ? data : [];
+  if (!arr.length) return [];
+  const legacyFlat = typeof arr[0].kiri !== 'undefined' && typeof arr[0].pasangan === 'undefined';
+  if (legacyFlat) {
+    return [{ judul: 'Ronde 1', pasangan: arr.map(d => ({ kiri: d.kiri, kanan: d.kanan })) }];
+  }
+  return arr.map((r, i) => ({
+    judul: (r && r.judul) || `Ronde ${i + 1}`,
+    pasangan: ((r && r.pasangan) || []).map(d => ({ kiri: d.kiri, kanan: d.kanan }))
+  }));
+}
+
+// Total semua pasangan di seluruh ronde (dipakai buat ringkasan & skor maksimal).
+function jodohTotalPasangan(rondeList) {
+  return (rondeList || []).reduce((sum, r) => sum + ((r.pasangan || []).length), 0);
+}
+
+// ===================== GAME: util Tim (giliran IPD bisa >1 siswa) =====================
+// Cari baris game_peserta yang anggotanya (daftar profile_id) persis sama dengan
+// kombinasi siswa yang dipilih guru sekarang — supaya skor giliran yang sama
+// (tim yang sama) terus terakumulasi di baris yang sama, bukan bikin baris baru.
+function cariPesertaTim(list, profileIds) {
+  const target = [...profileIds].sort().join(',');
+  return (list || []).find(p => {
+    const ids = (p.anggota && p.anggota.length ? p.anggota.map(a => a.profile_id) : [p.profile_id]).sort().join(',');
+    return ids === target;
+  }) || null;
+}
+
+// Gabungkan nama-nama anggota tim jadi satu string tampilan, mis. "Andi & Budi".
+function namaTim(anggota) {
+  return (anggota || []).map(a => a.nama).join(' & ');
+}
+
 // ===================== PRESENCE: SISWA AKTIF DI OBROLAN KELAS =====================
 // Dipakai bareng oleh obrolan.html (siswa) & guru.html (menu Obrolan Kelas).
 // Menampilkan daftar siswa yang SEDANG BUKA halaman obrolan kelas tertentu,
