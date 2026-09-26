@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Materi — English Learning Hub</title>
 <link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
 <style>
   /* ===== Mobile bottom nav (menu siswa di bawah layar) ===== */
 </style>
@@ -41,7 +42,7 @@
           <div class="eyebrow">Learn</div>
           <h1>Materi Pembelajaran</h1>
         </div>
-        <div class="materi-grid" id="materi-container">Memuat…</div>
+        <div class="materi-drawer-list" id="materi-container">Memuat…</div>
       </div>
     </div>
   </div>
@@ -67,14 +68,35 @@
     .order('created_at', { ascending: true });
 
   const materi = data || [];
-  materiC.innerHTML = materi.length ? materi.map(m => `
-    <div class="materi-card">
-      <div class="tag">${esc(m.tag || 'Materi')}</div>
-      <h3>${esc(m.judul)}</h3>
-      <p>${esc(m.deskripsi || '')}</p>
-      <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+  const bookIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+  const chevronIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+  materiC.innerHTML = materi.length ? materi.map((m, i) => `
+    <div class="materi-drawer-item" id="materi-item-${i}">
+      <button type="button" class="materi-drawer-header" data-target="materi-item-${i}">
+        <div class="materi-drawer-icon">${bookIcon}</div>
+        <div class="materi-drawer-heading">
+          <div class="materi-drawer-tag">${esc(m.tag || 'Materi')}</div>
+          <div class="materi-drawer-title">${esc(m.judul)}</div>
+        </div>
+        <div class="materi-drawer-chevron">${chevronIcon}</div>
+      </button>
+      <div class="materi-drawer-body">
+        <div class="materi-drawer-body-inner">
+          <p>${esc(m.deskripsi || 'Belum ada deskripsi untuk materi ini.')}</p>
+          <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+        </div>
+      </div>
     </div>
   `).join('') : emptyState("Belum ada materi", "Materi pembelajaran akan diunggah oleh guru di sini.", "📘");
+
+  // Drawer: klik header untuk buka/tutup — beberapa item boleh terbuka bersamaan.
+  materiC.querySelectorAll('.materi-drawer-header').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const item = document.getElementById(btn.dataset.target);
+      if (item) item.classList.toggle('open');
+    });
+  });
 })();
 </script>
 

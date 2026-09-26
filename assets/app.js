@@ -1,6 +1,56 @@
 // ===================== AUTH & SHELL BERSAMA (versi Supabase) =====================
 // File ini butuh assets/supabaseClient.js sudah dimuat lebih dulu.
 
+// ===================== TEMA: DARK / BRIGHT =====================
+// Preferensi disimpan di localStorage supaya konsisten di semua halaman
+// (menu siswa, menu guru, materi, worksheet, dst) karena app.js dimuat
+// bersama di setiap halaman. Tombol toggle disisipkan otomatis ke topbar
+// kalau halaman itu punya elemen .topbar-right.
+const THEME_KEY = "lms_theme";
+const ICON_MOON = '<svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>';
+const ICON_SUN = '<svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>';
+
+function getStoredTheme() {
+  try { return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light"; }
+  catch (e) { return "light"; }
+}
+
+function applyTheme(theme) {
+  const t = theme === "dark" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t);
+  try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+  document.querySelectorAll(".theme-toggle-btn").forEach((btn) => {
+    btn.setAttribute("aria-label", t === "dark" ? "Ganti ke tema terang" : "Ganti ke tema gelap");
+    btn.title = t === "dark" ? "Tema terang" : "Tema gelap";
+  });
+}
+
+// Sisipkan tombol toggle tema ke topbar halaman ini (kalau belum ada) & pasang listener.
+function initThemeToggle() {
+  applyTheme(getStoredTheme());
+  const right = document.querySelector(".topbar-right");
+  if (!right || document.querySelector(".theme-toggle-btn")) return;
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "theme-toggle-btn";
+  btn.innerHTML = ICON_MOON + ICON_SUN;
+  applyTheme(getStoredTheme());
+  right.insertBefore(btn, right.firstChild);
+  btn.addEventListener("click", () => {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(next);
+  });
+}
+
+// Terapkan tema tersimpan sesegera mungkin (app.js dimuat sebelum konten topbar
+// dirender oleh script masing-masing halaman, jadi ini mencegah kedipan tema salah).
+applyTheme(getStoredTheme());
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initThemeToggle);
+} else {
+  initThemeToggle();
+}
+
 function getLevel(kelasNama) {
   const n = (kelasNama || "").trim().toUpperCase();
   if (n.startsWith("XII")) return "XII";

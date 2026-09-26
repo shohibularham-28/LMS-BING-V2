@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konten — Dashboard Guru</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="level-pill">Dashboard Guru</div>
+          <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <a href="menu-guru.html" class="btn-back-menu">← Kembali ke Menu</a>
+        <div class="page-header">
+          <div class="eyebrow">Dashboard Guru</div>
+          <h1>Konten Terbit</h1>
+        </div>
+
+        <div class="filter-select-row">
+          <div class="filter-select-field"><label for="kgLevelSelect">Tingkat Kelas</label><select id="kgLevelSelect"></select></div>
+          <div class="filter-select-field"><label for="kgKelasSelect">Kelas</label><select id="kgKelasSelect"></select></div>
+        </div>
+
+        <div class="ws-tabs" id="kgTabs">
+          <button type="button" class="ws-tab active" data-tab="materi">📘 Materi <span class="ws-tab-count" id="kgCountMateri">0</span></button>
+          <button type="button" class="ws-tab" data-tab="worksheet">📝 Worksheet <span class="ws-tab-count" id="kgCountWorksheet">0</span></button>
+        </div>
+
+        <div id="kgMateriContainer" class="materi-grid">Memuat…</div>
+        <div id="kgWorksheetContainer" style="display:none;">Memuat…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const teacher = await requireTeacherLogin();
+  if (!teacher) return;
+
+  document.getElementById('topName').textContent = teacher.nama;
+  document.getElementById('topDate').textContent = new Date().toLocaleDateString('id-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
+  initNotifDropdown();
+
+  const materiC = document.getElementById('kgMateriContainer');
+  const wsC = document.getElementById('kgWorksheetContainer');
+  const levelSelect = document.getElementById('kgLevelSelect');
+  const kelasSelect = document.getElementById('kgKelasSelect');
+
+  let allKelas = [];
+  const { data: kelasData } = await supabase.from('kelas').select('id, nama, level').order('nama');
+  allKelas = kelasData || [];
+
+  const state = { level: 'X', kelasId: null };
+
+  function renderLevelSelect() {
+    levelSelect.innerHTML = ['X', 'XI', 'XII'].map(lv =>
+      `<option value="${lv}" ${state.level === lv ? 'selected' : ''}>Kelas ${lv}</option>`
+    ).join('');
+    levelSelect.onchange = () => {
+      state.level = levelSelect.value;
+      state.kelasId = null;
+      renderKelasSelect();
+    };
+  }
+
+  function renderKelasSelect() {
+    const list = allKelas.filter(k => k.level === state.level);
+    if (!state.kelasId || !list.some(k => k.id === state.kelasId)) {
+      state.kelasId = list[0] ? list[0].id : null;
+    }
+    kelasSelect.innerHTML = list.length
+      ? list.map(k => `<option value="${k.id}" ${state.kelasId === k.id ? 'selected' : ''}>${esc(k.nama)}</option>`).join('')
+      : '<option value="">— Belum ada kelas —</option>';
+    kelasSelect.onchange = () => {
+      state.kelasId = kelasSelect.value;
+      loadContent();
+    };
+    loadContent();
+  }
+
+  function scopeLabel(row, kelasNama) {
+    if (row.kelas_id) return 'Kelas ' + (kelasNama || '');
+    if (row.level) return 'Tingkat ' + row.level;
+    return 'Semua Kelas';
+  }
+
+  async function loadContent() {
+    if (!state.kelasId) {
+      materiC.innerHTML = emptyState('Belum ada kelas', 'Tambahkan kelas dulu di menu Kelola Kelas.', '🏫');
+      wsC.innerHTML = emptyState('Belum ada kelas', 'Tambahkan kelas dulu di menu Kelola Kelas.', '🏫');
+      document.getElementById('kgCountMateri').textContent = '0';
+      document.getElementById('kgCountWorksheet').textContent = '0';
+      return;
+    }
+    const kelasNama = allKelas.find(k => k.id === state.kelasId)?.nama || '';
+    materiC.innerHTML = 'Memuat…';
+    wsC.innerHTML = 'Memuat…';
+
+    const [materiRes, wsRes] = await Promise.all([
+      supabase
+        .from('materi')
+        .select('tag, judul, deskripsi, url, kelas_id, level, created_at')
+        .or(`and(kelas_id.is.null,level.is.null),kelas_id.eq.${state.kelasId},level.eq.${state.level}`)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('worksheet')
+        .select('judul, meta, url, kelas_id, level, mulai, deadline, published, created_at')
+        .eq('published', true)
+        .or(`and(kelas_id.is.null,level.is.null),kelas_id.eq.${state.kelasId},level.eq.${state.level}`)
+        .order('created_at', { ascending: false }),
+    ]);
+
+    const materi = materiRes.data || [];
+    const worksheet = wsRes.data || [];
+    document.getElementById('kgCountMateri').textContent = materi.length;
+    document.getElementById('kgCountWorksheet').textContent = worksheet.length;
+
+    materiC.innerHTML = materi.length ? materi.map(m => `
+      <div class="materi-card">
+        <div class="tag">${esc(m.tag || 'Materi')} · ${esc(scopeLabel(m, kelasNama))}</div>
+        <h3>${esc(m.judul)}</h3>
+        <p>${esc(m.deskripsi || '')}</p>
+        <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+      </div>
+    `).join('') : emptyState('Belum ada materi', 'Materi untuk kelas ini belum diunggah.', '📘');
+
+    wsC.innerHTML = worksheet.length ? worksheet.map(w => {
+      const mulaiTxt = w.mulai ? new Date(w.mulai).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
+      const deadlineTxt = w.deadline ? new Date(w.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
+      const metaBits = [esc('📝 ' + (w.meta || 'Worksheet')), esc(scopeLabel(w, kelasNama))];
+      if (mulaiTxt) metaBits.push('Mulai: ' + mulaiTxt);
+      if (deadlineTxt) metaBits.push('Deadline: ' + deadlineTxt);
+      return `
+      <div class="ws-card">
+        <div class="ws-info">
+          <h3>${esc(w.judul)}</h3>
+          <div class="meta">${metaBits.join(' · ')}</div>
+        </div>
+        <div class="ws-right">
+          <span class="ws-status status-open">Terbit</span>
+          <a class="btn-ws" href="${esc(w.url)}" target="_blank" rel="noopener">Lihat</a>
+        </div>
+      </div>`;
+    }).join('') : emptyState('Belum ada worksheet', 'Worksheet yang sudah diterbitkan untuk kelas ini akan muncul di sini.', '📝');
+  }
+
+  document.querySelectorAll('#kgTabs .ws-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#kgTabs .ws-tab').forEach(b => b.classList.toggle('active', b === btn));
+      const tab = btn.dataset.tab;
+      materiC.style.display = tab === 'materi' ? '' : 'none';
+      wsC.style.display = tab === 'worksheet' ? '' : 'none';
+    });
+  });
+
+  renderLevelSelect();
+  renderKelasSelect();
+})();
+</script>
+
+</body>
+</html>
