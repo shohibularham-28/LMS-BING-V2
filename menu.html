@@ -10,6 +10,41 @@
   /* Halaman Menu: hanya drawer grid, tanpa sidebar & tanpa bottom nav. */
   #app-screen.no-sidebar .content{ padding-bottom:32px; }
 
+  .menu-greeting{
+    background:linear-gradient(135deg, var(--violet) 0%, #9B7BFF 100%);
+    border-radius:20px;
+    padding:22px 24px;
+    margin-bottom:22px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 14px 32px var(--app-shadow-1);
+  }
+  .menu-greeting::before{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:140px; height:140px; border-radius:50%;
+    background:rgba(255,255,255,0.12);
+  }
+  .menu-greeting-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px; font-weight:700;
+    margin-bottom:8px;
+    position:relative;
+  }
+  .menu-greeting-quote{
+    font-size:13.5px;
+    line-height:1.6;
+    color:rgba(255,255,255,0.92);
+    max-width:560px;
+    position:relative;
+  }
+  @media (max-width:420px){
+    .menu-greeting{ padding:18px 18px; border-radius:16px; }
+    .menu-greeting-title{ font-size:17px; }
+    .menu-greeting-quote{ font-size:13px; }
+  }
+
   .app-drawer{
     grid-template-columns:repeat(3, 1fr) !important;
     gap:10px 8px !important;
@@ -62,9 +97,9 @@
       </div>
 
       <div class="content">
-        <div class="page-header">
-          <div class="eyebrow">Beranda</div>
-          <h1>Menu</h1>
+        <div class="menu-greeting" id="menuGreeting">
+          <div class="menu-greeting-title"><span id="mgWave">👋</span> Halo, <span id="mgName">—</span>!</div>
+          <div class="menu-greeting-quote" id="mgQuote">Memuat semangat…</div>
         </div>
 
         <div class="app-drawer">
@@ -129,7 +164,49 @@
   renderShell(profile, 'menu');
   initNotifDropdown();
   await loadStudentNotifications(profile);
+  renderMenuGreeting(profile);
 })();
+
+// Sambutan siswa: nama + kutipan motivasi belajar Bahasa Inggris yang
+// dibumbui sedikit komedi. Dipilih acak tiap kali halaman menu dibuka,
+// jadi tiap login (atau tiap refresh) rasanya beda.
+function renderMenuGreeting(profile) {
+  const firstName = (profile.nama || 'Sobat Belajar').trim().split(' ')[0];
+
+  const waves = ['👋', '😄', '🎉', '✨', '🚀', '🔥'];
+
+  const quotes = [
+    "Grammar boleh belepotan, yang penting semangatnya nggak pernah 'past tense'. Yuk lanjutin belajarnya, {nama}!",
+    "Vocabulary itu kayak micin — makin sering dipakai, makin nendang rasanya. Tambah kosakata baru hari ini, {nama}!",
+    "Salah ngomong 'I am agree' itu manusiawi kok, {nama}. Yang penting terus coba, jangan cuma jadi 'silent reader' di kelas Bahasa Inggris.",
+    "{nama}, kemampuan Bahasa Inggris itu kayak sinyal wifi: makin sering connect, makin kuat. Yuk buka materi hari ini!",
+    "Belajar Bahasa Inggris nggak harus sempurna, {nama}. Bule aja kadang typo kok — santai, yang penting kamu terus maju.",
+    "Tenses banyak macemnya, {nama}, tapi jangan panik — pelan-pelan juga sampai kok, asal jangan 'give up tense'.",
+    "{nama}, hari ini adalah kesempatan bagus buat upgrade skill Bahasa Inggris kamu. Sedikit-sedikit lama-lama jadi fasih!",
+    "Practice makes perfect, {nama} — bukan practice makes pusing. Santai aja, nikmatin prosesnya ya!",
+    "{nama}, inget: native speaker aja belajar bahasanya seumur hidup. Kamu baru mulai, jadi wajar kalau masih belajar. Keep going!",
+    "Jangan takut salah ngomong Bahasa Inggris, {nama}. Malu bertanya sesat di jalan, malu ngomong ya nggak lancar-lancar!",
+    "{nama}, otak kita tuh kayak otot — makin sering dilatih pakai Bahasa Inggris, makin kuat. Yuk gas belajar hari ini!",
+    "Hari ini pilihannya cuma dua, {nama}: rebahan atau belajar dikit. Kalau pilih belajar dikit, kamu udah menang lawan mager!",
+    "{nama}, English is not scary — yang scary itu kalau deadline worksheet numpuk. Cicil dari sekarang, yuk!",
+    "Belajar Bahasa Inggris itu maraton, bukan sprint, {nama}. Nggak masalah pelan, yang penting nggak berhenti di tengah jalan.",
+    "{nama}, semangat pagi ini setara dengan semangat nunggu jam pulang sekolah, ya? Yuk salurin ke belajar Bahasa Inggris dulu!",
+    "Kosakata baru hari ini = 1 senjata baru buat masa depan kamu, {nama}. Kumpulin terus, jangan kasih kendor!",
+    "{nama}, kalau nanti liburan ke luar negeri dan bisa ngobrol lancar, itu semua berkat effort belajar hari ini. Semangat!",
+    "Speaking Bahasa Inggris grogi itu wajar, {nama} — anggap aja kayak nyanyi di kamar mandi, nggak ada yang nge-judge kok!",
+  ];
+
+  const idx = Math.floor(Math.random() * quotes.length);
+  const wave = waves[Math.floor(Math.random() * waves.length)];
+  const quote = quotes[idx].replace(/\{nama\}/g, firstName);
+
+  const nameEl = document.getElementById('mgName');
+  const waveEl = document.getElementById('mgWave');
+  const quoteEl = document.getElementById('mgQuote');
+  if (nameEl) nameEl.textContent = firstName;
+  if (waveEl) waveEl.textContent = wave;
+  if (quoteEl) quoteEl.textContent = quote;
+}
 </script>
 
 </body>
