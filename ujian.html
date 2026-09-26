@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Worksheet — English Learning Hub</title>
+<title>Ujian — English Learning Hub</title>
 <link rel="stylesheet" href="assets/style.css">
 <script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
 </head>
@@ -36,10 +36,10 @@
       <div class="content">
         <a href="menu.html" class="btn-back-menu">← Kembali ke Menu</a>
         <div class="page-header">
-          <div class="eyebrow">Practice</div>
-          <h1>Worksheet</h1>
+          <div class="eyebrow">Assessment</div>
+          <h1>Ujian</h1>
         </div>
-        <div class="materi-drawer-list" id="worksheet-container">Memuat…</div>
+        <div class="materi-drawer-list" id="ujian-container">Memuat…</div>
       </div>
     </div>
   </div>
@@ -53,61 +53,62 @@
 (async function () {
   const profile = await requireLogin();
   if (!profile) return;
-  renderShell(profile, 'worksheet');
+  renderShell(profile, 'ujian');
   initNotifDropdown();
   await loadStudentNotifications(profile);
 
-  const wsC = document.getElementById('worksheet-container');
-  const level = profile.kelas ? profile.kelas.level : getLevel(profile.kelas ? profile.kelas.nama : '');
+  const juC = document.getElementById('ujian-container');
 
+  // RLS jadwal_ujian sudah otomatis membatasi hanya baris yang menyasar
+  // tingkat/kelas siswa ini (lihat fungsi public.ujian_terlihat_untukku).
   const { data } = await supabase
-    .from('worksheet')
-    .select('judul, meta, url, mulai, deadline, created_at')
-    .or(`level.eq.${level},kelas_id.eq.${profile.kelas_id}`)
+    .from('jadwal_ujian')
+    .select('id, judul, mulai, deadline, created_at')
     .order('created_at', { ascending: false });
 
   const now = new Date();
   const todayStr = now.toISOString().slice(0, 10);
   const items = data || [];
 
-  const wsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>';
+  const juIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M12 2v6M6 8h12l1.5 12a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2L6 8Z"/><path d="M9 14h6M9 18h4"/></svg>';
   const chevronIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 
-  wsC.innerHTML = items.length ? items.map((w, i) => {
-    const notStarted = w.mulai && new Date(w.mulai) > now;
-    const closed = w.deadline && w.deadline < todayStr;
+  juC.innerHTML = items.length ? items.map((j, i) => {
+    const notStarted = j.mulai && new Date(j.mulai) > now;
+    const closed = j.deadline && j.deadline < todayStr;
 
     let statusClass = 'status-open';
     let statusLabel = 'Terbuka';
     if (notStarted) { statusClass = 'status-due'; statusLabel = 'Belum Dibuka'; }
     else if (closed) { statusClass = 'status-due'; statusLabel = 'Sudah Ditutup'; }
 
-    const mulaiTxt = w.mulai
-      ? new Date(w.mulai).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    const mulaiTxt = j.mulai
+      ? new Date(j.mulai).toLocaleString('id-ID', { day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' })
       : null;
-    const deadlineTxt = w.deadline
-      ? new Date(w.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
+    const deadlineTxt = j.deadline
+      ? new Date(j.deadline).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })
       : null;
     const metaBits = [];
     if (mulaiTxt) metaBits.push((notStarted ? 'Mulai: ' : 'Dibuka sejak: ') + mulaiTxt);
     if (deadlineTxt) metaBits.push('Deadline: ' + deadlineTxt);
 
+    const url = 'soal.html?jadwal=' + j.id;
     let btn;
     if (notStarted) {
-      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ini belum bisa dibuka. Mulai: ${esc(mulaiTxt)}.');return false;">Kerjakan</a>`;
+      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ujian ini belum bisa dibuka. Mulai: ${esc(mulaiTxt)}.');return false;">Kerjakan</a>`;
     } else if (closed) {
-      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ini sudah melewati batas waktu.');return false;">Kerjakan</a>`;
+      btn = `<a class="btn-ws" href="javascript:void(0)" style="opacity:.5;cursor:not-allowed;" onclick="alert('Ujian ini sudah melewati batas waktu.');return false;">Kerjakan</a>`;
     } else {
-      btn = `<a class="btn-ws" href="${esc(w.url)}" target="_blank" rel="noopener">Kerjakan</a>`;
+      btn = `<a class="btn-ws" href="${esc(url)}">Kerjakan</a>`;
     }
 
     return `
-    <div class="materi-drawer-item" id="ws-item-${i}">
-      <button type="button" class="materi-drawer-header" data-target="ws-item-${i}">
-        <div class="materi-drawer-icon">${wsIcon}</div>
+    <div class="materi-drawer-item" id="ju-item-${i}">
+      <button type="button" class="materi-drawer-header" data-target="ju-item-${i}">
+        <div class="materi-drawer-icon">${juIcon}</div>
         <div class="materi-drawer-heading">
-          <div class="materi-drawer-tag">${esc(w.meta || 'Worksheet')}</div>
-          <div class="materi-drawer-title">${esc(w.judul)}</div>
+          <div class="materi-drawer-tag">Ujian</div>
+          <div class="materi-drawer-title">${esc(j.judul)}</div>
         </div>
         <div class="materi-drawer-chevron">${chevronIcon}</div>
       </button>
@@ -121,9 +122,9 @@
         </div>
       </div>
     </div>`;
-  }).join('') : emptyState("Belum ada worksheet", "Tugas dan latihan akan muncul di sini saat guru menerbitkannya.", "📝");
+  }).join('') : emptyState("Belum ada ujian", "Ujian yang diterbitkan guru akan muncul di sini.", "🧪");
 
-  wsC.querySelectorAll('.materi-drawer-header').forEach((btn) => {
+  juC.querySelectorAll('.materi-drawer-header').forEach((btn) => {
     btn.addEventListener('click', () => {
       const item = document.getElementById(btn.dataset.target);
       if (item) item.classList.toggle('open');

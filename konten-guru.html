@@ -43,8 +43,8 @@
           <button type="button" class="ws-tab" data-tab="worksheet">📝 Worksheet <span class="ws-tab-count" id="kgCountWorksheet">0</span></button>
         </div>
 
-        <div id="kgMateriContainer" class="materi-grid">Memuat…</div>
-        <div id="kgWorksheetContainer" style="display:none;">Memuat…</div>
+        <div id="kgMateriContainer" class="materi-drawer-list">Memuat…</div>
+        <div id="kgWorksheetContainer" class="materi-drawer-list" style="display:none;">Memuat…</div>
       </div>
     </div>
   </div>
@@ -138,33 +138,63 @@
     document.getElementById('kgCountMateri').textContent = materi.length;
     document.getElementById('kgCountWorksheet').textContent = worksheet.length;
 
-    materiC.innerHTML = materi.length ? materi.map(m => `
-      <div class="materi-card">
-        <div class="tag">${esc(m.tag || 'Materi')} · ${esc(scopeLabel(m, kelasNama))}</div>
-        <h3>${esc(m.judul)}</h3>
-        <p>${esc(m.deskripsi || '')}</p>
-        <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+    const bookIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+    const wsIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>';
+    const chevronIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+    materiC.innerHTML = materi.length ? materi.map((m, i) => `
+      <div class="materi-drawer-item" id="kg-materi-item-${i}">
+        <button type="button" class="materi-drawer-header" data-target="kg-materi-item-${i}">
+          <div class="materi-drawer-icon">${bookIcon}</div>
+          <div class="materi-drawer-heading">
+            <div class="materi-drawer-tag">${esc(m.tag || 'Materi')} · ${esc(scopeLabel(m, kelasNama))}</div>
+            <div class="materi-drawer-title">${esc(m.judul)}</div>
+          </div>
+          <div class="materi-drawer-chevron">${chevronIcon}</div>
+        </button>
+        <div class="materi-drawer-body">
+          <div class="materi-drawer-body-inner">
+            <p>${esc(m.deskripsi || 'Belum ada deskripsi untuk materi ini.')}</p>
+            <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+          </div>
+        </div>
       </div>
     `).join('') : emptyState('Belum ada materi', 'Materi untuk kelas ini belum diunggah.', '📘');
 
-    wsC.innerHTML = worksheet.length ? worksheet.map(w => {
+    wsC.innerHTML = worksheet.length ? worksheet.map((w, i) => {
       const mulaiTxt = w.mulai ? new Date(w.mulai).toLocaleString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : null;
       const deadlineTxt = w.deadline ? new Date(w.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : null;
-      const metaBits = [esc('📝 ' + (w.meta || 'Worksheet')), esc(scopeLabel(w, kelasNama))];
+      const metaBits = [scopeLabel(w, kelasNama)];
       if (mulaiTxt) metaBits.push('Mulai: ' + mulaiTxt);
       if (deadlineTxt) metaBits.push('Deadline: ' + deadlineTxt);
       return `
-      <div class="ws-card">
-        <div class="ws-info">
-          <h3>${esc(w.judul)}</h3>
-          <div class="meta">${metaBits.join(' · ')}</div>
-        </div>
-        <div class="ws-right">
-          <span class="ws-status status-open">Terbit</span>
-          <a class="btn-ws" href="${esc(w.url)}" target="_blank" rel="noopener">Lihat</a>
+      <div class="materi-drawer-item" id="kg-ws-item-${i}">
+        <button type="button" class="materi-drawer-header" data-target="kg-ws-item-${i}">
+          <div class="materi-drawer-icon">${wsIcon}</div>
+          <div class="materi-drawer-heading">
+            <div class="materi-drawer-tag">${esc(w.meta || 'Worksheet')}</div>
+            <div class="materi-drawer-title">${esc(w.judul)}</div>
+          </div>
+          <div class="materi-drawer-chevron">${chevronIcon}</div>
+        </button>
+        <div class="materi-drawer-body">
+          <div class="materi-drawer-body-inner">
+            <p>${metaBits.map(esc).join(' · ')}</p>
+            <div class="ws-drawer-actions">
+              <span class="ws-status status-open">Terbit</span>
+              <a class="btn-ws" href="${esc(w.url)}" target="_blank" rel="noopener">Lihat</a>
+            </div>
+          </div>
         </div>
       </div>`;
     }).join('') : emptyState('Belum ada worksheet', 'Worksheet yang sudah diterbitkan untuk kelas ini akan muncul di sini.', '📝');
+
+    document.querySelectorAll('#kgMateriContainer .materi-drawer-header, #kgWorksheetContainer .materi-drawer-header').forEach((btn) => {
+      btn.onclick = () => {
+        const item = document.getElementById(btn.dataset.target);
+        if (item) item.classList.toggle('open');
+      };
+    });
   }
 
   document.querySelectorAll('#kgTabs .ws-tab').forEach(btn => {

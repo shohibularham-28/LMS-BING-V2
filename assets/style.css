@@ -523,11 +523,11 @@ body{
   display:grid !important;
   position:fixed;
   left:0; right:0; bottom:0;
-  background:#fff;
-  border-top:1px solid #E7E9F2;
+  background:var(--app-surface);
+  border-top:1px solid var(--app-border);
   padding:10px 12px calc(10px + env(safe-area-inset-bottom));
   z-index:999;
-  box-shadow:0 -2px 16px rgba(20,20,40,0.08);
+  box-shadow:0 -2px 16px var(--app-shadow-1);
   grid-template-columns:repeat(auto-fit, minmax(72px, 92px));
   justify-content:center;
   gap:4px 12px;
@@ -538,7 +538,7 @@ body{
   gap:3px;
   padding:4px 2px 6px;
   text-decoration:none;
-  color:#8A90A3;
+  color:var(--app-text-faint);
   font-size:10.5px;
   font-weight:600;
   border-radius:10px;
@@ -548,12 +548,12 @@ body{
   margin:0 auto;
   display:flex; align-items:center; justify-content:center;
   border-radius:12px;
-  background:#F1F2F6;
+  background:var(--app-surface-2);
   font-size:17px;
   line-height:1;
 }
-.mobile-bottom-nav.mobile-bottom-nav-grid a.active{ color:#1f2937; }
-.mobile-bottom-nav.mobile-bottom-nav-grid a.active .mbn-icon{ background:#1f2937; filter:brightness(1.4); }
+.mobile-bottom-nav.mobile-bottom-nav-grid a.active{ color:var(--violet); }
+.mobile-bottom-nav.mobile-bottom-nav-grid a.active .mbn-icon{ background:var(--violet); color:#fff; filter:none; }
 
 /* Ruang konten di bawah, biar tidak ketutupan bar navigasi yang fixed */
 #app-screen.no-sidebar .content{ padding-bottom:104px; }
@@ -953,6 +953,11 @@ html[data-theme="dark"] .theme-toggle-btn .icon-sun{ display:block; }
 .status-tuntas{background:rgba(198,241,53,0.25); color:#5A7500;}
 .status-remidi{background:rgba(255,107,94,0.16); color:#C6473A;}
 .status-belum{background:rgba(93,100,120,0.14); color:#5D6478;}
+html[data-theme="dark"] .score-high,
+html[data-theme="dark"] .status-tuntas{background:rgba(198,241,53,0.16); color:var(--lime);}
+html[data-theme="dark"] .score-mid{background:rgba(76,201,240,0.18); color:var(--sky);}
+html[data-theme="dark"] .status-remidi{background:rgba(255,107,94,0.18); color:#FF9285;}
+html[data-theme="dark"] .status-belum{background:rgba(154,163,184,0.18); color:var(--app-text-dim);}
 
 /* ===================== Materi: model drawer (accordion) ===================== */
 .materi-drawer-list{
@@ -1046,6 +1051,12 @@ html[data-theme="dark"] .theme-toggle-btn .icon-sun{ display:block; }
 @media (max-width:600px){
   .materi-drawer-body-inner{padding-left:20px;}
 }
+.ws-drawer-actions{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
 
 /* Worksheet */
 .ws-tabs{
@@ -1111,8 +1122,10 @@ html[data-theme="dark"] .theme-toggle-btn .icon-sun{ display:block; }
 }
 .status-open{background:rgba(198,241,53,0.25); color:#5A7500;}
 .status-due{background:rgba(255,107,94,0.14); color:#C6473A;}
+html[data-theme="dark"] .status-open{background:rgba(198,241,53,0.16); color:var(--lime);}
+html[data-theme="dark"] .status-due{background:rgba(255,107,94,0.18); color:#FF9285;}
 .btn-ws{
-  background:var(--app-text-strong);
+  background:var(--violet);
   color:#fff;
   border:none;
   padding:10px 20px;
