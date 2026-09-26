@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Kelas — Dashboard Guru</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{ background:#F6F7FB; }
+  .gg-wrap{ max-width:900px; margin:0 auto; padding:22px 16px 60px; }
+  .gg-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .gg-top a{ color:#4f5bd5; font-weight:700; text-decoration:none; font-size:13.5px; }
+
+  .gg-materi-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-top:14px; }
+  .gg-card{ background:#fff; border:1px solid #E7E9F2; border-radius:14px; padding:16px; }
+  .gg-card h4{ margin:0 0 4px; font-size:15px; }
+  .gg-card .gg-meta{ font-size:12px; color:#8A90A3; margin-bottom:10px; }
+  .gg-card-actions{ display:flex; gap:6px; flex-wrap:wrap; }
+  .gg-card-actions button{ flex:1; min-width:90px; padding:8px 6px; border-radius:8px; border:none; font-weight:700; font-size:12.5px; cursor:pointer; }
+  .btn-launch-ipd{ background:#1f2937; color:#fff; }
+  .btn-launch-live{ background:#4f5bd5; color:#fff; }
+  .btn-edit-sm{ background:#F1F2F6; color:#1f2937; flex:0 0 auto; }
+  .btn-hapus-sm{ background:#fff0ee; color:#e5533d; flex:0 0 auto; }
+
+  .gg-form textarea{ width:100%; min-height:120px; padding:10px 12px; border:1px solid #E7E9F2; border-radius:10px; font-size:14px; font-family:inherit; }
+  .gg-form .hint{ margin-top:6px; }
+
+  .kode-besar{ font-size:38px; font-weight:800; letter-spacing:.05em; color:#4f5bd5; text-align:center; padding:14px; background:#eef1ff; border-radius:14px; margin:14px 0; }
+  .board-table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  .board-table th, .board-table td{ text-align:left; padding:9px 10px; border-bottom:1px solid #E7E9F2; font-size:13.5px; }
+  .board-table th{ color:#8A90A3; font-size:11.5px; text-transform:uppercase; }
+
+  .roster-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .roster-chip{ background:#F1F2F6; border:1px solid #E7E9F2; border-radius:99px; padding:8px 16px; font-weight:600; font-size:13.5px; cursor:pointer; }
+  .roster-chip:hover{ background:#E7E9F2; }
+  .roster-chip.done{ background:#eafaf0; border-color:#c7ecd6; }
+
+  .sk-answer-row{ min-height:52px; border:2px dashed #D6D9E6; border-radius:12px; padding:8px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .sk-answer-row.benar{ border-color:#1fa15a; background:#eafaf0; }
+  .sk-answer-row.salah{ border-color:#e5533d; background:#fff0ee; }
+  .sk-pool{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .sk-chip{ background:#F1F2F6; border:1px solid #E7E9F2; border-radius:10px; padding:9px 14px; font-weight:600; font-size:14.5px; cursor:pointer; user-select:none; }
+  .sk-chip.used{ opacity:.35; pointer-events:none; }
+  .sk-answer-row .sk-chip{ background:#4f5bd5; color:#fff; border-color:#4f5bd5; }
+  .gg-actions-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .gg-actions-row button{ flex:1; min-width:130px; padding:11px; border-radius:10px; border:none; font-weight:700; cursor:pointer; }
+
+  /* ===== IPD: konfirmasi & tampilan soal besar ===== */
+  .ipd-confirm{ text-align:center; padding:36px 10px; }
+  .ipd-confirm-nama{ font-size:28px; font-weight:800; margin-bottom:8px; }
+  .ipd-big-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .ipd-big-nama{ font-size:22px; font-weight:800; }
+  .ipd-big-progress{ font-size:13.5px; color:#8A90A3; font-weight:700; }
+  .ipd-big-instruksi{ font-size:13px; color:#8A90A3; font-weight:600; text-transform:uppercase; letter-spacing:.03em; margin-bottom:14px; }
+  .sk-answer-row.ipd-big{ min-height:70px; padding:14px; }
+  .sk-pool.ipd-big{ margin-bottom:22px; }
+  .ipd-big-chip{ font-size:22px !important; padding:14px 20px !important; border-radius:14px !important; }
+
+  /* ===== Animasi celebration (bintang + jawaban) ===== */
+  .celebrate-overlay{
+    position:fixed; inset:0; z-index:2000; display:flex; align-items:center; justify-content:center;
+    background:rgba(20,20,40,0.35); overflow:hidden;
+  }
+  .celebrate-star{
+    position:absolute; top:-40px; animation-name:celebrateFall; animation-timing-function:ease-in; animation-fill-mode:forwards;
+  }
+  @keyframes celebrateFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(100vh) rotate(360deg); opacity:0.9; }
+  }
+  .celebrate-text{
+    position:relative; background:#fff; border-radius:20px; padding:26px 32px; font-size:26px; font-weight:800; text-align:center;
+    box-shadow:0 12px 40px rgba(0,0,0,0.25); animation:celebratePop .4s ease-out;
+  }
+  .celebrate-text.celebrate-benar{ color:#1fa15a; }
+  .celebrate-text.celebrate-salah{ color:#e5533d; font-size:19px; }
+  @keyframes celebratePop{
+    0%{ transform:scale(.4); opacity:0; }
+    70%{ transform:scale(1.08); opacity:1; }
+    100%{ transform:scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="gg-wrap">
+  <div class="gg-top">
+    <a href="guru.html">‹ Kembali ke Dashboard</a>
+  </div>
+  <div class="page-header"><div class="eyebrow">Dashboard Guru</div><h1 id="ggTitle">🎮 Game Kelas</h1></div>
+
+  <div id="ggContainer">Memuat…</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+let PROFILE = null;
+let KELAS_LIST = [];
+let ACTIVE_SESI = null;   // sesi yang sedang di-launch di layar ini
+let ACTIVE_BANK = null;
+let realtimeChannel = null;
+
+function fmtKode() {
+  return 'GM-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+// ============ VIEW: DAFTAR MATERI ============
+async function renderDaftarMateri() {
+  const c = document.getElementById('ggContainer');
+  document.getElementById('ggTitle').textContent = '🎮 Game Kelas';
+  c.innerHTML = `
+    <div class="section-label">Susun Kata — Materi</div>
+    <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambah Materi Susun Kata</button>
+    <div id="ggMateriListSlot" style="margin-top:6px;">Memuat…</div>
+  `;
+  document.getElementById('btnTambahMateri').addEventListener('click', () => renderFormMateri(null));
+
+  const { data: materi } = await supabase.from('bank_game')
+    .select('id, judul, data, kelas_id, level, published, kelas:kelas_id(nama)')
+    .eq('jenis', 'susun_kata')
+    .order('created_at', { ascending: false });
+
+  const list = materi || [];
+  const slot = document.getElementById('ggMateriListSlot');
+  slot.innerHTML = list.length ? `<div class="gg-materi-list">${list.map(m => `
+    <div class="gg-card">
+      <h4>${esc(m.judul)}</h4>
+      <div class="gg-meta">${(m.data || []).length} soal · ${m.kelas ? esc(m.kelas.nama) : (m.level ? 'Tingkat ' + m.level : 'Semua kelas')}</div>
+      <div class="gg-card-actions">
+        <button class="btn-launch-ipd" data-id="${m.id}" data-mode="ipd">🖥️ Launch IPD</button>
+        <button class="btn-launch-live" data-id="${m.id}" data-mode="mandiri_live">📱 Launch Live HP</button>
+      </div>
+      <div class="gg-card-actions" style="margin-top:6px;">
+        <button class="btn-edit-sm" data-edit="${m.id}">✏️ Edit</button>
+        <button class="btn-hapus-sm" data-hapus="${m.id}">🗑️ Hapus</button>
+      </div>
+    </div>
+  `).join('')}</div>` : emptyState('Belum ada materi', 'Tambahkan materi Susun Kata pertama lewat tombol di atas.', '🔤');
+
+  slot.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => bukaFormLaunch(btn.dataset.id, btn.dataset.mode, list.find(x => x.id === btn.dataset.id)));
+  });
+  slot.querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', () => renderFormMateri(list.find(x => x.id === btn.dataset.edit)));
+  });
+  slot.querySelectorAll('[data-hapus]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Hapus materi ini? Sesi lama yang sudah pernah dimainkan tidak ikut terhapus.')) return;
+      await supabase.from('bank_game').delete().eq('id', btn.dataset.hapus);
+      renderDaftarMateri();
+    });
+  });
+}
+
+// ============ VIEW: FORM TAMBAH/EDIT MATERI ============
+function renderFormMateri(existing) {
+  const c = document.getElementById('ggContainer');
+  const kalimatAwal = existing ? (existing.data || []).map(d => d.kalimat).join('\n') : '';
+  c.innerHTML = `
+    <a class="btn-text-sm" id="btnBackList" style="cursor:pointer;">‹ Kembali ke daftar materi</a>
+    <div class="gg-form" style="margin-top:10px;">
+      <div class="form-row">
+        <div class="form-field" style="flex:2;"><label>Judul Materi</label><input type="text" id="fJudul" value="${existing ? esc(existing.judul) : ''}" placeholder="mis. Simple Present Tense - Level 1"></div>
+        <div class="form-field"><label>Target Kelas</label><select id="fKelas"><option value="">Semua Kelas</option></select></div>
+      </div>
+      <div class="form-field">
+        <label>Daftar Kalimat Benar (1 kalimat per baris)</label>
+        <textarea id="fKalimat" placeholder="I go to school every day&#10;She plays badminton on Sunday">${esc(kalimatAwal)}</textarea>
+        <div class="hint">Setiap baris akan diacak urutan katanya untuk siswa susun kembali. Tulis kalimat dengan urutan kata yang SUDAH BENAR.</div>
+      </div>
+      <button class="btn-secondary-sm" id="btnSimpanMateri">💾 Simpan Materi</button>
+      <p class="login-error" id="fError" style="display:none;"></p>
+    </div>
+  `;
+  document.getElementById('btnBackList').addEventListener('click', renderDaftarMateri);
+
+  const sel = document.getElementById('fKelas');
+  KELAS_LIST.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k.id; opt.textContent = k.nama;
+    if (existing && existing.kelas_id === k.id) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  document.getElementById('btnSimpanMateri').addEventListener('click', async () => {
+    const judul = document.getElementById('fJudul').value.trim();
+    const kelasId = document.getElementById('fKelas').value || null;
+    const kalimatLines = document.getElementById('fKalimat').value.split('\n').map(s => s.trim()).filter(Boolean);
+    const errEl = document.getElementById('fError');
+    errEl.style.display = 'none';
+    if (!judul) { errEl.textContent = 'Judul wajib diisi.'; errEl.style.display = ''; return; }
+    if (!kalimatLines.length) { errEl.textContent = 'Minimal 1 kalimat.'; errEl.style.display = ''; return; }
+    const data = kalimatLines.map(k => ({ kalimat: k }));
+    if (existing) {
+      await supabase.from('bank_game').update({ judul, kelas_id: kelasId, data }).eq('id', existing.id);
+    } else {
+      await supabase.from('bank_game').insert({ jenis: 'susun_kata', judul, kelas_id: kelasId, data, guru_id: PROFILE.id, published: true });
+    }
+    renderDaftarMateri();
+  });
+}
+
+// ============ VIEW: FORM LAUNCH (pilih kelas dulu) ============
+function bukaFormLaunch(bankId, mode, bank) {
+  const c = document.getElementById('ggContainer');
+  c.innerHTML = `
+    <a class="btn-text-sm" id="btnBackList2" style="cursor:pointer;">‹ Batal</a>
+    <div class="gg-form" style="margin-top:10px;">
+      <div class="section-label">${mode === 'ipd' ? '🖥️ Launch di IPD (Giliran Maju)' : '📱 Launch Live (HP Siswa)'}</div>
+      <div class="hint">${mode === 'ipd' ? 'Siswa akan maju bergiliran ke depan dan mengerjakan langsung di layar/perangkat ini.' : 'Siswa mengerjakan lewat HP masing-masing dengan kecepatannya sendiri; layar ini menampilkan papan skor secara langsung.'}</div>
+      <div class="form-field" style="margin-top:10px;"><label>Kelas (opsional, kosongkan untuk semua kelas)</label>
+        <select id="fLaunchKelas"><option value="">Semua Kelas</option></select>
+      </div>
+      <button class="btn-secondary-sm" id="btnMulaiSesi">🚀 Mulai Sesi</button>
+    </div>
+  `;
+  document.getElementById('btnBackList2').addEventListener('click', renderDaftarMateri);
+  const sel = document.getElementById('fLaunchKelas');
+  KELAS_LIST.forEach(k => {
+    const opt = document.createElement('option'); opt.value = k.id; opt.textContent = k.nama;
+    if (bank && bank.kelas_id === k.id) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  document.getElementById('btnMulaiSesi').addEventListener('click', async () => {
+    const kelasId = document.getElementById('fLaunchKelas').value || null;
+    const kode = fmtKode();
+    const { data: sesi, error } = await supabase.from('game_sesi').insert({
+      kode, jenis: 'susun_kata', bank_game_id: bankId, guru_id: PROFILE.id, kelas_id: kelasId, mode, status: 'berjalan'
+    }).select().single();
+    if (error || !sesi) { alert('Gagal membuat sesi.'); return; }
+    ACTIVE_SESI = sesi;
+    const { data: bankFull } = await supabase.from('bank_game').select('id, data').eq('id', bankId).maybeSingle();
+    ACTIVE_BANK = bankFull;
+    if (mode === 'ipd') renderLiveIpd(); else renderLiveMandiri();
+  });
+}
+
+// ============ VIEW: LIVE — mode IPD (giliran maju) ============
+// Alur: daftar nama -> pilih anak -> konfirmasi "Mulai" -> soal tampil besar
+// (daftar nama disembunyikan) -> jawab -> animasi (bintang kalau benar) -> otomatis balik ke daftar nama.
+let ipdItems = [];
+let ipdPicked = null;      // { id, nama } siswa yang lagi dipilih (sebelum/selama giliran)
+let ipdPool = [], ipdAnswer = [], ipdDijawab = false, ipdStart = 0;
+
+async function renderLiveIpd() {
+  const c = document.getElementById('ggContainer');
+  ipdItems = (ACTIVE_BANK.data || []).map(d => ({ kalimat: d.kalimat, tokens: d.kalimat.trim().split(/\s+/) }));
+
+  c.innerHTML = `
+    <div class="gg-form">
+      <div class="section-label">Kode Sesi: <b>${ACTIVE_SESI.kode}</b></div>
+      <div id="ipdRosterView"></div>
+      <div id="ipdGameView" style="display:none;"></div>
+      <div class="gg-actions-row" style="margin-top:16px;">
+        <button class="btn-hapus-sm" id="btnAkhiriIpd">⏹️ Akhiri Sesi</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnAkhiriIpd').addEventListener('click', akhiriSesi);
+  await renderIpdRoster();
+  subscribeSesi();
+}
+
+// ---- Sub-view 1: daftar nama (+ papan skor) ----
+async function renderIpdRoster() {
+  const rv = document.getElementById('ipdRosterView');
+  const gv = document.getElementById('ipdGameView');
+  if (!rv) return;
+  gv.style.display = 'none';
+  gv.innerHTML = '';
+  rv.style.display = '';
+
+  const totalSoal = ipdItems.length;
+  const idx = ACTIVE_SESI.giliran_soal_index || 0;
+  rv.innerHTML = `
+    <div class="hint">Soal berikutnya: <b>ke-${(idx % totalSoal) + 1} dari ${totalSoal}</b> · Pilih siswa yang maju sekarang:</div>
+    <div class="roster-list" id="ipdRosterList"></div>
+    <div class="section-label" style="margin-top:22px;">Papan Skor</div>
+    <div id="ipdBoardSlot">Memuat…</div>
+  `;
+  await loadRosterChips();
+  await refreshBoard('ipdBoardSlot');
+}
+
+async function loadRosterChips() {
+  const slot = document.getElementById('ipdRosterList');
+  if (!slot) return;
+  let q = supabase.from('profiles').select('id, nama').eq('role', 'siswa').order('nama');
+  if (ACTIVE_SESI.kelas_id) q = q.eq('kelas_id', ACTIVE_SESI.kelas_id);
+  const { data: roster } = await q;
+  const { data: sudahMain } = await supabase.from('game_peserta').select('profile_id, soal_selesai').eq('sesi_id', ACTIVE_SESI.id);
+  const doneMap = new Map((sudahMain || []).map(p => [p.profile_id, p.soal_selesai]));
+  slot.innerHTML = (roster || []).map(s => `
+    <span class="roster-chip ${doneMap.has(s.id) ? 'done' : ''}" data-pid="${s.id}" data-nama="${esc(s.nama)}">${doneMap.has(s.id) ? '✅ ' : ''}${esc(s.nama)}${doneMap.has(s.id) ? ' (' + doneMap.get(s.id) + 'x maju)' : ''}</span>
+  `).join('');
+  slot.querySelectorAll('.roster-chip').forEach(chip => {
+    chip.addEventListener('click', () => renderIpdKonfirmasi(chip.dataset.pid, chip.dataset.nama));
+  });
+}
+
+// ---- Sub-view 2: konfirmasi "Mulai" sebelum soal muncul ----
+function renderIpdKonfirmasi(profileId, nama) {
+  ipdPicked = { id: profileId, nama };
+  const rv = document.getElementById('ipdRosterView');
+  const gv = document.getElementById('ipdGameView');
+  rv.style.display = 'none';
+  gv.style.display = '';
+  const idx = ACTIVE_SESI.giliran_soal_index || 0;
+  gv.innerHTML = `
+    <div class="ipd-confirm">
+      <div class="ipd-confirm-nama">🙋 ${esc(nama)}</div>
+      <div class="hint">Siap mengerjakan soal ke-${(idx % ipdItems.length) + 1} dari ${ipdItems.length}?</div>
+      <div class="gg-actions-row" style="margin-top:14px;">
+        <button class="btn-edit-sm" id="btnBatalGiliran">‹ Batal</button>
+        <button class="btn-launch-ipd" id="btnMulaiGiliran">▶️ Mulai</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnBatalGiliran').addEventListener('click', renderIpdRoster);
+  document.getElementById('btnMulaiGiliran').addEventListener('click', mulaiGiliranSoal);
+}
+
+async function mulaiGiliranSoal() {
+  let { data: existing } = await supabase.from('game_peserta').select('*').eq('sesi_id', ACTIVE_SESI.id).eq('profile_id', ipdPicked.id).maybeSingle();
+  if (!existing) {
+    const { data: created } = await supabase.from('game_peserta').insert({ sesi_id: ACTIVE_SESI.id, profile_id: ipdPicked.id, nama: ipdPicked.nama }).select().single();
+    existing = created;
+  }
+  ipdPicked.peserta = existing;
+  renderIpdSoal();
+}
+
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+// ---- Sub-view 3: soal tampil BESAR (daftar nama disembunyikan) ----
+function renderIpdSoal() {
+  ipdDijawab = false;
+  const idx = (ACTIVE_SESI.giliran_soal_index || 0) % ipdItems.length;
+  const item = ipdItems[idx];
+  const tokens = item.tokens.map((t, i) => ({ id: i, text: t }));
+  ipdPool = shuffleArr(tokens);
+  ipdAnswer = [];
+  ipdStart = Date.now();
+  const gv = document.getElementById('ipdGameView');
+  gv.innerHTML = `
+    <div class="ipd-big-header">
+      <div class="ipd-big-nama">🙋 ${esc(ipdPicked.nama)}</div>
+      <div class="ipd-big-progress">Soal ${idx + 1} / ${ipdItems.length}</div>
+    </div>
+    <div class="ipd-big-instruksi">Susun kata-kata berikut menjadi kalimat yang benar</div>
+    <div class="sk-answer-row ipd-big" id="ipdAnswerRow"></div>
+    <div class="sk-pool ipd-big" id="ipdPool"></div>
+    <div class="gg-actions-row">
+      <button class="btn-edit-sm" id="btnIpdReset">↺ Ulangi</button>
+      <button class="btn-launch-ipd" id="btnIpdSubmit">Periksa Jawaban</button>
+    </div>
+  `;
+  renderIpdPoolAnswer();
+  document.getElementById('btnIpdReset').addEventListener('click', () => { ipdAnswer = []; renderIpdPoolAnswer(); });
+  document.getElementById('btnIpdSubmit').addEventListener('click', submitIpd);
+}
+
+function renderIpdPoolAnswer() {
+  const pool = document.getElementById('ipdPool');
+  const ans = document.getElementById('ipdAnswerRow');
+  ans.className = 'sk-answer-row ipd-big';
+  ans.innerHTML = ipdAnswer.map(t => `<span class="sk-chip ipd-big-chip" data-id="${t.id}">${esc(t.text)}</span>`).join('');
+  const usedIds = new Set(ipdAnswer.map(t => t.id));
+  pool.innerHTML = ipdPool.map(t => `<span class="sk-chip ipd-big-chip ${usedIds.has(t.id) ? 'used' : ''}" data-id="${t.id}">${esc(t.text)}</span>`).join('');
+  pool.querySelectorAll('.sk-chip:not(.used)').forEach(chip => chip.addEventListener('click', () => {
+    if (ipdDijawab) return;
+    const id = Number(chip.dataset.id);
+    ipdAnswer.push(ipdPool.find(t => t.id === id));
+    renderIpdPoolAnswer();
+  }));
+  ans.querySelectorAll('.sk-chip').forEach(chip => chip.addEventListener('click', () => {
+    if (ipdDijawab) return;
+    const id = Number(chip.dataset.id);
+    ipdAnswer = ipdAnswer.filter(t => t.id !== id);
+    renderIpdPoolAnswer();
+  }));
+}
+
+async function submitIpd() {
+  if (ipdDijawab || ipdAnswer.length !== ipdPool.length) return;
+  ipdDijawab = true;
+  const idx = (ACTIVE_SESI.giliran_soal_index || 0) % ipdItems.length;
+  const item = ipdItems[idx];
+  const susunan = ipdAnswer.map(t => t.text).join(' ');
+  const benar = susunan.trim().toLowerCase() === item.kalimat.trim().toLowerCase();
+  const waktuMs = Date.now() - ipdStart;
+  const skorDidapat = benar ? 10 : 0;
+  const peserta = ipdPicked.peserta;
+
+  document.getElementById('ipdAnswerRow').classList.add(benar ? 'benar' : 'salah');
+
+  try {
+    await supabase.from('game_jawaban').insert({ sesi_id: ACTIVE_SESI.id, peserta_id: peserta.id, soal_index: idx, benar, waktu_ms: waktuMs, skor_didapat: skorDidapat });
+  } catch (e) {}
+  const skorBaru = (peserta.skor_total || 0) + skorDidapat;
+  const selesaiBaru = (peserta.soal_selesai || 0) + 1;
+  await supabase.from('game_peserta').update({ skor_total: skorBaru, soal_selesai: selesaiBaru, status: 'main' }).eq('id', peserta.id);
+  await supabase.from('game_sesi').update({ giliran_soal_index: (idx + 1) % ipdItems.length }).eq('id', ACTIVE_SESI.id);
+  ACTIVE_SESI.giliran_soal_index = (idx + 1) % ipdItems.length;
+
+  tampilkanCelebrationLalu(benar, item.kalimat, async () => {
+    ipdPicked = null;
+    await renderIpdRoster();
+  });
+}
+
+// ---- Animasi hasil jawaban (bintang + confetti kalau benar) ----
+function tampilkanCelebrationLalu(benar, kalimatBenar, callback) {
+  const overlay = document.createElement('div');
+  overlay.className = 'celebrate-overlay';
+  if (benar) {
+    let stars = '';
+    for (let i = 0; i < 24; i++) {
+      const left = Math.random() * 100;
+      const delay = (Math.random() * 0.4).toFixed(2);
+      const size = 18 + Math.round(Math.random() * 22);
+      const dur = (1.1 + Math.random() * 0.8).toFixed(2);
+      stars += `<span class="celebrate-star" style="left:${left}%; animation-delay:${delay}s; animation-duration:${dur}s; font-size:${size}px;">${['⭐','🌟','✨'][i % 3]}</span>`;
+    }
+    overlay.innerHTML = `${stars}<div class="celebrate-text celebrate-benar">🎉 Benar! +10</div>`;
+  } else {
+    overlay.innerHTML = `<div class="celebrate-text celebrate-salah">Jawaban yang benar:<br>"${esc(kalimatBenar)}"</div>`;
+  }
+  document.body.appendChild(overlay);
+  setTimeout(() => {
+    overlay.remove();
+    callback();
+  }, benar ? 1900 : 2600);
+}
+
+// ============ VIEW: LIVE — mode mandiri_live (HP siswa, papan live) ============
+async function renderLiveMandiri() {
+  const c = document.getElementById('ggContainer');
+  c.innerHTML = `
+    <div class="gg-form">
+      <div class="hint">Minta siswa membuka menu <b>Game</b> di HP masing-masing, lalu masukkan kode berikut:</div>
+      <div class="kode-besar">${ACTIVE_SESI.kode}</div>
+      <div class="section-label">Papan Skor Live</div>
+      <div id="mlBoardSlot">Memuat…</div>
+      <div class="gg-actions-row" style="margin-top:16px;">
+        <button class="btn-hapus-sm" id="btnAkhiriMl">⏹️ Akhiri Sesi</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnAkhiriMl').addEventListener('click', akhiriSesi);
+  await refreshBoard('mlBoardSlot');
+  subscribeSesi();
+}
+
+async function refreshBoard(slotId) {
+  const slot = document.getElementById(slotId);
+  if (!slot) return;
+  const totalSoal = (ACTIVE_BANK.data || []).length;
+  const { data: peserta } = await supabase.from('game_peserta')
+    .select('nama, skor_total, soal_selesai, status')
+    .eq('sesi_id', ACTIVE_SESI.id)
+    .order('skor_total', { ascending: false });
+  const list = peserta || [];
+  slot.innerHTML = list.length ? `
+    <table class="board-table">
+      <thead><tr><th>Nama</th><th>Progres</th><th>Skor</th><th>Status</th></tr></thead>
+      <tbody>${list.map(p => `
+        <tr>
+          <td>${esc(p.nama)}</td>
+          <td>${p.soal_selesai}/${totalSoal}</td>
+          <td><b>${p.skor_total}</b></td>
+          <td>${p.status === 'selesai' ? '✅ Selesai' : '⏳ Mengerjakan'}</td>
+        </tr>
+      `).join('')}</tbody>
+    </table>` : emptyState('Belum ada yang bergabung', 'Papan ini akan terisi otomatis begitu siswa join.', '⏳');
+}
+
+function subscribeSesi() {
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
+  realtimeChannel = supabase.channel('game_admin_' + ACTIVE_SESI.id)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'game_peserta', filter: `sesi_id=eq.${ACTIVE_SESI.id}` }, () => {
+      if (ACTIVE_SESI.mode === 'ipd') {
+        // Jangan ganggu layar kalau lagi ada giliran/soal berjalan — cukup refresh papan skor kalau daftar nama yang sedang tampil.
+        if (!ipdPicked) { refreshBoard('ipdBoardSlot'); loadRosterChips(); }
+      } else {
+        refreshBoard('mlBoardSlot');
+      }
+    })
+    .subscribe();
+}
+
+async function akhiriSesi() {
+  if (!confirm('Akhiri sesi ini? Siswa tidak akan bisa melanjutkan lagi.')) return;
+  await supabase.from('game_sesi').update({ status: 'selesai' }).eq('id', ACTIVE_SESI.id);
+  if (realtimeChannel) { supabase.removeChannel(realtimeChannel); realtimeChannel = null; }
+  ACTIVE_SESI = null; ACTIVE_BANK = null;
+  renderDaftarMateri();
+}
+
+(async function () {
+  const profile = await requireTeacherLogin();
+  if (!profile) return;
+  PROFILE = profile;
+  const { data: kelas } = await supabase.from('kelas').select('id, nama').order('nama');
+  KELAS_LIST = kelas || [];
+  renderDaftarMateri();
+})();
+</script>
+
+</body>
+</html>

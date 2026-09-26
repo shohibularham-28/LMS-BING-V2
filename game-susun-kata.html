@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Susun Kata — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  body{ background:#F6F7FB; }
+  .sk-wrap{ max-width:640px; margin:0 auto; padding:18px 16px 60px; }
+  .sk-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .sk-top a{ color:#4f5bd5; font-weight:700; text-decoration:none; font-size:13.5px; }
+  .sk-progress{ font-size:12.5px; color:#8A90A3; font-weight:700; }
+  .sk-card{ background:#fff; border-radius:18px; padding:22px 18px; box-shadow:0 8px 24px rgba(20,20,40,0.06); }
+  .sk-instruksi{ font-size:12.5px; color:#8A90A3; margin-bottom:10px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+  .sk-answer-row{
+    min-height:52px; border:2px dashed #D6D9E6; border-radius:12px; padding:8px; display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; align-items:flex-start;
+  }
+  .sk-answer-row.benar{ border-color:#1fa15a; background:#eafaf0; }
+  .sk-answer-row.salah{ border-color:#e5533d; background:#fff0ee; }
+  .sk-pool{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+  .sk-chip{
+    background:#F1F2F6; border:1px solid #E7E9F2; border-radius:10px; padding:9px 14px; font-weight:600; font-size:14.5px;
+    cursor:pointer; user-select:none; transition:background .1s;
+  }
+  .sk-chip:hover{ background:#E7E9F2; }
+  .sk-chip.used{ opacity:.35; pointer-events:none; }
+  .sk-answer-row .sk-chip{ background:#4f5bd5; color:#fff; border-color:#4f5bd5; }
+  .sk-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .sk-actions button{ flex:1; min-width:120px; padding:12px; border-radius:11px; border:none; font-weight:700; cursor:pointer; font-size:14px; }
+  .btn-sk-submit{ background:#1f2937; color:#fff; }
+  .btn-sk-reset{ background:#F1F2F6; color:#1f2937; }
+  .btn-sk-next{ background:#4f5bd5; color:#fff; }
+  .sk-feedback{ margin-top:12px; font-size:13.5px; font-weight:700; }
+  .sk-feedback.benar{ color:#1fa15a; }
+  .sk-feedback.salah{ color:#e5533d; }
+  .sk-final{ text-align:center; padding:30px 10px; }
+  .sk-final .skor-besar{ font-size:44px; font-weight:800; color:#4f5bd5; margin:12px 0; }
+  .sk-final button{ margin-top:16px; padding:12px 22px; border-radius:11px; border:none; background:#1f2937; color:#fff; font-weight:700; cursor:pointer; }
+  .sk-loading{ text-align:center; padding:60px 10px; color:#8A90A3; }
+</style>
+</head>
+<body>
+
+<div class="sk-wrap">
+  <div class="sk-top">
+    <a href="menu-game.html">‹ Keluar</a>
+    <div class="sk-progress" id="skProgress"></div>
+  </div>
+  <div id="skContainer"><div class="sk-loading">Memuat soal…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const MODE = params.get('mode');           // 'mandiri' | 'live'
+const BANK_ID = params.get('id');
+const KODE = (params.get('kode') || '').toUpperCase();
+
+let PROFILE = null;
+let ITEMS = [];              // [{kalimat, tokens}]
+let BANK_GAME_ID = null;
+let SESI = null;             // hanya kalau mode live
+let PESERTA = null;          // hanya kalau mode live
+let currentIndex = 0;
+let skorTotal = 0;
+let soalStartTime = 0;
+
+let poolTokens = [];         // token yang belum dipakai (dengan index unik)
+let answerTokens = [];       // token yang sudah disusun siswa
+let sudahDijawab = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildTokens(kalimat) {
+  return kalimat.trim().split(/\s+/);
+}
+
+function renderSoal() {
+  sudahDijawab = false;
+  const c = document.getElementById('skContainer');
+  const item = ITEMS[currentIndex];
+  const tokens = item.tokens.map((t, i) => ({ id: i, text: t }));
+  let shuffled = shuffle(tokens);
+  // pastikan urutan acak beda dari urutan benar (kalau soal > 1 kata)
+  if (tokens.length > 1) {
+    let tries = 0;
+    while (shuffled.map(t => t.id).join(',') === tokens.map(t => t.id).join(',') && tries < 8) {
+      shuffled = shuffle(tokens);
+      tries++;
+    }
+  }
+  poolTokens = shuffled;
+  answerTokens = [];
+  soalStartTime = Date.now();
+
+  document.getElementById('skProgress').textContent = `Soal ${currentIndex + 1} / ${ITEMS.length} · Skor: ${skorTotal}`;
+
+  c.innerHTML = `
+    <div class="sk-card">
+      <div class="sk-instruksi">Susun kata-kata berikut menjadi kalimat yang benar</div>
+      <div class="sk-answer-row" id="skAnswerRow"></div>
+      <div class="sk-pool" id="skPool"></div>
+      <div class="sk-actions">
+        <button class="btn-sk-reset" id="btnReset">↺ Ulangi</button>
+        <button class="btn-sk-submit" id="btnSubmit">Periksa Jawaban</button>
+      </div>
+      <div id="skFeedbackSlot"></div>
+    </div>
+  `;
+  renderPoolAndAnswer();
+  document.getElementById('btnReset').addEventListener('click', () => { answerTokens = []; renderPoolAndAnswer(); });
+  document.getElementById('btnSubmit').addEventListener('click', submitJawaban);
+}
+
+function renderPoolAndAnswer() {
+  const pool = document.getElementById('skPool');
+  const ans = document.getElementById('skAnswerRow');
+  ans.className = 'sk-answer-row';
+  ans.innerHTML = answerTokens.map(t => `<span class="sk-chip" data-id="${t.id}">${esc(t.text)}</span>`).join('');
+  const usedIds = new Set(answerTokens.map(t => t.id));
+  pool.innerHTML = poolTokens.map(t => `<span class="sk-chip ${usedIds.has(t.id) ? 'used' : ''}" data-id="${t.id}">${esc(t.text)}</span>`).join('');
+
+  pool.querySelectorAll('.sk-chip:not(.used)').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (sudahDijawab) return;
+      const id = Number(chip.dataset.id);
+      const tok = poolTokens.find(t => t.id === id);
+      answerTokens.push(tok);
+      renderPoolAndAnswer();
+    });
+  });
+  ans.querySelectorAll('.sk-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      if (sudahDijawab) return;
+      const id = Number(chip.dataset.id);
+      answerTokens = answerTokens.filter(t => t.id !== id);
+      renderPoolAndAnswer();
+    });
+  });
+}
+
+async function submitJawaban() {
+  if (sudahDijawab) return;
+  if (answerTokens.length !== poolTokens.length) return;
+  sudahDijawab = true;
+
+  const item = ITEMS[currentIndex];
+  const susunan = answerTokens.map(t => t.text).join(' ');
+  const benar = susunan.trim().toLowerCase() === item.kalimat.trim().toLowerCase();
+  const waktuMs = Date.now() - soalStartTime;
+  const skorDidapat = benar ? 10 : 0;
+  skorTotal += skorDidapat;
+
+  const ans = document.getElementById('skAnswerRow');
+  ans.classList.add(benar ? 'benar' : 'salah');
+  const fb = document.getElementById('skFeedbackSlot');
+  fb.innerHTML = benar
+    ? `<div class="sk-feedback benar">✅ Benar!</div>`
+    : `<div class="sk-feedback salah">❌ Kurang tepat. Jawaban yang benar: "${esc(item.kalimat)}"</div>`;
+
+  const isLast = currentIndex === ITEMS.length - 1;
+  const actions = document.querySelector('.sk-actions');
+  actions.innerHTML = `<button class="btn-sk-next" id="btnNext">${isLast ? 'Lihat Hasil Akhir 🎉' : 'Lanjut ke Soal Berikutnya ➜'}</button>`;
+  document.getElementById('btnNext').addEventListener('click', () => nextSoal(isLast));
+
+  // Simpan progres kalau mode live
+  if (MODE === 'live' && PESERTA) {
+    try {
+      await supabase.from('game_jawaban').insert({
+        sesi_id: SESI.id, peserta_id: PESERTA.id, soal_index: currentIndex,
+        benar, waktu_ms: waktuMs, skor_didapat: skorDidapat
+      });
+    } catch (e) { /* soal ini mungkin sudah pernah dijawab (mis. reload), abaikan */ }
+    await supabase.from('game_peserta')
+      .update({ skor_total: skorTotal, soal_selesai: currentIndex + 1, status: isLast ? 'selesai' : 'main' })
+      .eq('id', PESERTA.id);
+  }
+}
+
+async function nextSoal(isLast) {
+  if (isLast) {
+    await tampilkanHasilAkhir();
+  } else {
+    currentIndex++;
+    renderSoal();
+  }
+}
+
+async function tampilkanHasilAkhir() {
+  const c = document.getElementById('skContainer');
+  document.getElementById('skProgress').textContent = '';
+  const totalMax = ITEMS.length * 10;
+  c.innerHTML = `
+    <div class="sk-card sk-final">
+      <div style="font-size:44px;">🎉</div>
+      <div>Kerja bagus!</div>
+      <div class="skor-besar">${skorTotal} / ${totalMax}</div>
+      <div style="color:#8A90A3; font-size:13px;">${ITEMS.length} soal telah kamu selesaikan</div>
+      <div>
+        ${MODE === 'mandiri' ? '<button id="btnMainLagi">🔁 Main Lagi</button>' : ''}
+        <button onclick="location.href='menu-game.html'" style="background:#F1F2F6; color:#1f2937;">Kembali ke Menu</button>
+      </div>
+    </div>
+  `;
+  if (MODE === 'mandiri') {
+    document.getElementById('btnMainLagi').addEventListener('click', () => { currentIndex = 0; skorTotal = 0; renderSoal(); });
+    await supabase.from('hasil_game_mandiri').insert({
+      bank_game_id: BANK_GAME_ID, profile_id: PROFILE.id, jenis: 'susun_kata',
+      skor: skorTotal, total_soal: ITEMS.length
+    });
+  }
+}
+
+async function initMandiri() {
+  const { data, error } = await supabase.from('bank_game').select('id, judul, data').eq('id', BANK_ID).maybeSingle();
+  if (error || !data || !(data.data || []).length) {
+    document.getElementById('skContainer').innerHTML = emptyState('Materi tidak ditemukan', 'Materi ini mungkin sudah dihapus gurumu.', '🔤');
+    return;
+  }
+  BANK_GAME_ID = data.id;
+  ITEMS = (data.data || []).map(d => ({ kalimat: d.kalimat, tokens: buildTokens(d.kalimat) }));
+  renderSoal();
+}
+
+async function initLive() {
+  const c = document.getElementById('skContainer');
+  const { data: sesi, error } = await supabase.from('game_sesi')
+    .select('id, kode, status, mode, jenis, bank_game_id')
+    .eq('kode', KODE).maybeSingle();
+  if (error || !sesi || sesi.status !== 'berjalan' || sesi.mode !== 'mandiri_live') {
+    c.innerHTML = emptyState('Sesi tidak tersedia', 'Kode sesi salah atau sesi sudah selesai.', '🔴');
+    return;
+  }
+  SESI = sesi;
+  const { data: bank } = await supabase.from('bank_game').select('id, data').eq('id', sesi.bank_game_id).maybeSingle();
+  if (!bank) { c.innerHTML = emptyState('Materi tidak ditemukan', '', '🔤'); return; }
+  ITEMS = (bank.data || []).map(d => ({ kalimat: d.kalimat, tokens: buildTokens(d.kalimat) }));
+
+  // cari / buat peserta
+  const { data: existing } = await supabase.from('game_peserta')
+    .select('id, skor_total, soal_selesai, status')
+    .eq('sesi_id', sesi.id).eq('profile_id', PROFILE.id).maybeSingle();
+
+  if (existing) {
+    PESERTA = existing;
+    skorTotal = existing.skor_total || 0;
+    currentIndex = Math.min(existing.soal_selesai || 0, ITEMS.length - 1);
+    if (existing.status === 'selesai' || existing.soal_selesai >= ITEMS.length) {
+      await tampilkanHasilAkhir();
+      return;
+    }
+  } else {
+    const { data: created, error: cErr } = await supabase.from('game_peserta')
+      .insert({ sesi_id: sesi.id, profile_id: PROFILE.id, nama: PROFILE.nama })
+      .select('id, skor_total, soal_selesai, status').single();
+    if (cErr || !created) { c.innerHTML = emptyState('Gagal bergabung', 'Coba muat ulang halaman.', '⚠️'); return; }
+    PESERTA = created;
+  }
+  renderSoal();
+}
+
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  PROFILE = profile;
+
+  if (MODE === 'mandiri' && BANK_ID) {
+    await initMandiri();
+  } else if (MODE === 'live' && KODE) {
+    await initLive();
+  } else {
+    document.getElementById('skContainer').innerHTML = emptyState('Halaman tidak valid', 'Silakan masuk lewat menu Game.', '⚠️');
+  }
+})();
+</script>
+
+</body>
+</html>

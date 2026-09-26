@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Seru — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+  .mobile-bottom-nav{ display:none; }
+  @media (max-width: 768px){
+    .mobile-bottom-nav{
+      display:flex; position:fixed; left:0; right:0; bottom:0; background:#fff;
+      border-top:1px solid #E7E9F2; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      z-index:999; box-shadow:0 -2px 12px rgba(20,20,40,0.07);
+    }
+    .mobile-bottom-nav a{
+      flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:2px; padding:6px 2px; text-decoration:none; color:#8A90A3; font-size:10.5px; font-weight:600; border-radius:10px;
+    }
+    .mobile-bottom-nav a .mbn-icon{ font-size:19px; line-height:1; }
+    .mobile-bottom-nav a.active{ color:#1f2937; background:#F1F2F6; }
+    #app-screen .content{ padding-bottom:80px; }
+  }
+
+  .game-type-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:14px; margin-top:16px; }
+  .game-type-tile{
+    background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:18px 14px; text-align:center;
+    cursor:pointer; transition:transform .15s, box-shadow .15s;
+  }
+  .game-type-tile:hover{ transform:translateY(-2px); box-shadow:0 8px 20px rgba(20,20,40,0.08); }
+  .game-type-tile.disabled{ cursor:default; opacity:.55; }
+  .game-type-tile.disabled:hover{ transform:none; box-shadow:none; }
+  .gtt-icon{ font-size:34px; margin-bottom:8px; }
+  .gtt-label{ font-weight:700; font-size:14px; color:#1f2937; }
+  .gtt-badge{ display:inline-block; margin-top:6px; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:99px; background:#F1F2F6; color:#8A90A3; }
+
+  .live-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:linear-gradient(135deg,#ff5f6d,#e5533d); color:#fff; border-radius:16px; padding:16px 18px; margin:16px 0;
+  }
+  .live-banner .lb-text b{ display:block; font-size:15px; }
+  .live-banner .lb-text span{ font-size:12.5px; opacity:.9; }
+  .live-banner button{ background:#fff; color:#e5533d; border:none; border-radius:10px; padding:9px 16px; font-weight:700; cursor:pointer; white-space:nowrap; }
+
+  .kode-join-box{ display:flex; gap:8px; margin:14px 0; flex-wrap:wrap; }
+  .kode-join-box input{ flex:1; min-width:160px; padding:10px 12px; border:1px solid #E7E9F2; border-radius:10px; font-size:14px; text-transform:uppercase; }
+  .kode-join-box button{ padding:10px 16px; border-radius:10px; border:none; background:#1f2937; color:#fff; font-weight:700; cursor:pointer; }
+
+  .materi-list-game{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-top:10px; }
+  .mg-card{ background:#fff; border:1px solid #E7E9F2; border-radius:14px; padding:14px 16px; }
+  .mg-card h4{ margin:0 0 4px; font-size:14.5px; }
+  .mg-card .mg-meta{ font-size:12px; color:#8A90A3; margin-bottom:10px; }
+  .mg-card button{ width:100%; padding:9px; border-radius:9px; border:none; background:#4f5bd5; color:#fff; font-weight:700; cursor:pointer; }
+
+  .back-link{ display:inline-block; margin-bottom:6px; color:#4f5bd5; font-weight:600; cursor:pointer; text-decoration:none; font-size:13.5px; }
+</style>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+          <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+
+        <!-- ===== VIEW 1: pilih jenis game ===== -->
+        <div id="view-pilih-jenis">
+          <div class="page-header">
+            <div class="eyebrow">Game Seru</div>
+            <h1>Pilih Jenis Game</h1>
+          </div>
+          <div class="game-type-grid">
+            <div class="game-type-tile" data-jenis="susun_kata">
+              <div class="gtt-icon">🔤</div>
+              <div class="gtt-label">Susun Kata</div>
+            </div>
+            <div class="game-type-tile disabled" title="Segera hadir">
+              <div class="gtt-icon">🧩</div>
+              <div class="gtt-label">Teka-Teki Silang</div>
+              <div class="gtt-badge">Segera Hadir</div>
+            </div>
+            <div class="game-type-tile disabled" title="Segera hadir">
+              <div class="gtt-icon">🔗</div>
+              <div class="gtt-label">Menjodohkan</div>
+              <div class="gtt-badge">Segera Hadir</div>
+            </div>
+            <div class="game-type-tile disabled" title="Segera hadir">
+              <div class="gtt-icon">✅</div>
+              <div class="gtt-label">Benar / Salah</div>
+              <div class="gtt-badge">Segera Hadir</div>
+            </div>
+            <div class="game-type-tile disabled" title="Segera hadir">
+              <div class="gtt-icon">🔍</div>
+              <div class="gtt-label">Cari Kata</div>
+              <div class="gtt-badge">Segera Hadir</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== VIEW 2: Susun Kata (live banner + join kode + daftar materi mandiri) ===== -->
+        <div id="view-susun-kata" style="display:none;">
+          <a class="back-link" id="btnBackJenis">‹ Pilih jenis game lain</a>
+          <div class="page-header">
+            <div class="eyebrow">Susun Kata</div>
+            <h1>Susun kalimat dari kata yang acak</h1>
+          </div>
+
+          <div id="liveBannerSlot"></div>
+
+          <div class="section-label">Punya kode dari gurumu?</div>
+          <div class="kode-join-box">
+            <input type="text" id="kodeManualInput" placeholder="Masukkan kode sesi, mis. GM-7F3K" maxlength="12">
+            <button id="btnJoinKode">Gabung</button>
+          </div>
+          <p class="login-error" id="kodeJoinError" style="display:none;"></p>
+
+          <div class="section-label" style="margin-top:22px;">Main Sendiri</div>
+          <div id="materiListSlot">Memuat…</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="mobile-bottom-nav mobile-bottom-nav-grid">
+  <a href="menu.html" data-page="menu"><span class="mbn-icon">🏠</span>Menu</a>
+  <a href="pengumuman.html" data-page="pengumuman"><span class="mbn-icon">📣</span>Pengumuman</a>
+  <a href="materi.html" data-page="materi"><span class="mbn-icon">📘</span>Materi</a>
+  <a href="worksheet.html" data-page="worksheet"><span class="mbn-icon">📝</span>Worksheet</a>
+  <a href="battle.html" data-page="battle"><span class="mbn-icon">⚔️</span>Battle</a>
+  <a href="obrolan.html" data-page="obrolan"><span class="mbn-icon">💬</span>Obrolan</a>
+  <a href="pengaturan.html" data-page="pengaturan"><span class="mbn-icon">⚙️</span>Akun</a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+let PROFILE = null;
+
+function showJenis(jenis) {
+  if (jenis === 'susun_kata') {
+    document.getElementById('view-pilih-jenis').style.display = 'none';
+    document.getElementById('view-susun-kata').style.display = '';
+    loadSusunKataView();
+  }
+}
+
+document.querySelectorAll('.game-type-tile[data-jenis]').forEach(el => {
+  el.addEventListener('click', () => showJenis(el.dataset.jenis));
+});
+document.getElementById('btnBackJenis').addEventListener('click', () => {
+  document.getElementById('view-susun-kata').style.display = 'none';
+  document.getElementById('view-pilih-jenis').style.display = '';
+});
+
+async function loadSusunKataView() {
+  const bannerSlot = document.getElementById('liveBannerSlot');
+  const listSlot = document.getElementById('materiListSlot');
+  bannerSlot.innerHTML = '';
+  listSlot.innerHTML = 'Memuat…';
+
+  // Cek sesi live (mode mandiri_live) untuk kelas siswa ini, jenis susun_kata
+  const { data: sesiAktif } = await supabase
+    .from('game_sesi')
+    .select('id, kode, mode, status, kelas_id')
+    .eq('jenis', 'susun_kata')
+    .eq('mode', 'mandiri_live')
+    .eq('status', 'berjalan')
+    .or(`kelas_id.eq.${PROFILE.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (sesiAktif && sesiAktif.length) {
+    const s = sesiAktif[0];
+    bannerSlot.innerHTML = `
+      <div class="live-banner">
+        <div class="lb-text"><b>🔴 Sesi live sedang berlangsung</b><span>Gurumu sedang memantau papan skor secara langsung</span></div>
+        <button onclick="location.href='game-susun-kata.html?mode=live&kode=${encodeURIComponent(s.kode)}'">Gabung Sekarang</button>
+      </div>`;
+  }
+
+  // Daftar materi untuk main sendiri
+  const { data: materi } = await supabase
+    .from('bank_game')
+    .select('id, judul, data')
+    .eq('jenis', 'susun_kata')
+    .eq('published', true)
+    .or(`kelas_id.eq.${PROFILE.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false });
+
+  const list = materi || [];
+  listSlot.innerHTML = list.length ? `<div class="materi-list-game">${list.map(m => `
+    <div class="mg-card">
+      <h4>${esc(m.judul)}</h4>
+      <div class="mg-meta">${(m.data || []).length} soal</div>
+      <button onclick="location.href='game-susun-kata.html?mode=mandiri&id=${m.id}'">▶️ Main Sendiri</button>
+    </div>
+  `).join('')}</div>` : emptyState('Belum ada materi Susun Kata', 'Mintalah gurumu menambahkan materi lewat menu Game Kelas.', '🔤');
+}
+
+document.getElementById('btnJoinKode').addEventListener('click', async () => {
+  const errEl = document.getElementById('kodeJoinError');
+  errEl.style.display = 'none';
+  const kode = (document.getElementById('kodeManualInput').value || '').trim().toUpperCase();
+  if (!kode) return;
+  const { data, error } = await supabase
+    .from('game_sesi')
+    .select('id, kode, mode, status, jenis')
+    .eq('kode', kode)
+    .maybeSingle();
+  if (error || !data) { errEl.textContent = 'Kode tidak ditemukan.'; errEl.style.display = ''; return; }
+  if (data.status !== 'berjalan') { errEl.textContent = 'Sesi ini sudah selesai.'; errEl.style.display = ''; return; }
+  if (data.mode !== 'mandiri_live') { errEl.textContent = 'Sesi ini dikerjakan lewat device gurumu, bukan lewat HP kamu.'; errEl.style.display = ''; return; }
+  if (data.jenis === 'susun_kata') {
+    location.href = `game-susun-kata.html?mode=live&kode=${encodeURIComponent(data.kode)}`;
+  }
+});
+
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  PROFILE = profile;
+  renderShell(profile, 'menu');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+})();
+</script>
+
+</body>
+</html>
