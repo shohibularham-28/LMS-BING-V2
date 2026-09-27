@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Procedure Text Master: Healthy Lifestyle & Nutritious Food</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN for reactive state management -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Fullscreen Overlay Styling for Card Zoom */
+        .fullscreen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background-color: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .fullscreen-card-container {
+            width: 100%;
+            max-width: 58rem;
+            margin-top: 0.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .fullscreen-card-container h2 {
+            font-size: 1.75rem !important;
+            line-height: 2.25rem !important;
+        }
+        .fullscreen-card-container h3 {
+            font-size: 1.4rem !important;
+            line-height: 1.85rem !important;
+        }
+        .fullscreen-card-container p, 
+        .fullscreen-card-container li,
+        .fullscreen-card-container div {
+            font-size: 1rem !important;
+            line-height: 1.65 !important;
+        }
+
+        @media (min-width: 640px) {
+            .fullscreen-overlay {
+                padding: 2rem;
+            }
+            .fullscreen-card-container h2 {
+                font-size: 2.25rem !important;
+                line-height: 2.5rem !important;
+            }
+            .fullscreen-card-container h3 {
+                font-size: 1.65rem !important;
+                line-height: 2.15rem !important;
+            }
+        }
+
+        /* Hotspot Pulse Effect */
+        @keyframes pinPulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 12px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .hotspot-btn {
+            animation: pinPulse 2s infinite;
+        }
+
+        /* Flashcard 3D flip effects */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+    </style>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between pb-24 md:pb-8" x-data="procedureApp()">
+
+    <!-- Top Bar Header -->
+    <header class="sticky top-0 z-40 bg-emerald-900 text-white shadow-lg border-b border-emerald-800">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-xl text-amber-300 shadow-inner">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold leading-tight flex items-center gap-2">
+                        Procedure Text Master
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-800 text-emerald-200 border border-emerald-600 font-semibold">Healthy Living Edition</span>
+                    </h1>
+                    <p class="text-xs text-emerald-300 hidden sm:block">Procedure Text: Healthy Habits & Nutritious Food - Grade X English</p>
+                </div>
+            </div>
+
+            <!-- Progress Meter -->
+            <div class="flex items-center gap-3 bg-emerald-950/70 px-3 py-1.5 rounded-full border border-emerald-700/50">
+                <div class="text-right">
+                    <div class="text-[10px] text-emerald-300 uppercase tracking-wider font-semibold">Progress</div>
+                    <div class="text-xs font-bold text-amber-300" x-text="calculateProgress() + '%'"></div>
+                </div>
+                <div class="w-12 bg-emerald-800 rounded-full h-2.5 overflow-hidden border border-emerald-600">
+                    <div class="bg-amber-400 h-2.5 rounded-full transition-all duration-500" :style="'width: ' + calculateProgress() + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-grow">
+
+        <!-- Tab 0: Home / Overview -->
+        <section x-show="activeTab === 'home'" x-transition:enter="transition ease-out duration-300 transform opacity-0 scale-95" class="space-y-6">
+            
+            <!-- Hero Banner -->
+            <div :class="expandedCard === 'hero' ? 'fullscreen-overlay' : 'relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-700 via-teal-800 to-cyan-900 text-white p-6 md:p-8 shadow-xl'">
+                <div :class="expandedCard === 'hero' ? 'fullscreen-card-container relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-700 via-teal-800 to-cyan-900 text-white p-6 sm:p-8 md:p-10 shadow-2xl border border-emerald-500/30' : ''">
+                    <!-- Fullscreen Back Header -->
+                    <div x-show="expandedCard === 'hero'" class="flex items-center justify-between bg-emerald-950/90 p-3 sm:p-4 rounded-2xl mb-6 sticky top-0 z-20 border border-emerald-600/50 backdrop-blur-md shadow-lg">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-emerald-950 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 transition shadow">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300 flex items-center gap-1">
+                            <i class="fa-solid fa-expand"></i> Full Screen Mode
+                        </span>
+                    </div>
+
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-black pointer-events-none">
+                        <i class="fa-solid fa-apple-whole"></i>
+                    </div>
+                    <div class="relative z-10 max-w-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400 text-emerald-950 shadow-sm">
+                                <i class="fa-solid fa-graduation-cap text-xs"></i> English Learning Media
+                            </span>
+                            <button @click="toggleFullscreen('hero')" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition text-xs font-semibold flex items-center gap-1">
+                                <i class="fa-solid" :class="expandedCard === 'hero' ? 'fa-compress' : 'fa-expand'"></i>
+                                <span x-text="expandedCard === 'hero' ? 'Exit Full Screen' : 'Full Screen'"></span>
+                            </button>
+                        </div>
+                        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight">
+                            Master Procedure Text: Healthy Lifestyle & Nutritious Food!
+                        </h2>
+                        <p class="text-emerald-100 text-sm md:text-base leading-relaxed">
+                            Learn how to instruct, guide, and explain daily health routines and healthy food recipes step-by-step. Discover generic structures (<strong>Goal, Materials/Ingredients, Steps</strong>) and master language features like <strong>imperative verbs</strong> and <strong>temporal conjunctions</strong>!
+                        </p>
+                        <div class="pt-2 flex flex-wrap gap-3">
+                            <button @click="activeTab = 'concept'; expandedCard = null" class="px-5 py-2.5 rounded-xl bg-white text-emerald-800 font-bold text-sm shadow-md hover:bg-amber-300 hover:text-emerald-950 transition flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> Start Learning
+                            </button>
+                            <button @click="activeTab = 'poster'; expandedCard = null" class="px-5 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-bold text-sm shadow-md hover:bg-amber-300 transition flex items-center gap-2">
+                                <i class="fa-solid fa-kitchen-set"></i> Recipe & Visual Poster Showcase
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Objectives Cards -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-emerald-600"></i> Learning Objectives (Tujuan Pembelajaran)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Objective 1 -->
+                    <div :class="expandedCard === 'obj1' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj1' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj1'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">01</div>
+                                <button @click="toggleFullscreen('obj1')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj1' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Identify Procedure Structure</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Identify <strong>Goal/Aim</strong>, list of <strong>Materials/Ingredients</strong>, and chronological <strong>Steps/Instructions</strong>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Objective 2 -->
+                    <div :class="expandedCard === 'obj2' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj2' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj2'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center font-bold">02</div>
+                                <button @click="toggleFullscreen('obj2')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj2' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Analyze Imperatives & Action Verbs</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Master action verbs (<em>blend, slice, drink, exercise</em>) and imperative sentences used in healthy guides.</p>
+                        </div>
+                    </div>
+
+                    <!-- Objective 3 -->
+                    <div :class="expandedCard === 'obj3' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj3' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj3'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">03</div>
+                                <button @click="toggleFullscreen('obj3')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj3' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Use Temporal Conjunctions</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Connect steps smoothly using time sequence words (<em>First, Then, Next, After that, Finally</em>).</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Module Roadmap -->
+            <div :class="expandedCard === 'roadmap' ? 'fullscreen-overlay' : 'bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'roadmap' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-3'">
+                    <div x-show="expandedCard === 'roadmap'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-map text-emerald-600 mr-2"></i> Learning Roadmap</span>
+                        <button @click="toggleFullscreen('roadmap')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'roadmap' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </h3>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                        <button @click="activeTab = 'concept'; expandedCard = null" class="p-3 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-100 text-left transition group">
+                            <div class="text-emerald-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-book-open"></i></div>
+                            <div class="text-xs font-bold text-slate-800">1. Concepts</div>
+                            <div class="text-[10px] text-slate-500">Definition & Structure</div>
+                        </button>
+                        <button @click="activeTab = 'inspector'; expandedCard = null" class="p-3 rounded-xl border border-teal-100 bg-teal-50/50 hover:bg-teal-100 text-left transition group">
+                            <div class="text-teal-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-magnifying-glass font-bold"></i></div>
+                            <div class="text-xs font-bold text-slate-800">2. Inspector</div>
+                            <div class="text-[10px] text-slate-500">Interactive Text Breakdowns</div>
+                        </button>
+                        <button @click="activeTab = 'poster'; expandedCard = null" class="p-3 rounded-xl border border-amber-100 bg-amber-50/50 hover:bg-amber-100 text-left transition group">
+                            <div class="text-amber-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                            <div class="text-xs font-bold text-slate-800">3. Visual Poster</div>
+                            <div class="text-[10px] text-slate-500">Recipe & Routine Cards</div>
+                        </button>
+                        <button @click="activeTab = 'flashcards'; expandedCard = null" class="p-3 rounded-xl border border-purple-100 bg-purple-50/50 hover:bg-purple-100 text-left transition group">
+                            <div class="text-purple-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-brain"></i></div>
+                            <div class="text-xs font-bold text-slate-800">4. Grammar Flashcards</div>
+                            <div class="text-[10px] text-slate-500">Verbs & Adverbs Drill</div>
+                        </button>
+                        <button @click="activeTab = 'quiz'; expandedCard = null" class="p-3 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-left transition group col-span-2 sm:col-span-1">
+                            <div class="text-rose-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-trophy"></i></div>
+                            <div class="text-xs font-bold text-slate-800">5. Practice Quiz</div>
+                            <div class="text-[10px] text-slate-500">Test Your Mastery</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 1: Concepts & Core Material -->
+        <section x-show="activeTab === 'concept'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <!-- Header Banner -->
+            <div class="bg-emerald-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">1. Concept & Generic Structure</h2>
+                    <p class="text-emerald-100 text-xs mt-0.5">What is Procedure Text and how is it built?</p>
+                </div>
+                <i class="fa-solid fa-lightbulb text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Definition & Purpose -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Card: What is Procedure Text -->
+                <div :class="expandedCard === 'concept_def' ? 'fullscreen-overlay' : 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'concept_def' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-3'">
+                        <div x-show="expandedCard === 'concept_def'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold"><i class="fa-solid fa-file-lines"></i></span>
+                                <h3 class="font-bold text-slate-800 text-base md:text-lg">What is Procedure Text?</h3>
+                            </div>
+                            <button @click="toggleFullscreen('concept_def')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'concept_def' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                            A <strong class="text-emerald-700">Procedure Text</strong> gives instructions on how to do or make something through a sequence of actions or steps.
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs md:text-sm text-slate-700">
+                            <strong class="text-emerald-900 block mb-1">Social Function (Tujuan Sosial):</strong>
+                            To describe how something is accomplished through a sequence of actions or steps (e.g., maintaining a daily healthy routine or making a nutrient-rich smoothie).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Language Features Overview -->
+                <div :class="expandedCard === 'concept_lang' ? 'fullscreen-overlay' : 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'concept_lang' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-3'">
+                        <div x-show="expandedCard === 'concept_lang'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center font-bold"><i class="fa-solid fa-spell-check"></i></span>
+                                <h3 class="font-bold text-slate-800 text-base md:text-lg">Key Language Features</h3>
+                            </div>
+                            <button @click="toggleFullscreen('concept_lang')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'concept_lang' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                        <ul class="space-y-2 text-xs md:text-sm text-slate-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-600 mt-1"></i>
+                                <span><strong>Imperative Verbs:</strong> Command words placed at step starts (e.g., <em>Drink, Mix, Pour, Limit, Blend</em>).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-600 mt-1"></i>
+                                <span><strong>Temporal Conjunctions:</strong> Sequence connectors (e.g., <em>First, Next, Then, After that, Finally</em>).</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-check text-emerald-600 mt-1"></i>
+                                <span><strong>Adverbs of Manner/Time:</strong> Precision details (e.g., <em>for 2 minutes, thoroughly, gently, cold</em>).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generic Structure 3 Parts -->
+            <div :class="expandedCard === 'concept_structure' ? 'fullscreen-overlay' : 'bg-slate-900 text-white p-5 md:p-6 rounded-2xl shadow-lg relative'">
+                <div :class="expandedCard === 'concept_structure' ? 'fullscreen-card-container bg-slate-900 text-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-700 shadow-2xl space-y-5' : 'space-y-4'">
+                    <div x-show="expandedCard === 'concept_structure'" class="flex items-center justify-between bg-slate-800 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow border border-slate-700">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-amber-300 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap"></i> The 3 Essential Parts of Procedure Text
+                        </h3>
+                        <button @click="toggleFullscreen('concept_structure')" class="p-1.5 text-slate-400 hover:text-amber-300 rounded-lg hover:bg-slate-800 transition">
+                            <i class="fa-solid" :class="expandedCard === 'concept_structure' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-xs border border-emerald-500/30">PART 1</div>
+                            <h4 class="font-bold text-white text-base">1. Goal / Aim (Tujuan)</h4>
+                            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                States what is to be made or achieved. Usually reflected in the title.
+                            </p>
+                            <div class="text-[11px] text-emerald-300 italic pt-1">
+                                e.g. "How to Maintain a Healthy Lifestyle"
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-cyan-500/20 text-cyan-300 font-bold text-xs border border-cyan-500/30">PART 2</div>
+                            <h4 class="font-bold text-white text-base">2. Materials / Ingredients</h4>
+                            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                Lists items, tools, equipment, or food ingredients required.
+                            </p>
+                            <div class="text-[11px] text-cyan-300 italic pt-1">
+                                e.g. "1 frozen banana, high-speed blender, water bottle"
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 font-bold text-xs border border-amber-500/30">PART 3</div>
+                            <h4 class="font-bold text-white text-base">3. Steps / Instructions</h4>
+                            <p class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                Sequence of chronological actions start with imperative verbs.
+                            </p>
+                            <div class="text-[11px] text-amber-300 italic pt-1">
+                                e.g. "1. Drink 300 ml water. 2. Blend ingredients..."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button @click="activeTab = 'inspector'; markModuleComplete('concept'); expandedCard = null" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Interactive Text Inspector</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 2: Interactive Text Breakdown Inspector -->
+        <section x-show="activeTab === 'inspector'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-teal-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">2. Interactive Text Inspector</h2>
+                    <p class="text-teal-100 text-xs mt-0.5">Filter and highlight specific components of Procedure Texts in real-time!</p>
+                </div>
+                <i class="fa-solid fa-magnifying-glass text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Inspector Container Card -->
+            <div :class="expandedCard === 'inspector_main' ? 'fullscreen-overlay' : 'relative'">
+                <div :class="expandedCard === 'inspector_main' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'inspector_main'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Inspector</span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full justify-between">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-emerald-600"></i> Select Procedure Topic:
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <button @click="selectedSample = 'lifestyle'" :class="selectedSample === 'lifestyle' ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    🏃 Healthy Lifestyle
+                                </button>
+                                <button @click="selectedSample = 'smoothie'" :class="selectedSample === 'smoothie' ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    🥣 Smoothie Bowl
+                                </button>
+                                <button @click="selectedSample = 'toast'" :class="selectedSample === 'toast' ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    🥑 Avocado & Egg Toast
+                                </button>
+                            </div>
+                        </div>
+                        <button @click="toggleFullscreen('inspector_main')" class="p-1.5 ml-2 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'inspector_main' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <!-- Interactive Structure Controls -->
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        <button @click="inspectorHighlight = 'all'" :class="inspectorHighlight === 'all' ? 'ring-2 ring-emerald-600 bg-emerald-50 text-emerald-900 font-bold' : 'bg-white text-slate-700'" class="p-2.5 rounded-xl border border-slate-200 text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-eye text-emerald-600"></i> Show All
+                        </button>
+                        <button @click="inspectorHighlight = 'goal'" :class="inspectorHighlight === 'goal' ? 'ring-2 ring-blue-600 bg-blue-50 text-blue-900 font-bold' : 'bg-white text-slate-700'" class="p-2.5 rounded-xl border border-slate-200 text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Goal / Aim
+                        </button>
+                        <button @click="inspectorHighlight = 'materials'" :class="inspectorHighlight === 'materials' ? 'ring-2 ring-cyan-600 bg-cyan-50 text-cyan-900 font-bold' : 'bg-white text-slate-700'" class="p-2.5 rounded-xl border border-slate-200 text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span> Materials / Prep
+                        </button>
+                        <button @click="inspectorHighlight = 'steps'" :class="inspectorHighlight === 'steps' ? 'ring-2 ring-amber-500 bg-amber-50 text-amber-900 font-bold' : 'bg-white text-slate-700'" class="p-2.5 rounded-xl border border-slate-200 text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Steps / Actions
+                        </button>
+                        <button @click="inspectorHighlight = 'imperatives'" :class="inspectorHighlight === 'imperatives' ? 'ring-2 ring-purple-600 bg-purple-50 text-purple-900 font-bold' : 'bg-white text-slate-700'" class="p-2.5 rounded-xl border border-slate-200 text-xs transition flex items-center justify-center gap-1.5 shadow-sm col-span-2 sm:col-span-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span> Imperatives
+                        </button>
+                    </div>
+
+                    <!-- Inspector Display Area -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-md space-y-4">
+                        
+                        <!-- Sample 1: Healthy Lifestyle -->
+                        <template x-if="selectedSample === 'lifestyle'">
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                                    <span>How to Maintain a Healthy Lifestyle</span>
+                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">Lifestyle Guide</span>
+                                </h3>
+
+                                <!-- Section 1: Goal -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-blue-50/90 border-blue-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'goal', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'goal'}">
+                                    <div class="flex items-center justify-between border-b border-blue-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-bullseye text-blue-600"></i> Goal / Purpose
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-600 text-white shadow-sm">GOAL</span>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-800">
+                                        To guide individuals on how to adopt and maintain a healthy, balanced daily routine for physical and mental well-being.
+                                    </p>
+                                </div>
+
+                                <!-- Section 2: Requirements / Materials -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-cyan-50/90 border-cyan-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'materials', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'materials'}">
+                                    <div class="flex items-center justify-between border-b border-cyan-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-cyan-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-box-open text-cyan-600"></i> Requirements / Materials
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-cyan-600 text-white shadow-sm">MATERIALS</span>
+                                    </div>
+                                    <ul class="list-disc list-inside text-xs md:text-sm text-slate-700 space-y-1">
+                                        <li>Water bottle (1.5–2 liters capacity)</li>
+                                        <li>Healthy balanced food (fresh vegetables, fruits, clean protein)</li>
+                                        <li>Comfortable workout attire & running shoes</li>
+                                        <li>Adequate sleep schedule (7–8 hours per night)</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Section 3: Steps -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-3"
+                                    :class="{'bg-amber-50/90 border-amber-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'steps' || inspectorHighlight === 'imperatives', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'steps' && inspectorHighlight !== 'imperatives'}">
+                                    <div class="flex items-center justify-between border-b border-amber-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-list-ol text-amber-600"></i> Steps / Instructions
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-amber-500 text-slate-900 shadow-sm">STEPS</span>
+                                    </div>
+                                    <ol class="space-y-2 text-xs md:text-sm text-slate-800">
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>1.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Start</span> your day with a glass of warm water right after waking up to rehydrate your body.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>2.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Eat</span> a balanced breakfast combining complex carbohydrates and high-quality protein.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>3.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Stay</span> active by engaging in at least 30 minutes of moderate exercise daily like brisk walking or cycling.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>4.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Drink</span> at least 8 glasses of clean water throughout the day to support brain function and digestion.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>5.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Limit</span> processed foods and excessive sugar; replace them with fresh fruits and nuts.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>6.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Manage</span> stress and ensure 7 to 8 hours of uninterrupted sleep every night.
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Sample 2: Smoothie Bowl -->
+                        <template x-if="selectedSample === 'smoothie'">
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                                    <span>How to Prepare a Nutritious Smoothie Bowl</span>
+                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">Nutritious Recipe</span>
+                                </h3>
+
+                                <!-- Section 1: Goal -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-blue-50/90 border-blue-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'goal', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'goal'}">
+                                    <div class="flex items-center justify-between border-b border-blue-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-bullseye text-blue-600"></i> Goal / Purpose
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-600 text-white shadow-sm">GOAL</span>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-800">
+                                        To make a delicious, nutrient-packed breakfast smoothie bowl filled with vitamins, fiber, and antioxidants.
+                                    </p>
+                                </div>
+
+                                <!-- Section 2: Ingredients -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-cyan-50/90 border-cyan-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'materials', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'materials'}">
+                                    <div class="flex items-center justify-between border-b border-cyan-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-cyan-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-carrot text-cyan-600"></i> Ingredients & Equipment
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-cyan-600 text-white shadow-sm">INGREDIENTS</span>
+                                    </div>
+                                    <ul class="list-disc list-inside text-xs md:text-sm text-slate-700 space-y-1">
+                                        <li>1 frozen banana</li>
+                                        <li>1/2 cup of frozen berries (strawberries or blueberries)</li>
+                                        <li>1/2 cup unsweetened Greek yogurt or almond milk</li>
+                                        <li>1 tbsp chia seeds & granola (topping)</li>
+                                        <li>High-speed blender, bowl, and spoon</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Section 3: Steps -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-3"
+                                    :class="{'bg-amber-50/90 border-amber-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'steps' || inspectorHighlight === 'imperatives', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'steps' && inspectorHighlight !== 'imperatives'}">
+                                    <div class="flex items-center justify-between border-b border-amber-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-list-ol text-amber-600"></i> Steps / Instructions
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-amber-500 text-slate-900 shadow-sm">STEPS</span>
+                                    </div>
+                                    <ol class="space-y-2 text-xs md:text-sm text-slate-800">
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>First,</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">place</span> the frozen banana, berries, and Greek yogurt into the blender container.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>Then,</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">blend</span> the mixture on high speed for 1 to 2 minutes until thick and smooth.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>Next,</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">pour</span> the creamy smoothie base into a chilled serving bowl.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>After that,</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">arrange</span> sliced kiwi, granola, and chia seeds neatly on top.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>Finally,</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">drizzle</span> a teaspoon of honey for natural sweetness and serve cold immediately.
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Sample 3: Avocado Toast -->
+                        <template x-if="selectedSample === 'toast'">
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                                    <span>How to Make Healthy Avocado & Egg Toast</span>
+                                    <span class="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full font-semibold">Protein Snack</span>
+                                </h3>
+
+                                <!-- Section 1: Goal -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-blue-50/90 border-blue-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'goal', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'goal'}">
+                                    <div class="flex items-center justify-between border-b border-blue-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-bullseye text-blue-600"></i> Goal / Purpose
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-600 text-white shadow-sm">GOAL</span>
+                                    </div>
+                                    <p class="text-sm font-semibold text-slate-800">
+                                        To prepare a quick, nutritious whole-grain toast rich in healthy fats and high-quality protein.
+                                    </p>
+                                </div>
+
+                                <!-- Section 2: Ingredients -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2"
+                                    :class="{'bg-cyan-50/90 border-cyan-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'materials', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'materials'}">
+                                    <div class="flex items-center justify-between border-b border-cyan-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-cyan-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-bread-slice text-cyan-600"></i> Ingredients
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-cyan-600 text-white shadow-sm">INGREDIENTS</span>
+                                    </div>
+                                    <ul class="list-disc list-inside text-xs md:text-sm text-slate-700 space-y-1">
+                                        <li>2 slices of whole-grain bread</li>
+                                        <li>1 ripe avocado</li>
+                                        <li>1 poached or boiled egg</li>
+                                        <li>Pinch of black pepper and sea salt</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Section 3: Steps -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-3"
+                                    :class="{'bg-amber-50/90 border-amber-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'steps' || inspectorHighlight === 'imperatives', 'bg-slate-50 border-slate-200 opacity-30': inspectorHighlight !== 'all' && inspectorHighlight !== 'steps' && inspectorHighlight !== 'imperatives'}">
+                                    <div class="flex items-center justify-between border-b border-amber-200/60 pb-1.5">
+                                        <span class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-list-ol text-amber-600"></i> Steps / Instructions
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-amber-500 text-slate-900 shadow-sm">STEPS</span>
+                                    </div>
+                                    <ol class="space-y-2 text-xs md:text-sm text-slate-800">
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>1.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Toast</span> the whole-grain bread slices in a toaster until golden brown.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>2.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Mash</span> the ripe avocado in a small bowl with a fork, adding a pinch of salt.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>3.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Spread</span> the mashed avocado evenly across the toasted bread slices.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>4.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Place</span> a warm poached egg on top of each avocado toast slice.
+                                        </li>
+                                        <li class="p-2 bg-white/80 rounded-lg border border-amber-200">
+                                            <strong>5.</strong> <span :class="{'bg-purple-200 font-extrabold px-1 rounded': inspectorHighlight === 'imperatives'}">Sprinkle</span> crushed black pepper and enjoy warm!
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button @click="activeTab = 'concept'; expandedCard = null" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button @click="activeTab = 'poster'; markModuleComplete('inspector'); expandedCard = null" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Visual Poster Showcase</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 3: Interactive Visual Poster Showcase -->
+        <section x-show="activeTab === 'poster'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-amber-500 text-slate-950 p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-extrabold">3. Multimodal Recipe & Routine Poster</h2>
+                    <p class="text-slate-900 text-xs mt-0.5 font-medium">Explore visual recipe guides with interactive hotspot pins and nutritional stats!</p>
+                </div>
+                <i class="fa-solid fa-kitchen-set text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Poster Container Card -->
+            <div :class="expandedCard === 'poster_main' ? 'fullscreen-overlay' : 'relative'">
+                <div :class="expandedCard === 'poster_main' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'poster_main'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Poster View</span>
+                    </div>
+
+                    <!-- Poster Selector Bar -->
+                    <div class="flex items-center justify-between bg-slate-100 p-3 rounded-2xl border border-slate-200">
+                        <span class="text-xs font-bold text-slate-700 hidden sm:inline"><i class="fa-solid fa-palette text-amber-500 mr-1"></i> Select Guide Card:</span>
+                        <div class="flex gap-2 w-full sm:w-auto justify-center">
+                            <button @click="posterGuide = 'smoothie'; activePin = null" :class="posterGuide === 'smoothie' ? 'bg-amber-500 text-slate-950 font-extrabold' : 'bg-white text-slate-700 hover:bg-slate-200'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+                                🥣 Smoothie Bowl
+                            </button>
+                            <button @click="posterGuide = 'lifestyle'; activePin = null" :class="posterGuide === 'lifestyle' ? 'bg-amber-500 text-slate-950 font-extrabold' : 'bg-white text-slate-700 hover:bg-slate-200'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+                                🏃 Daily Routine
+                            </button>
+                            <button @click="posterGuide = 'toast'; activePin = null" :class="posterGuide === 'toast' ? 'bg-amber-500 text-slate-950 font-extrabold' : 'bg-white text-slate-700 hover:bg-slate-200'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition shadow-sm">
+                                🥑 Avocado Toast
+                            </button>
+                        </div>
+                        <button @click="toggleFullscreen('poster_main')" class="p-1.5 ml-2 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-200 transition hidden sm:block">
+                            <i class="fa-solid" :class="expandedCard === 'poster_main' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <!-- MULTIMODAL POSTER CANVAS (Interactive Recipe Graphic Visualizer) -->
+                    <div class="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 rounded-3xl p-5 md:p-8 text-white border-4 border-emerald-400/40 shadow-2xl relative overflow-hidden">
+                        
+                        <!-- Poster Decorative Elements -->
+                        <div class="absolute -top-12 -right-12 w-48 h-48 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+                        <div class="absolute -bottom-12 -left-12 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <!-- Poster Header Banner -->
+                        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-emerald-800/80 pb-4 mb-6 gap-3">
+                            <div>
+                                <span class="px-2.5 py-1 rounded-md bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider">Multimodal Procedure Poster</span>
+                                <h2 class="text-2xl sm:text-3xl font-black text-amber-300 tracking-tight uppercase mt-1" x-text="getPosterData().title"></h2>
+                                <p class="text-xs text-emerald-200 font-semibold" x-text="getPosterData().subtitle"></p>
+                            </div>
+                            <div class="flex items-center gap-2 self-start sm:self-auto bg-slate-800/80 px-3 py-1.5 rounded-xl border border-emerald-700/50 text-xs">
+                                <i class="fa-solid fa-clock text-amber-400"></i>
+                                <span class="text-slate-300" x-text="getPosterData().time"></span>
+                            </div>
+                        </div>
+
+                        <!-- Main Poster Grid Layout -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                            
+                            <!-- Left Column: Visual Artwork & Pins -->
+                            <div class="md:col-span-5 flex flex-col items-center">
+                                <div class="relative w-full max-w-xs aspect-[3/4] bg-slate-800/90 rounded-2xl border-2 border-emerald-400/50 p-4 flex flex-col items-center justify-between overflow-hidden shadow-2xl group">
+                                    
+                                    <!-- Background Pattern -->
+                                    <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:12px_12px]"></div>
+
+                                    <!-- Top Poster Badge -->
+                                    <div class="relative z-10 w-full flex justify-between items-center text-[10px] uppercase tracking-wider font-extrabold text-amber-300">
+                                        <span class="bg-emerald-900/90 px-2 py-0.5 rounded border border-emerald-700" x-text="getPosterData().category"></span>
+                                        <span x-text="getPosterData().tag"></span>
+                                    </div>
+
+                                    <!-- Graphic Illustration Centerpiece -->
+                                    <div class="relative z-10 my-auto flex flex-col items-center justify-center">
+                                        <div class="w-32 h-32 md:w-36 md:h-36 rounded-full bg-gradient-to-tr from-emerald-500 to-amber-400 p-1 shadow-2xl flex items-center justify-center">
+                                            <div class="w-full h-full rounded-full bg-slate-900 flex flex-col items-center justify-center text-amber-300 relative overflow-hidden">
+                                                <i :class="getPosterData().mainIcon" class="text-6xl text-amber-400 transform group-hover:scale-110 transition duration-300"></i>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Title below graphic -->
+                                        <div class="mt-3 text-center">
+                                            <div class="text-lg font-black text-white" x-text="getPosterData().shortTitle"></div>
+                                            <div class="text-[11px] text-emerald-300 font-medium" x-text="getPosterData().calorieInfo"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Interactive Pin Hotspots Overlay -->
+                                    <div class="absolute inset-0 z-20 pointer-events-none">
+                                        
+                                        <!-- Pin 1: Prep / Ingredients -->
+                                        <button @click="activePin = 1" 
+                                                class="pointer-events-auto absolute top-12 left-8 w-7 h-7 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg hover:scale-125 transition cursor-pointer hotspot-btn"
+                                                :class="activePin === 1 ? 'ring-4 ring-white bg-amber-300' : ''"
+                                                title="Inspect Prep/Ingredients Pin">
+                                            1
+                                        </button>
+
+                                        <!-- Pin 2: Action / Technique -->
+                                        <button @click="activePin = 2" 
+                                                class="pointer-events-auto absolute top-28 right-8 w-7 h-7 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg hover:scale-125 transition cursor-pointer hotspot-btn"
+                                                :class="activePin === 2 ? 'ring-4 ring-white bg-amber-300' : ''"
+                                                title="Inspect Action Step Pin">
+                                            2
+                                        </button>
+
+                                        <!-- Pin 3: Health Benefit / Tip -->
+                                        <button @click="activePin = 3" 
+                                                class="pointer-events-auto absolute bottom-12 left-10 w-7 h-7 rounded-full bg-emerald-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-lg hover:scale-125 transition cursor-pointer hotspot-btn"
+                                                :class="activePin === 3 ? 'ring-4 ring-white bg-amber-300' : ''"
+                                                title="Inspect Nutritional Benefit Pin">
+                                            3
+                                        </button>
+
+                                    </div>
+
+                                    <!-- Bottom Callout -->
+                                    <div class="relative z-10 w-full text-center text-[10px] text-slate-400 bg-slate-900/80 py-1 rounded border border-slate-700">
+                                        <i class="fa-solid fa-hand-pointer text-amber-400 mr-1"></i> Tap pins 1, 2, 3 on poster
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Specs, Interactive Pin Box, Summary & Verbs -->
+                            <div class="md:col-span-7 space-y-4">
+                                
+                                <!-- Stats -->
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="bg-slate-800/90 p-3 rounded-2xl border border-emerald-800 text-center">
+                                        <div class="text-[10px] text-emerald-300 font-bold uppercase">Difficulty</div>
+                                        <div class="text-sm font-black text-amber-300" x-text="getPosterData().difficulty"></div>
+                                    </div>
+                                    <div class="bg-slate-800/90 p-3 rounded-2xl border border-emerald-800 text-center">
+                                        <div class="text-[10px] text-emerald-300 font-bold uppercase">Key Benefit</div>
+                                        <div class="text-sm font-black text-amber-300" x-text="getPosterData().primaryBenefit"></div>
+                                    </div>
+                                    <div class="bg-slate-800/90 p-3 rounded-2xl border border-emerald-800 text-center">
+                                        <div class="text-[10px] text-emerald-300 font-bold uppercase">Servings</div>
+                                        <div class="text-sm font-black text-amber-300" x-text="getPosterData().servings"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Pin Callout Box -->
+                                <div x-show="activePin !== null" x-transition class="p-4 bg-emerald-400/20 border-2 border-emerald-400 rounded-2xl space-y-1">
+                                    <div class="flex items-center justify-between text-amber-300 font-extrabold text-xs uppercase">
+                                        <span class="flex items-center gap-1.5">
+                                            <i class="fa-solid fa-crosshairs text-emerald-400"></i> Pin Detail Spotlight:
+                                        </span>
+                                        <button @click="activePin = null" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                                    </div>
+                                    <p class="text-sm font-semibold text-white leading-relaxed" x-text="getPinText()"></p>
+                                </div>
+
+                                <!-- Procedure Text Highlights Summary -->
+                                <div class="bg-slate-800/70 p-4 rounded-2xl border border-emerald-800/60 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Quick Procedure Summary</span>
+                                        <span class="text-[10px] bg-emerald-900 text-emerald-200 px-2 py-0.5 rounded font-bold">Steps Overview</span>
+                                    </div>
+                                    <p class="text-xs md:text-sm text-slate-200 leading-relaxed" x-text="getPosterData().summaryText"></p>
+                                </div>
+
+                                <!-- Imperative Verbs Used -->
+                                <div>
+                                    <div class="text-[11px] font-bold text-emerald-300 uppercase mb-1.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-bolt text-amber-400"></i> Imperative Verbs Used:
+                                    </div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <template x-for="verb in getPosterData().imperatives" :key="verb">
+                                            <span class="px-2.5 py-1 rounded-lg bg-emerald-900/90 text-amber-300 border border-emerald-700 text-xs font-bold" x-text="verb"></span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button @click="activeTab = 'inspector'; expandedCard = null" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button @click="activeTab = 'flashcards'; markModuleComplete('poster'); expandedCard = null" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Grammar & Vocabulary Flashcards</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 4: Language Features & Grammar Flashcards -->
+        <section x-show="activeTab === 'flashcards'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-purple-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">4. Grammar & Vocabulary Flashcards</h2>
+                    <p class="text-purple-100 text-xs mt-0.5">Master Imperative Verbs, Action Verbs, and Temporal Conjunctions!</p>
+                </div>
+                <i class="fa-solid fa-brain text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Feature Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div :class="expandedCard === 'gram_f1' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f1' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f1'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-emerald-600">Grammar 1</div>
+                            <button @click="toggleFullscreen('gram_f1')" class="p-1 text-slate-400 hover:text-emerald-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f1' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Imperative Sentences</div>
+                        <p class="text-xs md:text-sm text-slate-500">Direct commands starting with base verbs: <em>Blend, Drink, Slice, Limit, Practice</em>.</p>
+                    </div>
+                </div>
+
+                <div :class="expandedCard === 'gram_f2' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f2' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f2'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-teal-600">Grammar 2</div>
+                            <button @click="toggleFullscreen('gram_f2')" class="p-1 text-slate-400 hover:text-emerald-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f2' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Temporal Conjunctions</div>
+                        <p class="text-xs md:text-sm text-slate-500">Words indicating step sequence: <em>First, Second, Then, Next, After that, Finally</em>.</p>
+                    </div>
+                </div>
+
+                <div :class="expandedCard === 'gram_f3' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f3' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f3'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-purple-600">Grammar 3</div>
+                            <button @click="toggleFullscreen('gram_f3')" class="p-1 text-slate-400 hover:text-emerald-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f3' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Adverbs of Time & Manner</div>
+                        <p class="text-xs md:text-sm text-slate-500">Provide exact detail: <em>for 1-2 minutes, thoroughly, gently, cold, warm</em>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Flashcard Drill Section -->
+            <div :class="expandedCard === 'flashcards_card' ? 'fullscreen-overlay' : 'bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'flashcards_card' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'flashcards_card'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Flashcards</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base md:text-lg">Procedure Vocabulary Flashcards</h3>
+                            <p class="text-xs text-slate-500">Tap card to flip between English Word & Meaning / Example Sentence</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold px-3 py-1 bg-amber-100 text-amber-800 rounded-full" x-text="'Card ' + (currentCardIndex + 1) + ' of ' + flashcards.length"></span>
+                            <button @click="toggleFullscreen('flashcards_card')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'flashcards_card' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Widget -->
+                    <div class="flex justify-center my-4">
+                        <div @click="isCardFlipped = !isCardFlipped" 
+                             class="w-full max-w-sm h-56 rounded-2xl p-6 cursor-pointer transition-all duration-500 transform flex flex-col items-center justify-center text-center shadow-lg border border-slate-200 select-none relative"
+                             :class="isCardFlipped ? 'bg-purple-950 text-white rotate-y-180' : 'bg-gradient-to-br from-purple-600 to-indigo-700 text-white'">
+                            
+                            <div class="absolute top-3 right-3 text-xs font-bold opacity-80 flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate"></i> Click to Flip
+                            </div>
+
+                            <!-- Front Side -->
+                            <template x-if="!isCardFlipped">
+                                <div class="space-y-2">
+                                    <span class="text-xs uppercase tracking-widest font-extrabold text-purple-200 opacity-90">Procedure Term</span>
+                                    <div class="text-3xl font-black text-amber-300" x-text="flashcards[currentCardIndex].word"></div>
+                                    <div class="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-purple-900/80 text-purple-200 border border-purple-500" x-text="flashcards[currentCardIndex].category"></div>
+                                </div>
+                            </template>
+
+                            <!-- Back Side -->
+                            <template x-if="isCardFlipped">
+                                <div class="space-y-2">
+                                    <span class="text-xs uppercase tracking-widest font-extrabold text-amber-300">Meaning & Example</span>
+                                    <div class="text-xl font-extrabold text-white" x-text="flashcards[currentCardIndex].meaning"></div>
+                                    <p class="text-xs text-purple-200 italic mt-2" x-text="'Example: ' + flashcards[currentCardIndex].example"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Card Controls -->
+                    <div class="flex justify-center items-center gap-4">
+                        <button @click="prevCard()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button @click="nextCard()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs shadow-sm">
+                            Next Flashcard
+                        </button>
+                        <button @click="nextCard()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button @click="activeTab = 'poster'; expandedCard = null" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button @click="activeTab = 'quiz'; markModuleComplete('flashcards'); expandedCard = null" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Practice Quiz</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 5: Practice Quiz & Game -->
+        <section x-show="activeTab === 'quiz'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-rose-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">5. Interactive Procedure Text Quiz</h2>
+                    <p class="text-rose-100 text-xs mt-0.5">Test your understanding of goals, steps, imperative verbs, and temporal conjunctions!</p>
+                </div>
+                <i class="fa-solid fa-trophy text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Quiz Main Card -->
+            <div :class="expandedCard === 'quiz_main' ? 'fullscreen-overlay' : 'relative'">
+                <div :class="expandedCard === 'quiz_main' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4'">
+                    
+                    <div x-show="expandedCard === 'quiz_main'" class="flex items-center justify-between bg-emerald-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-amber-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-amber-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-amber-300"><i class="fa-solid fa-expand"></i> Full Screen Quiz Mode</span>
+                    </div>
+
+                    <!-- Quiz Active Screen -->
+                    <template x-if="!quizFinished">
+                        <div class="space-y-5">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <div>
+                                    <span class="text-xs font-bold text-rose-600 uppercase tracking-wider">Question <span x-text="currentQuestionIndex + 1"></span> of <span x-text="quizQuestions.length"></span></span>
+                                    <h3 class="text-base sm:text-lg font-extrabold text-slate-800 mt-0.5" x-text="quizQuestions[currentQuestionIndex].question"></h3>
+                                </div>
+                                <button @click="toggleFullscreen('quiz_main')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition hidden sm:block">
+                                    <i class="fa-solid" :class="expandedCard === 'quiz_main' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+
+                            <!-- Options List -->
+                            <div class="space-y-2.5">
+                                <template x-for="(option, optIdx) in quizQuestions[currentQuestionIndex].options" :key="optIdx">
+                                    <button @click="selectAnswer(optIdx)" 
+                                            :disabled="quizSubmitted"
+                                            class="w-full text-left p-4 rounded-xl border transition flex items-center justify-between text-xs sm:text-sm font-semibold"
+                                            :class="getOptionClass(optIdx)">
+                                        <div class="flex items-center gap-3">
+                                            <span class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs"
+                                                  :class="selectedAnswer === optIdx ? 'bg-amber-400 text-slate-900' : 'bg-slate-100 text-slate-600'" 
+                                                  x-text="['A','B','C','D'][optIdx]"></span>
+                                            <span x-text="option"></span>
+                                        </div>
+                                        <template x-if="quizSubmitted && optIdx === quizQuestions[currentQuestionIndex].correct">
+                                            <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                                        </template>
+                                        <template x-if="quizSubmitted && selectedAnswer === optIdx && optIdx !== quizQuestions[currentQuestionIndex].correct">
+                                            <i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i>
+                                        </template>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Explanation Feedback Box -->
+                            <div x-show="quizSubmitted" x-transition class="p-4 rounded-xl border text-xs sm:text-sm space-y-1"
+                                 :class="selectedAnswer === quizQuestions[currentQuestionIndex].correct ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-rose-50 border-rose-300 text-rose-900'">
+                                <div class="font-extrabold flex items-center gap-1.5">
+                                    <i class="fa-solid" :class="selectedAnswer === quizQuestions[currentQuestionIndex].correct ? 'fa-circle-check text-emerald-600' : 'fa-triangle-exclamation text-rose-600'"></i>
+                                    <span x-text="selectedAnswer === quizQuestions[currentQuestionIndex].correct ? 'Correct Answer!' : 'Incorrect Answer!'"></span>
+                                </div>
+                                <p class="text-slate-700" x-text="quizQuestions[currentQuestionIndex].explanation"></p>
+                            </div>
+
+                            <!-- Bottom Action Buttons -->
+                            <div class="flex justify-between items-center pt-2">
+                                <button x-show="!quizSubmitted" @click="submitAnswer()" :disabled="selectedAnswer === null"
+                                        class="px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-md transition"
+                                        :class="selectedAnswer !== null ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'">
+                                    Submit Answer
+                                </button>
+
+                                <button x-show="quizSubmitted" @click="nextQuestion()"
+                                        class="px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-2">
+                                    <span>Next Question</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Quiz Score Finished Screen -->
+                    <template x-if="quizFinished">
+                        <div class="text-center py-6 space-y-5">
+                            <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-4xl mx-auto shadow-inner">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-black text-slate-800">Quiz Completed!</h3>
+                                <p class="text-xs sm:text-sm text-slate-500 mt-1">Great job finishing the Procedure Text practice quiz!</p>
+                            </div>
+
+                            <div class="inline-block bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-sm max-w-xs w-full">
+                                <div class="text-xs uppercase font-bold text-slate-400">Your Score</div>
+                                <div class="text-4xl font-black text-emerald-600 my-1" x-text="calculateQuizScore() + '%'"></div>
+                                <div class="text-xs font-semibold text-slate-600" x-text="score + ' out of ' + quizQuestions.length + ' correct'"></div>
+                            </div>
+
+                            <div class="pt-2 flex justify-center gap-3">
+                                <button @click="resetQuiz()" class="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate-right"></i> Retake Quiz
+                                </button>
+                                <button @click="activeTab = 'home'; markModuleComplete('quiz')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center gap-1.5 shadow-md">
+                                    <i class="fa-solid fa-house"></i> Return to Home
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Navigation Bar (Fixed Bottom for Mobile, Normal Header for Desktop) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 bg-emerald-950 text-white border-t border-emerald-800 md:relative md:border-t-0 md:bg-emerald-900/95 md:backdrop-blur-md md:mt-6">
+        <div class="max-w-5xl mx-auto px-2 sm:px-4 flex justify-around md:justify-center md:gap-6 py-2">
+            <button @click="activeTab = 'home'" :class="activeTab === 'home' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-house text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Home</span>
+            </button>
+            <button @click="activeTab = 'concept'" :class="activeTab === 'concept' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-book-open text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Concept</span>
+            </button>
+            <button @click="activeTab = 'inspector'" :class="activeTab === 'inspector' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-magnifying-glass text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Inspector</span>
+            </button>
+            <button @click="activeTab = 'poster'" :class="activeTab === 'poster' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-kitchen-set text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Poster</span>
+            </button>
+            <button @click="activeTab = 'flashcards'" :class="activeTab === 'flashcards' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-brain text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Flashcards</span>
+            </button>
+            <button @click="activeTab = 'quiz'" :class="activeTab === 'quiz' ? 'text-amber-300 font-bold' : 'text-emerald-300 hover:text-white'" class="flex flex-col md:flex-row items-center gap-1 px-3 py-1 rounded-xl text-xs transition">
+                <i class="fa-solid fa-trophy text-base md:text-sm"></i>
+                <span class="text-[10px] sm:text-xs">Quiz</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        function procedureApp() {
+            return {
+                activeTab: 'home',
+                completedModules: ['home'],
+                expandedCard: null,
+                selectedSample: 'lifestyle',
+                inspectorHighlight: 'all',
+                posterGuide: 'smoothie',
+                activePin: null,
+
+                // Flashcard Data
+                currentCardIndex: 0,
+                isCardFlipped: false,
+                flashcards: [
+                    { word: 'Drink', category: 'Imperative Verb', meaning: 'Minum', example: 'Drink 300 ml of warm water right after waking up.' },
+                    { word: 'Blend', category: 'Imperative Verb', meaning: 'Memblander / Mencampur', example: 'Blend the frozen berries and milk until smooth.' },
+                    { word: 'Pour', category: 'Imperative Verb', meaning: 'Menuangkan', example: 'Pour the blended smoothie into a serving bowl.' },
+                    { word: 'Limit', category: 'Imperative Verb', meaning: 'Membatasi', example: 'Limit processed sugar and fast food intake.' },
+                    { word: 'Arrange', category: 'Imperative Verb', meaning: 'Menata / Menyusun', example: 'Arrange sliced fruits side-by-side on top.' },
+                    { word: 'Drizzle', category: 'Imperative Verb', meaning: 'Mencurahkan / Meneteskan', example: 'Drizzle a teaspoon of honey over granola.' },
+                    { word: 'First / First of all', category: 'Temporal Conjunction', meaning: 'Pertama-tama', example: 'First, prepare all fresh ingredients.' },
+                    { word: 'Then / Next', category: 'Temporal Conjunction', meaning: 'Kemudian / Selanjutnya', example: 'Next, toast the whole-grain bread slices.' },
+                    { word: 'Finally / Lastly', category: 'Temporal Conjunction', meaning: 'Akhirnya / Terakhir', example: 'Finally, serve immediately while cold.' },
+                    { word: 'Thoroughly', category: 'Adverb of Manner', meaning: 'Dengan teliti / hingga rata', example: 'Wash all fruits thoroughly before blending.' }
+                ],
+
+                // Quiz Questions Data
+                currentQuestionIndex: 0,
+                selectedAnswer: null,
+                quizSubmitted: false,
+                score: 0,
+                quizFinished: false,
+                quizQuestions: [
+                    {
+                        question: "What is the primary Goal (Tujuan) of a Procedure Text?",
+                        options: [
+                            "To entertain the reader with a funny story",
+                            "To describe how something is done or made through sequential steps",
+                            "To persuade people to buy a healthy product",
+                            "To report past historical events"
+                        ],
+                        correct: 1,
+                        explanation: "A procedure text's main goal is to guide readers on how to accomplish or make something step-by-step."
+                    },
+                    {
+                        question: "Which word below is an Imperative Verb (Kata Kerja Perintah) commonly used in procedure texts?",
+                        options: [
+                            "Beautifully",
+                            "Because",
+                            "Blend",
+                            "Yesterday"
+                        ],
+                        correct: 2,
+                        explanation: "'Blend' is an imperative command verb placed at the beginning of an instruction step."
+                    },
+                    {
+                        question: "What generic structure part comes before the 'Steps' section in a recipe procedure text?",
+                        options: [
+                            "Resolution",
+                            "Reorientation",
+                            "Materials / Ingredients",
+                            "Conclusion"
+                        ],
+                        correct: 2,
+                        explanation: "Procedure texts list the Materials / Ingredients right after the Goal and before the Steps."
+                    },
+                    {
+                        question: "Which connector is a Temporal Conjunction used to indicate step order?",
+                        options: [
+                            "After that",
+                            "Although",
+                            "Because",
+                            "Therefore"
+                        ],
+                        correct: 0,
+                        explanation: "'After that' is a temporal sequence conjunction used to connect consecutive procedure steps."
+                    },
+                    {
+                        question: "In 'Drink 8 glasses of water daily', what type of sentence is 'Drink...'?",
+                        options: [
+                            "Declarative sentence",
+                            "Imperative sentence",
+                            "Interrogative sentence",
+                            "Exclamatory sentence"
+                        ],
+                        correct: 1,
+                        explanation: "Commands starting with a verb without a subject pronoun are Imperative sentences."
+                    }
+                ],
+
+                /* Progress tracker method */
+                calculateProgress() {
+                    const total = 5; // 5 main modules
+                    const count = new Set(this.completedModules).size;
+                    return Math.min(100, Math.round((count / total) * 100));
+                },
+
+                markModuleComplete(moduleName) {
+                    if (!this.completedModules.includes(moduleName)) {
+                        this.completedModules.push(moduleName);
+                    }
+                },
+
+                /* Fullscreen Zoom Toggle */
+                toggleFullscreen(cardId) {
+                    if (this.expandedCard === cardId) {
+                        this.expandedCard = null;
+                    } else {
+                        this.expandedCard = cardId;
+                    }
+                },
+
+                /* Flashcard Methods */
+                nextCard() {
+                    this.isCardFlipped = false;
+                    this.currentCardIndex = (this.currentCardIndex + 1) % this.flashcards.length;
+                },
+                prevCard() {
+                    this.isCardFlipped = false;
+                    this.currentCardIndex = (this.currentCardIndex - 1 + this.flashcards.length) % this.flashcards.length;
+                },
+
+                /* Multimodal Poster Data Helper */
+                getPosterData() {
+                    if (this.posterGuide === 'smoothie') {
+                        return {
+                            title: "Nutritious Smoothie Bowl",
+                            subtitle: "Vitamins, Fiber & Antioxidant Powerhouse",
+                            time: "5 Mins Prep",
+                            category: "RECIPE",
+                            tag: "Healthy Breakfast",
+                            mainIcon: "fa-solid fa-bowl-food",
+                            shortTitle: "Berry Banana Bowl",
+                            calorieInfo: "~280 kcal per bowl",
+                            difficulty: "Easy",
+                            primaryBenefit: "Immunity & Digestion",
+                            servings: "1 Bowl",
+                            summaryText: "Place frozen banana, berries, and yogurt into blender. Blend 2 minutes until smooth, pour into bowl, and garnish with chia seeds and granola.",
+                            imperatives: ["Place", "Blend", "Pour", "Arrange", "Drizzle", "Serve"]
+                        };
+                    } else if (this.posterGuide === 'lifestyle') {
+                        return {
+                            title: "Daily Healthy Routine",
+                            subtitle: "Simple Steps for Energy & Mental Focus",
+                            time: "Daily Habit",
+                            category: "ROUTINE",
+                            tag: "Well-Being",
+                            mainIcon: "fa-solid fa-heart-pulse",
+                            shortTitle: "Active Living Plan",
+                            calorieInfo: "Optimal Health",
+                            difficulty: "Daily Habit",
+                            primaryBenefit: "Energy & Longevity",
+                            servings: "All Day",
+                            summaryText: "Start day with warm water, eat balanced protein breakfast, do 30 mins exercise, drink 8 water glasses, and sleep 8 hours.",
+                            imperatives: ["Start", "Eat", "Exercise", "Drink", "Limit", "Manage"]
+                        };
+                    } else {
+                        return {
+                            title: "Avocado & Egg Toast",
+                            subtitle: "High-Protein & Essential Healthy Fats",
+                            time: "10 Mins Prep",
+                            category: "RECIPE",
+                            tag: "Quick Snack",
+                            mainIcon: "fa-solid fa-bread-slice",
+                            shortTitle: "Creamy Toast",
+                            calorieInfo: "~320 kcal per serving",
+                            difficulty: "Very Easy",
+                            primaryBenefit: "Protein & Healthy Fats",
+                            servings: "2 Slices",
+                            summaryText: "Toast whole-grain bread, mash ripe avocado with salt, spread on toast, top with warm poached egg, and sprinkle black pepper.",
+                            imperatives: ["Toast", "Mash", "Spread", "Place", "Sprinkle"]
+                        };
+                    }
+                },
+
+                getPinText() {
+                    if (this.posterGuide === 'smoothie') {
+                        if (this.activePin === 1) return "Pin 1 (Prep): Use frozen banana & berries to achieve a thick, soft-serve ice cream texture without added ice.";
+                        if (this.activePin === 2) return "Pin 2 (Action): Blend on high speed for 1-2 minutes until completely smooth and creamy.";
+                        if (this.activePin === 3) return "Pin 3 (Benefit): Chia seeds and almonds add omega-3 fats, protein, and crunch.";
+                    } else if (this.posterGuide === 'lifestyle') {
+                        if (this.activePin === 1) return "Pin 1 (Prep): Rehydrate immediately upon waking with 300-500 ml warm clean water.";
+                        if (this.activePin === 2) return "Pin 2 (Action): Engage in 30 minutes of moderate physical workout like brisk walking.";
+                        if (this.activePin === 3) return "Pin 3 (Benefit): 7-8 hours sleep allows cellular repair and mental rejuvenation.";
+                    } else {
+                        if (this.activePin === 1) return "Pin 1 (Prep): Select whole-grain bread rich in complex fiber over processed white bread.";
+                        if (this.activePin === 2) return "Pin 2 (Action): Mash ripe avocado with a fork and spread evenly over warm toast.";
+                        if (this.activePin === 3) return "Pin 3 (Benefit): Poached eggs provide complete essential amino acids for muscle build.";
+                    }
+                    return "";
+                },
+
+                /* Quiz Engine Methods */
+                selectAnswer(idx) {
+                    if (this.quizSubmitted) return;
+                    this.selectedAnswer = idx;
+                },
+                submitAnswer() {
+                    if (this.selectedAnswer === null) return;
+                    this.quizSubmitted = true;
+                    if (this.selectedAnswer === this.quizQuestions[this.currentQuestionIndex].correct) {
+                        this.score++;
+                    }
+                },
+                nextQuestion() {
+                    this.quizSubmitted = false;
+                    this.selectedAnswer = null;
+                    if (this.currentQuestionIndex + 1 < this.quizQuestions.length) {
+                        this.currentQuestionIndex++;
+                    } else {
+                        this.quizFinished = true;
+                        this.markModuleComplete('quiz');
+                    }
+                },
+                calculateQuizScore() {
+                    return Math.round((this.score / this.quizQuestions.length) * 100);
+                },
+                getOptionClass(optIdx) {
+                    if (!this.quizSubmitted) {
+                        return this.selectedAnswer === optIdx
+                            ? 'bg-emerald-50 border-emerald-500 text-emerald-950 shadow-sm'
+                            : 'bg-white border-slate-200 hover:bg-slate-50 text-slate-700';
+                    } else {
+                        if (optIdx === this.quizQuestions[this.currentQuestionIndex].correct) {
+                            return 'bg-emerald-100 border-emerald-500 text-emerald-900 font-bold';
+                        }
+                        if (this.selectedAnswer === optIdx) {
+                            return 'bg-rose-100 border-rose-500 text-rose-900';
+                        }
+                        return 'bg-white border-slate-200 text-slate-400 opacity-50';
+                    }
+                },
+                resetQuiz() {
+                    this.currentQuestionIndex = 0;
+                    this.selectedAnswer = null;
+                    this.quizSubmitted = false;
+                    this.score = 0;
+                    this.quizFinished = false;
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
