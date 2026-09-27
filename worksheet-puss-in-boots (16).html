@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Puss in Boots Worksheet — Unit 2 (p.55–62)</title>
+<style>
+:root{
+  --bg:#faf6ef; --card:#ffffff; --ink:#2b2620; --sub:#6b6155;
+  --accent:#b5651d; --accent2:#3f6b4a; --line:#e6ddcf; --bad:#c0392b; --good:#3f6b4a;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#1c1a16; --card:#252220; --ink:#f1ece1; --sub:#b8ae9d; --line:#3a352e; --accent:#e0985a; --accent2:#7fbd8f; }
+}
+:root[data-theme="dark"]{ --bg:#1c1a16; --card:#252220; --ink:#f1ece1; --sub:#b8ae9d; --line:#3a352e; --accent:#e0985a; --accent2:#7fbd8f; }
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.5;height:100%;}
+header{padding:18px 16px 12px;text-align:center;border-bottom:3px double var(--line);position:sticky;top:0;background:var(--bg);z-index:5;}
+header h1{margin:0 0 4px;font-size:1.3rem;color:var(--accent);}
+header p{margin:0 0 10px;color:var(--sub);font-size:.85rem;font-family:Arial,sans-serif;}
+nav.pages{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;font-family:Arial,sans-serif;}
+nav.pages button{padding:6px 12px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--ink);font-size:.8rem;cursor:pointer;}
+nav.pages button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+main{max-width:760px;margin:0 auto;padding:16px;}
+.page{display:none;}
+.page.active{display:block;}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:18px;}
+.card h2{margin:0 0 4px;font-size:1.15rem;color:var(--accent2);}
+.card .desc{font-family:Arial,sans-serif;font-size:.88rem;color:var(--sub);margin-bottom:14px;}
+.summary{background:var(--bg);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:.92rem;margin-bottom:14px;}
+.q{margin-bottom:16px;}
+.q p.stem{font-weight:bold;margin:0 0 8px;font-family:Arial,sans-serif;font-size:.95rem;}
+.opts{display:flex;flex-direction:column;gap:6px;}
+button.opt{font-family:Arial,sans-serif;text-align:left;padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:.9rem;}
+button.opt:hover{border-color:var(--accent);}
+button.opt.selected{border-color:var(--accent);background:rgba(181,101,29,.12);}
+button.opt.correct{border-color:var(--good);background:rgba(63,107,74,.18);}
+button.opt.incorrect{border-color:var(--bad);background:rgba(192,57,43,.15);}
+.tf-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-family:Arial,sans-serif;font-size:.9rem;padding:6px 0;border-bottom:1px dashed var(--line);}
+.tf-btns button{font-family:Arial,sans-serif;padding:5px 12px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;font-size:.85rem;margin-left:6px;}
+.tf-btns button.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.tf-btns button.correct{background:var(--good);color:#fff;border-color:var(--good);}
+.tf-btns button.incorrect{background:var(--bad);color:#fff;border-color:var(--bad);}
+textarea,select,input[type=text]{width:100%;font-family:Arial,sans-serif;font-size:.9rem;padding:8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink);}
+textarea{min-height:60px;resize:vertical;}
+.dialogue p{margin:6px 0;font-size:.92rem;}
+.dialogue b{color:var(--accent2);}
+select.blank{display:inline-block;width:auto;min-width:200px;margin:2px 2px;}
+table.expr{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.85rem;margin-top:6px;}
+table.expr th,table.expr td{border:1px solid var(--line);padding:6px;vertical-align:top;}
+table.expr th{background:var(--bg);}
+.match-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:Arial,sans-serif;font-size:.88rem;padding:8px 0;border-bottom:1px dashed var(--line);}
+.match-row .desc-text{flex:1;}
+.match-wrap{display:flex;gap:18px;flex-wrap:wrap;}
+.match-col{flex:1;min-width:220px;}
+.match-col h3{font-family:Arial,sans-serif;font-size:.8rem;color:var(--sub);margin:0 0 8px;text-transform:uppercase;letter-spacing:.04em;}
+.match-item{font-family:Arial,sans-serif;font-size:.87rem;text-align:left;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.match-item:hover{border-color:var(--accent);}
+.match-item.active{border-color:var(--accent);background:rgba(181,101,29,.14);}
+.match-item.matched .badge{font-size:.72rem;background:var(--accent2);color:#fff;border-radius:20px;padding:2px 9px;white-space:nowrap;}
+.match-item.used{opacity:.4;cursor:not-allowed;}
+.match-item.correct{border-color:var(--good) !important;background:rgba(63,107,74,.18) !important;}
+.match-item.incorrect{border-color:var(--bad) !important;background:rgba(192,57,43,.15) !important;}
+.check-btn{font-family:Arial,sans-serif;background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:bold;}
+.check-btn:hover{opacity:.9;}
+.score{font-family:Arial,sans-serif;font-weight:bold;margin-top:10px;font-size:.92rem;}
+.venn{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;}
+.venn>div{flex:1;min-width:140px;}
+.venn label{font-family:Arial,sans-serif;font-size:.82rem;color:var(--sub);display:block;margin-bottom:3px;}
+.navbtns{display:flex;justify-content:space-between;font-family:Arial,sans-serif;margin:6px 0 24px;}
+.navbtns button{padding:8px 16px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;font-size:.85rem;}
+.navbtns button:disabled{opacity:.35;cursor:default;}
+.saved{font-family:Arial,sans-serif;font-size:.75rem;color:var(--sub);text-align:center;margin-top:-6px;margin-bottom:10px;}
+footer{text-align:center;font-family:Arial,sans-serif;color:var(--sub);font-size:.78rem;padding:20px;}
+.field{font-family:Arial,sans-serif;margin-bottom:14px;}
+.field label{display:block;font-size:.82rem;color:var(--sub);margin-bottom:4px;}
+.field input[type=text],.field select{width:100%;font-size:.92rem;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);}
+.hint{font-family:Arial,sans-serif;font-size:.82rem;color:var(--accent2);background:rgba(63,107,74,.1);border-radius:8px;padding:8px 10px;margin-bottom:14px;}
+.warn-box{display:none;font-family:Arial,sans-serif;font-size:.85rem;color:#fff;background:var(--bad);border-radius:8px;padding:8px 10px;margin-top:6px;}
+.warn-box.show{display:block;}
+.roster-box{border:1px solid var(--line);border-radius:8px;padding:10px 12px;max-height:220px;overflow-y:auto;background:var(--bg);}
+.roster-item{display:flex;align-items:center;gap:8px;font-family:Arial,sans-serif;font-size:.88rem;padding:4px 0;}
+.roster-item input{width:auto;}
+.roster-empty{font-family:Arial,sans-serif;font-size:.82rem;color:var(--sub);}
+.roster-manual-link{font-family:Arial,sans-serif;font-size:.78rem;color:var(--accent);background:none;border:none;text-decoration:underline;cursor:pointer;padding:6px 0 0;}
+.member-name-row{display:flex;gap:6px;margin-bottom:6px;}
+.member-name-row input{flex:1;}
+.member-name-row button{font-family:Arial,sans-serif;border:1px solid var(--line);background:transparent;color:var(--bad);border-radius:6px;padding:0 10px;cursor:pointer;}
+.score-hero{text-align:center;font-family:Arial,sans-serif;margin:6px 0 16px;}
+.score-hero .big{font-size:2.6rem;font-weight:bold;color:var(--accent);line-height:1;}
+.score-hero .sub{color:var(--sub);font-size:.85rem;}
+.breakdown-row{display:flex;justify-content:space-between;font-family:Arial,sans-serif;font-size:.88rem;padding:6px 0;border-bottom:1px dashed var(--line);}
+.status-msg{font-family:Arial,sans-serif;font-size:.85rem;border-radius:8px;padding:10px 12px;margin-top:12px;}
+.status-ok{background:rgba(63,107,74,.15);color:var(--good);}
+.status-err{background:rgba(192,57,43,.12);color:var(--bad);}
+</style>
+</head>
+<body>
+<header>
+<h1>🐈‍⬛ Puss in Boots</h1>
+<p>Unit 2 · Fairy Tale — Textbook p.55–62</p>
+<nav class="pages" id="pageNav"></nav>
+</header>
+<main>
+<div class="saved" id="savedNote">Your answers are saved automatically on this device, and your final score is sent to your teacher.</div>
+
+<section class="page active" data-page="0">
+<div class="card" id="setupCard">
+<h2>👤 Your Info</h2>
+<div class="desc">Choose how you are doing this worksheet, then fill in your name(s) and class before you start.</div>
+<div id="lmsLoginNoteSlot"></div>
+
+<div class="field">
+<label>Type of work</label>
+<select id="jenisSelect">
+<option value="individu">Individual</option>
+<option value="kelompok">Group</option>
+</select>
+</div>
+
+<div class="field">
+<label>Class</label>
+<select id="kelasSelect"><option value="">— choose your class —</option></select>
+</div>
+
+<div id="individuFields">
+<div class="field">
+<label>Your Name</label>
+<select id="namaIndividuSelect"><option value="">— choose your class first —</option></select>
+<button type="button" class="roster-manual-link" id="individuManualToggle">Name not listed? Type it manually</button>
+<input type="text" id="namaIndividuManual" placeholder="e.g. Siti Amalia" style="display:none;margin-top:6px;">
+</div>
+</div>
+
+<div id="kelompokFields" style="display:none;">
+<div class="field">
+<label>Group Name</label>
+<input type="text" id="namaKelompok" placeholder="e.g. Group 1 / The Explorers">
+</div>
+<div class="field">
+<label>Group Members</label>
+<div class="roster-box" id="kelompokRoster"><div class="roster-empty">Choose your class first.</div></div>
+<button type="button" class="roster-manual-link" id="kelompokManualToggle">Member not listed? Add name manually</button>
+<div id="kelompokManualList" style="display:none;margin-top:8px;">
+<div id="kelompokManualRows"></div>
+<button type="button" class="roster-manual-link" id="addManualMemberBtn">+ add another</button>
+</div>
+</div>
+</div>
+
+<div class="warn-box" id="setupWarn"></div>
+</div>
+<div class="navbtns"><span></span><button onclick="goPage(1)">Next: Activity 3 →</button></div>
+</section>
+
+<section class="page" data-page="1">
+<div class="card">
+<div class="summary">
+📖 <b>Buka buku halaman 55</b> dan baca cerita "Puss in Boots" sebelum mengerjakan aktivitas berikut.
+</div>
+</div>
+
+<div class="card" id="act3">
+<h2>Activity 3</h2>
+<div class="desc">Lengkapi kalimat rumpang di bawah ini sesuai dengan teks pada buku halaman 55–56. Tuliskan hanya kata yang hilang untuk tiap nomor.</div>
+<div id="act3-list"></div>
+<button class="check-btn" onclick="submitAct3()">Submit Answer</button>
+<div class="score" id="act3-score"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(0)">← Setup</button><button onclick="goPage(2)">Next: Activity 4 →</button></div>
+</section>
+
+<section class="page" data-page="2">
+<div class="card" id="act4">
+<h2>Activity 4</h2>
+<div class="desc">Answer the questions about the tale, then compare with a classmate.</div>
+
+<div class="q" data-correct="0" data-id="q1">
+<p class="stem">1. Which sentence accurately describes the story?</p>
+<div class="opts">
+<button class="opt">a. The ingenuity of a cat could defeat the strength of an ogre.</button>
+<button class="opt">b. The Marquis of Carabas told his wealth to the king.</button>
+<button class="opt">c. A cunning cat sought some lucks for his master.</button>
+<button class="opt">d. A sly cat fooled the king for his fortunes.</button>
+<button class="opt">e. A cat could rule ogre and humans.</button>
+</div>
+</div>
+
+<div class="q" data-correct="0" data-id="q2">
+<p class="stem">2. How is the character of Puss described in the story?</p>
+<div class="opts">
+<button class="opt">a. Sly</button>
+<button class="opt">b. Cool</button>
+<button class="opt">c. Brash</button>
+<button class="opt">d. Generous</button>
+<button class="opt">e. Meticulous</button>
+</div>
+</div>
+
+<div class="q" data-correct="3" data-id="q3">
+<p class="stem">3. Which is NOT a cunning act of Puss?</p>
+<div class="opts">
+<button class="opt">a. Trapping and catching the animals.</button>
+<button class="opt">b. Making up stories about the Marquis of Carabas.</button>
+<button class="opt">c. Making the ogre turn himself into a mouse and eating him.</button>
+<button class="opt">d. Inviting the king to visit the kingdom of the Marquis of Carabas.</button>
+<button class="opt">e. Making the farmers admit that their fields belong to the Miller's son.</button>
+</div>
+</div>
+
+<p class="stem" style="font-family:Arial,sans-serif;">4. True (T) or False (F)?</p>
+<div id="tf-list">
+<div class="tf-row" data-correct="F" data-id="tf1"><span>1) Mr. Miller left only a pair of boots, a bag, and a cat.</span><span class="tf-btns"><button data-v="T">T</button><button data-v="F">F</button></span></div>
+<div class="tf-row" data-correct="T" data-id="tf2"><span>2) The cat promised Miller's son to make him happy and rich.</span><span class="tf-btns"><button data-v="T">T</button><button data-v="F">F</button></span></div>
+<div class="tf-row" data-correct="T" data-id="tf3"><span>3) The ogre was not really as clever as the cat.</span><span class="tf-btns"><button data-v="T">T</button><button data-v="F">F</button></span></div>
+<div class="tf-row" data-correct="F" data-id="tf4"><span>4) The ogre was so furious that he immediately turned into a mouse.</span><span class="tf-btns"><button data-v="T">T</button><button data-v="F">F</button></span></div>
+<div class="tf-row" data-correct="F" data-id="tf5"><span>5) Some thieves took the master's clothes and horse.</span><span class="tf-btns"><button data-v="T">T</button><button data-v="F">F</button></span></div>
+</div>
+
+<button class="check-btn" onclick="submitAct4()">Submit Answer</button>
+<div class="score" id="act4-score"></div>
+
+<div style="margin-top:18px;">
+<p class="stem" style="font-family:Arial,sans-serif;">5. What do you learn from the story?</p>
+<textarea data-id="open5" placeholder="Write your answer..."></textarea>
+</div>
+<div style="margin-top:12px;">
+<p class="stem" style="font-family:Arial,sans-serif;">6. If you were the writer, how would you change the main character?</p>
+<textarea data-id="open6" placeholder="Write your answer..."></textarea>
+</div>
+<div style="margin-top:12px;">
+<p class="stem" style="font-family:Arial,sans-serif;">7. Have you read a similar tale? Compare it with "Puss in Boots" below.</p>
+<div class="venn">
+<div><label>Puss in Boots only</label><textarea data-id="venn1"></textarea></div>
+<div><label>Similarities</label><textarea data-id="venn2"></textarea></div>
+<div><label>Other story only</label><textarea data-id="venn3"></textarea></div>
+</div>
+</div>
+</div>
+<div class="navbtns"><button onclick="goPage(1)">← Activity 3</button><button onclick="goPage(3)">Next: Activity 5 →</button></div>
+</section>
+
+<section class="page" data-page="3">
+<div class="card" id="act5">
+<h2>Activity 5</h2>
+<div class="desc">Complete the dialogue using the word bank. Each choice is used once.</div>
+<div class="dialogue">
+<p><b>Alma:</b> Hi Hira, what are you reading?</p>
+<p><b>Hira:</b> "Puss in Boots" — a cunning cat who helped his master find his luck.</p>
+<p><b>Alma:</b> How could the cat help his master?</p>
+<p><b>Hira:</b> It's actually not a good thing, as <select class="blank" data-id="b1" data-correct="he played a trick"><option value="">—choose—</option></select>. He told the king that <select class="blank" data-id="b2" data-correct="his master was a crown prince"><option value="">—choose—</option></select> called the Marquis of Carabas.</p>
+<p><b>Alma:</b> How could it be so easy for the king to trust the cat?</p>
+<p><b>Hira:</b> <select class="blank" data-id="b3" data-correct="it took three months"><option value="">—choose—</option></select> for the cat to continuously send gifts to the king. Not only able to fool the king, but <select class="blank" data-id="b4" data-correct="the cat could also play trick on an ogre"><option value="">—choose—</option></select>.</p>
+</div>
+<button class="check-btn" onclick="submitAct5()">Submit Answer</button>
+<div class="score" id="act5-score"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(2)">← Activity 4</button><button onclick="goPage(4)">Next: Activity 6 →</button></div>
+</section>
+
+<section class="page" data-page="4">
+<div class="card" id="act6">
+<h2>Activity 6</h2>
+<div class="desc">Click a description, then click the character it matches.</div>
+<div class="match-wrap">
+<div class="match-col">
+<h3>Description</h3>
+<button class="match-item" data-id="m1" data-correct="miller">1) He was really poor; when he passed away, he left nothing but his three sons, a mill, a donkey, and a cat.<span class="badge" style="display:none;"></span></button>
+<button class="match-item" data-id="m2" data-correct="cat">2) He was cunning and hard-working. He had a brilliant idea to change his master's life.<span class="badge" style="display:none;"></span></button>
+<button class="match-item" data-id="m3" data-correct="son">3) He was young, handsome and well-built, but had no idea and was just a follower.<span class="badge" style="display:none;"></span></button>
+<button class="match-item" data-id="m4" data-correct="king">4) He was rich. He was easily pleased, tricked, and deceived.<span class="badge" style="display:none;"></span></button>
+</div>
+<div class="match-col">
+<h3>Character</h3>
+<button class="match-item" data-val="king">The King</button>
+<button class="match-item" data-val="son">Miller's youngest son</button>
+<button class="match-item" data-val="cat">The cat</button>
+<button class="match-item" data-val="miller">The miller</button>
+</div>
+</div>
+<button class="check-btn" onclick="submitAct6()">Submit Answer</button>
+<div class="score" id="act6-score"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(3)">← Activity 5</button><button onclick="goPage(5)">Next: Activity 7 →</button></div>
+</section>
+
+<section class="page" data-page="5">
+<div class="card" id="act7">
+<h2>Activity 7</h2>
+<div class="desc">Find expressions used to introduce characters and settings in the story. The first row is an example.</div>
+<table class="expr">
+<tr><th>Characters</th><th>Setting of time</th><th>Setting of place</th></tr>
+<tr><td>A poor miller</td><td>In the old days,</td><td>In a small city in Italy</td></tr>
+<tr><td><input type="text" data-id="t2c1"></td><td><input type="text" data-id="t2c2"></td><td><input type="text" data-id="t2c3"></td></tr>
+<tr><td><input type="text" data-id="t3c1"></td><td><input type="text" data-id="t3c2"></td><td><input type="text" data-id="t3c3"></td></tr>
+<tr><td><input type="text" data-id="t4c1"></td><td><input type="text" data-id="t4c2"></td><td><input type="text" data-id="t4c3"></td></tr>
+</table>
+<button class="check-btn" onclick="submitAct7()">Submit Answer</button>
+<div class="score" id="act7-score"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(4)">← Activity 6</button><button onclick="goPage(6)">Next: Activity 8 →</button></div>
+</section>
+
+<section class="page" data-page="6">
+<div class="card" id="act8">
+<h2>Activity 8</h2>
+<div class="desc">Work in pairs. Discuss these questions, then write your joint answer.</div>
+<p style="font-family:Arial,sans-serif;font-size:.92rem;">What do you think of the tricks that Puss did to gain luck and advantages for his master? Is it a right and legal action? Is it acceptable? Explain your reason.</p>
+<textarea data-id="open8" style="min-height:100px;" placeholder="Write your discussion answer here..."></textarea>
+<button class="check-btn" onclick="submitAct8()">Submit Answer</button>
+<div class="score" id="act8-score"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(5)">← Activity 7</button><button onclick="goPage(7)">Next: Result →</button></div>
+</section>
+
+<section class="page" data-page="7">
+<div class="card">
+<h2>🎉 Result</h2>
+<div class="desc">Activities 3–6 are auto-graded. Activities 7–8 are checked by your teacher.</div>
+<div class="score-hero"><div class="big" id="finalScoreBig">–</div><div class="sub">out of 100 (Activities 3–6)</div></div>
+<div id="breakdownBox"></div>
+<button class="check-btn" id="sendResultBtn">Send my results to the teacher</button>
+<div class="status-msg" id="statusMsg" style="display:none;"></div>
+</div>
+<div class="navbtns"><button onclick="goPage(6)">← Activity 8</button><span></span></div>
+</section>
+
+</main>
+<footer>Based on Textbook: Bahasa Inggris Tingkat Lanjut SMA Kelas XI, p.55–62</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var PAGES = ["Setup","Activity 3","Activity 4","Activity 5","Activity 6","Activity 7","Activity 8","Result"];
+var STORAGE_KEY = "pib-worksheet-v3";
+var WORKSHEET_SLUG = "puss-in-boots-unit2";
+
+/* ===================== SUPABASE / LMS SYNC ===================== */
+var sb = window.supabase.createClient(
+  "https://sviftypadyorgalehzxh.supabase.co",
+  "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC"
+);
+var savedSetup = null;       // setup restored from localStorage (applied once class list is loaded)
+var loggedInProfile = null;  // { id, nama, kelasId } — set if opened from inside the LMS while logged in
+var kelasList = [];          // [{id, nama}]
+var currentRosterKelasId = null;
+var rosterCache = {};        // kelasId -> array of {id,nama} | null (null = roster unavailable)
+
+async function loadKelasList(){
+  var sel = document.getElementById('kelasSelect');
+  try{
+    var res = await sb.from('kelas').select('id,nama').order('nama');
+    if(res.error) throw res.error;
+    kelasList = res.data || [];
+    kelasList.forEach(function(k){
+      var op=document.createElement('option'); op.value=k.id; op.textContent=k.nama; sel.appendChild(op);
+    });
+  }catch(e){
+    var op=document.createElement('option'); op.value=''; op.textContent='(class list unavailable)'; sel.appendChild(op);
+  }
+}
+
+async function fetchRoster(kelasId){
+  if(!kelasId) return [];
+  if(kelasId in rosterCache) return rosterCache[kelasId];
+  try{
+    var res = await sb.rpc('get_siswa_kelas', { p_kelas_id: kelasId });
+    if(res.error) throw res.error;
+    rosterCache[kelasId] = res.data || [];
+  }catch(e){
+    rosterCache[kelasId] = null; // RPC not deployed yet, or network error — fall back to manual entry
+  }
+  return rosterCache[kelasId];
+}
+
+function renderIndividuRoster(roster){
+  var sel = document.getElementById('namaIndividuSelect');
+  if(!currentRosterKelasId){ sel.innerHTML='<option value="">— choose your class first —</option>'; return; }
+  if(roster===null){ sel.innerHTML='<option value="">(class list unavailable — type your name manually)</option>'; return; }
+  sel.innerHTML = '<option value="">— choose your name —</option>' +
+    roster.map(function(s){ return '<option value="'+s.id+'">'+s.nama+'</option>'; }).join('');
+}
+
+function renderKelompokRoster(roster){
+  var box = document.getElementById('kelompokRoster');
+  if(!currentRosterKelasId){ box.innerHTML='<div class="roster-empty">Choose your class first.</div>'; return; }
+  if(roster===null){ box.innerHTML='<div class="roster-empty">Class list unavailable — add members manually below.</div>'; return; }
+  if(!roster.length){ box.innerHTML='<div class="roster-empty">No students found for this class yet — add members manually below.</div>'; return; }
+  box.innerHTML = roster.map(function(s){
+    return '<label class="roster-item"><input type="checkbox" class="memberCheck" value="'+s.id+'" data-nama="'+String(s.nama).replace(/"/g,'&quot;')+'">'+s.nama+'</label>';
+  }).join('');
+}
+
+async function onKelasChange(){
+  var kelasId = document.getElementById('kelasSelect').value;
+  currentRosterKelasId = kelasId;
+  var roster = await fetchRoster(kelasId);
+  renderIndividuRoster(roster);
+  renderKelompokRoster(roster);
+}
+document.getElementById('kelasSelect').addEventListener('change', onKelasChange);
+
+document.getElementById('jenisSelect').addEventListener('change', function(){
+  var kelompok = this.value === 'kelompok';
+  document.getElementById('individuFields').style.display = kelompok ? 'none' : 'block';
+  document.getElementById('kelompokFields').style.display = kelompok ? 'block' : 'none';
+});
+
+document.getElementById('individuManualToggle').addEventListener('click', function(){
+  var manual=document.getElementById('namaIndividuManual');
+  var sel=document.getElementById('namaIndividuSelect');
+  var show = manual.style.display==='none';
+  manual.style.display = show ? 'block' : 'none';
+  sel.style.display = show ? 'none' : '';
+  this.textContent = show ? 'Use class list instead' : 'Name not listed? Type it manually';
+});
+
+function addManualMemberRow(){
+  var rows=document.getElementById('kelompokManualRows');
+  var row=document.createElement('div'); row.className='member-name-row';
+  row.innerHTML='<input type="text" class="manualMemberInput" placeholder="Member name"><button type="button">✕</button>';
+  row.querySelector('button').addEventListener('click', function(){ row.remove(); });
+  rows.appendChild(row);
+}
+document.getElementById('addManualMemberBtn').addEventListener('click', addManualMemberRow);
+document.getElementById('kelompokManualToggle').addEventListener('click', function(){
+  var list=document.getElementById('kelompokManualList');
+  var show = list.style.display==='none';
+  list.style.display = show ? 'block' : 'none';
+  this.textContent = show ? 'Hide manual entry' : 'Member not listed? Add name manually';
+  if(show && !document.getElementById('kelompokManualRows').children.length) addManualMemberRow();
+});
+
+function getSetupData(){
+  var jenis = document.getElementById('jenisSelect').value;
+  var kelasSel = document.getElementById('kelasSelect');
+  var kelasId = kelasSel.value;
+  var kelas = kelasId ? kelasSel.options[kelasSel.selectedIndex].textContent : '';
+  if(jenis === 'individu'){
+    var manualVisible = document.getElementById('namaIndividuManual').style.display !== 'none';
+    var namaId='', nama='';
+    if(manualVisible){
+      nama = document.getElementById('namaIndividuManual').value.trim();
+    } else {
+      var sel = document.getElementById('namaIndividuSelect');
+      namaId = sel.value;
+      nama = namaId ? sel.options[sel.selectedIndex].textContent : '';
+    }
+    return { jenis:jenis, kelasId:kelasId, kelas:kelas, namaId:namaId, nama:nama, anggota:null };
+  } else {
+    var namaKelompok = document.getElementById('namaKelompok').value.trim();
+    var memberNames=[], memberIds=[];
+    document.querySelectorAll('#kelompokRoster .memberCheck:checked').forEach(function(cb){
+      memberNames.push(cb.dataset.nama); memberIds.push(cb.value);
+    });
+    document.querySelectorAll('#kelompokManualRows .manualMemberInput').forEach(function(inp){
+      var v=inp.value.trim(); if(v) memberNames.push(v);
+    });
+    return { jenis:jenis, kelasId:kelasId, kelas:kelas, namaKelompok:namaKelompok, nama:namaKelompok, memberIds:memberIds, anggota: memberNames.join(', ') };
+  }
+}
+
+function validateSetup(){
+  var d = getSetupData();
+  var warn = document.getElementById('setupWarn');
+  var msg = '';
+  if(!d.kelasId) msg = 'Please choose your class.';
+  else if(d.jenis === 'individu' && !d.nama) msg = 'Please choose your name from the list, or type it manually.';
+  else if(d.jenis === 'kelompok'){
+    if(!d.namaKelompok) msg = 'Please fill in the group name.';
+    else if(!d.anggota) msg = 'Please select at least one group member from the class list (or add one manually).';
+  }
+  if(msg){ warn.textContent = msg; warn.classList.add('show'); return false; }
+  warn.classList.remove('show');
+  return d;
+}
+
+/* ---- detect LMS login: if this worksheet was opened from inside the LMS
+   while the student is logged in, prefill & lock name/class and attach
+   siswa_id so the result shows up in their own worksheet history. ---- */
+async function detectLmsLogin(){
+  try{
+    var u = await sb.auth.getUser();
+    var user = u && u.data && u.data.user;
+    if(!user) return;
+    var p = await sb.from('profiles').select('id, nama, kelas_id').eq('id', user.id).single();
+    if(!p || !p.data) return;
+    loggedInProfile = { id:p.data.id, nama:p.data.nama, kelasId:p.data.kelas_id };
+    var kelasSel=document.getElementById('kelasSelect');
+    if(loggedInProfile.kelasId){
+      kelasSel.value = loggedInProfile.kelasId;
+      kelasSel.disabled = true;
+      await onKelasChange();
+      var indivSel=document.getElementById('namaIndividuSelect');
+      if(indivSel) indivSel.value = loggedInProfile.id;
+    }
+    var slot=document.getElementById('lmsLoginNoteSlot');
+    if(slot && !document.getElementById('lmsLoginNote')){
+      var note=document.createElement('div'); note.id='lmsLoginNote'; note.className='hint';
+      note.textContent='✅ Masuk sebagai '+loggedInProfile.nama+' — nama & kelas otomatis diisi, dan hasil ini akan tersimpan di riwayat worksheet kamu.';
+      slot.appendChild(note);
+    }
+  }catch(e){ /* not fatal — treat as opened outside LMS login */ }
+}
+
+async function initIdentity(){
+  await loadKelasList();
+  await detectLmsLogin();
+  if(!loggedInProfile && savedSetup && savedSetup.kelasId){
+    var kelasSel=document.getElementById('kelasSelect');
+    kelasSel.value = savedSetup.kelasId;
+    await onKelasChange();
+    if(savedSetup.jenis){
+      var js=document.getElementById('jenisSelect'); js.value=savedSetup.jenis; js.dispatchEvent(new Event('change'));
+    }
+    if(savedSetup.jenis==='individu' && savedSetup.namaId){
+      var s=document.getElementById('namaIndividuSelect'); if(s) s.value=savedSetup.namaId;
+    }
+    if(savedSetup.jenis==='kelompok'){
+      document.getElementById('namaKelompok').value = savedSetup.namaKelompok || '';
+      (savedSetup.memberIds||[]).forEach(function(id){
+        var cb=document.querySelector('#kelompokRoster .memberCheck[value="'+id+'"]'); if(cb) cb.checked=true;
+      });
+    }
+  }
+}
+
+function collectJawaban(){
+  var jawaban={};
+  document.querySelectorAll('.q[data-id]').forEach(function(q){ jawaban[q.dataset.id]=q.querySelector('.opts').dataset.chosen || ''; });
+  document.querySelectorAll('.tf-row[data-id]').forEach(function(row){ jawaban[row.dataset.id]=row.querySelector('.tf-btns').dataset.chosen || ''; });
+  document.querySelectorAll('[data-id]').forEach(function(el){
+    if(el.tagName==='TEXTAREA' || (el.tagName==='INPUT'&&el.type==='text') || el.tagName==='SELECT'){
+      if(!el.classList.contains('blank') || el.tagName==='SELECT'){ jawaban[el.dataset.id]=el.value; }
+    }
+  });
+  jawaban.act6Matches = act6Matches;
+  jawaban.scores = activityScores;
+  return jawaban;
+}
+
+function renderResult(){
+  var parts=['act3','act4','act5','act6'];
+  var labels={act3:'Activity 3',act4:'Activity 4',act5:'Activity 5',act6:'Activity 6'};
+  var totalCorrect=0, totalMax=0, rows='';
+  parts.forEach(function(k){
+    var s=activityScores[k];
+    if(s){ totalCorrect+=s.correct; totalMax+=s.total; rows+='<div class="breakdown-row"><span>'+labels[k]+'</span><span>'+s.correct+' / '+s.total+'</span></div>'; }
+    else { rows+='<div class="breakdown-row"><span>'+labels[k]+'</span><span>not submitted yet</span></div>'; }
+  });
+  rows += '<div class="breakdown-row"><span>Activity 7</span><span>'+(submittedFlags.act7?'submitted ✓ (checked by teacher)':'not submitted yet')+'</span></div>';
+  rows += '<div class="breakdown-row"><span>Activity 8</span><span>'+(submittedFlags.act8?'submitted ✓ (checked by teacher)':'not submitted yet')+'</span></div>';
+  document.getElementById('breakdownBox').innerHTML = rows;
+  var score = totalMax ? Math.round(100*totalCorrect/totalMax) : 0;
+  document.getElementById('finalScoreBig').textContent = totalMax ? score : '–';
+  return score;
+}
+
+var submittedToLms=false;
+document.getElementById('sendResultBtn').addEventListener('click', async function(){
+  if(submittedToLms) return;
+  var setup = validateSetup();
+  if(!setup){ goPage(0); return; }
+  var missing = ['act3','act4','act5','act6','act7','act8'].filter(function(k){ return !submittedFlags[k]; });
+  var statusMsg = document.getElementById('statusMsg');
+  if(missing.length){
+    statusMsg.textContent = 'Please submit every activity (3–8) first — still missing: ' + missing.join(', ') + '.';
+    statusMsg.className = 'status-msg status-err'; statusMsg.style.display='block';
+    return;
+  }
+  var btn=this; btn.disabled=true; btn.textContent='Sending...';
+  var score = renderResult();
+  var payload = {
+    worksheet_slug: WORKSHEET_SLUG,
+    jenis: setup.jenis,
+    nama: setup.nama,
+    anggota: setup.anggota,
+    kelas: setup.kelas,
+    nilai: score,
+    nilai_maks: 100,
+    status: 'selesai',
+    siswa_id: loggedInProfile ? loggedInProfile.id : null,
+    jawaban: collectJawaban()
+  };
+  try{
+    var res = await sb.from('hasil_worksheet').insert(payload);
+    if(res.error) throw res.error;
+    submittedToLms = true;
+    btn.textContent = 'Sent to teacher ✓';
+    statusMsg.textContent = 'Your result ('+score+'/100) has been sent to your teacher.';
+    statusMsg.className = 'status-msg status-ok'; statusMsg.style.display='block';
+  }catch(e){
+    btn.disabled=false; btn.textContent='Try sending again';
+    statusMsg.textContent = 'Could not send automatically (' + (e.message||'network error') + '). Please try again, or show this page to your teacher.';
+    statusMsg.className = 'status-msg status-err'; statusMsg.style.display='block';
+  }
+});
+
+function buildNav(){
+  var nav = document.getElementById('pageNav');
+  PAGES.forEach(function(label,i){
+    var b=document.createElement('button');
+    b.textContent=label;
+    b.onclick=function(){goPage(i);};
+    b.dataset.idx=i;
+    nav.appendChild(b);
+  });
+}
+function goPage(i){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.toggle('active', +p.dataset.page===i);});
+  document.querySelectorAll('#pageNav button').forEach(function(b){b.classList.toggle('active', +b.dataset.idx===i);});
+  try{ localStorage.setItem(STORAGE_KEY+'-page', String(i)); }catch(e){}
+  if(i===7) renderResult();
+  window.scrollTo({top:0,behavior:'instant'});
+}
+
+function bindOpts(){
+  document.querySelectorAll('.q .opts').forEach(function(group){
+    group.querySelectorAll('.opt').forEach(function(btn,i){
+      btn.addEventListener('click',function(){
+        group.querySelectorAll('.opt').forEach(function(b){b.classList.remove('selected','correct','incorrect');});
+        btn.classList.add('selected');
+        group.dataset.chosen = i;
+        saveState();
+      });
+    });
+  });
+  document.querySelectorAll('.tf-row .tf-btns').forEach(function(g){
+    g.querySelectorAll('button').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        g.querySelectorAll('button').forEach(function(b){b.classList.remove('selected','correct','incorrect');});
+        btn.classList.add('selected');
+        g.dataset.chosen = btn.dataset.v;
+        saveState();
+      });
+    });
+  });
+}
+
+function fillBlankOptions(){
+  var opts=['he played a trick','his master was a crown prince','it took three months','the cat could also play trick on an ogre','the cat could bring some lucks','he made up some lies'];
+  document.querySelectorAll('#act5 select.blank').forEach(function(s){
+    opts.forEach(function(o){var op=document.createElement('option');op.value=o;op.textContent=o;s.appendChild(op);});
+    s.addEventListener('change', saveState);
+  });
+}
+
+function submitAct4(){
+  var correct=0, total=0;
+  document.querySelectorAll('#act4 .q').forEach(function(q){
+    total++;
+    var group=q.querySelector('.opts');
+    var chosen=group.dataset.chosen;
+    var right=q.dataset.correct;
+    group.querySelectorAll('.opt').forEach(function(b,i){
+      b.disabled=true;
+      if(String(i)===right) b.classList.add('correct');
+      else if(String(i)===chosen) b.classList.add('incorrect');
+    });
+    if(chosen===right) correct++;
+  });
+  document.querySelectorAll('#tf-list .tf-row').forEach(function(row){
+    total++;
+    var g=row.querySelector('.tf-btns');
+    var chosen=g.dataset.chosen;
+    var right=row.dataset.correct;
+    g.querySelectorAll('button').forEach(function(b){
+      b.disabled=true;
+      if(b.dataset.v===right) b.classList.add('correct');
+      else if(b.dataset.v===chosen) b.classList.add('incorrect');
+    });
+    if(chosen===right) correct++;
+  });
+  document.querySelectorAll('#act4 textarea').forEach(function(t){t.disabled=true;});
+  document.getElementById('act4-score').textContent='Submitted — Score: '+correct+' / '+total;
+  var btn=document.querySelector('#act4 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act4=true; activityScores.act4={correct:correct,total:total}; saveState();
+}
+
+function submitAct5(){
+  var correct=0, total=0;
+  document.querySelectorAll('#act5 select.blank').forEach(function(s){
+    total++;
+    s.disabled=true;
+    s.style.borderColor = (s.value===s.dataset.correct) ? 'var(--good)' : 'var(--bad)';
+    if(s.value===s.dataset.correct) correct++;
+  });
+  document.getElementById('act5-score').textContent='Submitted — Score: '+correct+' / '+total;
+  var btn=document.querySelector('#act5 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act5=true; activityScores.act5={correct:correct,total:total}; saveState();
+}
+
+var CHAR_LABELS={king:"The King",son:"Miller's youngest son",cat:"The cat",miller:"The miller"};
+var act6Matches={}; // descId -> charVal
+var act6Selected=null;
+var submittedFlags={};
+var activityScores={};
+var ACT3_ANSWERS=["inheritance","cunning","gallant","warren","deceit","noble","partridges","fortune","rogues","well-built"];
+
+function buildAct3(){
+  var list=document.getElementById('act3-list');
+  ACT3_ANSWERS.forEach(function(ans,i){
+    var n=i+1;
+    var row=document.createElement('div');
+    row.className='tf-row';
+    row.innerHTML='<span>'+n+') ____ ('+n+')</span><input type="text" data-id="a3-'+n+'" data-correct="'+ans+'" style="max-width:180px;" placeholder="your answer">';
+    list.appendChild(row);
+  });
+}
+function submitAct3(){
+  var correct=0,total=0;
+  document.querySelectorAll('#act3-list input[type=text]').forEach(function(inp){
+    total++;
+    inp.disabled=true;
+    var ok=(inp.value||'').trim().toLowerCase()===inp.dataset.correct;
+    inp.style.borderColor= ok ? 'var(--good)' : 'var(--bad)';
+    if(ok) correct++;
+  });
+  document.getElementById('act3-score').textContent='Submitted — Score: '+correct+' / '+total;
+  var btn=document.querySelector('#act3 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act3=true; activityScores.act3={correct:correct,total:total}; saveState();
+}
+
+function labelForChar(val){ return CHAR_LABELS[val] || val; }
+
+function act6Render(){
+  document.querySelectorAll('#act6 .match-col:first-child .match-item').forEach(function(d){
+    var id=d.dataset.id, val=act6Matches[id];
+    var badge=d.querySelector('.badge');
+    if(val){ badge.style.display='inline-block'; badge.textContent=labelForChar(val); d.classList.add('matched'); }
+    else { badge.style.display='none'; d.classList.remove('matched'); }
+    d.classList.toggle('active', act6Selected===id);
+    d.classList.remove('correct','incorrect');
+  });
+  var usedVals={};
+  Object.keys(act6Matches).forEach(function(k){ usedVals[act6Matches[k]]=true; });
+  document.querySelectorAll('#act6 .match-col:last-child .match-item').forEach(function(c){
+    c.classList.remove('correct','incorrect');
+    c.classList.toggle('used', !!usedVals[c.dataset.val]);
+  });
+}
+
+function act6Bind(){
+  document.querySelectorAll('#act6 .match-col:first-child .match-item').forEach(function(d){
+    d.addEventListener('click', function(){
+      if(act6Matches[d.dataset.id]){ delete act6Matches[d.dataset.id]; act6Selected=d.dataset.id; act6Render(); saveState(); return; }
+      act6Selected = (act6Selected===d.dataset.id) ? null : d.dataset.id;
+      act6Render();
+    });
+  });
+  document.querySelectorAll('#act6 .match-col:last-child .match-item').forEach(function(c){
+    c.addEventListener('click', function(){
+      if(!act6Selected || c.classList.contains('used')) return;
+      act6Matches[act6Selected]=c.dataset.val;
+      act6Selected=null;
+      act6Render();
+      saveState();
+    });
+  });
+}
+
+function checkAct6(){
+  var correct=0, total=0;
+  document.querySelectorAll('#act6 .match-col:first-child .match-item').forEach(function(d){
+    total++;
+    var val=act6Matches[d.dataset.id];
+    var ok = val===d.dataset.correct;
+    if(ok) correct++;
+    d.classList.toggle('correct', ok);
+    d.classList.toggle('incorrect', !!val && !ok);
+  });
+  return {correct:correct,total:total};
+}
+function submitAct6(){
+  var r=checkAct6();
+  document.querySelectorAll('#act6 .match-item').forEach(function(el){ el.disabled=true; });
+  document.getElementById('act6-score').textContent='Submitted — Score: '+r.correct+' / '+r.total;
+  var btn=document.querySelector('#act6 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act6=true; activityScores.act6={correct:r.correct,total:r.total}; saveState();
+}
+function submitAct7(){
+  document.querySelectorAll('#act7 input[type=text]').forEach(function(i){i.disabled=true;});
+  document.getElementById('act7-score').textContent='Submitted ✓';
+  var btn=document.querySelector('#act7 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act7=true; saveState();
+}
+function submitAct8(){
+  document.querySelectorAll('#act8 textarea').forEach(function(t){t.disabled=true;});
+  document.getElementById('act8-score').textContent='Submitted ✓';
+  var btn=document.querySelector('#act8 .check-btn'); if(btn){btn.disabled=true;btn.textContent='Submitted ✓';}
+  submittedFlags.act8=true; saveState();
+}
+
+function saveState(){
+  try{
+    var state={};
+    document.querySelectorAll('.q[data-id]').forEach(function(q){
+      state[q.dataset.id]=q.querySelector('.opts').dataset.chosen || '';
+    });
+    document.querySelectorAll('.tf-row[data-id]').forEach(function(row){
+      state[row.dataset.id]=row.querySelector('.tf-btns').dataset.chosen || '';
+    });
+    document.querySelectorAll('[data-id]').forEach(function(el){
+      if(el.tagName==='TEXTAREA' || (el.tagName==='INPUT'&&el.type==='text') || el.tagName==='SELECT'){
+        if(!el.classList.contains('blank') || el.tagName==='SELECT'){
+          state[el.dataset.id]=el.value;
+        }
+      }
+    });
+    state['act6Matches']=act6Matches;
+    state['submitted']=submittedFlags;
+    state['scores']=activityScores;
+    state['setup']=getSetupData();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function restoreState(){
+  var state={};
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(raw) state=JSON.parse(raw);
+  }catch(e){}
+  document.querySelectorAll('.q[data-id]').forEach(function(q){
+    var v=state[q.dataset.id];
+    if(v!==undefined && v!==''){
+      var group=q.querySelector('.opts');
+      var btn=group.querySelectorAll('.opt')[+v];
+      if(btn){ btn.classList.add('selected'); group.dataset.chosen=v; }
+    }
+  });
+  document.querySelectorAll('.tf-row[data-id]').forEach(function(row){
+    var v=state[row.dataset.id];
+    if(v){
+      var g=row.querySelector('.tf-btns');
+      var btn=g.querySelector('button[data-v="'+v+'"]');
+      if(btn){ btn.classList.add('selected'); g.dataset.chosen=v; }
+    }
+  });
+  document.querySelectorAll('[data-id]').forEach(function(el){
+    if(state[el.dataset.id]!==undefined){
+      if(el.tagName==='TEXTAREA' || (el.tagName==='INPUT'&&el.type==='text') || el.tagName==='SELECT'){
+        el.value=state[el.dataset.id];
+      }
+    }
+  });
+  if(state.act6Matches){ act6Matches=state.act6Matches; }
+  if(state.scores){ activityScores=state.scores; }
+  if(state.setup){ savedSetup=state.setup; }
+  act6Render();
+  if(state.submitted){
+    if(state.submitted.act3) submitAct3();
+    if(state.submitted.act4) submitAct4();
+    if(state.submitted.act5) submitAct5();
+    if(state.submitted.act6) submitAct6();
+    if(state.submitted.act7) submitAct7();
+    if(state.submitted.act8) submitAct8();
+  }
+  var pageRaw=null;
+  try{ pageRaw=localStorage.getItem(STORAGE_KEY+'-page'); }catch(e){}
+  goPage(pageRaw ? parseInt(pageRaw,10) : 0);
+}
+
+function bindAutoSave(){
+  document.querySelectorAll('[data-id]').forEach(function(el){
+    if(el.tagName==='TEXTAREA' || (el.tagName==='INPUT'&&el.type==='text') || el.tagName==='SELECT'){
+      el.addEventListener('input', saveState);
+      el.addEventListener('change', saveState);
+    }
+  });
+}
+
+buildNav();
+buildAct3();
+bindOpts();
+fillBlankOptions();
+act6Bind();
+bindAutoSave();
+restoreState();
+initIdentity();
+</script>
+</body>
+</html>

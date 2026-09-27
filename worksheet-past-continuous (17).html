@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#6c4ab6">
+<title>Interactive Worksheet: Past Continuous Tense</title>
+<style>
+  :root{
+    --ink:#2b2140; --purple:#6c4ab6; --purple-light:#eee7fb;
+    --pink:#e85d75; --pink-light:#fde6ea; --gold:#d99a1f; --gold-light:#fdf3dd;
+    --green:#3e9b6e; --green-light:#e4f6ed; --blue:#3f7fb0; --blue-light:#e6f1f9;
+    --orange:#c26a3d; --orange-light:#fbebe0; --paper:#fffdf9; --line:#d8cdee;
+    --red:#c0392b; --red-light:#fbe7e5;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{font-family:'Segoe UI',Verdana,sans-serif;background:#efe8fb;color:var(--ink);margin:0;padding:0;overflow-x:hidden;}
+  button, select, input, .chip{touch-action:manipulation;}
+  .app{max-width:760px;margin:0 auto;min-height:100vh;min-height:100dvh;background:var(--paper);display:flex;flex-direction:column;overflow-x:hidden;}
+
+  .topbar{background:linear-gradient(135deg,var(--purple),#9376d9);color:#fff;padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top));}
+  .topbar h1{margin:0;font-size:1.1em;line-height:1.3;}
+  .topbar .meta{font-size:0.78em;opacity:0.92;margin-top:3px;}
+  .progress-wrap{background:rgba(255,255,255,0.25);height:8px;border-radius:6px;margin-top:10px;overflow:hidden;}
+  .progress-bar{height:100%;background:#fff;width:5%;transition:width .3s;}
+
+  .pages{flex:1;padding:16px 14px 100px;width:100%;}
+  .page{display:none;}
+  .page.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .page-tag{display:inline-flex;align-items:center;gap:8px;color:#fff;font-weight:bold;padding:8px 14px;border-radius:10px;margin-bottom:14px;font-size:0.95em;}
+  .p-setup .page-tag{background:var(--pink);}
+  .p-fill .page-tag{background:var(--gold);}
+  .p-match .page-tag{background:var(--blue);}
+  .p-build .page-tag{background:var(--green);}
+  .p-result .page-tag{background:var(--purple);}
+
+  .instr{background:var(--gold-light);border-left:5px solid var(--gold);padding:10px 14px;border-radius:8px;font-size:0.93em;margin-bottom:16px;}
+  .instr b{color:#8a5f0c;}
+
+  label{display:block;font-weight:600;margin-bottom:6px;font-size:0.92em;}
+  input[type=text], select, textarea{
+    width:100%;padding:11px 10px;border:1.5px solid var(--line);border-radius:8px;font-size:16px;
+    font-family:inherit;background:#fff;color:var(--ink);min-height:44px;
+  }
+  input[type=text]:focus, select:focus{outline:2px solid var(--purple);border-color:var(--purple);}
+  .field{margin-bottom:16px;}
+  .hint{font-size:0.8em;color:#8a7fa6;margin-top:4px;}
+
+  .member-row{display:flex;gap:8px;margin-bottom:8px;align-items:center;}
+  .member-row input{flex:1;min-width:0;}
+  .icon-btn{border:none;background:var(--pink-light);color:var(--pink);width:44px;height:44px;border-radius:8px;font-size:1.1em;cursor:pointer;flex-shrink:0;}
+  .add-member-btn{background:var(--purple-light);color:var(--purple);border:none;padding:11px 14px;border-radius:8px;font-size:0.9em;font-weight:600;cursor:pointer;margin-top:2px;min-height:44px;}
+
+  .q-card{background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 14px;margin-bottom:14px;}
+  .q-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px;}
+  .q-num{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;border-radius:50%;background:var(--purple);color:#fff;font-weight:bold;font-size:0.82em;flex-shrink:0;}
+  .q-sentence{font-size:1em;line-height:2.4;margin-top:6px;word-break:break-word;}
+  .q-sentence select{display:inline-block;width:auto;max-width:100%;min-width:98px;margin:2px 3px;padding:8px 6px;font-size:0.92em;min-height:38px;border-color:var(--gold);background:var(--gold-light);font-weight:600;color:#8a5f0c;}
+  .badge-polarity{font-size:0.72em;font-weight:700;padding:3px 9px;border-radius:12px;flex-shrink:0;}
+  .badge-pos{background:var(--green-light);color:#2c6e4f;}
+  .badge-neg{background:var(--red-light);color:var(--red);}
+
+  .match-row{display:flex;flex-direction:column;align-items:stretch;gap:8px;margin-bottom:12px;background:#fff;border:2px solid var(--line);border-radius:12px;padding:12px 14px;}
+  .match-left{font-size:0.95em;display:flex;align-items:flex-start;gap:8px;}
+  .match-row select{width:100%;max-width:100%;}
+
+  .build-card{background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 14px;margin-bottom:16px;}
+  .build-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .build-type{font-size:0.72em;font-weight:700;padding:3px 9px;border-radius:12px;background:var(--blue-light);color:#2c5f85;flex-shrink:0;}
+  .answer-strip{min-height:48px;background:var(--purple-light);border:1.5px dashed var(--purple);border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px;}
+  .answer-strip .chip{background:var(--purple);color:#fff;}
+  .bank-strip{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px;}
+  .chip{border:1.5px solid var(--purple);background:#fff;color:var(--purple);border-radius:16px;padding:9px 14px;font-size:0.9em;font-weight:600;cursor:pointer;user-select:none;transition:transform .1s;min-height:40px;display:inline-flex;align-items:center;}
+  .chip:active{transform:scale(0.95);}
+  .chip.used{opacity:0.35;pointer-events:none;}
+  .reset-btn{background:none;border:none;color:var(--pink);font-size:0.86em;font-weight:600;cursor:pointer;padding:8px 0;min-height:38px;}
+
+  .navbar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--purple-light);padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .nav-btn{border:none;padding:11px 16px;border-radius:22px;font-size:0.92em;font-weight:600;cursor:pointer;min-height:44px;white-space:nowrap;}
+  .nav-btn.prev{background:#eee;color:#666;}
+  .nav-btn.next{background:var(--purple);color:#fff;}
+  .nav-btn:disabled{opacity:0.4;cursor:not-allowed;}
+  .page-count{font-size:0.78em;color:#888;white-space:nowrap;}
+
+  @media (max-width:400px){
+    .topbar{padding-left:14px;padding-right:14px;}
+    .topbar h1{font-size:1em;}
+    .pages{padding-left:12px;padding-right:12px;}
+    .q-sentence{font-size:0.95em;line-height:2.3;}
+    .q-sentence select{min-width:88px;font-size:0.88em;}
+    .score-hero .big{font-size:2.2em;}
+    .nav-btn{padding:10px 12px;font-size:0.88em;}
+    .page-count{display:none;}
+  }
+
+  .warn-box{background:var(--red-light);color:var(--red);border-radius:8px;padding:8px 12px;font-size:0.85em;margin-bottom:12px;display:none;}
+  .warn-box.show{display:block;}
+
+  .score-hero{text-align:center;padding:26px 10px;background:linear-gradient(135deg,var(--purple),#9376d9);border-radius:16px;color:#fff;margin-bottom:18px;}
+  .score-hero .big{font-size:2.6em;font-weight:800;line-height:1;}
+  .score-hero .sub{font-size:0.9em;opacity:0.9;margin-top:6px;}
+  .breakdown{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .breakdown .row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:2px solid var(--line);border-radius:10px;padding:10px 14px;font-size:0.92em;}
+  .breakdown .row b{color:var(--purple);}
+  .submit-btn{width:100%;background:var(--green);color:#fff;border:none;padding:14px;border-radius:24px;font-size:1em;font-weight:700;cursor:pointer;min-height:48px;}
+  .submit-btn:disabled{opacity:0.6;cursor:default;}
+  .status-msg{text-align:center;font-size:0.9em;margin-top:12px;padding:10px;border-radius:8px;}
+  .status-ok{background:var(--green-light);color:#2c6e4f;}
+  .status-err{background:var(--red-light);color:var(--red);}
+  .review-toggle{background:var(--purple-light);color:var(--purple);border:none;padding:11px 14px;border-radius:20px;font-size:0.9em;font-weight:600;cursor:pointer;width:100%;margin-bottom:14px;min-height:44px;}
+  .review-box{display:none;}
+  .review-box.show{display:block;}
+  .review-item{font-size:0.88em;border-bottom:1px solid var(--purple-light);padding:8px 0;}
+  .review-item .ok{color:#2c6e4f;font-weight:700;}
+  .review-item .bad{color:var(--red);font-weight:700;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>📝 Past Continuous Tense</h1>
+    <div class="meta" id="topMeta">Setup · Page 1 of 5</div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+  </div>
+
+  <div class="pages" id="pages">
+
+    <!-- PAGE 1: SETUP -->
+    <section class="page p-setup active" id="page-0">
+      <span class="page-tag">👤 Step 1 · Your Info</span>
+      <div class="instr"><b>Instructions:</b> Choose how you are doing this worksheet, then fill in your name(s) and class before you start.</div>
+
+      <div class="field">
+        <label>Type of work</label>
+        <select id="jenisSelect">
+          <option value="individu">Individual</option>
+          <option value="kelompok">Group</option>
+        </select>
+      </div>
+
+      <div id="individuFields">
+        <div class="field">
+          <label>Your Name</label>
+          <input type="text" id="namaIndividu" placeholder="e.g. Siti Amalia">
+        </div>
+      </div>
+
+      <div id="kelompokFields" style="display:none;">
+        <div class="field">
+          <label>Group Name</label>
+          <input type="text" id="namaKelompok" placeholder="e.g. Group 1 / The Explorers">
+        </div>
+        <div class="field">
+          <label>Group Members</label>
+          <div id="memberList"></div>
+          <button type="button" class="add-member-btn" id="addMemberBtn">+ Add member</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Class</label>
+        <input type="text" id="kelasInput" placeholder="e.g. VIII A">
+      </div>
+
+      <div class="warn-box" id="setupWarn"></div>
+    </section>
+
+    <!-- PAGE 2: FILL IN THE BLANK -->
+    <section class="page p-fill" id="page-1">
+      <span class="page-tag">✏️ Part 1 · Fill in the Blank</span>
+      <div class="instr"><b>Instructions:</b> Complete each sentence. Choose the correct <b>to be</b> (was/were/wasn't/weren't) and the correct <b>verb-ing</b> from the dropdowns. Some sentences are positive, some are negative.</div>
+      <div id="fillContainer"></div>
+    </section>
+
+    <!-- PAGE 3: MATCHING -->
+    <section class="page p-match" id="page-2">
+      <span class="page-tag">🔗 Part 2 · Matching Clauses</span>
+      <div class="instr"><b>Instructions:</b> Match each clause on the left with the clause that correctly completes it, using the dropdown.</div>
+      <div id="matchContainer"></div>
+    </section>
+
+    <!-- PAGE 4: SENTENCE BUILDING -->
+    <section class="page p-build" id="page-3">
+      <span class="page-tag">🧩 Part 3 · Build the Sentence</span>
+      <div class="instr"><b>Instructions:</b> Tap the words in the correct order to build a sentence. Types include positive, negative, yes/no questions, and question-word questions. Tap "Reset" to start a sentence over.</div>
+      <div id="buildContainer"></div>
+    </section>
+
+    <!-- PAGE 5: RESULT -->
+    <section class="page p-result" id="page-4">
+      <span class="page-tag">🎉 Result</span>
+      <div class="score-hero">
+        <div class="big" id="scoreBig">0</div>
+        <div class="sub">out of 100</div>
+      </div>
+      <div class="breakdown" id="breakdownBox"></div>
+      <button type="button" class="review-toggle" id="reviewToggle">Show answer review</button>
+      <div class="review-box" id="reviewBox"></div>
+      <button type="button" class="submit-btn" id="submitBtn">Send my score to the teacher</button>
+      <div class="status-msg" id="statusMsg" style="display:none;"></div>
+    </section>
+
+  </div>
+
+  <div class="navbar">
+    <button type="button" class="nav-btn prev" id="prevBtn">← Back</button>
+    <span class="page-count" id="pageCount">Page 1 / 5</span>
+    <button type="button" class="nav-btn next" id="nextBtn">Next →</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===================== SUPABASE ===================== */
+const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WORKSHEET_SLUG = "past-continuous-tense";
+
+/* ===================== DATA ===================== */
+
+// ---- Part 1: Fill in the blank ----
+const fillQuestions = [
+  { before:"At 8 pm last night, I", after:"TV.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"was", verbOptions:["watching","cooking","reading","playing"], verbAnswer:"watching", polarity:"positive" },
+  { before:"They", after:"football when it started to rain.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"were", verbOptions:["playing","sleeping","studying","cooking"], verbAnswer:"playing", polarity:"positive" },
+  { before:"She", after:"when I called her.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"wasn't", verbOptions:["sleeping","working","reading","running"], verbAnswer:"sleeping", polarity:"negative" },
+  { before:"We", after:"to music at that time.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"weren't", verbOptions:["listening","watching","cooking","driving"], verbAnswer:"listening", polarity:"negative" },
+  { before:"He", after:"dinner while his wife was reading.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"was", verbOptions:["cooking","sleeping","running","studying"], verbAnswer:"cooking", polarity:"positive" },
+  { before:"The children", after:"their homework at 7 o'clock.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"were", verbOptions:["doing","watching","playing","eating"], verbAnswer:"doing", polarity:"positive" },
+  { before:"I", after:"English at midnight.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"wasn't", verbOptions:["studying","sleeping","cooking","driving"], verbAnswer:"studying", polarity:"negative" },
+  { before:"My parents", after:"yesterday afternoon.", tobeOptions:["was","were","wasn't","weren't"], tobeAnswer:"weren't", verbOptions:["working","watching","reading","playing"], verbAnswer:"working", polarity:"negative" },
+];
+
+// ---- Part 2: Matching ----
+const matchLeft = [
+  "While I was taking a shower,",
+  "She was reading a book",
+  "The kids were playing outside",
+  "We were having dinner",
+  "He was driving to work",
+  "While my mom was cooking,",
+  "They were watching a movie",
+  "I was walking my dog",
+];
+const matchRight = [
+  { letter:"A", text:"when the doorbell rang." },
+  { letter:"B", text:"the phone rang." },
+  { letter:"C", text:"when I saw my old friend." },
+  { letter:"D", text:"when it began to rain." },
+  { letter:"E", text:"when the power went off." },
+  { letter:"F", text:"my dad was setting the table." },
+  { letter:"G", text:"when his car broke down." },
+  { letter:"H", text:"when the lights went out." },
+];
+const matchAnswers = ["B","H","D","A","G","F","E","C"]; // correct letter for matchLeft[i]
+
+// ---- Part 3: Sentence building ----
+const buildQuestions = [
+  { type:"Positive", tokens:["They","were","cooking","dinner","at 7 pm."] },
+  { type:"Positive", tokens:["I","was","studying","in my room","last night."] },
+  { type:"Negative", tokens:["He","wasn't","working","yesterday."] },
+  { type:"Negative", tokens:["We","weren't","listening","to the teacher."] },
+  { type:"Yes/No Question", tokens:["Were","you","sleeping","at midnight?"] },
+  { type:"Yes/No Question", tokens:["Was","she","reading","a book?"] },
+  { type:"Question Word", tokens:["What","were","you","doing","at 8 pm?"] },
+  { type:"Question Word", tokens:["Why","was","he","crying?"] },
+];
+
+/* ===================== STATE ===================== */
+let currentPage = 0;
+const totalPages = 5;
+let memberCount = 1;
+let finalScore = 0;
+let breakdownData = [];
+let submitted = false;
+
+/* ===================== SETUP PAGE ===================== */
+const jenisSelect = document.getElementById('jenisSelect');
+const individuFields = document.getElementById('individuFields');
+const kelompokFields = document.getElementById('kelompokFields');
+const memberList = document.getElementById('memberList');
+
+function addMemberRow(value){
+  memberCount++;
+  const row = document.createElement('div');
+  row.className = 'member-row';
+  row.innerHTML = `<input type="text" class="memberInput" placeholder="Member name"><button type="button" class="icon-btn removeMemberBtn">✕</button>`;
+  memberList.appendChild(row);
+  if(value) row.querySelector('input').value = value;
+  row.querySelector('.removeMemberBtn').addEventListener('click', () => row.remove());
+}
+addMemberRow(); // first member row by default
+
+document.getElementById('addMemberBtn').addEventListener('click', () => addMemberRow());
+
+jenisSelect.addEventListener('change', () => {
+  if(jenisSelect.value === 'kelompok'){
+    individuFields.style.display = 'none';
+    kelompokFields.style.display = 'block';
+  } else {
+    individuFields.style.display = 'block';
+    kelompokFields.style.display = 'none';
+  }
+});
+
+function getSetupData(){
+  const jenis = jenisSelect.value;
+  const kelas = document.getElementById('kelasInput').value.trim();
+  if(jenis === 'individu'){
+    const nama = document.getElementById('namaIndividu').value.trim();
+    return { jenis, nama, anggota:null, kelas };
+  } else {
+    const namaKelompok = document.getElementById('namaKelompok').value.trim();
+    const members = Array.from(document.querySelectorAll('.memberInput'))
+      .map(i => i.value.trim()).filter(Boolean);
+    return { jenis, nama:namaKelompok, anggota: members.join(', '), kelas };
+  }
+}
+
+function validateSetup(){
+  const d = getSetupData();
+  const warn = document.getElementById('setupWarn');
+  let msg = '';
+  if(!d.kelas) msg = 'Please fill in your class.';
+  else if(d.jenis === 'individu' && !d.nama) msg = 'Please fill in your name.';
+  else if(d.jenis === 'kelompok'){
+    if(!d.nama) msg = 'Please fill in the group name.';
+    else if(!d.anggota) msg = 'Please add at least one group member.';
+  }
+  if(msg){ warn.textContent = msg; warn.classList.add('show'); return false; }
+  warn.classList.remove('show');
+  return true;
+}
+
+/* ===================== PART 1: FILL RENDER ===================== */
+const fillContainer = document.getElementById('fillContainer');
+function renderFill(){
+  fillContainer.innerHTML = fillQuestions.map((q, i) => {
+    const tobeOpts = q.tobeOptions.map(o => `<option value="${o}">${o}</option>`).join('');
+    const verbOpts = q.verbOptions.map(o => `<option value="${o}">${o}</option>`).join('');
+    const badge = q.polarity === 'positive' ? '<span class="badge-polarity badge-pos">Positive</span>' : '<span class="badge-polarity badge-neg">Negative</span>';
+    return `
+    <div class="q-card">
+      <div class="q-head"><span class="q-num">${i+1}</span>${badge}</div>
+      <div class="q-sentence">
+        ${q.before}
+        <select data-q="${i}" data-part="tobe"><option value="">--</option>${tobeOpts}</select>
+        <select data-q="${i}" data-part="verb"><option value="">--</option>${verbOpts}</select>
+        ${q.after}
+      </div>
+    </div>`;
+  }).join('');
+}
+renderFill();
+
+function gradeFill(){
+  let correct = 0;
+  const details = [];
+  fillQuestions.forEach((q, i) => {
+    const tobeSel = document.querySelector(`select[data-q="${i}"][data-part="tobe"]`).value;
+    const verbSel = document.querySelector(`select[data-q="${i}"][data-part="verb"]`).value;
+    const ok = tobeSel === q.tobeAnswer && verbSel === q.verbAnswer;
+    if(ok) correct++;
+    details.push({
+      label: `${q.before} ___ ___ ${q.after}`,
+      your: `${tobeSel || '(empty)'} ${verbSel || '(empty)'}`,
+      correct: `${q.tobeAnswer} ${q.verbAnswer}`,
+      ok
+    });
+  });
+  return { correct, total: fillQuestions.length, details };
+}
+
+/* ===================== PART 2: MATCH RENDER ===================== */
+const matchContainer = document.getElementById('matchContainer');
+function renderMatch(){
+  const optHtml = matchRight.map(r => `<option value="${r.letter}">${r.letter}. ${r.text}</option>`).join('');
+  matchContainer.innerHTML = matchLeft.map((text, i) => `
+    <div class="match-row">
+      <div class="match-left"><span class="q-num">${i+1}</span>${text}</div>
+      <select data-mi="${i}"><option value="">Choose match...</option>${optHtml}</select>
+    </div>
+  `).join('');
+}
+renderMatch();
+
+function gradeMatch(){
+  let correct = 0;
+  const details = [];
+  matchLeft.forEach((text, i) => {
+    const sel = document.querySelector(`select[data-mi="${i}"]`).value;
+    const ok = sel === matchAnswers[i];
+    if(ok) correct++;
+    const rightText = r => (matchRight.find(x => x.letter === r) || {}).text || '(empty)';
+    details.push({
+      label: text,
+      your: sel ? `${sel}. ${rightText(sel)}` : '(empty)',
+      correct: `${matchAnswers[i]}. ${rightText(matchAnswers[i])}`,
+      ok
+    });
+  });
+  return { correct, total: matchLeft.length, details };
+}
+
+/* ===================== PART 3: BUILD RENDER ===================== */
+const buildContainer = document.getElementById('buildContainer');
+const buildState = buildQuestions.map(q => ({ chosen: [], bank: shuffle(q.tokens.map((t, idx) => ({ t, idx }))) }));
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderBuild(){
+  buildContainer.innerHTML = buildQuestions.map((q, qi) => `
+    <div class="build-card">
+      <div class="build-head"><span class="q-num">${qi+1}</span><span class="build-type">${q.type}</span></div>
+      <div style="margin-top:6px;font-size:0.95em;">Build the sentence:</div>
+      <div class="answer-strip" id="answer-${qi}"></div>
+      <div class="bank-strip" id="bank-${qi}"></div>
+      <button type="button" class="reset-btn" data-reset="${qi}">↺ Reset this sentence</button>
+    </div>
+  `).join('');
+  buildQuestions.forEach((q, qi) => renderBuildQuestion(qi));
+  buildContainer.querySelectorAll('[data-reset]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qi = Number(btn.dataset.reset);
+      const st = buildState[qi];
+      st.bank = shuffle([...st.bank, ...st.chosen]);
+      st.chosen = [];
+      renderBuildQuestion(qi);
+    });
+  });
+}
+
+function renderBuildQuestion(qi){
+  const st = buildState[qi];
+  const answerEl = document.getElementById(`answer-${qi}`);
+  const bankEl = document.getElementById(`bank-${qi}`);
+  answerEl.innerHTML = st.chosen.map(tok => `<span class="chip">${tok.t}</span>`).join('') || '<span style="color:#aaa;font-size:0.85em;">Tap words below in order...</span>';
+  bankEl.innerHTML = st.bank.map(tok => `<span class="chip" data-qi="${qi}" data-idx="${tok.idx}">${tok.t}</span>`).join('');
+  bankEl.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const idx = Number(chip.dataset.idx);
+      const tokIndex = st.bank.findIndex(x => x.idx === idx);
+      if(tokIndex === -1) return;
+      const [tok] = st.bank.splice(tokIndex, 1);
+      st.chosen.push(tok);
+      renderBuildQuestion(qi);
+    });
+  });
+}
+renderBuild();
+
+function gradeBuild(){
+  let correct = 0;
+  const details = [];
+  buildQuestions.forEach((q, qi) => {
+    const chosenText = buildState[qi].chosen.map(t => t.t).join(' ');
+    const correctText = q.tokens.join(' ');
+    const ok = chosenText === correctText;
+    if(ok) correct++;
+    details.push({ label: `(${q.type})`, your: chosenText || '(empty)', correct: correctText, ok });
+  });
+  return { correct, total: buildQuestions.length, details };
+}
+
+/* ===================== NAVIGATION ===================== */
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const pageCount = document.getElementById('pageCount');
+const topMeta = document.getElementById('topMeta');
+const progressBar = document.getElementById('progressBar');
+const pageNames = ['Setup','Part 1: Fill in the Blank','Part 2: Matching','Part 3: Build the Sentence','Result'];
+
+function showPage(n){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${n}`).classList.add('active');
+  currentPage = n;
+  pageCount.textContent = `Page ${n+1} / ${totalPages}`;
+  topMeta.textContent = `${pageNames[n]} · Page ${n+1} of ${totalPages}`;
+  progressBar.style.width = `${((n+1)/totalPages)*100}%`;
+  prevBtn.disabled = n === 0;
+  nextBtn.style.display = n === totalPages - 1 ? 'none' : 'inline-block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+prevBtn.addEventListener('click', () => { if(currentPage > 0) showPage(currentPage - 1); });
+
+nextBtn.addEventListener('click', () => {
+  if(currentPage === 0){
+    if(!validateSetup()) return;
+  }
+  if(currentPage === totalPages - 2){
+    computeResults();
+  }
+  if(currentPage < totalPages - 1) showPage(currentPage + 1);
+});
+
+/* ===================== SCORING ===================== */
+function computeResults(){
+  const fill = gradeFill();
+  const match = gradeMatch();
+  const build = gradeBuild();
+  const totalCorrect = fill.correct + match.correct + build.correct;
+  const totalQ = fill.total + match.total + build.total;
+  finalScore = Math.round((totalCorrect / totalQ) * 100);
+
+  breakdownData = [
+    { name:'Part 1 · Fill in the Blank', ...fill },
+    { name:'Part 2 · Matching Clauses', ...match },
+    { name:'Part 3 · Build the Sentence', ...build },
+  ];
+
+  document.getElementById('scoreBig').textContent = finalScore;
+  document.getElementById('breakdownBox').innerHTML = breakdownData.map(b => `
+    <div class="row"><span>${b.name}</span><b>${b.correct} / ${b.total}</b></div>
+  `).join('') + `<div class="row"><span>Total correct</span><b>${totalCorrect} / ${totalQ}</b></div>`;
+
+  const reviewBox = document.getElementById('reviewBox');
+  reviewBox.innerHTML = breakdownData.map(b => `
+    <div style="margin-bottom:10px;"><b style="color:var(--purple);">${b.name}</b>
+    ${b.details.map(d => `
+      <div class="review-item">
+        <div>${d.label}</div>
+        <div>Your answer: <span class="${d.ok ? 'ok' : 'bad'}">${d.your}</span></div>
+        ${!d.ok ? `<div>Correct answer: <span class="ok">${d.correct}</span></div>` : ''}
+      </div>
+    `).join('')}
+    </div>
+  `).join('');
+}
+
+document.getElementById('reviewToggle').addEventListener('click', () => {
+  const box = document.getElementById('reviewBox');
+  const btn = document.getElementById('reviewToggle');
+  box.classList.toggle('show');
+  btn.textContent = box.classList.contains('show') ? 'Hide answer review' : 'Show answer review';
+});
+
+/* ===================== SUBMIT TO SUPABASE ===================== */
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  if(submitted) return;
+  const submitBtn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Sending...';
+
+  const setup = getSetupData();
+  const payload = {
+    worksheet_slug: WORKSHEET_SLUG,
+    jenis: setup.jenis,
+    nama: setup.nama,
+    anggota: setup.anggota,
+    kelas: setup.kelas,
+    nilai: finalScore,
+    nilai_maks: 100,
+    status: 'selesai'
+  };
+
+  try {
+    const { error } = await sb.from('hasil_worksheet').insert(payload);
+    if(error) throw error;
+    submitted = true;
+    submitBtn.textContent = 'Score sent ✓';
+    statusMsg.textContent = `Your score (${finalScore}/100) has been sent to your teacher.`;
+    statusMsg.className = 'status-msg status-ok';
+    statusMsg.style.display = 'block';
+  } catch(err){
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Try sending again';
+    statusMsg.textContent = 'Could not send your score automatically (' + (err.message || 'network error') + '). Please screenshot this page and show it to your teacher, or try again.';
+    statusMsg.className = 'status-msg status-err';
+    statusMsg.style.display = 'block';
+  }
+});
+
+/* init */
+showPage(0);
+</script>
+</body>
+</html>

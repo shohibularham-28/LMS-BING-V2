@@ -101,7 +101,7 @@
       err.style.display = 'block';
       return;
     }
-    window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
+    window.location.href = profile.role === 'guru' ? 'menu-guru.html' : 'menu.html';
   }
   document.getElementById('btnLogin').addEventListener('click', doLoginSubmit);
   ['li-username','li-password'].forEach(id => {
@@ -116,7 +116,7 @@
       return;
     }
     if (profile) {
-      window.location.href = profile.role === 'guru' ? 'guru.html' : 'pengumuman.html';
+      window.location.href = profile.role === 'guru' ? 'menu-guru.html' : 'menu.html';
     }
   })();
 </script>

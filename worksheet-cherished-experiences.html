@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cherished Experiences — Worksheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#16233d; --navy-2:#1f3358; --cream:#f3ead4; --gold:#c69a3a;
+    --maroon:#7a3030; --ink:#20241f; --line: rgba(22,35,61,.18);
+    --card:#fffdf7; --ok:#3c6e47; --bad:#a13f3f;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+  *{box-sizing:border-box;}
+  body{
+    margin:0; height:100%;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, rgba(198,154,58,.12), transparent 60%),
+      var(--cream);
+    color:var(--ink);
+    font-family:'Source Serif 4', Georgia, serif;
+    line-height:1.5;
+    display:flex; flex-direction:column;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --cream:#161310; --card:#211d17; --ink:#efe6d2; --line: rgba(239,230,210,.18); }
+  }
+  :root[data-theme="dark"]{ --cream:#161310; --card:#211d17; --ink:#efe6d2; --line: rgba(239,230,210,.18); }
+
+  header.hero{
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,.04) 0 2px, transparent 2px 14px),
+      linear-gradient(160deg, var(--navy), var(--navy-2));
+    color:var(--cream);
+    padding:1.6rem 1.2rem 1.4rem;
+    padding-top:calc(1.6rem + env(safe-area-inset-top,0px));
+  }
+  .eyebrow{ font-family:'Oswald',sans-serif; letter-spacing:.04em; font-size:.8rem; color:var(--gold); margin:0 0 .25rem; font-weight:600; }
+  h1{ font-family:'Oswald',sans-serif; font-size:clamp(1.3rem,4.5vw,1.9rem); margin:0; font-weight:700; }
+
+  nav.pagetabs{
+    display:flex; gap:.4rem; overflow-x:auto; padding:.7rem 1.2rem;
+    background:var(--navy-2); border-top:1px solid rgba(255,255,255,.08);
+    -webkit-overflow-scrolling:touch;
+  }
+  nav.pagetabs::-webkit-scrollbar{display:none;}
+  nav.pagetabs button{
+    font-family:'Oswald',sans-serif; font-size:.75rem; font-weight:600; letter-spacing:.02em;
+    white-space:nowrap; border:1px solid rgba(255,255,255,.2); background:transparent;
+    color:var(--cream); opacity:.65; padding:.4rem .8rem; border-radius:16px; cursor:pointer;
+  }
+  nav.pagetabs button.active{ opacity:1; background:var(--gold); color:var(--navy); border-color:var(--gold); }
+
+  main{max-width:760px; margin:0 auto; padding:1.4rem 1.2rem 1rem; width:100%; flex:1;}
+
+  .idcard{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    padding:1rem 1.1rem; display:grid; grid-template-columns:1fr 1fr; gap:.8rem;
+    margin-bottom:1.6rem; box-shadow:0 6px 18px rgba(22,35,61,.1);
+  }
+  .idcard label{ font-family:'Oswald',sans-serif; font-size:.72rem; letter-spacing:.03em; color:var(--navy); display:block; margin-bottom:.25rem; }
+  :root:not([data-theme="light"]) .idcard label{color:var(--gold);}
+  .idcard input{ width:100%; border:none; border-bottom:2px solid var(--line); background:transparent; font-family:'Source Serif 4',serif; font-size:1rem; padding:.25rem .1rem; color:var(--ink); }
+  .idcard input:focus{outline:none; border-bottom-color:var(--gold);}
+
+  .page{ display:none; }
+  .page.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+
+  .act-head{display:flex; align-items:baseline; gap:.6rem; margin-bottom:.3rem;}
+  .badge{ font-family:'Oswald',sans-serif; background:var(--navy); color:var(--cream); font-size:.75rem; font-weight:600; padding:.25rem .55rem; border-radius:4px; white-space:nowrap; }
+  .page h2{ font-family:'Oswald',sans-serif; font-size:1.25rem; margin:0; font-weight:600; }
+  .instr{font-size:.94rem; opacity:.8; margin:.2rem 0 1rem; max-width:62ch;}
+
+  .blank-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:.7rem; }
+  .blank{ background:var(--card); border:1px solid var(--line); border-radius:8px; padding:.6rem .7rem; }
+  .blank .num{ font-family:'Oswald',sans-serif; font-weight:600; color:var(--maroon); font-size:.82rem; }
+  .blank .hint{opacity:.6; font-size:.82rem; font-style:italic;}
+  .blank input[type=text]{ width:100%; margin-top:.35rem; border:none; border-bottom:2px solid var(--line); background:transparent; font-size:1rem; padding:.2rem .1rem; color:var(--ink); font-family:'Source Serif 4',serif; }
+  .blank input[type=text]:focus{outline:none; border-bottom-color:var(--maroon);}
+
+  .tf-list{display:flex; flex-direction:column; gap:.55rem;}
+  .tf-row{ background:var(--card); border:1px solid var(--line); border-radius:8px; padding:.65rem .8rem; display:flex; align-items:center; gap:.8rem; justify-content:space-between; }
+  .tf-row .stmt{font-size:.96rem; flex:1;}
+  .tf-row .stmt .n{color:var(--maroon); font-weight:600; font-family:'Oswald',sans-serif; margin-right:.4rem;}
+  .tf-toggle{display:flex; border:1px solid var(--line); border-radius:20px; overflow:hidden; flex-shrink:0;}
+  .tf-toggle button{ font-family:'Oswald',sans-serif; font-size:.78rem; font-weight:600; border:none; background:transparent; color:var(--ink); padding:.4rem .8rem; cursor:pointer; }
+  .tf-toggle button[data-v="true"].on{background:var(--ok); color:#fff;}
+  .tf-toggle button[data-v="false"].on{background:var(--bad); color:#fff;}
+
+  .chips{display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;}
+  .chip-input{ background:var(--card); border:1px solid var(--line); border-radius:20px; padding:.35rem .5rem .35rem .9rem; display:flex; align-items:center; gap:.3rem; }
+  .chip-input .n{font-family:'Oswald',sans-serif; font-size:.72rem; color:var(--gold); font-weight:600;}
+  .chip-input input{border:none; background:transparent; width:9ch; font-family:'Source Serif 4',serif; color:var(--ink);}
+  .chip-input input:focus{outline:none;}
+
+  table.idea{width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  table.idea th, table.idea td{border-bottom:1px solid var(--line); padding:.55rem .6rem; vertical-align:top; text-align:left;}
+  table.idea th{ font-family:'Oswald',sans-serif; font-size:.78rem; letter-spacing:.02em; color:var(--navy); background:rgba(198,154,58,.12); }
+  :root:not([data-theme="light"]) table.idea th{color:var(--gold);}
+  table.idea tr:last-child td{border-bottom:none;}
+  table.idea td:first-child{width:6.5rem; font-family:'Oswald',sans-serif; font-weight:600; font-size:.85rem;}
+  table.idea textarea{ width:100%; min-height:2.4rem; border:none; background:transparent; resize:vertical; font-family:'Source Serif 4',serif; font-size:.94rem; color:var(--ink); padding:.15rem; }
+  table.idea textarea:focus{outline:none; background:rgba(198,154,58,.06);}
+
+  .note-box{ border:1px dashed var(--line); border-radius:8px; padding:.7rem .85rem; font-size:.85rem; opacity:.75; margin-bottom:1rem; }
+
+  .disc-box{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:.9rem 1rem; }
+  .disc-box label{ font-family:'Oswald',sans-serif; font-size:.78rem; color:var(--maroon); font-weight:600; display:block; margin-bottom:.4rem; }
+  .disc-box textarea{ width:100%; min-height:6.5rem; border:none; background:transparent; resize:vertical; font-family:'Source Serif 4',serif; font-size:1rem; color:var(--ink); padding:.2rem; }
+  .disc-box textarea:focus{outline:none;}
+  .disc-box + .disc-box{margin-top:.8rem;}
+
+  .pagefoot{
+    display:flex; justify-content:space-between; align-items:center; gap:.6rem;
+    margin-top:1.6rem; padding-top:1rem; border-top:1px solid var(--line);
+  }
+  .pagefoot button{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:.82rem; letter-spacing:.02em;
+    border:1px solid var(--navy); border-radius:24px; padding:.55rem 1.1rem; cursor:pointer;
+    background:transparent; color:var(--navy);
+  }
+  :root:not([data-theme="light"]) .pagefoot button{ color:var(--cream); border-color:var(--gold); }
+  .pagefoot button:disabled{opacity:.3; cursor:default;}
+  .pagefoot button.primary{ background:var(--navy); color:var(--cream); border-color:var(--navy); }
+  :root:not([data-theme="light"]) .pagefoot button.primary{ background:var(--gold); color:var(--navy); border-color:var(--gold); }
+  .pagefoot .pos{ font-family:'Oswald',sans-serif; font-size:.75rem; opacity:.55; }
+
+  .toolbar{
+    display:flex; gap:.6rem; align-items:center; justify-content:center;
+    padding:.8rem 1.2rem calc(.8rem + env(safe-area-inset-bottom,0px));
+    border-top:1px solid var(--line);
+  }
+  .toolbar button{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:.8rem; letter-spacing:.02em;
+    border:none; border-radius:24px; padding:.6rem 1.1rem; cursor:pointer;
+  }
+  #saveBtn{background:var(--navy); color:var(--cream);}
+  #syncBtn{background:var(--gold); color:var(--navy);}
+  #resetBtn{background:transparent; color:var(--maroon); border:1px solid var(--maroon) !important;}
+  #status{ font-family:'Oswald',sans-serif; font-size:.72rem; opacity:.6; }
+
+  /* ---- Jenis Pengerjaan (Individu/Kelompok) & identitas dari login ---- */
+  .jenis-row{ grid-column:1/-1; display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; margin-bottom:.2rem; }
+  .jenis-toggle{ display:flex; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+  .jenis-toggle button{ font-family:'Oswald',sans-serif; font-size:.78rem; font-weight:600; border:none; background:transparent; color:var(--ink); padding:.42rem .95rem; cursor:pointer; }
+  .jenis-toggle button.on{ background:var(--navy); color:var(--cream); }
+  :root:not([data-theme="light"]) .jenis-toggle button.on{ background:var(--gold); color:var(--navy); }
+  .idcard input:disabled, .idcard input[readonly]{ opacity:.8; cursor:not-allowed; }
+  .idnote{ font-size:.78rem; opacity:.6; font-style:italic; grid-column:1/-1; margin-top:-.4rem; }
+
+  .kelompok-card{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:1rem 1.1rem; margin:-.7rem 0 1.6rem; box-shadow:0 6px 18px rgba(22,35,61,.1); }
+  .kelompok-card > label{ font-family:'Oswald',sans-serif; font-size:.72rem; letter-spacing:.03em; color:var(--navy); display:block; margin-bottom:.3rem; }
+  :root:not([data-theme="light"]) .kelompok-card > label{ color:var(--gold); }
+  .kelompok-card input[type=text]{ width:100%; border:none; border-bottom:2px solid var(--line); background:transparent; font-family:'Source Serif 4',serif; font-size:1rem; padding:.3rem .1rem; color:var(--ink); margin-bottom:1rem; }
+  .kelompok-card input[type=text]:focus{ outline:none; border-bottom-color:var(--gold); }
+  .member-list{ display:flex; flex-direction:column; gap:.35rem; max-height:230px; overflow-y:auto; padding-right:.3rem; }
+  .member-check{ display:flex; align-items:center; gap:.55rem; font-size:.94rem; padding:.35rem .2rem; border-radius:6px; }
+  .member-check:hover{ background:rgba(198,154,58,.08); }
+  .member-check input{ accent-color:var(--gold); width:1.05rem; height:1.05rem; flex-shrink:0; }
+  .hint-sm{ font-size:.85rem; opacity:.65; font-style:italic; }
+
+  #authGate{ position:fixed; inset:0; z-index:80; background:var(--cream); display:flex; align-items:center; justify-content:center; text-align:center; padding:2rem; }
+  #authGate .box{ max-width:320px; }
+  #authGate p{ font-family:'Oswald',sans-serif; font-size:.95rem; }
+  #authGateHint{ font-size:.8rem; opacity:.65; font-style:italic; display:none; margin-top:.5rem; }
+  #authGateLink{ display:none; margin-top:.9rem; color:var(--navy); font-weight:700; text-decoration:none; border-bottom:2px solid var(--gold); padding-bottom:2px; }
+</style>
+</head>
+<body>
+
+<div id="authGate">
+  <div class="box">
+    <p id="authGateMsg">Memeriksa akun kamu…</p>
+    <p id="authGateHint"></p>
+    <a id="authGateLink" href="../index.html">Masuk ke LMS →</a>
+  </div>
+</div>
+
+<header class="hero">
+  <p class="eyebrow">PR Bahasa Inggris · Kelas 10A · Bab "Cherished Experiences"</p>
+  <h1>Worksheet Interaktif — Cherished Experiences</h1>
+</header>
+
+<nav class="pagetabs" id="tabs"></nav>
+
+<main>
+  <div class="idcard">
+    <div class="jenis-row">
+      <label style="margin:0; font-family:'Oswald',sans-serif; font-size:.72rem; letter-spacing:.03em; color:var(--navy);">Jenis Pengerjaan</label>
+      <div class="jenis-toggle" id="jenisToggle">
+        <button type="button" data-jenis="individu" class="on">Individu</button>
+        <button type="button" data-jenis="kelompok">Kelompok</button>
+      </div>
+    </div>
+    <div><label for="nama">Nama Siswa</label><input id="nama" type="text" value="…" readonly></div>
+    <div><label for="kelas">Kelas</label><input id="kelas" type="text" value="…" readonly></div>
+    <p class="idnote">Nama &amp; kelas otomatis diambil dari akun LMS kamu yang sedang login, tidak bisa diketik manual.</p>
+  </div>
+
+  <div class="kelompok-card" id="kelompokCard" style="display:none;">
+    <label for="namaKelompok">Nama Kelompok</label>
+    <input id="namaKelompok" type="text" placeholder="mis. Kelompok 1 / The Explorers">
+    <label>Anggota Kelompok (pilih dari daftar teman sekelas)</label>
+    <div class="member-list" id="anggotaList"><p class="hint-sm">Memuat daftar teman sekelas…</p></div>
+  </div>
+
+  <div id="pages"></div>
+</main>
+
+<div class="toolbar">
+  <button id="saveBtn">Simpan</button>
+  <button id="syncBtn">Sinkronkan ke LMS</button>
+  <button id="resetBtn">Reset</button>
+</div>
+<div style="text-align:center; padding-bottom:1rem;"><span id="status">&nbsp;</span></div>
+
+<!-- File ini harus dibuka dari dalam website LMS (folder "assets" ada satu
+     tingkat di atas folder tempat file ini berada, mis. worksheet/...html),
+     supaya login, identitas siswa, dan kirim nilai ke guru berfungsi. -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../assets/supabaseClient.js"></script>
+<script src="../assets/app.js"></script>
+<script>
+(function(){
+  var WORKSHEET_SLUG = 'cherished-experiences';
+  var STORAGE_KEY = 'cherished_experiences_worksheet_v2';
+  var currentProfile = null; // diisi bootstrap() dari akun LMS yang login
+  var currentJenis = 'individu';
+
+  var verbs2 = ["hold","hear","gather","be","be","notice","show","arouse","realize","impress"];
+  var tf3 = [
+    "The futsal match was held in the school gymnasium during the class meeting.",
+    "The blue team scored first, and the red team quickly responded with a goal.",
+    "The game ended in a tie, with no goals scored.",
+    "The match was competitive, and the crowd cheered loudly throughout the game.",
+    "The red team won the match with a final goal in the last moments."
+  ];
+  var tfA2 = [
+    "The text mainly focuses on how to play bowling step by step.",
+    "The writer felt confident and relaxed from the beginning of the game.",
+    "The writer learned how to play better after observing and practicing.",
+    "The writer achieved the highest score among their friends.",
+    "The main idea shows that trying something new can be enjoyable despite imperfections."
+  ];
+  var tf5count = 5, paragraphs4 = 6, chipCount4 = 5;
+
+  var PAGES = [
+    {id:'act1', tab:'Activity 1'},
+    {id:'act2', tab:'Activity 2'},
+    {id:'act3', tab:'Activity 3'},
+    {id:'act4', tab:'Activity 4'},
+    {id:'act5', tab:'Activity 5'},
+    {id:'assess2', tab:'Assessment 2'}
+  ];
+
+  var tabsWrap = document.getElementById('tabs');
+  var pagesWrap = document.getElementById('pages');
+
+  PAGES.forEach(function(p){
+    var b = document.createElement('button');
+    b.textContent = p.tab; b.dataset.target = p.id;
+    tabsWrap.appendChild(b);
+  });
+
+  function pageShell(id, badge, title, instr, bodyHTML){
+    var sec = document.createElement('section');
+    sec.className = 'page'; sec.id = id;
+    sec.innerHTML =
+      '<div class="act-head"><span class="badge">'+badge+'</span><h2>'+title+'</h2></div>' +
+      (instr ? '<p class="instr">'+instr+'</p>' : '') +
+      bodyHTML +
+      '<div class="pagefoot"><button class="prevBtn">&larr; Sebelumnya</button><span class="pos"></span><button class="nextBtn primary">Selanjutnya &rarr;</button></div>';
+    return sec;
+  }
+
+  pagesWrap.appendChild(pageShell('act1','Activity 1','Reading and Viewing — Diskusi',
+    'Lihat foto pertandingan bola voli antarkelas Bagus pada buku (hlm. 34). Diskusikan dengan teman sebangkumu, lalu tulis jawaban kalian.',
+    '<div class="disc-box"><label>Apa yang bisa kamu ceritakan tentang foto tersebut?</label><textarea id="disc1a" placeholder="Tulis hasil diskusimu di sini…"></textarea></div>' +
+    '<div class="disc-box"><label>Menurutmu, momen apa dalam foto itu yang membuatnya jadi pengalaman berkesan bagi Bagus?</label><textarea id="disc1b" placeholder="Tulis pendapatmu di sini…"></textarea></div>'
+  ));
+
+  var blanks2Shell = '<div class="blank-grid" id="blanks2"></div>';
+  pagesWrap.appendChild(pageShell('act2','Activity 2','Lengkapi kalimat',
+    'Lengkapi teks di buku (hlm. 34) dengan bentuk kata kerja dalam kurung yang sesuai. Tulis jawabanmu untuk tiap nomor.',
+    blanks2Shell
+  ));
+
+  pagesWrap.appendChild(pageShell('act3','Activity 3','True or False',
+    'Baca ulang teks lengkap pada Activity 2, lalu tentukan pernyataan berikut True atau False.',
+    '<div class="tf-list" id="tf3"></div>'
+  ));
+
+  pagesWrap.appendChild(pageShell('act4','Activity 4','Time Sequencer & Gagasan Utama',
+    'Baca teks tentang science fair (hlm. 35). Tulis time sequencer yang kamu temukan, lalu isi gagasan utama tiap paragraf.',
+    '<div class="chips" id="chips4"></div><table class="idea"><thead><tr><th>Paragraf</th><th>Gagasan Utama</th></tr></thead><tbody id="idea4"></tbody></table>'
+  ));
+
+  pagesWrap.appendChild(pageShell('act5','Activity 5','Email — True or False',
+    'Baca email Rodian tentang "First Time Experience of Trying Bowling" (hlm. 36). Untuk tiap pernyataan pada buku, tentukan True atau False.',
+    '<div class="note-box">Teks pernyataan tidak dicetak ulang di sini — lihat langsung daftar pernyataan 1–5 pada buku, lalu tandai jawabanmu.</div><div class="tf-list" id="tf5"></div>'
+  ));
+
+  pagesWrap.appendChild(pageShell('assess2','Assessment 2','True or False',
+    'Berdasarkan teks tentang lomba menyelam (diving competition) pada hlm. 36, tentukan pernyataan berikut True atau False.',
+    '<div class="tf-list" id="tfA2"></div>'
+  ));
+
+  // fill in dynamic bits now that shells exist in DOM
+  var blanks2Wrap = document.getElementById('blanks2');
+  verbs2.forEach(function(v,i){
+    var b = document.createElement('div'); b.className='blank';
+    b.innerHTML = '<span class="num">'+(i+1)+'.</span> <span class="hint">('+v+')</span><input type="text" id="v2-'+i+'" placeholder="jawaban…">';
+    blanks2Wrap.appendChild(b);
+  });
+
+  var chipsWrap = document.getElementById('chips4');
+  for(var c=0;c<chipCount4;c++){
+    var chip = document.createElement('div'); chip.className='chip-input';
+    chip.innerHTML = '<span class="n">'+(c+1)+'</span><input type="text" id="chip4-'+c+'" placeholder="…">';
+    chipsWrap.appendChild(chip);
+  }
+  var ideaBody = document.getElementById('idea4');
+  for(var p=1;p<=paragraphs4;p++){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>Paragraf '+p+'</td><td><textarea id="idea4-'+p+'" placeholder="gagasan utama…"></textarea></td>';
+    ideaBody.appendChild(tr);
+  }
+
+  function buildTF(containerId, statements, idPrefix){
+    var wrap = document.getElementById(containerId);
+    statements.forEach(function(s, i){
+      var row = document.createElement('div'); row.className='tf-row';
+      row.innerHTML =
+        '<div class="stmt"><span class="n">'+(i+1)+'.</span>'+(s?s:('Pernyataan '+(i+1)))+'</div>' +
+        '<div class="tf-toggle">' +
+          '<button data-v="true" data-id="'+idPrefix+i+'">True</button>' +
+          '<button data-v="false" data-id="'+idPrefix+i+'">False</button>' +
+        '</div>';
+      wrap.appendChild(row);
+    });
+  }
+  buildTF('tf3', tf3, 'tf3-');
+  buildTF('tf5', new Array(tf5count).fill(null), 'tf5-');
+  buildTF('tfA2', tfA2, 'tfA2-');
+
+  // ---- pagination ----
+  var idx = 0;
+  function render(){
+    var sections = pagesWrap.querySelectorAll('.page');
+    sections.forEach(function(s,i){ s.classList.toggle('active', i===idx); });
+    var tabBtns = tabsWrap.querySelectorAll('button');
+    tabBtns.forEach(function(b,i){ b.classList.toggle('active', i===idx); });
+    sections[idx].querySelector('.pos').textContent = (idx+1)+' / '+sections.length;
+    sections[idx].querySelector('.prevBtn').disabled = (idx===0);
+    var nextBtn = sections[idx].querySelector('.nextBtn');
+    nextBtn.textContent = (idx===sections.length-1) ? 'Selesai ✓' : 'Selanjutnya →';
+    window.scrollTo(0,0);
+  }
+  tabsWrap.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    idx = Array.prototype.indexOf.call(tabsWrap.children, b);
+    render();
+  });
+  pagesWrap.addEventListener('click', function(e){
+    if(e.target.classList.contains('nextBtn')){
+      var sections = pagesWrap.querySelectorAll('.page');
+      if(idx < sections.length-1){ idx++; render(); } else { saveState(); }
+    }
+    if(e.target.classList.contains('prevBtn')){ if(idx>0){ idx--; render(); } }
+    var btn = e.target.closest('.tf-toggle button');
+    if(btn){
+      var group = btn.parentElement;
+      group.querySelectorAll('button').forEach(function(x){ x.classList.remove('on'); });
+      btn.classList.add('on');
+      saveState();
+    }
+  });
+  render();
+
+  // ---- state ----
+  function collectState(){
+    var state = { disc1a:'', disc1b:'', v2:[], tf3:{}, chip4:[], idea4:[], tf5:{}, tfA2:{} };
+    try{
+      state.disc1a = document.getElementById('disc1a').value;
+      state.disc1b = document.getElementById('disc1b').value;
+      verbs2.forEach(function(_, i){ state.v2[i] = document.getElementById('v2-'+i).value; });
+      for(var c=0;c<chipCount4;c++){ state.chip4[c] = document.getElementById('chip4-'+c).value; }
+      for(var p=1;p<=paragraphs4;p++){ state.idea4[p] = document.getElementById('idea4-'+p).value; }
+      document.querySelectorAll('.tf-toggle button.on').forEach(function(b){
+        var id = b.dataset.id;
+        if(id.indexOf('tf3-')===0) state.tf3[id]=b.dataset.v;
+        if(id.indexOf('tf5-')===0) state.tf5[id]=b.dataset.v;
+        if(id.indexOf('tfA2-')===0) state.tfA2[id]=b.dataset.v;
+      });
+    }catch(err){ console.error('collect error', err); }
+    return state;
+  }
+
+  function saveState(){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+      setStatus('Tersimpan di perangkat ini · ' + new Date().toLocaleTimeString());
+    }catch(err){ setStatus('Tidak bisa menyimpan otomatis di perangkat ini.'); }
+  }
+
+  function loadState(){
+    var raw; try{ raw = localStorage.getItem(STORAGE_KEY); }catch(err){ raw = null; }
+    if(!raw) return;
+    var state; try{ state = JSON.parse(raw); }catch(err){ return; }
+    try{
+      if(state.disc1a) document.getElementById('disc1a').value = state.disc1a;
+      if(state.disc1b) document.getElementById('disc1b').value = state.disc1b;
+      (state.v2||[]).forEach(function(val,i){ var f=document.getElementById('v2-'+i); if(f&&val) f.value=val; });
+      for(var c=0;c<chipCount4;c++){ var f2=document.getElementById('chip4-'+c); if(f2&&state.chip4&&state.chip4[c]) f2.value=state.chip4[c]; }
+      for(var p=1;p<=paragraphs4;p++){ var f3=document.getElementById('idea4-'+p); if(f3&&state.idea4&&state.idea4[p]) f3.value=state.idea4[p]; }
+      ['tf3','tf5','tfA2'].forEach(function(group){
+        var g = state[group] || {};
+        Object.keys(g).forEach(function(id){
+          var val = g[id];
+          var btn = document.querySelector('.tf-toggle button[data-id="'+id+'"][data-v="'+val+'"]');
+          if(btn) btn.classList.add('on');
+        });
+      });
+      setStatus('Jawaban sebelumnya dimuat.');
+    }catch(err){ console.error('load error', err); }
+  }
+
+  function setStatus(msg){ var s=document.getElementById('status'); if(s) s.textContent = msg; }
+
+  /* ===================== JENIS PENGERJAAN: Individu / Kelompok =====================
+     Anggota kelompok TIDAK diketik bebas — dipilih lewat ceklis dari daftar
+     anak di kelas yang sama (RPC get_siswa_kelas, sama seperti yang dipakai
+     worksheet-puss-in-boots.html — lihat MIGRASI_ROSTER_SISWA_KELAS.sql).
+     Diri sendiri otomatis tercentang
+     & terkunci sebagai anggota. */
+  var jenisToggle = document.getElementById('jenisToggle');
+  var kelompokCard = document.getElementById('kelompokCard');
+  var anggotaList = document.getElementById('anggotaList');
+  var temanSekelasLoaded = false;
+
+  jenisToggle.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-jenis]'); if(!b) return;
+    currentJenis = b.dataset.jenis;
+    jenisToggle.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); });
+    kelompokCard.style.display = (currentJenis === 'kelompok') ? 'block' : 'none';
+    if(currentJenis === 'kelompok' && !temanSekelasLoaded) loadTemanSekelas();
+  });
+
+  function memberCheckRow(id, label, checked, disabled){
+    var row = document.createElement('label'); row.className = 'member-check';
+    var box = document.createElement('input');
+    box.type = 'checkbox'; box.dataset.id = id; box.dataset.nama = label;
+    box.checked = !!checked; box.disabled = !!disabled;
+    var span = document.createElement('span'); span.textContent = label;
+    row.appendChild(box); row.appendChild(span);
+    return row;
+  }
+
+  async function loadTemanSekelas(){
+    temanSekelasLoaded = true;
+    anggotaList.innerHTML = '<p class="hint-sm">Memuat daftar teman sekelas…</p>';
+    var kelasId = currentProfile.kelas_id || (currentProfile.kelas ? currentProfile.kelas.id : null);
+    if(!kelasId){
+      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Akunmu belum terdaftar di kelas manapun — hubungi guru.</p>';
+      return;
+    }
+    try{
+      var res = await supabase.rpc('get_siswa_kelas', { p_kelas_id: kelasId });
+      if(res.error) throw res.error;
+      var teman = (res.data || []).filter(function(s){ return s.id !== currentProfile.id; });
+      anggotaList.innerHTML = '';
+      anggotaList.appendChild(memberCheckRow(currentProfile.id, currentProfile.nama + ' (kamu)', true, true));
+      if(teman.length === 0){
+        var p = document.createElement('p'); p.className = 'hint-sm';
+        p.textContent = 'Belum ada teman sekelas lain yang terdaftar di akun LMS.';
+        anggotaList.appendChild(p);
+      } else {
+        teman.forEach(function(s){ anggotaList.appendChild(memberCheckRow(s.id, s.nama, false, false)); });
+      }
+    }catch(err){
+      temanSekelasLoaded = false;
+      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Gagal memuat daftar teman sekelas. ' +
+        '(' + ((err && err.message) || 'kesalahan jaringan') + ') <a href="#" id="retryTeman" style="color:var(--maroon); font-weight:600;">Coba lagi</a></p>';
+      var retry = document.getElementById('retryTeman');
+      if(retry) retry.addEventListener('click', function(e){ e.preventDefault(); loadTemanSekelas(); });
+    }
+  }
+
+  function getAnggotaTerpilih(){
+    return Array.prototype.slice.call(anggotaList.querySelectorAll('input[type=checkbox]:checked'))
+      .map(function(c){ return c.dataset.nama; });
+  }
+
+  /* ===================== KIRIM JAWABAN KE LMS (hasil_worksheet) ===================== */
+  async function kirimKeLMS(){
+    if(!currentProfile){ setStatus('Belum masuk ke akun LMS — muat ulang halaman ini lewat menu Worksheet.'); return; }
+
+    var namaKelompok = document.getElementById('namaKelompok').value.trim();
+    if(currentJenis === 'kelompok' && !namaKelompok){
+      setStatus('Isi nama kelompok dulu sebelum mengirim.');
+      return;
+    }
+    var anggota = currentJenis === 'kelompok' ? getAnggotaTerpilih() : null;
+    if(currentJenis === 'kelompok' && (!anggota || anggota.length === 0)){
+      setStatus('Pilih minimal satu anggota kelompok (centang dari daftar).');
+      return;
+    }
+
+    saveState();
+    setStatus('Mengirim jawaban ke guru…');
+
+    var payload = {
+      worksheet_slug: WORKSHEET_SLUG,
+      jenis: currentJenis,
+      nama: currentJenis === 'kelompok' ? namaKelompok : currentProfile.nama,
+      anggota: currentJenis === 'kelompok' ? anggota.join(', ') : null,
+      kelas: currentProfile.kelas ? currentProfile.kelas.nama : '-',
+      status: 'selesai',
+      siswa_id: currentProfile.id,
+      jawaban: collectState()
+    };
+
+    try{
+      var res = await supabase.from('hasil_worksheet').insert(payload);
+      if(res.error) throw res.error;
+      setStatus('✅ Terkirim ke guru · ' + new Date().toLocaleTimeString());
+    }catch(err){
+      setStatus('Gagal mengirim (' + ((err && err.message) || 'kesalahan jaringan') + '). Jawabanmu tetap tersimpan di perangkat ini — coba tombol "Sinkronkan ke LMS" lagi.');
+    }
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', saveState);
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    if(!confirm('Hapus semua jawaban di worksheet ini?')) return;
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
+    location.reload();
+  });
+  document.getElementById('syncBtn').addEventListener('click', kirimKeLMS);
+
+  /* ===================== LOGIN GATE =====================
+     Tidak ada input Nama/Kelas manual: siswa sudah diautentikasi lewat akun
+     LMS. Nama & Kelas otomatis diambil dari profil akun mereka dan terkunci
+     (lihat requireLogin() & assets/app.js). Kalau belum login, requireLogin()
+     otomatis redirect ke ../index.html. */
+  function showGateError(msg, hint, showLink){
+    var m = document.getElementById('authGateMsg');
+    var h = document.getElementById('authGateHint');
+    var l = document.getElementById('authGateLink');
+    if(m) m.textContent = msg;
+    if(h && hint){ h.textContent = hint; h.style.display = 'block'; }
+    if(l && showLink) l.style.display = 'inline-block';
+  }
+
+  (async function bootstrap(){
+    if(typeof requireLogin !== 'function' || typeof supabase === 'undefined'){
+      showGateError(
+        'Halaman ini tidak bisa memuat sistem login LMS.',
+        'Pastikan file ini dibuka dari dalam website LMS (folder "assets" harus ada satu tingkat di atas folder "worksheet"), bukan dibuka sendirian di luar project.'
+      );
+      return;
+    }
+    var gateTimeout = setTimeout(function(){
+      showGateError(
+        'Proses login terlalu lama / tidak merespons.',
+        'Cek koneksi internetmu, lalu muat ulang halaman ini. Kalau masih macet, masuk ulang lewat halaman login.',
+        true
+      );
+    }, 12000);
+
+    var profile = null;
+    try{
+      profile = await requireLogin(); // redirect ke ../index.html kalau belum login
+    }catch(err){
+      clearTimeout(gateTimeout);
+      showGateError('Gagal memeriksa status login.', (err && err.message) || 'Terjadi kesalahan tak terduga. Coba muat ulang halaman.', true);
+      return;
+    }
+    clearTimeout(gateTimeout);
+    if(!profile) return; // requireLogin sudah redirect
+
+    currentProfile = profile;
+    STORAGE_KEY = STORAGE_KEY + '_' + profile.id;
+
+    document.getElementById('nama').value = profile.nama;
+    document.getElementById('kelas').value = profile.kelas ? profile.kelas.nama : '-';
+    document.getElementById('authGate').style.display = 'none';
+
+    loadState();
+    document.addEventListener('input', function(e){
+      if(e.target.matches('input[type=text], textarea')) saveState();
+    });
+  })();
+})();
+</script>
+</body>
+</html>

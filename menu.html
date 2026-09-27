@@ -44,6 +44,20 @@
     .menu-greeting-title{ font-size:17px; }
     .menu-greeting-quote{ font-size:13px; }
   }
+  .mg-ann-ok-btn{
+    margin-top:14px;
+    padding:9px 22px;
+    border-radius:10px;
+    border:none;
+    background:#fff;
+    color:#4f5bd5;
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    position:relative;
+    box-shadow:0 6px 16px rgba(0,0,0,0.12);
+  }
+  .mg-ann-ok-btn:hover{ background:#f3f3ff; }
 
   .app-drawer{
     grid-template-columns:repeat(3, 1fr) !important;
@@ -98,8 +112,15 @@
 
       <div class="content">
         <div class="menu-greeting" id="menuGreeting">
-          <div class="menu-greeting-title"><span id="mgWave">👋</span> Halo, <span id="mgName">—</span>!</div>
-          <div class="menu-greeting-quote" id="mgQuote">Memuat semangat…</div>
+          <div id="mgGreetingView">
+            <div class="menu-greeting-title"><span id="mgWave">👋</span> Halo, <span id="mgName">—</span>!</div>
+            <div class="menu-greeting-quote" id="mgQuote">Memuat semangat…</div>
+          </div>
+          <div id="mgAnnView" style="display:none;">
+            <div class="menu-greeting-title">📣 <span id="mgAnnTitle">—</span></div>
+            <div class="menu-greeting-quote" id="mgAnnBody"></div>
+            <button type="button" class="mg-ann-ok-btn" id="mgAnnOkBtn">Oke</button>
+          </div>
         </div>
 
         <div class="app-drawer">
@@ -130,7 +151,7 @@
           </a>
           <a class="ad-tile" href="menu-game.html">
             <div class="ad-icon" style="background:#f1edff; color:#7a4fd5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="13" r="1"/><circle cx="18" cy="11" r="1"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg></div>
-            <div class="ad-label">Game Seru</div>
+            <div class="ad-label">Game</div>
             <div class="ad-desc">Susun kata &amp; game belajar lainnya</div>
           </a>
           <a class="ad-tile" href="obrolan.html">
@@ -165,7 +186,49 @@
   initNotifDropdown();
   await loadStudentNotifications(profile);
   renderMenuGreeting(profile);
+  await checkMenuAnnouncement(profile);
 })();
+
+// Kalau ada pengumuman terbaru yang belum "di-oke" siswa, tampilkan pengumuman
+// itu di tempat sambutan & motivasi (menggantikan sementara). Begitu tombol
+// "Oke" diklik, sambutan & motivasi muncul lagi seperti semula. Pengumuman
+// yang sudah di-oke tidak akan muncul lagi di kotak ini (disimpan per akun
+// di localStorage), tapi tetap bisa dilihat lengkap di menu Pengumuman & Nilai.
+async function checkMenuAnnouncement(profile) {
+  const greetingView = document.getElementById('mgGreetingView');
+  const annView = document.getElementById('mgAnnView');
+  const annTitleEl = document.getElementById('mgAnnTitle');
+  const annBodyEl = document.getElementById('mgAnnBody');
+  const okBtn = document.getElementById('mgAnnOkBtn');
+  if (!greetingView || !annView) return;
+
+  const { data } = await supabase
+    .from('pengumuman')
+    .select('id, judul, isi, created_at')
+    .or(`kelas_id.eq.${profile.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  const latest = (data && data[0]) || null;
+  if (!latest) return;
+
+  const dismissKey = 'lms_ann_dismissed_' + profile.id;
+  let dismissedId = null;
+  try { dismissedId = localStorage.getItem(dismissKey); } catch (e) {}
+
+  if (String(latest.id) === String(dismissedId)) return; // sudah di-oke sebelumnya
+
+  annTitleEl.textContent = latest.judul;
+  annBodyEl.innerHTML = linkify(latest.isi);
+  greetingView.style.display = 'none';
+  annView.style.display = '';
+
+  okBtn.addEventListener('click', () => {
+    try { localStorage.setItem(dismissKey, String(latest.id)); } catch (e) {}
+    annView.style.display = 'none';
+    greetingView.style.display = '';
+  });
+}
 
 // Sambutan siswa: nama + kutipan motivasi belajar Bahasa Inggris yang
 // dibumbui sedikit komedi. Dipilih acak tiap kali halaman menu dibuka,
