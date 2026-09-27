@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengumuman & Nilai — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <a href="menu.html" class="btn-back-menu">← Kembali ke Menu</a>
+        <div class="page-header">
+          <div class="eyebrow">Update</div>
+          <h1>Pengumuman &amp; Nilai</h1>
+        </div>
+        <div id="ann-container">Memuat…</div>
+
+        <div class="section-label">Nilai Ujian</div>
+        <div class="table-responsive">
+          <table class="grade-table" id="soal-grade-table">
+            <thead>
+              <tr><th>Judul/Slug</th><th>Nilai</th><th>Waktu Submit</th><th>Status</th></tr>
+            </thead>
+            <tbody id="soal-grade-container"></tbody>
+          </table>
+        </div>
+        <div id="soal-grade-empty-slot"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, 'pengumuman');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+
+  // Pengumuman: milik kelas ini atau untuk semua kelas
+  const annC = document.getElementById('ann-container');
+  const { data: annData } = await supabase
+    .from('pengumuman')
+    .select('judul, isi, created_at')
+    .or(`kelas_id.eq.${profile.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false });
+
+  const announcements = annData || [];
+  annC.innerHTML = announcements.length ? announcements.map(a => `
+    <div class="ann-card">
+      <div class="ann-date">${new Date(a.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' })}</div>
+      <h3>${esc(a.judul)}</h3>
+      <p>${linkify(a.isi)}</p>
+    </div>
+  `).join('') : emptyState("Belum ada pengumuman", "Pengumuman terbaru akan muncul di sini.", "📣");
+
+  // Nilai Ujian gabungan: Bank Soal (hasil_ujian_lms, milik akun ini lewat profile_id)
+  // + Ujian HTML Mandiri (hasil_ujian, dicocokkan lewat Nama karena soal ini diisi tanpa login)
+  // + Nilai Manual (tabel nilai, diinput guru satu-per-satu/import lewat menu Rekap Nilai).
+  const soalGradeTable = document.getElementById('soal-grade-table');
+  const soalGradeC = document.getElementById('soal-grade-container');
+  const soalGradeEmptySlot = document.getElementById('soal-grade-empty-slot');
+
+  const [{ data: mySoalResults }, { data: myUjianResults }, { data: myNilaiManual }] = await Promise.all([
+    supabase
+      .from('hasil_ujian_lms')
+      .select('nilai, dipublikasikan, created_at, bank_soal:bank_soal_id ( judul )')
+      .eq('profile_id', profile.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('hasil_ujian')
+      .select('ujian_slug, nilai, created_at')
+      .ilike('nama', profile.nama)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('nilai')
+      .select('jenis, skor, created_at')
+      .eq('siswa_id', profile.id)
+      .order('created_at', { ascending: false })
+  ]);
+
+  const nilaiGabungan = [
+    ...(mySoalResults || []).map(r => ({
+      sumber: 'Bank Soal',
+      judul: r.bank_soal ? r.bank_soal.judul : '(soal dihapus)',
+      nilai: r.nilai,
+      dipublikasikan: r.dipublikasikan,
+      created_at: r.created_at
+    })),
+    ...(myUjianResults || []).map(r => ({
+      sumber: 'Ujian Mandiri',
+      judul: r.ujian_slug,
+      nilai: r.nilai,
+      dipublikasikan: true, // ujian mandiri langsung tampil, tidak lewat proses terbitkan guru
+      created_at: r.created_at
+    })),
+    ...(myNilaiManual || []).map(r => ({
+      sumber: 'Input Guru',
+      judul: r.jenis,
+      nilai: r.skor,
+      dipublikasikan: true, // nilai manual langsung tampil begitu diinput guru
+      created_at: r.created_at
+    }))
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+  if (nilaiGabungan.length) {
+    soalGradeTable.style.display = '';
+    soalGradeEmptySlot.innerHTML = '';
+    soalGradeC.innerHTML = nilaiGabungan.map(r => {
+      const judul = esc(r.judul);
+      const waktu = new Date(r.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
+      if (!r.dipublikasikan) {
+        return `
+        <tr>
+          <td>${judul}</td>
+          <td>—</td>
+          <td>${waktu}</td>
+          <td><span class="score-pill status-belum">Menunggu Diumumkan Guru</span></td>
+        </tr>`;
+      }
+      if (typeof r.nilai !== 'number') {
+        return `
+        <tr>
+          <td>${judul}</td>
+          <td>—</td>
+          <td>${waktu}</td>
+          <td><span class="score-pill status-belum">Belum Dinilai</span></td>
+        </tr>`;
+      }
+      const statusCls = r.nilai < 75 ? 'status-remidi' : 'status-tuntas';
+      const statusTxt = r.nilai < 75 ? 'Remidi' : 'Tuntas';
+      return `
+      <tr>
+        <td>${judul}</td>
+        <td><b>${r.nilai}</b></td>
+        <td>${waktu}</td>
+        <td><span class="score-pill ${statusCls}">${statusTxt}</span></td>
+      </tr>`;
+    }).join('');
+  } else {
+    soalGradeTable.style.display = 'none';
+    soalGradeC.innerHTML = '';
+    soalGradeEmptySlot.innerHTML = emptyState("Belum ada nilai ujian", "Nilai dari soal yang kamu kerjakan lewat menu Worksheet maupun ujian mandiri akan tampil di sini.", "✅");
+  }
+
+  // Siswa sudah melihat halaman ini, tandai pengumuman & nilai sebagai sudah dibaca.
+  await markUpdatesSeen(profile);
+})();
+</script>
+
+</body>
+</html>

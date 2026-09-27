@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengaturan — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+<style>
+  .settings-card{
+    background:#fff;
+    border:1px solid #E7E9F2;
+    border-radius:16px;
+    padding:26px 28px;
+    margin-bottom:22px;
+    max-width:520px;
+  }
+  .settings-card h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    margin:0 0 4px;
+    color:#161927;
+  }
+  .settings-card .sub{
+    font-size:13px;
+    color:var(--ink-faint);
+    margin:0 0 20px;
+  }
+  .info-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-bottom:1px solid #EFF1F7;
+    font-size:14px;
+  }
+  .info-row:last-child{border-bottom:none;}
+  .info-row .lbl{color:var(--ink-faint);}
+  .info-row .val{color:var(--ink); font-weight:600;}
+  .settings-success{
+    color:#1a8f4c;
+    font-size:12.5px;
+    margin:-8px 0 14px;
+    display:none;
+    background:rgba(26,143,76,0.1);
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid rgba(26,143,76,0.25);
+  }
+</style>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <a href="menu.html" class="btn-back-menu">← Kembali ke Menu</a>
+        <div class="page-header">
+          <div class="eyebrow">Akun</div>
+          <h1>Pengaturan</h1>
+        </div>
+
+        <div class="settings-card">
+          <h2>Informasi Akun</h2>
+          <div class="sub">Ubah nama atau username kamu sendiri</div>
+
+          <div class="field">
+            <label for="editNama">Nama Lengkap</label>
+            <input type="text" id="editNama" placeholder="Nama lengkap kamu">
+          </div>
+          <div class="field">
+            <label for="editUsername">Username</label>
+            <input type="text" id="editUsername" placeholder="Username (tanpa spasi)">
+          </div>
+          <div class="info-row"><span class="lbl">Kelas</span><span class="val" id="infoKelas">—</span></div>
+
+          <p class="login-error" id="profileError" style="margin-top:14px;"></p>
+          <p class="settings-success" id="profileSuccess"></p>
+          <button class="btn-primary" id="btnSaveProfile">Simpan Perubahan</button>
+        </div>
+
+        <div class="settings-card">
+          <h2>Ganti Password</h2>
+          <div class="sub">Gunakan password baru saat login berikutnya</div>
+
+          <div class="field">
+            <label for="newPassword">Password Baru</label>
+            <div class="pw-wrap">
+              <input type="password" id="newPassword" placeholder="Minimal 6 karakter" autocomplete="new-password">
+              <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
+            </div>
+          </div>
+          <div class="field">
+            <label for="confirmPassword">Konfirmasi Password Baru</label>
+            <div class="pw-wrap">
+              <input type="password" id="confirmPassword" placeholder="Ulangi password baru" autocomplete="new-password">
+              <button type="button" class="pw-toggle" aria-label="Tampilkan password"></button>
+            </div>
+          </div>
+
+          <p class="login-error" id="pwError"></p>
+          <p class="settings-success" id="pwSuccess"></p>
+          <button class="btn-primary" id="btnChangePassword">Simpan Password Baru</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, 'pengaturan');
+  initPasswordToggles();
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+
+  const editNamaEl = document.getElementById('editNama');
+  const editUsernameEl = document.getElementById('editUsername');
+  editNamaEl.value = profile.nama;
+  editUsernameEl.value = profile.username;
+  document.getElementById('infoKelas').textContent = profile.kelas ? profile.kelas.nama : '—';
+
+  const profileErr = document.getElementById('profileError');
+  const profileOk = document.getElementById('profileSuccess');
+  const btnProfile = document.getElementById('btnSaveProfile');
+
+  btnProfile.addEventListener('click', async () => {
+    const nama = editNamaEl.value.trim();
+    const username = editUsernameEl.value.trim().toLowerCase();
+    profileErr.style.display = 'none';
+    profileOk.style.display = 'none';
+
+    if (!nama || !username) {
+      profileErr.textContent = "Nama dan username tidak boleh kosong.";
+      profileErr.style.display = 'block';
+      return;
+    }
+    if (/\s/.test(username)) {
+      profileErr.textContent = "Username tidak boleh mengandung spasi.";
+      profileErr.style.display = 'block';
+      return;
+    }
+
+    btnProfile.disabled = true;
+    btnProfile.textContent = "Menyimpan…";
+    const usernameChanged = username !== profile.username;
+
+    if (usernameChanged) {
+      // Cek dulu apakah username baru sudah dipakai siswa/guru lain.
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .neq('id', profile.id)
+        .maybeSingle();
+      if (existing) {
+        profileErr.textContent = "Username sudah dipakai, coba username lain.";
+        profileErr.style.display = 'block';
+        btnProfile.disabled = false;
+        btnProfile.textContent = "Simpan Perubahan";
+        return;
+      }
+
+      // Username dipakai sebagai basis email login (lihat usernameToEmail di
+      // supabaseClient.js), jadi email akun auth-nya juga harus ikut diganti
+      // supaya login pakai username baru bisa berhasil.
+      const { error: emailErr } = await supabase.auth.updateUser({ email: usernameToEmail(username) });
+      if (emailErr) {
+        profileErr.textContent = "Gagal mengganti username: " + emailErr.message;
+        profileErr.style.display = 'block';
+        btnProfile.disabled = false;
+        btnProfile.textContent = "Simpan Perubahan";
+        return;
+      }
+    }
+
+    const { error: profileUpdateErr } = await supabase
+      .from('profiles')
+      .update({ nama, username })
+      .eq('id', profile.id);
+
+    if (profileUpdateErr) {
+      profileErr.textContent = "Gagal menyimpan perubahan: " + profileUpdateErr.message;
+      profileErr.style.display = 'block';
+      btnProfile.disabled = false;
+      btnProfile.textContent = "Simpan Perubahan";
+      return;
+    }
+
+    profile.nama = nama;
+    profile.username = username;
+    document.getElementById('topName').textContent = nama;
+    document.getElementById('sideName').textContent = nama;
+    document.getElementById('userAvatar').textContent = nama.charAt(0).toUpperCase();
+
+    profileOk.textContent = usernameChanged
+      ? "Perubahan disimpan. Mulai sekarang, login pakai username baru: " + username
+      : "Perubahan disimpan.";
+    profileOk.style.display = 'block';
+    btnProfile.disabled = false;
+    btnProfile.textContent = "Simpan Perubahan";
+  });
+
+  const newPasswordEl = document.getElementById('newPassword');
+  const confirmPasswordEl = document.getElementById('confirmPassword');
+  const err = document.getElementById('pwError');
+  const ok = document.getElementById('pwSuccess');
+  const btn = document.getElementById('btnChangePassword');
+
+  btn.addEventListener('click', async () => {
+    const newPassword = newPasswordEl.value;
+    const confirmPassword = confirmPasswordEl.value;
+    err.style.display = 'none';
+    ok.style.display = 'none';
+
+    if (!newPassword || !confirmPassword) {
+      err.textContent = "Mohon isi password baru dan konfirmasinya.";
+      err.style.display = 'block';
+      return;
+    }
+    if (newPassword.length < 6) {
+      err.textContent = "Password minimal 6 karakter.";
+      err.style.display = 'block';
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      err.textContent = "Konfirmasi password tidak sama dengan password baru.";
+      err.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Menyimpan…";
+
+    const { error: updateErr } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (updateErr) {
+      err.textContent = "Gagal mengganti password: " + updateErr.message;
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = "Simpan Password Baru";
+      return;
+    }
+
+    // Simpan juga salinan plain-text-nya di tabel profiles, supaya tetap konsisten
+    // dengan fitur "Lihat Password" milik guru. Kalau ini gagal (mis. kolom belum
+    // ada), password auth-nya tetap sudah berhasil diganti, jadi tidak dianggap error.
+    await supabase.from('profiles').update({ password_plain: newPassword }).eq('id', profile.id);
+
+    ok.textContent = "Password berhasil diganti. Gunakan password baru ini saat login berikutnya.";
+    ok.style.display = 'block';
+    newPasswordEl.value = '';
+    confirmPasswordEl.value = '';
+    btn.disabled = false;
+    btn.textContent = "Simpan Password Baru";
+  });
+})();
+</script>
+
+</body>
+</html>

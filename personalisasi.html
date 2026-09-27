@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personalisasi — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+<style>
+  .settings-card{
+    background:var(--app-surface);
+    border:1px solid var(--app-border);
+    border-radius:16px;
+    padding:26px 28px;
+    margin-bottom:22px;
+    max-width:640px;
+  }
+  .settings-card h2{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:18px;
+    margin:0 0 4px;
+    color:var(--app-text-strong);
+  }
+  .settings-card .sub{
+    font-size:13px;
+    color:var(--ink-faint);
+    margin:0 0 20px;
+  }
+
+  /* ---------- Pilihan tema warna ---------- */
+  .accent-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));
+    gap:12px;
+  }
+  .accent-opt{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    padding:14px 8px;
+    border:2px solid var(--app-border);
+    border-radius:14px;
+    background:var(--app-surface);
+    cursor:pointer;
+    font:inherit;
+    color:var(--app-text);
+    transition:border-color .15s, transform .15s;
+  }
+  .accent-opt:hover{ transform:translateY(-2px); }
+  .accent-opt.selected{ border-color:var(--ao-color); background:var(--app-surface-2); }
+  .accent-swatch{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--ao-color);
+    position:relative;
+    box-shadow:0 4px 10px var(--app-shadow-1);
+  }
+  .accent-opt.selected .accent-swatch::after{
+    content:"✓";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:15px; font-weight:700;
+  }
+  .accent-label{ font-size:12px; font-weight:600; }
+
+  /* ---------- Pilihan model ikon ---------- */
+  .iconstyle-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(120px, 1fr));
+    gap:12px;
+  }
+  .iconstyle-opt{
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:18px 10px;
+    border:2px solid var(--app-border);
+    border-radius:14px;
+    background:var(--app-surface);
+    cursor:pointer;
+    font:inherit;
+    color:var(--app-text);
+    transition:border-color .15s, transform .15s;
+  }
+  .iconstyle-opt:hover{ transform:translateY(-2px); }
+  .iconstyle-opt.selected{ border-color:var(--violet); background:var(--violet-soft); }
+  .iconstyle-preview{
+    width:52px; height:52px;
+    border-radius:16px;
+    background:#eef1ff; color:#4f5bd5;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .iconstyle-preview svg{ width:24px; height:24px; display:block; }
+  .iconstyle-opt[data-style="soft"] .iconstyle-preview,
+  .iconstyle-opt[data-style="emoji"] .iconstyle-preview{ border-radius:50%; }
+  .iconstyle-label{ font-size:12.5px; font-weight:700; }
+  .iconstyle-desc{ font-size:10.5px; color:var(--app-text-faint); text-align:center; line-height:1.35; }
+
+  .personalize-saved{
+    font-size:12.5px;
+    color:#1a8f4c;
+    margin-top:14px;
+    min-height:18px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <a href="menu.html" class="btn-back-menu">← Kembali ke Menu</a>
+        <div class="page-header">
+          <div class="eyebrow">Akun</div>
+          <h1>Personalisasi</h1>
+        </div>
+
+        <div class="settings-card">
+          <h2>Tema Warna</h2>
+          <div class="sub">Warna ini dipakai di tombol, sambutan, dan menu aktif di seluruh aplikasi kamu.</div>
+          <div class="accent-grid" id="accentGrid"></div>
+        </div>
+
+        <div class="settings-card">
+          <h2>Model Ikon Menu</h2>
+          <div class="sub">Pilih tampilan ikon untuk menu utama kamu.</div>
+          <div class="iconstyle-grid" id="iconstyleGrid"></div>
+          <div class="personalize-saved" id="personalizeSaved"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, 'personalisasi');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+
+  const ACCENTS = [
+    { key: 'violet', label: 'Violet', color: '#7C5CFC' },
+    { key: 'biru', label: 'Biru', color: '#2F80ED' },
+    { key: 'hijau', label: 'Hijau', color: '#1FA15A' },
+    { key: 'pink', label: 'Pink', color: '#E5527E' },
+    { key: 'oranye', label: 'Oranye', color: '#E2822E' },
+    { key: 'coklat', label: 'Coklat', color: '#8B5E3C' },
+  ];
+  const ICON_STYLES = [
+    { key: 'outline', label: 'Outline', desc: 'Garis tipis, seperti sekarang' },
+    { key: 'filled', label: 'Filled', desc: 'Ikon solid warna penuh' },
+    { key: 'soft', label: 'Soft', desc: 'Garis tebal, wadah bulat' },
+    { key: 'emoji', label: 'Emoji', desc: 'Emoji besar & playful' },
+  ];
+
+  let currentAccent = ACCENTS.some(a => a.key === profile.pref_theme_color) ? profile.pref_theme_color : 'violet';
+  let currentIconStyle = ICON_STYLES.some(s => s.key === profile.pref_icon_style) ? profile.pref_icon_style : 'outline';
+
+  const savedEl = document.getElementById('personalizeSaved');
+  let savedTimer = null;
+  function flashSaved() {
+    savedEl.textContent = 'Tersimpan ✓';
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(() => { savedEl.textContent = ''; }, 2000);
+  }
+
+  async function saveAccent(key) {
+    currentAccent = key;
+    applyAccent(key);
+    renderAccentGrid();
+    const { error } = await supabase.from('profiles').update({ pref_theme_color: key }).eq('id', profile.id);
+    if (!error) { profile.pref_theme_color = key; flashSaved(); }
+  }
+
+  async function saveIconStyle(key) {
+    currentIconStyle = key;
+    applyIconStyle(key);
+    renderIconstyleGrid();
+    const { error } = await supabase.from('profiles').update({ pref_icon_style: key }).eq('id', profile.id);
+    if (!error) { profile.pref_icon_style = key; flashSaved(); }
+  }
+
+  function renderAccentGrid() {
+    const grid = document.getElementById('accentGrid');
+    grid.innerHTML = ACCENTS.map(a => `
+      <button type="button" class="accent-opt${a.key === currentAccent ? ' selected' : ''}" style="--ao-color:${a.color}" data-accent-key="${a.key}">
+        <span class="accent-swatch"></span>
+        <span class="accent-label">${a.label}</span>
+      </button>
+    `).join('');
+    grid.querySelectorAll('.accent-opt').forEach(btn => {
+      btn.addEventListener('click', () => saveAccent(btn.dataset.accentKey));
+    });
+  }
+
+  function iconPreviewMarkup(style) {
+    const set = ICON_SETS['materi'];
+    if (style === 'emoji') return `<span class="ad-icon-emoji" style="font-size:22px;">${set.emoji}</span>`;
+    if (style === 'soft') return softenOutlineIcon(set.outline);
+    if (style === 'filled') return set.filled;
+    return set.outline;
+  }
+
+  function renderIconstyleGrid() {
+    const grid = document.getElementById('iconstyleGrid');
+    grid.innerHTML = ICON_STYLES.map(s => `
+      <button type="button" class="iconstyle-opt${s.key === currentIconStyle ? ' selected' : ''}" data-style="${s.key}" data-style-key="${s.key}">
+        <span class="iconstyle-preview">${iconPreviewMarkup(s.key)}</span>
+        <span class="iconstyle-label">${s.label}</span>
+        <span class="iconstyle-desc">${s.desc}</span>
+      </button>
+    `).join('');
+    grid.querySelectorAll('.iconstyle-opt').forEach(btn => {
+      btn.addEventListener('click', () => saveIconStyle(btn.dataset.styleKey));
+    });
+  }
+
+  renderAccentGrid();
+  renderIconstyleGrid();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+<style>
+  /* Halaman Menu: hanya drawer grid, tanpa sidebar & tanpa bottom nav. */
+  #app-screen.no-sidebar .content{ padding-bottom:32px; }
+
+  .menu-greeting{
+    background:linear-gradient(135deg, var(--violet) 0%, var(--violet-light) 100%);
+    border-radius:20px;
+    padding:22px 24px;
+    margin-bottom:22px;
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 14px 32px var(--app-shadow-1);
+  }
+  .menu-greeting::before{
+    content:"";
+    position:absolute; right:-30px; top:-30px;
+    width:140px; height:140px; border-radius:50%;
+    background:rgba(255,255,255,0.12);
+  }
+  .menu-greeting-title{
+    font-family:'Space Grotesk', sans-serif;
+    font-size:19px; font-weight:700;
+    margin-bottom:8px;
+    position:relative;
+  }
+  .menu-greeting-quote{
+    font-size:13.5px;
+    line-height:1.6;
+    color:rgba(255,255,255,0.92);
+    max-width:560px;
+    position:relative;
+  }
+  @media (max-width:420px){
+    .menu-greeting{ padding:18px 18px; border-radius:16px; }
+    .menu-greeting-title{ font-size:17px; }
+    .menu-greeting-quote{ font-size:13px; }
+  }
+  .mg-ann-ok-btn{
+    margin-top:14px;
+    padding:9px 22px;
+    border-radius:10px;
+    border:none;
+    background:#fff;
+    color:#4f5bd5;
+    font-weight:700;
+    font-size:13.5px;
+    cursor:pointer;
+    position:relative;
+    box-shadow:0 6px 16px rgba(0,0,0,0.12);
+  }
+  .mg-ann-ok-btn:hover{ background:#f3f3ff; }
+
+  .app-drawer{
+    grid-template-columns:repeat(3, 1fr) !important;
+    gap:10px 8px !important;
+  }
+  .app-drawer .ad-tile{
+    padding:16px 6px !important;
+    gap:8px !important;
+    border-radius:16px !important;
+  }
+  .app-drawer .ad-tile .ad-icon{
+    width:42px !important; height:42px !important;
+    border-radius:13px !important;
+    font-size:19px !important;
+  }
+  .app-drawer .ad-tile .ad-label{ font-size:11px !important; line-height:1.25; }
+  .app-drawer .ad-tile .ad-desc{ font-size:9.5px !important; line-height:1.3; }
+  html[data-icon-style="soft"] .app-drawer .ad-tile .ad-icon,
+  html[data-icon-style="emoji"] .app-drawer .ad-tile .ad-icon{ border-radius:50% !important; }
+  .app-drawer .ad-tile .ad-icon-emoji{ font-size:19px !important; line-height:1; }
+  @media (max-width:420px){
+    .app-drawer{ gap:8px 6px !important; }
+    .app-drawer .ad-tile{ padding:12px 4px !important; }
+    .app-drawer .ad-tile .ad-icon{ width:38px !important; height:38px !important; font-size:17px !important; }
+    .app-drawer .ad-tile .ad-icon-emoji{ font-size:17px !important; }
+    .app-drawer .ad-tile .ad-label{ font-size:10.5px !important; }
+    .app-drawer .ad-tile .ad-desc{ font-size:9px !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app-screen" class="no-sidebar">
+  <div class="shell">
+
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-userinfo">
+            <div class="greeting"><span class="wave">👋</span>Halo, <span id="topName">—</span></div>
+            <div class="date" id="topDate"></div>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <div class="notif-wrap">
+            <button class="notif-bell" id="notifBell" type="button" aria-label="Notifikasi">🔔<span class="notif-dot" id="notifDot" style="display:none;"></span></button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-header">Notifikasi</div>
+              <div id="notifList">Memuat…</div>
+            </div>
+          </div>
+          <div class="level-pill"><span id="topLevel">X</span> · <span id="topKelasName">—</span></div>
+        <button class="topbar-logout-btn" onclick="doLogout()" type="button" title="Keluar" aria-label="Keluar"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="menu-greeting" id="menuGreeting">
+          <div id="mgGreetingView">
+            <div class="menu-greeting-title"><span id="mgWave">👋</span> Halo, <span id="mgName">—</span>!</div>
+            <div class="menu-greeting-quote" id="mgQuote">Memuat semangat…</div>
+          </div>
+          <div id="mgAnnView" style="display:none;">
+            <div class="menu-greeting-title">📣 <span id="mgAnnTitle">—</span></div>
+            <div class="menu-greeting-quote" id="mgAnnBody"></div>
+            <button type="button" class="mg-ann-ok-btn" id="mgAnnOkBtn">Oke</button>
+          </div>
+        </div>
+
+        <div class="app-drawer">
+          <a class="ad-tile" href="pengumuman.html" data-icon-key="pengumuman">
+            <div class="ad-icon" style="background:#eef1ff; color:#4f5bd5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg></div>
+            <div class="ad-label">Pengumuman &amp; Nilai</div>
+            <div class="ad-desc">Info terbaru &amp; hasil ujian kamu</div>
+          </a>
+          <a class="ad-tile" href="materi.html" data-icon-key="materi">
+            <div class="ad-icon" style="background:#e9f6ff; color:#0f8ecf;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+            <div class="ad-label">Materi</div>
+            <div class="ad-desc">Bahan belajar tiap topik</div>
+          </a>
+          <a class="ad-tile" href="worksheet.html" data-icon-key="worksheet">
+            <div class="ad-icon" style="background:#eafaf0; color:#1fa15a;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg></div>
+            <div class="ad-label">Worksheet</div>
+            <div class="ad-desc">Latihan &amp; soal-soal kamu</div>
+          </a>
+          <a class="ad-tile" href="ujian.html" data-icon-key="ujian">
+            <div class="ad-icon" style="background:#fdf0e6; color:#c2703d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M12 2v6M6 8h12l1.5 12a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2L6 8Z"/><path d="M9 14h6M9 18h4"/></svg></div>
+            <div class="ad-label">Ujian</div>
+            <div class="ad-desc">Jadwal &amp; pengerjaan ujian kamu</div>
+          </a>
+          <a class="ad-tile" href="battle.html" data-icon-key="battle">
+            <div class="ad-icon" style="background:#fff0ee; color:#e5533d;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+            <div class="ad-label">Battle Kelas</div>
+            <div class="ad-desc">Kuis seru lawan teman sekelas</div>
+          </a>
+          <a class="ad-tile" href="menu-game.html" data-icon-key="game">
+            <div class="ad-icon" style="background:#f1edff; color:#7a4fd5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="13" r="1"/><circle cx="18" cy="11" r="1"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg></div>
+            <div class="ad-label">Game</div>
+            <div class="ad-desc">Susun kata &amp; game belajar lainnya</div>
+          </a>
+          <a class="ad-tile" href="obrolan.html" data-icon-key="obrolan">
+            <div class="ad-icon" style="background:#f1edff; color:#7a4fd5;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+            <div class="ad-label">Obrolan Kelas</div>
+            <div class="ad-desc">Ngobrol bareng satu kelas</div>
+          </a>
+          <a class="ad-tile" href="bintang.html" data-icon-key="bintang">
+            <div class="ad-icon" style="background:#fff8e0; color:#c48b00;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+            <div class="ad-label">Koleksi Bintang</div>
+            <div class="ad-desc">Apresiasi yang kamu kumpulkan</div>
+          </a>
+          <a class="ad-tile" href="pengaturan.html" data-icon-key="pengaturan">
+            <div class="ad-icon" style="background:#f1f2f6; color:#5a6172;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
+            <div class="ad-label">Pengaturan</div>
+            <div class="ad-desc">Profil &amp; akun kamu</div>
+          </a>
+          <a class="ad-tile" href="personalisasi.html" data-icon-key="personalisasi">
+            <div class="ad-icon" style="background:#fdeaf5; color:#c23f8a;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.3" fill="currentColor" stroke="none"/></svg></div>
+            <div class="ad-label">Personalisasi</div>
+            <div class="ad-desc">Ganti tema warna &amp; model ikon</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, 'menu');
+  initNotifDropdown();
+  await loadStudentNotifications(profile);
+  renderMenuGreeting(profile);
+  await checkMenuAnnouncement(profile);
+})();
+
+// Kalau ada pengumuman terbaru yang belum "di-oke" siswa, tampilkan pengumuman
+// itu di tempat sambutan & motivasi (menggantikan sementara). Begitu tombol
+// "Oke" diklik, sambutan & motivasi muncul lagi seperti semula. Pengumuman
+// yang sudah di-oke tidak akan muncul lagi di kotak ini (disimpan per akun
+// di localStorage), tapi tetap bisa dilihat lengkap di menu Pengumuman & Nilai.
+async function checkMenuAnnouncement(profile) {
+  const greetingView = document.getElementById('mgGreetingView');
+  const annView = document.getElementById('mgAnnView');
+  const annTitleEl = document.getElementById('mgAnnTitle');
+  const annBodyEl = document.getElementById('mgAnnBody');
+  const okBtn = document.getElementById('mgAnnOkBtn');
+  if (!greetingView || !annView) return;
+
+  const { data } = await supabase
+    .from('pengumuman')
+    .select('id, judul, isi, created_at')
+    .or(`kelas_id.eq.${profile.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  const latest = (data && data[0]) || null;
+  if (!latest) return;
+
+  const dismissKey = 'lms_ann_dismissed_' + profile.id;
+  let dismissedId = null;
+  try { dismissedId = localStorage.getItem(dismissKey); } catch (e) {}
+
+  if (String(latest.id) === String(dismissedId)) return; // sudah di-oke sebelumnya
+
+  annTitleEl.textContent = latest.judul;
+  annBodyEl.innerHTML = linkify(latest.isi);
+  greetingView.style.display = 'none';
+  annView.style.display = '';
+
+  okBtn.addEventListener('click', () => {
+    try { localStorage.setItem(dismissKey, String(latest.id)); } catch (e) {}
+    annView.style.display = 'none';
+    greetingView.style.display = '';
+  });
+}
+
+// Sambutan siswa: nama + kutipan motivasi belajar Bahasa Inggris yang
+// dibumbui sedikit komedi. Dipilih acak tiap kali halaman menu dibuka,
+// jadi tiap login (atau tiap refresh) rasanya beda.
+function renderMenuGreeting(profile) {
+  const firstName = (profile.nama || 'Sobat Belajar').trim().split(' ')[0];
+
+  const waves = ['👋', '😄', '🎉', '✨', '🚀', '🔥'];
+
+  const quotes = [
+    "Grammar boleh belepotan, yang penting semangatnya nggak pernah 'past tense'. Yuk lanjutin belajarnya, {nama}!",
+    "Vocabulary itu kayak micin — makin sering dipakai, makin nendang rasanya. Tambah kosakata baru hari ini, {nama}!",
+    "Salah ngomong 'I am agree' itu manusiawi kok, {nama}. Yang penting terus coba, jangan cuma jadi 'silent reader' di kelas Bahasa Inggris.",
+    "{nama}, kemampuan Bahasa Inggris itu kayak sinyal wifi: makin sering connect, makin kuat. Yuk buka materi hari ini!",
+    "Belajar Bahasa Inggris nggak harus sempurna, {nama}. Bule aja kadang typo kok — santai, yang penting kamu terus maju.",
+    "Tenses banyak macemnya, {nama}, tapi jangan panik — pelan-pelan juga sampai kok, asal jangan 'give up tense'.",
+    "{nama}, hari ini adalah kesempatan bagus buat upgrade skill Bahasa Inggris kamu. Sedikit-sedikit lama-lama jadi fasih!",
+    "Practice makes perfect, {nama} — bukan practice makes pusing. Santai aja, nikmatin prosesnya ya!",
+    "{nama}, inget: native speaker aja belajar bahasanya seumur hidup. Kamu baru mulai, jadi wajar kalau masih belajar. Keep going!",
+    "Jangan takut salah ngomong Bahasa Inggris, {nama}. Malu bertanya sesat di jalan, malu ngomong ya nggak lancar-lancar!",
+    "{nama}, otak kita tuh kayak otot — makin sering dilatih pakai Bahasa Inggris, makin kuat. Yuk gas belajar hari ini!",
+    "Hari ini pilihannya cuma dua, {nama}: rebahan atau belajar dikit. Kalau pilih belajar dikit, kamu udah menang lawan mager!",
+    "{nama}, English is not scary — yang scary itu kalau deadline worksheet numpuk. Cicil dari sekarang, yuk!",
+    "Belajar Bahasa Inggris itu maraton, bukan sprint, {nama}. Nggak masalah pelan, yang penting nggak berhenti di tengah jalan.",
+    "{nama}, semangat pagi ini setara dengan semangat nunggu jam pulang sekolah, ya? Yuk salurin ke belajar Bahasa Inggris dulu!",
+    "Kosakata baru hari ini = 1 senjata baru buat masa depan kamu, {nama}. Kumpulin terus, jangan kasih kendor!",
+    "{nama}, kalau nanti liburan ke luar negeri dan bisa ngobrol lancar, itu semua berkat effort belajar hari ini. Semangat!",
+    "Speaking Bahasa Inggris grogi itu wajar, {nama} — anggap aja kayak nyanyi di kamar mandi, nggak ada yang nge-judge kok!",
+  ];
+
+  const idx = Math.floor(Math.random() * quotes.length);
+  const wave = waves[Math.floor(Math.random() * waves.length)];
+  const quote = quotes[idx].replace(/\{nama\}/g, firstName);
+
+  const nameEl = document.getElementById('mgName');
+  const waveEl = document.getElementById('mgWave');
+  const quoteEl = document.getElementById('mgQuote');
+  if (nameEl) nameEl.textContent = firstName;
+  if (waveEl) waveEl.textContent = wave;
+  if (quoteEl) quoteEl.textContent = quote;
+}
+</script>
+
+</body>
+</html>

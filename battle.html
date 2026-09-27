@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Battle Kelas — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+<style>
+  /* ===== Mobile bottom nav ===== */
+  .mobile-bottom-nav{ display:none; }
+  @media (max-width: 768px){
+    .mobile-bottom-nav{
+      display:flex; position:fixed; left:0; right:0; bottom:0;
+      background:#fff; border-top:1px solid #E7E9F2;
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      z-index:999; box-shadow:0 -2px 12px rgba(20,20,40,0.07);
+    }
+    .mobile-bottom-nav a{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:6px 2px; text-decoration:none; color:#8A90A3; font-size:10.5px; font-weight:600; border-radius:10px; }
+    .mobile-bottom-nav a .mbn-icon{ font-size:19px; line-height:1; }
+    .mobile-bottom-nav a.active{ color:#1f2937; background:#F1F2F6; }
+    #app-screen .content{ padding-bottom:80px; }
+  }
+
+  /* ===== Tampilan standalone: battle jadi halamannya sendiri, tanpa sidebar/topbar
+     aplikasi utama -- sama seperti soal.html saat ujian. ===== */
+  .bt-standalone-shell{ background:#F6F7FB; }
+  .bt-standalone-bar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 20px; background:#fff; border-bottom:1px solid #E7E9F2;
+    position:sticky; top:0; z-index:50;
+    padding-top:calc(14px + env(safe-area-inset-top, 0px));
+  }
+  .bt-standalone-back{
+    display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+    color:#5b5f73; font-weight:700; font-size:13px; padding:8px 12px;
+    border-radius:10px; background:#F1F2F6; white-space:nowrap;
+  }
+  .bt-standalone-back:hover{ background:#E7E9F2; }
+  .bt-standalone-title{ font-weight:800; font-size:14.5px; color:#161927; }
+
+
+  /* ===== Battle UI (gamified) ===== */
+  .battle-wrap{ max-width:920px; margin:0 auto; }
+  .bt-hero{
+    background:linear-gradient(135deg,#7C5CFC 0%,#4CC9F0 100%);
+    border-radius:20px; padding:28px 24px; color:#fff; position:relative; overflow:hidden;
+    box-shadow:0 10px 30px rgba(124,92,252,0.25);
+  }
+  .bt-hero::after{ content:"⚔️"; position:absolute; right:18px; top:50%; transform:translateY(-50%) rotate(-12deg); font-size:64px; opacity:.18; }
+  .bt-hero h1{ font-family:'Space Grotesk',sans-serif; margin:0 0 6px; font-size:22px; }
+  .bt-hero p{ margin:0; opacity:.92; font-size:13.5px; }
+
+  .bt-join-card{ background:#fff; border:1px solid #E7E9F2; border-radius:16px; padding:22px; margin-top:18px; }
+  .bt-join-card input{ width:100%; padding:13px 14px; border:1px solid #E7E9F2; border-radius:12px; font-size:16px; letter-spacing:2px; text-transform:uppercase; text-align:center; font-weight:700; }
+  .bt-btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 20px; border-radius:12px; border:none; font-weight:700; font-size:14px; cursor:pointer; transition:transform .1s ease; }
+  .bt-btn:active{ transform:scale(.97); }
+  .bt-btn-primary{ background:linear-gradient(135deg,#7C5CFC,#4CC9F0); color:#fff; width:100%; margin-top:12px; }
+  .bt-btn-primary:disabled{ opacity:.5; cursor:not-allowed; }
+  .bt-btn-outline{ background:#fff; border:1px solid #E7E9F2; color:#5D6478; width:auto; margin-top:0; }
+  .bt-btn-outline:hover{ border-color:#FF6B5E; color:#FF6B5E; }
+
+  .bt-status-pill{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700; background:#F1F2F6; color:#5D6478; }
+  .bt-status-pill.live{ background:#FFECEA; color:#FF6B5E; }
+  .bt-status-pill.live::before{ content:""; width:7px; height:7px; border-radius:50%; background:#FF6B5E; animation:btpulse 1.1s infinite; }
+  @keyframes btpulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+
+  .bt-room-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; flex-wrap:wrap; }
+
+  .bt-arena{ background:#fff; border:1px solid #E7E9F2; border-radius:18px; padding:24px; text-align:center; }
+  .bt-timer-ring{ width:84px; height:84px; margin:0 auto 14px; position:relative; }
+  .bt-timer-ring svg{ transform:rotate(-90deg); }
+  .bt-timer-ring circle{ fill:none; stroke-width:8; }
+  .bt-timer-num{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:700; color:#161927; }
+  .bt-qnum{ font-size:12.5px; font-weight:700; color:#7C5CFC; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+  .bt-prompt{ font-family:'Space Grotesk',sans-serif; font-size:19px; color:#161927; margin:0 0 22px; line-height:1.4; }
+  .bt-options{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media(max-width:560px){ .bt-options{ grid-template-columns:1fr; } }
+  .bt-opt{ text-align:left; padding:16px; border-radius:14px; border:2px solid #E7E9F2; background:#F8F9FC; cursor:pointer; font-size:14.5px; font-weight:600; color:#333750; display:flex; gap:10px; align-items:flex-start; transition:all .15s ease; }
+  .bt-opt:hover{ border-color:#7C5CFC; }
+  .bt-opt .k{ flex:0 0 auto; width:26px; height:26px; border-radius:8px; background:#fff; border:1px solid #E7E9F2; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#7C5CFC; }
+  .bt-opt.picked{ border-color:#7C5CFC; background:#EFEAFF; }
+  .bt-opt.correct{ border-color:#22C55E; background:#E9FBEF; }
+  .bt-opt.wrong{ border-color:#FF6B5E; background:#FFECEA; }
+  .bt-opt:disabled, .bt-opt.locked{ cursor:default; opacity:.85; }
+
+  .bt-feedback{ margin-top:16px; font-weight:700; font-size:14px; min-height:20px; }
+  .bt-feedback.ok{ color:#22C55E; }
+  .bt-feedback.bad{ color:#FF6B5E; }
+
+  .bt-waiting{ padding:50px 20px; text-align:center; color:#8A90A3; }
+  .bt-waiting .big{ font-size:40px; margin-bottom:10px; }
+
+  .bt-leader{ display:none; position:fixed; inset:0; z-index:2000; background:rgba(18,20,35,0.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); align-items:center; justify-content:center; padding:20px; box-sizing:border-box; }
+  .bt-leader.show{ display:flex; }
+  .bt-leader-inner{ background:#fff; border-radius:24px; padding:26px 22px; width:100%; max-width:440px; max-height:88vh; overflow-y:auto; box-shadow:0 25px 70px rgba(0,0,0,0.4); }
+  @keyframes btLeaderPop{ 0%{ opacity:0; transform:scale(.35) translateY(40px); } 55%{ opacity:1; transform:scale(1.07) translateY(0); } 80%{ transform:scale(.97); } 100%{ opacity:1; transform:scale(1); } }
+  .bt-leader.reveal .bt-leader-inner{ animation:btLeaderPop .6s cubic-bezier(.34,1.56,.64,1); }
+  .bt-leader h3{ margin:0 0 14px; font-family:'Space Grotesk',sans-serif; font-size:18px; color:#161927; display:flex; align-items:center; gap:6px; justify-content:center; text-align:center; }
+  .bt-row{ display:flex; align-items:center; gap:10px; padding:10px 8px; border-radius:12px; }
+  .bt-row.me{ background:#F1EEFF; }
+  .bt-rank{ width:26px; text-align:center; font-weight:800; font-size:13px; color:#8A90A3; }
+  .bt-rank.gold{ color:#EAB308; }
+  .bt-rank.silver{ color:#94A3B8; }
+  .bt-rank.bronze{ color:#C2703D; }
+  .bt-avatar{ width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#7C5CFC,#4CC9F0); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex:0 0 auto; }
+  .bt-row-name{ flex:1; font-weight:600; font-size:13.5px; color:#333750; }
+  .bt-row-streak{ font-size:11px; color:#FF6B5E; font-weight:700; }
+  .bt-row-score{ font-weight:800; font-family:'Space Grotesk',sans-serif; color:#7C5CFC; font-size:14.5px; }
+
+  .bt-final{ text-align:center; padding:30px 20px; }
+  .bt-final .trophy{ font-size:56px; }
+  .bt-final h2{ font-family:'Space Grotesk',sans-serif; margin:10px 0 4px; }
+
+  .bt-toast{ position:fixed; top:16px; left:50%; transform:translateX(-50%); background:#161927; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:700; z-index:1000; box-shadow:0 8px 20px rgba(0,0,0,0.2); opacity:0; pointer-events:none; transition:opacity .2s ease, top .2s ease; }
+  .bt-toast.show{ opacity:1; top:24px; }
+
+  .bt-tim-opt{ display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:14px; border:2px solid #E7E9F2; background:#F8F9FC; cursor:pointer; text-align:left; font-family:inherit; }
+  .bt-tim-opt:hover{ border-color:#7C5CFC; }
+  .bt-tim-opt .swatch{ width:16px; height:16px; border-radius:5px; flex:0 0 auto; }
+  .bt-tim-opt .nm{ font-weight:700; font-size:14px; color:#161927; flex:1; }
+  .bt-tim-opt .ct{ font-size:11.5px; color:#8A90A3; font-weight:600; }
+
+  .bt-karakter-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  @media(max-width:480px){ .bt-karakter-grid{ grid-template-columns:repeat(3,1fr); } }
+  .bt-karakter-opt{ display:flex; flex-direction:column; align-items:center; gap:6px; padding:14px 6px; border-radius:14px; border:2px solid #E7E9F2; background:#F8F9FC; cursor:pointer; font-family:inherit; transition:all .15s ease; }
+  .bt-karakter-opt:hover{ border-color:#7C5CFC; transform:translateY(-2px); }
+  .bt-karakter-opt .kav{ width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; }
+  .bt-karakter-opt .kn{ font-size:11px; font-weight:700; color:#5D6478; }
+  .bt-my-karakter{ display:inline-flex; align-items:center; gap:4px; font-size:16px; }
+
+  .bt-my-tim{ display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#333750; }
+  .bt-my-tim .sw{ width:10px; height:10px; border-radius:3px; }
+  .bt-tim-group{ margin-bottom:14px; }
+  .bt-tim-group-head{ display:flex; align-items:center; gap:8px; padding:8px 6px; font-weight:800; font-size:13px; color:#161927; }
+  .bt-tim-group-head .sw{ width:12px; height:12px; border-radius:4px; }
+  .bt-tim-group-head .sc{ margin-left:auto; color:#7C5CFC; font-family:'Space Grotesk',sans-serif; }
+
+  /* ===== Celebration: confetti + bintang + goyangan saat papan skor muncul ===== */
+  .bt-confetti-piece{ position:fixed; top:-24px; z-index:2100; pointer-events:none; border-radius:2px; will-change:transform,opacity; }
+  @keyframes btConfettiFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(110vh) rotate(760deg); opacity:.85; }
+  }
+  .bt-star-burst{ position:fixed; z-index:2100; pointer-events:none; opacity:0; will-change:transform,opacity; }
+  @keyframes btStarBurst{
+    0%{ transform:translate(-50%,-50%) scale(.2) rotate(0deg); opacity:1; }
+    70%{ opacity:1; }
+    100%{ transform:translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.15) rotate(var(--rot)); opacity:0; }
+  }
+  @keyframes btShake{
+    10%,90%{ transform:translate3d(-1px,0,0) rotate(-.3deg); }
+    20%,80%{ transform:translate3d(2px,0,0) rotate(.4deg); }
+    30%,50%,70%{ transform:translate3d(-4px,0,0) rotate(-.5deg); }
+    40%,60%{ transform:translate3d(4px,0,0) rotate(.5deg); }
+  }
+  .bt-shake{ animation:btShake .5s ease; }
+
+  /* Leaderboard FLIP animation */
+  [data-lb-key]{ will-change:transform; }
+  .lb-enter{ animation:lbEnter .45s ease; }
+  @keyframes lbEnter{ from{ opacity:0; transform:translateY(14px) scale(.96);} to{ opacity:1; transform:none;} }
+  .lb-moved-up{ animation:lbUp .9s ease; border-radius:12px; }
+  .lb-moved-down{ animation:lbDown .9s ease; border-radius:12px; }
+  @keyframes lbUp{ 0%{ background:#E9FBEF; box-shadow:0 0 0 0 rgba(34,197,94,.35);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(34,197,94,0);} }
+  @keyframes lbDown{ 0%{ background:#FFECEA; box-shadow:0 0 0 0 rgba(255,107,94,.3);} 100%{ background:transparent; box-shadow:0 0 0 10px rgba(255,107,94,0);} }
+  .lb-arrow{ display:inline-block; font-size:10.5px; font-weight:800; margin-left:4px; }
+  .lb-arrow.up{ color:#22C55E; }
+  .lb-arrow.down{ color:#FF6B5E; }
+</style>
+</head>
+<body>
+
+<div id="app-screen">
+  <div class="shell bt-standalone-shell">
+    <div class="main">
+      <div class="bt-standalone-bar">
+        <a href="worksheet.html" class="bt-standalone-back">&larr; Worksheet</a>
+        <div class="bt-standalone-title">⚔️ Battle Kelas</div>
+        <div style="width:1px;"></div>
+      </div>
+
+
+      <div class="content">
+        <div class="battle-wrap">
+          <p style="text-align:center; color:#8A90A3; font-size:13px; font-weight:600; margin:-4px 0 18px;">Mode Leaderboard — jawab secepat &amp; setepat mungkin, kumpulkan skor tertinggi!</p>
+
+          <!-- LOBI: masukkan kode battle -->
+          <div class="bt-join-card" id="joinCard">
+            <div style="font-weight:700; font-size:14px; margin-bottom:10px; color:#161927;">Masukkan kode battle dari guru</div>
+            <input type="text" id="kodeInput" placeholder="mis. BTL-7F3K" maxlength="12">
+            <button class="bt-btn bt-btn-primary" id="joinBtn" onclick="joinBattle()">🚪 Gabung Battle</button>
+            <div id="joinError" style="color:#FF6B5E; font-size:12.5px; margin-top:10px; font-weight:600;"></div>
+          </div>
+
+          <!-- DAFTAR BATTLE: battle yang dipublish guru untuk kelas siswa -->
+          <div class="bt-join-card" id="daftarBattleCard" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">📣 Battle untuk kelasmu</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="muatDaftarBattle()">🔄 Segarkan</button>
+            </div>
+            <div id="daftarBattleList" style="display:grid; gap:10px;"></div>
+          </div>
+
+          <!-- PILIH KARAKTER: tampil setelah join, sebelum masuk arena -->
+          <div class="bt-join-card" id="karakterPickCard" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">Pilih karaktermu 🎮</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="exitBattle()">🚪 Keluar</button>
+            </div>
+            <div style="font-size:12.5px; color:#8A90A3; margin-bottom:14px;">Karakter ini bakal tampil di papan peringkat &amp; layar guru selama battle ini.</div>
+            <div class="bt-karakter-grid" id="karakterPickList"></div>
+          </div>
+
+          <!-- PILIH KELOMPOK: tampil sebelum arena kalau sesi mode = kelompok -->
+          <div class="bt-join-card" id="timPickCard" style="display:none;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+              <div style="font-weight:700; font-size:14px; color:#161927;">Pilih kelompokmu</div>
+              <button class="bt-btn bt-btn-outline" style="padding:6px 12px; font-size:11.5px;" onclick="exitBattle()">🚪 Keluar</button>
+            </div>
+            <div style="font-size:12.5px; color:#8A90A3; margin-bottom:14px;">Battle ini dimainkan berkelompok — skormu akan ditambahkan ke skor timmu.</div>
+            <div id="timPickList" style="display:grid; gap:10px;"></div>
+          </div>
+
+          <!-- ROOM: tampil setelah join -->
+          <div id="roomArea" style="display:none;">
+            <div class="bt-room-top">
+              <div id="statusPill" class="bt-status-pill">⏳ Menunggu guru memulai…</div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="bt-my-karakter" id="myKarakterBadge" title="Karaktermu"></span>
+                <div style="font-size:12.5px; color:#8A90A3; font-weight:600;">Kode: <b id="roomKode" style="color:#161927;"></b></div>
+                <button class="bt-btn bt-btn-outline" style="padding:7px 12px; font-size:12px;" onclick="exitBattle()">🚪 Keluar</button>
+              </div>
+            </div>
+            <div id="rilisModeInfo" style="font-size:11.5px; color:#8A90A3; font-weight:600; margin:-8px 0 12px;"></div>
+
+            <div class="bt-join-card" id="cupPanelBox" style="display:none;"></div>
+
+            <div class="bt-arena" id="arena">
+              <div class="bt-waiting" id="waitingBox">
+                <div class="big">🕹️</div>
+                <div>Bersiap-siap! Soal akan segera dirilis guru…</div>
+              </div>
+            </div>
+
+            <div class="bt-leader" id="leaderCard">
+              <div class="bt-leader-inner">
+                <h3>🏆 Papan Peringkat</h3>
+                <div id="leaderList">Memuat…</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bt-toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+// ===== Daftar karakter lucu buat dipilih siswa tiap join battle =====
+const KARAKTER_LIST = [
+  { key:"kucing",  emoji:"🐱", nama:"Kucing",  warna:"#FFE1EC" },
+  { key:"anjing",  emoji:"🐶", nama:"Anjing",  warna:"#FFE8CC" },
+  { key:"panda",   emoji:"🐼", nama:"Panda",   warna:"#E7E9F2" },
+  { key:"rubah",   emoji:"🦊", nama:"Rubah",   warna:"#FFDAB3" },
+  { key:"kelinci", emoji:"🐰", nama:"Kelinci", warna:"#FFDCEF" },
+  { key:"singa",   emoji:"🦁", nama:"Singa",   warna:"#FFEBB0" },
+  { key:"koala",   emoji:"🐨", nama:"Koala",   warna:"#DCE6F0" },
+  { key:"kera",    emoji:"🐵", nama:"Kera",    warna:"#F0DCC4" },
+  { key:"unicorn", emoji:"🦄", nama:"Unicorn", warna:"#E6D6FF" },
+  { key:"naga",    emoji:"🐲", nama:"Naga",    warna:"#CDF5D4" },
+  { key:"robot",   emoji:"🤖", nama:"Robot",   warna:"#CFE8FF" },
+  { key:"alien",   emoji:"👽", nama:"Alien",   warna:"#D8FCD3" },
+];
+function karakterByKey(key){ return KARAKTER_LIST.find(k => k.key === key); }
+function avatarHtml(p, size){
+  const sz = size || 34;
+  const k = p && p.karakter ? karakterByKey(p.karakter) : null;
+  if (k) return `<div class="bt-avatar" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.55)}px;background:${k.warna};">${k.emoji}</div>`;
+  return `<div class="bt-avatar" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.4)}px;">${(p && p.nama || '?').charAt(0).toUpperCase()}</div>`;
+}
+
+let profile = null;
+let sesi = null;              // baris battle_sesi aktif
+let myTimKey = null;
+let myKarakter = null;
+let channel = null;
+let currentQIndex = -1;
+let currentQStart = null;
+let answered = false;
+let timerInterval = null;
+let resultInterval = null;
+let leaderboardPollInterval = null;
+let sesiSafetyPollInterval = null;
+let cupBracket = [];      // baris battle_cup_bracket sesi ini
+let cupPerwakilan = [];   // baris battle_cup_perwakilan sesi ini
+let myMatchNow = null;    // match tim kita yang sedang berjalan di babak ini
+const TIMER_RADIUS = 36;
+const TIMER_CIRC = 2 * Math.PI * TIMER_RADIUS;
+
+(async function init(){
+  profile = await requireLogin();
+  if (!profile) return;
+  renderShell(profile, "battle");
+  await sinkronJamServer();
+  setInterval(sinkronJamServer, 60000);
+  mulaiDaftarBattle();
+
+  // Kalau sebelumnya sudah join sesi ini (refresh halaman), coba lanjutkan.
+  const savedKode = sessionStorage.getItem("battle_kode_aktif");
+  if (savedKode) {
+    document.getElementById("kodeInput").value = savedKode;
+    await joinBattle();
+  }
+})();
+
+// ===== Sinkron ulang begitu HP siswa kembali aktif =====
+// Di kelas dengan banyak siswa (mis. 36 siswa dibagi 4 grup), HP mereka sering layar mati
+// sebentar, pindah aplikasi (WA/lainnya), atau tab browser dipindah selagi menunggu soal
+// berikutnya. Browser HP membekukan setInterval (jadi jaring pengaman poll ikut berhenti)
+// dan bisa memutus koneksi realtime demi hemat baterai selagi halaman tidak terlihat --
+// Supabase TIDAK mengirim ulang event yang terlewat begitu koneksinya nyambung lagi, jadi
+// tanpa ini soal baru akan nyangkut sampai siswa refresh manual. Begitu halaman terlihat
+// lagi, langsung sambungkan ulang realtime + ambil status sesi terbaru dari server.
+let sedangSyncKembali = false;
+async function syncSetelahKembaliAktif(){
+  if (!sesi || sedangSyncKembali) return;
+  sedangSyncKembali = true;
+  try {
+    subscribeRealtime();     // koneksi lama bisa sudah putus diam-diam -> sambungkan ulang
+    startSesiSafetyPoll();   // interval lama bisa sudah dibekukan browser -> mulai ulang
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (data) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+      if (sesi.mode === "grup_cup") loadCupData();
+      loadLeaderboard();
+    }
+  } finally {
+    sedangSyncKembali = false;
+  }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") syncSetelahKembaliAktif();
+});
+window.addEventListener("focus", syncSetelahKembaliAktif);
+window.addEventListener("pageshow", (e) => { if (e.persisted) syncSetelahKembaliAktif(); });
+
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=> t.classList.remove("show"), 1800);
+}
+
+// ===== Daftar battle yang dipublish guru untuk kelas ini =====
+let daftarBattlePollInterval = null;
+
+function labelModeBattle(m){
+  return m === "kelompok" ? "👥 Kelompok" : m === "grup_cup" ? "🏆 Grup Cup" : "🏅 Leaderboard";
+}
+
+async function muatDaftarBattle(){
+  const card = document.getElementById("daftarBattleCard");
+  const box = document.getElementById("daftarBattleList");
+  if (!card || sesi) return; // sudah di dalam battle -> tidak perlu daftar
+  // Kolom `soal` sengaja tidak diambil: daftar ini tidak butuh isi soal / kunci jawaban.
+  const { data, error } = await supabase.from("battle_sesi")
+    .select("id, kode, judul, mode, status, kelas_id, publish_at")
+    .not("publish_at", "is", null)
+    .in("status", ["lobi", "berjalan"])
+    .order("publish_at", { ascending: false })
+    .limit(10);
+  if (sesi) return; // siswa sudah join saat query berjalan -> jangan tampilkan daftar lagi
+  if (error) { card.style.display = "none"; return; } // migrasi publish belum dijalankan -> sembunyikan diam-diam
+  const list = (data || []).filter(x => !x.kelas_id || x.kelas_id === profile.kelas_id);
+  card.style.display = "block";
+  if (list.length === 0) {
+    box.innerHTML = '<div style="font-size:12.5px; color:#8A90A3;">Belum ada battle dari gurumu untuk kelas ini. Kalau guru membagikan kode, masukkan di atas.</div>';
+    return;
+  }
+  // Sengaja TIDAK ada tombol "Gabung" di sini -- siswa wajib minta kode ke guru
+  // dan mengetikkannya sendiri di kolom kode di atas, baru bisa gabung.
+  box.innerHTML = list.map(x => `
+    <div style="display:flex; align-items:center; gap:12px; border:1px solid #E7E9F2; border-radius:12px; padding:12px 14px;">
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:700; font-size:14px; color:#161927;">${escapeHtml(x.judul)}</div>
+        <div style="font-size:12px; color:#8A90A3; margin-top:2px;">${labelModeBattle(x.mode)} · ${x.status === "berjalan" ? "🔴 sedang berlangsung" : "⏳ menunggu dimulai"}</div>
+      </div>
+      <div style="font-size:11.5px; color:#8A90A3; font-weight:600; white-space:nowrap;">Minta kode ke guru →</div>
+    </div>`).join("");
+}
+
+function mulaiDaftarBattle(){
+  if (daftarBattlePollInterval) clearInterval(daftarBattlePollInterval);
+  muatDaftarBattle();
+  daftarBattlePollInterval = setInterval(muatDaftarBattle, 8000);
+}
+
+function hentikanDaftarBattle(){
+  if (daftarBattlePollInterval) clearInterval(daftarBattlePollInterval);
+  daftarBattlePollInterval = null;
+  const card = document.getElementById("daftarBattleCard");
+  if (card) card.style.display = "none";
+}
+
+async function joinBattle(){
+  const kodeRaw = document.getElementById("kodeInput").value.trim().toUpperCase();
+  const errBox = document.getElementById("joinError");
+  errBox.textContent = "";
+  if (!kodeRaw) { errBox.textContent = "Masukkan kode battle dulu."; return; }
+
+  const joinBtn = document.getElementById("joinBtn");
+  joinBtn.disabled = true; joinBtn.textContent = "Menggabungkan…";
+
+  const { data: found, error } = await supabase
+    .from("battle_sesi")
+    .select("*")
+    .eq("kode", kodeRaw)
+    .maybeSingle();
+
+  joinBtn.disabled = false; joinBtn.textContent = "🚪 Gabung Battle";
+
+  if (error || !found) {
+    errBox.textContent = "Kode battle tidak ditemukan. Cek lagi dengan guru.";
+    return;
+  }
+  if (found.status === "selesai") {
+    errBox.textContent = "Battle ini sudah selesai.";
+    return;
+  }
+  if (found.kelas_id && profile.kelas_id && found.kelas_id !== profile.kelas_id) {
+    errBox.textContent = "Battle ini khusus untuk kelas lain.";
+    return;
+  }
+
+  sesi = found;
+  sessionStorage.setItem("battle_kode_aktif", kodeRaw);
+
+  // Mulai dengarkan realtime + jaring pengaman poll SEDINI MUNGKIN -- begitu sesi ketemu,
+  // bukan menunggu sampai siswa selesai pilih karakter/kelompok. Sebelumnya ini baru dimulai
+  // di masukArena(), padahal mode Kelompok/Grup Cup punya langkah "pilih kelompok" ekstra
+  // sebelum sampai di masukArena(). Selama siswa masih di layar pilih-kelompok itu, soal yang
+  // dirilis guru lewat begitu saja tanpa terdeteksi -> siswa harus refresh manual & timer sudah
+  // kepotong. Dengan realtime+poll aktif dari sini, soal yang keluar saat siswa masih memilih
+  // karakter/kelompok tetap ketangkep dan langsung tampil begitu mereka masuk arena.
+  subscribeRealtime();
+  startSesiSafetyPoll();
+
+  // Daftarkan diri sebagai peserta (aman kalau sudah pernah, kena unique constraint -> upsert).
+  const { data: pesertaRow } = await supabase.from("battle_peserta").upsert({
+    sesi_id: sesi.id, profile_id: profile.id, nama: profile.nama
+  }, { onConflict: "sesi_id,profile_id" }).select("tim_key, karakter").single();
+
+  document.getElementById("joinCard").style.display = "none";
+  hentikanDaftarBattle();
+
+  myTimKey = pesertaRow && pesertaRow.tim_key;
+  myKarakter = pesertaRow && pesertaRow.karakter;
+
+  // Karakter dipilih tiap kali join battle (belum ada karakter tersimpan utk sesi ini).
+  if (!myKarakter) {
+    tampilkanPilihanKarakter();
+    return;
+  }
+
+  if ((sesi.mode === "kelompok" || sesi.mode === "grup_cup") && !myTimKey) {
+    tampilkanPilihanTim();
+    return;
+  }
+
+  masukArena();
+}
+
+function tampilkanPilihanKarakter(){
+  const card = document.getElementById("karakterPickCard");
+  const list = document.getElementById("karakterPickList");
+  list.innerHTML = KARAKTER_LIST.map(k => `
+    <button type="button" class="bt-karakter-opt" onclick="pilihKarakterSiswa('${k.key}')">
+      <span class="kav" style="background:${k.warna};">${k.emoji}</span>
+      <span class="kn">${k.nama}</span>
+    </button>`).join("");
+  card.style.display = "block";
+}
+
+async function pilihKarakterSiswa(key){
+  await supabase.from("battle_peserta").update({ karakter: key })
+    .eq("sesi_id", sesi.id).eq("profile_id", profile.id);
+  myKarakter = key;
+  document.getElementById("karakterPickCard").style.display = "none";
+
+  if ((sesi.mode === "kelompok" || sesi.mode === "grup_cup") && !myTimKey) {
+    tampilkanPilihanTim();
+    return;
+  }
+  masukArena();
+}
+
+function tampilkanPilihanTim(){
+  const card = document.getElementById("timPickCard");
+  const list = document.getElementById("timPickList");
+  const desc = card.querySelector("div[style*='margin-bottom:14px']");
+  if (desc) desc.textContent = sesi.mode === "grup_cup"
+    ? "Battle ini turnamen antar tim (Grup Cup) — timmu akan diadu tim lain lewat bagan gugur."
+    : "Battle ini dimainkan berkelompok — skormu akan ditambahkan ke skor timmu.";
+  const timList = sesi.tim || [];
+  list.innerHTML = timList.map(t => `
+    <button class="bt-tim-opt" onclick="pilihTimSiswa('${t.key}')">
+      <span class="swatch" style="background:${t.warna || '#7C5CFC'};"></span>
+      <span class="nm">${escapeHtml(t.nama)}</span>
+      <span class="ct">Gabung →</span>
+    </button>`).join("");
+  card.style.display = "block";
+}
+
+async function pilihTimSiswa(key){
+  await supabase.from("battle_peserta").update({ tim_key: key })
+    .eq("sesi_id", sesi.id).eq("profile_id", profile.id);
+  document.getElementById("timPickCard").style.display = "none";
+  masukArena();
+}
+
+function exitBattle(){
+  const ok = confirm("Yakin mau keluar dari battle ini?\n\nKamu masih bisa join lagi pakai kode yang sama, tapi soal yang dirilis selama kamu keluar tidak akan bisa kamu jawab.");
+  if (!ok) return;
+
+  stopTimer();
+  stopResultCountdown();
+  stopLeaderboardPoll();
+  stopSesiSafetyPoll();
+  if (channel) { supabase.removeChannel(channel); channel = null; }
+  sessionStorage.removeItem("battle_kode_aktif");
+
+  sesi = null;
+  currentQIndex = -1;
+  currentQStart = null;
+  answered = false;
+  myTimKey = null;
+  myKarakter = null;
+  cupBracket = [];
+  cupPerwakilan = [];
+  myMatchNow = null;
+
+  document.getElementById("roomArea").style.display = "none";
+  document.getElementById("karakterPickCard").style.display = "none";
+  document.getElementById("timPickCard").style.display = "none";
+  document.getElementById("joinCard").style.display = "block";
+  document.getElementById("kodeInput").value = "";
+  document.getElementById("joinError").textContent = "";
+  mulaiDaftarBattle();
+  showToast("🚪 Kamu sudah keluar dari battle.");
+}
+
+async function masukArena(){
+  document.getElementById("roomArea").style.display = "block";
+  document.getElementById("roomKode").textContent = sesi.kode;
+  const badge = document.getElementById("myKarakterBadge");
+  const k = myKarakter ? karakterByKey(myKarakter) : null;
+  if (badge) badge.textContent = k ? k.emoji : "";
+  hideLeaderboardReveal();
+
+  // Realtime + safety poll sudah berjalan sejak joinBattle() (lihat komentar di sana). Di sini
+  // tinggal pastikan data sesi yang kita pegang sudah yang terbaru sebelum dirender -- kalau guru
+  // merilis soal selagi siswa memilih karakter/tim, `sesi` lokal yang kita pegang sejak awal join
+  // sudah basi walau realtime tetap menangkap perubahannya secara live.
+  const { data: terbaru } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+  if (terbaru && terbaru.soal_aktif_index >= sesi.soal_aktif_index) sesi = terbaru; // jangan menimpa data lebih baru dari realtime
+
+  renderStatus();
+  if (sesi.mode === "grup_cup") loadCupData();
+  renderQuestionState();
+  loadLeaderboard();
+}
+
+// ===== Papan peringkat: tampil TERPISAH dari soal, hanya muncul setelah
+// durasi soal habis (bukan barengan waktu siswa sedang menjawab). =====
+function showLeaderboardReveal(big){
+  const card = document.getElementById("leaderCard");
+  if (!card) return;
+  const wasHidden = card.style.display === "none" || card.style.display === "";
+  card.style.display = "flex";
+  if (wasHidden) {
+    card.classList.remove("reveal");
+    void card.offsetWidth; // reflow supaya animasi bisa diulang
+    card.classList.add("reveal");
+    launchCelebration(!!big); // confetti + bintang + goyangan tiap papan skor muncul
+  }
+  loadLeaderboard();
+  startLeaderboardPoll();
+}
+function hideLeaderboardReveal(){
+  const card = document.getElementById("leaderCard");
+  if (card) { card.style.display = "none"; card.classList.remove("reveal"); }
+  stopLeaderboardPoll();
+}
+
+// ===== Celebration: confetti + bintang + goyangan sedikit =====
+// big=false -> versi ringkas (tiap papan skor antar-soal)
+// big=true  -> versi meriah (hasil akhir battle)
+function launchCelebration(big){
+  const confettiCount = big ? 90 : 40;
+  const starCount = big ? 30 : 14;
+  const colors = ['#7C5CFC','#4CC9F0','#FF6B5E','#FFD166','#22C55E','#EAB308','#F472B6'];
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < confettiCount; i++) {
+    const el = document.createElement("div");
+    el.className = "bt-confetti-piece";
+    const size = 6 + Math.random() * 7;
+    el.style.left = (Math.random() * 100) + "vw";
+    el.style.width = size + "px";
+    el.style.height = (size * 0.42) + "px";
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const dur = (big ? 2 : 1.4) + Math.random() * 1.3;
+    el.style.animation = `btConfettiFall ${dur}s ease-in forwards`;
+    el.style.animationDelay = (Math.random() * (big ? 0.6 : 0.35)) + "s";
+    frag.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 1) * 1000);
+  }
+
+  const cx = window.innerWidth / 2;
+  const cy = window.innerHeight / (big ? 2.6 : 2.3);
+  const starEmoji = ["⭐", "✨", "🌟"];
+  for (let i = 0; i < starCount; i++) {
+    const el = document.createElement("div");
+    el.className = "bt-star-burst";
+    el.textContent = starEmoji[Math.floor(Math.random() * starEmoji.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = (big ? 170 : 110) + Math.random() * (big ? 150 : 90);
+    el.style.setProperty("--tx", Math.cos(angle) * dist + "px");
+    el.style.setProperty("--ty", Math.sin(angle) * dist + "px");
+    el.style.setProperty("--rot", (Math.random() * 360 - 180) + "deg");
+    el.style.left = cx + "px";
+    el.style.top = cy + "px";
+    el.style.fontSize = (14 + Math.random() * (big ? 18 : 12)) + "px";
+    const dur = 0.9 + Math.random() * 0.6;
+    el.style.animation = `btStarBurst ${dur}s ease-out forwards`;
+    frag.appendChild(el);
+    setTimeout(() => el.remove(), (dur + 0.3) * 1000);
+  }
+
+  document.body.appendChild(frag);
+
+  const inner = document.querySelector("#leaderCard .bt-leader-inner");
+  if (inner) {
+    inner.classList.remove("bt-shake");
+    void inner.offsetWidth; // reflow supaya animasi bisa diulang
+    inner.classList.add("bt-shake");
+  }
+}
+
+// Jaring pengaman UTAMA: cek berkala ke server SELAMA battle berlangsung —
+// termasuk saat layar masih "Bersiap-siap! Soal akan segera dirilis guru…",
+// yang sebelumnya 100% cuma mengandalkan event realtime tanpa cadangan sama
+// sekali. Kalau koneksi guru/siswa lambat atau realtime sempat putus, soal
+// baru tetap sampai maksimal ~4 detik kemudian lewat poll ini, bukan
+// menunggu tanpa batas.
+const SESI_SAFETY_POLL_MS = 4000;
+
+// ===== Jam server: semua hitungan waktu soal memakai jam SERVER, bukan jam perangkat siswa =====
+// soal_dirilis_at dicatat oleh database (server). Kalau timer dibandingkan dengan jam HP/laptop
+// siswa yang selisih beberapa detik, hitung mundur & skor kecepatan jadi beda-beda antar perangkat.
+let serverOffsetMs = 0; // server - perangkat (ms)
+function nowServer(){ return Date.now() + serverOffsetMs; }
+async function sinkronJamServer(){
+  try {
+    let terbaik = null;
+    for (let i = 0; i < 3; i++) {           // ambil 3 sampel, pakai yang paling cepat pulang-pergi
+      const t0 = Date.now();
+      const { data, error } = await supabase.rpc("battle_waktu_server");
+      const t1 = Date.now();
+      if (error || !data) return;           // RPC belum ada (migrasi belum jalan) -> pakai jam perangkat seperti biasa
+      const rtt = t1 - t0;
+      if (!terbaik || rtt < terbaik.rtt) terbaik = { rtt, offset: new Date(data).getTime() - (t0 + t1) / 2 };
+    }
+    if (terbaik) serverOffsetMs = terbaik.offset;
+  } catch (e) { /* jam server gagal diambil -> pakai jam perangkat */ }
+}
+function startSesiSafetyPoll(){
+  stopSesiSafetyPoll();
+  if (!sesi) return;
+  sesiSafetyPollInterval = setInterval(async () => {
+    if (!sesi) return;
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (!data) return;
+    const berubah = data.soal_aktif_index !== sesi.soal_aktif_index
+      || data.status !== sesi.status
+      || data.soal_dirilis_at !== sesi.soal_dirilis_at;
+    if (berubah) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+    }
+    if (sesi.status === "selesai") stopSesiSafetyPoll();
+  }, SESI_SAFETY_POLL_MS);
+}
+function stopSesiSafetyPoll(){ if (sesiSafetyPollInterval) clearInterval(sesiSafetyPollInterval); sesiSafetyPollInterval = null; }
+
+// Jaring pengaman kedua: selagi papan skor kebuka, cek berkala ke server
+// (bukan cuma andalkan event realtime) supaya papan skor pasti ketutup begitu
+// guru sudah lanjut ke soal berikutnya / battle diakhiri, walau koneksi realtime sempat putus.
+function startLeaderboardPoll(){
+  stopLeaderboardPoll();
+  if (!sesi) return;
+  leaderboardPollInterval = setInterval(async () => {
+    const { data } = await supabase.from("battle_sesi").select("*").eq("id", sesi.id).maybeSingle();
+    if (data && (data.soal_aktif_index !== sesi.soal_aktif_index || data.status !== sesi.status)) {
+      sesi = data;
+      renderStatus();
+      renderQuestionState();
+    }
+  }, 3000);
+}
+function stopLeaderboardPoll(){ if (leaderboardPollInterval) clearInterval(leaderboardPollInterval); leaderboardPollInterval = null; }
+
+function renderStatus(){
+  const pill = document.getElementById("statusPill");
+  if (sesi.status === "berjalan") {
+    pill.className = "bt-status-pill live";
+    pill.textContent = "🔴 Live — battle berlangsung";
+  } else if (sesi.status === "selesai") {
+    pill.className = "bt-status-pill";
+    pill.textContent = "🏁 Battle selesai";
+  } else {
+    pill.className = "bt-status-pill";
+    pill.textContent = "⏳ Menunggu guru memulai…";
+  }
+  const info = document.getElementById("rilisModeInfo");
+  if (info) info.textContent = sesi.rilis_mode === "otomatis" ? "⏱️ Soal lanjut otomatis sesuai durasi" : "🖐️ Soal dirilis manual oleh guru";
+}
+
+// Banyak siswa menjawab hampir bersamaan -> gabungkan jadi satu pembaruan papan skor, supaya
+// server tidak dibanjiri query dan siaran soal berikutnya tidak ikut tertahan.
+let leaderboardDebounce = null;
+function jadwalkanLeaderboard(){
+  if (leaderboardDebounce) return;
+  leaderboardDebounce = setTimeout(() => { leaderboardDebounce = null; loadLeaderboard(); }, 800);
+}
+
+function subscribeRealtime(){
+  if (channel) supabase.removeChannel(channel);
+  channel = supabase
+    .channel("battle_room_" + sesi.id)
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "battle_sesi", filter: `id=eq.${sesi.id}` }, (payload) => {
+      sesi = payload.new;
+      renderStatus();
+      renderQuestionState();
+      if (sesi.status === "selesai") showFinal();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_jawaban", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      jadwalkanLeaderboard();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_peserta", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      jadwalkanLeaderboard();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_bracket", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadCupData();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "battle_cup_perwakilan", filter: `sesi_id=eq.${sesi.id}` }, () => {
+      loadCupData();
+    })
+    .subscribe();
+}
+
+// ===== Grup Cup: muat bagan + siapa perwakilan tim kita sekarang =====
+function timNamaByKey(key){
+  const t = (sesi.tim || []).find(x => x.key === key);
+  return t ? t.nama : (key || "—");
+}
+function getPerwakilan(matchId, timKey, soalKe){
+  return cupPerwakilan.find(p => p.match_id === matchId && p.tim_key === timKey && p.soal_ke === soalKe) || null;
+}
+function soalKeSekarang(){
+  return sesi.soal_aktif_index >= 0 ? sesi.soal_aktif_index % 3 : 0;
+}
+function rondeSekarang(){
+  return sesi.soal_aktif_index >= 0 ? Math.floor(sesi.soal_aktif_index / 3) + 1 : (sesi.babak_saat_ini || 1);
+}
+
+async function loadCupData(){
+  if (!sesi || sesi.mode !== "grup_cup") return;
+  const [{ data: bracket }, { data: perwakilan }] = await Promise.all([
+    supabase.from("battle_cup_bracket").select("*").eq("sesi_id", sesi.id).order("ronde").order("slot"),
+    supabase.from("battle_cup_perwakilan").select("*").eq("sesi_id", sesi.id)
+  ]);
+  cupBracket = bracket || [];
+  cupPerwakilan = perwakilan || [];
+  const ronde = rondeSekarang();
+  myMatchNow = cupBracket.find(m => m.ronde === ronde && m.status === "berjalan" && (m.tim_a_key === myTimKey || m.tim_b_key === myTimKey)) || null;
+  renderCupPanel();
+}
+
+function isTimA(){ return myMatchNow && myMatchNow.tim_a_key === myTimKey; }
+function lawanNama(){
+  if (!myMatchNow) return "—";
+  return timNamaByKey(isTimA() ? myMatchNow.tim_b_key : myMatchNow.tim_a_key);
+}
+function isSayaPerwakilanSekarang(){
+  if (!myMatchNow) return false;
+  const rep = getPerwakilan(myMatchNow.id, myTimKey, soalKeSekarang());
+  return rep && rep.profile_id === profile.id;
+}
+function perwakilanSayaSekarang(){
+  if (!myMatchNow) return null;
+  return getPerwakilan(myMatchNow.id, myTimKey, soalKeSekarang());
+}
+
+async function pilihPerwakilan(pid, nama){
+  if (!myMatchNow) return;
+  await supabase.from("battle_cup_perwakilan").upsert({
+    sesi_id: sesi.id, match_id: myMatchNow.id, tim_key: myTimKey,
+    soal_ke: soalKeSekarang(), profile_id: pid, nama
+  }, { onConflict: "match_id,tim_key,soal_ke" });
+}
+
+async function renderCupPanel(){
+  const box = document.getElementById("cupPanelBox");
+  if (!box || !sesi || sesi.mode !== "grup_cup") return;
+
+  if (sesi.status === "selesai") {
+    const finalMatch = cupBracket.find(m => m.ronde === (sesi.total_babak || 1));
+    box.innerHTML = `<div class="bt-waiting"><div class="big">🏆</div><div>Turnamen selesai! Juara: <b>${escapeHtml(timNamaByKey(finalMatch?.pemenang_key))}</b></div></div>`;
+    return;
+  }
+
+  if (!myMatchNow) {
+    box.innerHTML = `<div class="bt-waiting"><div class="big">⏳</div><div>Tim <b>${escapeHtml(timNamaByKey(myTimKey))}</b> sedang menunggu babak berikutnya atau sudah gugur. Tetap simak soal yang tayang ya!</div></div>`;
+    return;
+  }
+
+  const soalKe = soalKeSekarang();
+  const rep = getPerwakilan(myMatchNow.id, myTimKey, soalKe);
+  const belumRilis = sesi.soal_aktif_index < 0 || rondeSekarang() !== myMatchNow.ronde;
+
+  let html = `<div style="font-size:12.5px; color:#8A90A3; font-weight:700; margin-bottom:8px;">⚔️ Babak ${myMatchNow.ronde} — Timmu vs <b style="color:#161927;">${escapeHtml(lawanNama())}</b></div>`;
+
+  if (!rep) {
+    const { data: anggota } = await supabase.from("battle_peserta").select("profile_id, nama").eq("sesi_id", sesi.id).eq("tim_key", myTimKey);
+    html += `<div style="font-weight:700; font-size:13.5px; margin-bottom:8px;">Pilih perwakilan tim untuk soal #${soalKe + 1}:</div>`;
+    html += `<div style="display:grid; gap:8px;">` + (anggota || []).map(a => `
+      <button class="bt-btn bt-btn-outline" style="text-align:left;" onclick="pilihPerwakilan('${a.profile_id}','${escapeHtml(a.nama).replace(/'/g,"\\'")}')">👤 ${escapeHtml(a.nama)}</button>
+    `).join('') + `</div>`;
+  } else {
+    html += `<div class="bt-waiting" style="padding:14px;"><div class="big">${rep.profile_id === profile.id ? '🎤' : '👀'}</div>
+      <div>Perwakilan soal #${soalKe + 1}: <b>${escapeHtml(rep.nama)}</b>${rep.profile_id === profile.id ? ' (kamu!)' : ''}</div></div>`;
+  }
+  box.innerHTML = html;
+}
+
+function renderQuestionState(){
+  const arena = document.getElementById("arena");
+  const cupBox = document.getElementById("cupPanelBox");
+  if (cupBox) cupBox.style.display = sesi.mode === "grup_cup" ? "block" : "none";
+  if (sesi.mode === "grup_cup") renderCupPanel();
+  if (sesi.status === "selesai") { showFinal(); return; }
+
+  if (sesi.status !== "berjalan" || sesi.soal_aktif_index < 0) {
+    arena.innerHTML = `<div class="bt-waiting"><div class="big">🕹️</div><div>Bersiap-siap! Soal akan segera dirilis guru…</div></div>`;
+    stopTimer();
+    stopResultCountdown();
+    hideLeaderboardReveal();
+    return;
+  }
+
+  const soalList = sesi.soal || [];
+  const q = soalList[sesi.soal_aktif_index];
+  if (!q) return;
+
+  const isNewQuestion = sesi.soal_aktif_index !== currentQIndex;
+  currentQIndex = sesi.soal_aktif_index;
+  currentQStart = sesi.soal_dirilis_at ? new Date(sesi.soal_dirilis_at).getTime() : nowServer();
+  answered = false;
+  stopResultCountdown();
+  if (isNewQuestion) hideLeaderboardReveal(); // soal baru dimulai -> sembunyikan hasil soal sebelumnya
+
+  const isCup = sesi.mode === "grup_cup";
+  const cupBisaJawab = !isCup || isSayaPerwakilanSekarang();
+  const optsHtml = (q.options || []).map(o => cupBisaJawab
+    ? `<button class="bt-opt" data-key="${o.key}" onclick="submitAnswer('${o.key}')">
+        <span class="k">${o.key}</span><span>${escapeHtml(o.text)}</span>
+      </button>`
+    : `<button class="bt-opt" data-key="${o.key}" disabled>
+        <span class="k">${o.key}</span><span>${escapeHtml(o.text)}</span>
+      </button>`
+  ).join("");
+
+  const cupNote = isCup
+    ? (cupBisaJawab
+        ? `<div style="text-align:center; font-size:12.5px; font-weight:700; color:#7C5CFC; margin-bottom:8px;">🎤 Giliranmu jadi perwakilan — jawab soal ini!</div>`
+        : `<div style="text-align:center; font-size:12.5px; font-weight:700; color:#8A90A3; margin-bottom:8px;">👀 ${escapeHtml((perwakilanSayaSekarang() || {}).nama || 'Perwakilan timmu')} sedang menjawab untuk timmu.</div>`)
+    : "";
+
+  arena.innerHTML = `
+    <div class="bt-timer-ring">
+      <svg width="84" height="84">
+        <circle cx="42" cy="42" r="${TIMER_RADIUS}" stroke="#E7E9F2"></circle>
+        <circle id="timerArc" cx="42" cy="42" r="${TIMER_RADIUS}" stroke="#7C5CFC"
+          stroke-dasharray="${TIMER_CIRC}" stroke-dashoffset="0" stroke-linecap="round"></circle>
+      </svg>
+      <div class="bt-timer-num" id="timerNum">${sesi.durasi_soal_detik}</div>
+    </div>
+    <div class="bt-qnum">${isCup ? `Babak ${Math.floor(sesi.soal_aktif_index / 3) + 1} — Soal ${(sesi.soal_aktif_index % 3) + 1}/3` : `Soal #${sesi.soal_aktif_index + 1}`}</div>
+    ${cupNote}
+    <p class="bt-prompt">${escapeHtml(q.prompt)}</p>
+    <div class="bt-options" id="optsBox">${optsHtml}</div>
+    <div class="bt-feedback" id="feedbackBox"></div>
+    <div id="autoNextInfo" style="font-size:12px; color:#8A90A3; margin-top:8px; font-weight:600;"></div>
+  `;
+
+  if (isNewQuestion) {
+    checkAlreadyAnswered();
+    startTimer();
+  }
+}
+
+async function checkAlreadyAnswered(){
+  const { data } = await supabase
+    .from("battle_jawaban")
+    .select("jawaban, benar")
+    .eq("sesi_id", sesi.id)
+    .eq("soal_index", currentQIndex)
+    .eq("profile_id", profile.id)
+    .maybeSingle();
+  if (data) lockOptions(data.jawaban, data.benar, true);
+}
+
+function startTimer(){
+  stopTimer();
+  const total = sesi.durasi_soal_detik;
+  timerInterval = setInterval(() => {
+    const elapsed = (nowServer() - currentQStart) / 1000;
+    const remaining = Math.max(0, total - elapsed);
+    const numEl = document.getElementById("timerNum");
+    const arcEl = document.getElementById("timerArc");
+    if (numEl) numEl.textContent = Math.ceil(remaining);
+    if (arcEl) arcEl.style.strokeDashoffset = TIMER_CIRC * (1 - remaining / total);
+    if (remaining <= 0) {
+      stopTimer();
+      if (!answered) lockOptions(null, false, false);
+      startResultCountdown();
+      showLeaderboardReveal(); // durasi habis -> tampilkan papan peringkat terpisah, bukan barengan soal
+    }
+  }, 100);
+}
+function stopTimer(){ if (timerInterval) clearInterval(timerInterval); timerInterval = null; }
+
+function startResultCountdown(){
+  stopResultCountdown();
+  if (!sesi || sesi.rilis_mode !== "otomatis") return;
+  const jeda = sesi.jeda_hasil_detik || 5;
+  const endAt = (currentQStart || nowServer()) + (sesi.durasi_soal_detik * 1000) + (jeda * 1000);
+  resultInterval = setInterval(() => {
+    const sisa = Math.ceil((endAt - nowServer()) / 1000);
+    const info = document.getElementById("autoNextInfo");
+    if (sisa > 0) {
+      if (info) info.textContent = `⏭️ Soal berikutnya otomatis dalam ${sisa}s…`;
+    } else {
+      if (info) info.textContent = `⏭️ Menyiapkan soal berikutnya…`;
+      // Jaring pengaman: tutup papan skor berdasar hitungan waktu lokal, jangan
+      // cuma andalkan event realtime dari server (bisa telat/putus sebentar).
+      hideLeaderboardReveal();
+      stopResultCountdown();
+    }
+  }, 250);
+}
+function stopResultCountdown(){ if (resultInterval) clearInterval(resultInterval); resultInterval = null; }
+
+async function submitAnswer(key){
+  if (answered) return;
+  answered = true;
+  // NOTE: timer TIDAK dihentikan di sini — dibiarkan tetap jalan sampai
+  // durasi soal benar-benar habis, supaya papan peringkat tetap muncul
+  // serentak buat semua siswa (termasuk yang sudah jawab duluan).
+
+  const soalList = sesi.soal || [];
+  const q = soalList[currentQIndex];
+  const waktuMs = Math.max(0, nowServer() - currentQStart);
+  const benar = key === q.correct;
+
+  // Skor: makin cepat & benar makin tinggi. Basis 1000, dikurangi berdasar
+  // waktu (maks durasi soal), plus bonus streak dari sisi tampilan.
+  const durasiMs = sesi.durasi_soal_detik * 1000;
+  const kecepatanFactor = Math.max(0, 1 - waktuMs / durasiMs);
+  const skor = benar ? Math.round(500 + 500 * kecepatanFactor) : 0;
+
+  lockOptions(key, benar, false);
+
+  const { error } = await supabase.from("battle_jawaban").insert({
+    sesi_id: sesi.id, soal_index: currentQIndex, profile_id: profile.id,
+    jawaban: key, benar, waktu_ms: Math.round(waktuMs), skor_didapat: skor
+  });
+
+  if (!error) {
+    // Update skor & streak peserta (baca dulu nilai terkini, lalu tambahkan).
+    const { data: peserta } = await supabase
+      .from("battle_peserta").select("skor_total, streak")
+      .eq("sesi_id", sesi.id).eq("profile_id", profile.id).single();
+    const newStreak = benar ? (peserta?.streak || 0) + 1 : 0;
+    await supabase.from("battle_peserta").update({
+      skor_total: (peserta?.skor_total || 0) + skor,
+      streak: newStreak
+    }).eq("sesi_id", sesi.id).eq("profile_id", profile.id);
+
+    if (benar) showToast(newStreak > 1 ? `🔥 Benar! Streak x${newStreak} · +${skor} poin` : `✅ Benar! +${skor} poin`);
+    else showToast("❌ Kurang tepat, semangat soal berikutnya!");
+  }
+}
+
+function lockOptions(pickedKey, benar, silent){
+  const box = document.getElementById("optsBox");
+  if (!box) return;
+  const soalList = sesi.soal || [];
+  const q = soalList[currentQIndex];
+  box.querySelectorAll(".bt-opt").forEach(btn => {
+    btn.classList.add("locked");
+    btn.disabled = true;
+    const k = btn.dataset.key;
+    if (k === q.correct) btn.classList.add("correct");
+    if (pickedKey && k === pickedKey && k !== q.correct) btn.classList.add("wrong");
+    if (pickedKey && k === pickedKey) btn.classList.add("picked");
+  });
+  const fb = document.getElementById("feedbackBox");
+  if (fb && !silent) {
+    fb.textContent = pickedKey ? (benar ? "🎉 Jawaban benar!" : "Belum tepat, cek jawaban benarnya di atas.") : "⏱️ Waktu habis!";
+    fb.className = "bt-feedback " + (benar ? "ok" : "bad");
+  }
+}
+
+// ===== FLIP animation util: animasi geser posisi + highlight saat peringkat berubah =====
+function animateLeaderboardRows(container, items, keyFn, renderFn){
+  const oldRects = {};
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    oldRects[el.getAttribute("data-lb-key")] = el.getBoundingClientRect();
+  });
+  const oldRanks = container.__lbRanks || {};
+  const newRanks = {};
+  items.forEach((it, i) => { newRanks[keyFn(it, i)] = i; });
+
+  container.innerHTML = items.map((it, i) => {
+    const key = keyFn(it, i);
+    const oldRank = oldRanks[key];
+    const dir = (oldRank !== undefined && oldRank !== i) ? (i < oldRank ? "up" : "down") : null;
+    return renderFn(it, i, dir);
+  }).join("");
+
+  container.querySelectorAll("[data-lb-key]").forEach(el => {
+    const key = el.getAttribute("data-lb-key");
+    const newRect = el.getBoundingClientRect();
+    const old = oldRects[key];
+    if (old) {
+      const dy = old.top - newRect.top;
+      if (Math.abs(dy) > 1) {
+        el.style.transition = "none";
+        el.style.transform = `translateY(${dy}px)`;
+        requestAnimationFrame(() => {
+          el.style.transition = "transform .55s cubic-bezier(.34,1.2,.64,1)";
+          el.style.transform = "";
+        });
+      }
+      const oldRank = oldRanks[key];
+      const newRank = newRanks[key];
+      if (oldRank !== undefined && oldRank !== newRank) {
+        el.classList.add(newRank < oldRank ? "lb-moved-up" : "lb-moved-down");
+        setTimeout(() => el.classList.remove("lb-moved-up", "lb-moved-down"), 900);
+      }
+    } else {
+      el.classList.add("lb-enter");
+      setTimeout(() => el.classList.remove("lb-enter"), 500);
+    }
+  });
+  container.__lbRanks = newRanks;
+}
+
+async function loadLeaderboard(){
+  const { data } = await supabase
+    .from("battle_peserta")
+    .select("profile_id, nama, skor_total, streak, tim_key, karakter")
+    .eq("sesi_id", sesi.id)
+    .order("skor_total", { ascending: false });
+
+  const list = document.getElementById("leaderList");
+  const leaderTitle = document.querySelector("#leaderCard h3");
+  if (!list) return;
+  if (!data || data.length === 0) { list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Belum ada peserta.</div>"; list.__lbRanks = null; return; }
+
+  const medalClass = ["gold","silver","bronze"];
+
+  if (sesi.mode === "grup_cup") {
+    if (leaderTitle) leaderTitle.textContent = "🏆 Skor Babak Ini";
+    if (!myMatchNow) {
+      list.innerHTML = "<div style='color:#8A90A3;font-size:13px;'>Timmu tidak sedang bertanding di babak ini.</div>";
+      return;
+    }
+    const base = (myMatchNow.ronde - 1) * 3;
+    const indices = [base, base + 1, base + 2];
+    const { data: jawabanRows } = await supabase.from("battle_jawaban")
+      .select("profile_id, skor_didapat").eq("sesi_id", sesi.id).in("soal_index", indices);
+    const repsA = [0, 1, 2].map(k => getPerwakilan(myMatchNow.id, myMatchNow.tim_a_key, k)).filter(Boolean).map(r => r.profile_id);
+    const repsB = [0, 1, 2].map(k => getPerwakilan(myMatchNow.id, myMatchNow.tim_b_key, k)).filter(Boolean).map(r => r.profile_id);
+    let skorA = 0, skorB = 0;
+    (jawabanRows || []).forEach(j => { if (repsA.includes(j.profile_id)) skorA += j.skor_didapat; if (repsB.includes(j.profile_id)) skorB += j.skor_didapat; });
+    list.innerHTML = `<div style="display:flex; justify-content:space-around; align-items:center; padding:10px 0;">
+        <div style="text-align:center;"><div style="font-weight:700;">${escapeHtml(timNamaByKey(myMatchNow.tim_a_key))}</div><div style="font-size:22px; font-weight:800; color:#7C5CFC;">${skorA}</div></div>
+        <div style="font-weight:700; color:#C7CAD6;">VS</div>
+        <div style="text-align:center;"><div style="font-weight:700;">${escapeHtml(timNamaByKey(myMatchNow.tim_b_key))}</div><div style="font-size:22px; font-weight:800; color:#7C5CFC;">${skorB}</div></div>
+      </div>`;
+    return;
+  }
+
+  if (sesi.mode === "kelompok") {
+    if (leaderTitle) leaderTitle.textContent = "🏆 Peringkat Kelompok";
+    const timList = sesi.tim || [];
+    const agg = {};
+    timList.forEach(t => { agg[t.key] = { ...t, total: 0, anggota: [] }; });
+    data.forEach(p => { if (p.tim_key && agg[p.tim_key]) { agg[p.tim_key].total += p.skor_total; agg[p.tim_key].anggota.push(p); } });
+    const ranked = Object.values(agg).sort((a, b) => b.total - a.total);
+
+    animateLeaderboardRows(list, ranked, t => t.key, (t, i, dir) => {
+      const anggotaHtml = t.anggota
+        .sort((a, b) => b.skor_total - a.skor_total)
+        .map(p => `<div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" style="padding-left:4px;">
+            ${avatarHtml(p, 26)}
+            <div class="bt-row-name" style="font-size:12.5px;">${escapeHtml(p.nama)}</div>
+            <div class="bt-row-score" style="font-size:12.5px;">${p.skor_total}</div>
+          </div>`).join("");
+      return `<div class="bt-tim-group" data-lb-key="${t.key}">
+          <div class="bt-tim-group-head"><span class="sw" style="background:${t.warna || '#7C5CFC'};"></span>${escapeHtml(t.nama)}${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''}<span class="sc">${t.total}</span></div>
+          ${anggotaHtml || '<div style="font-size:12px; color:#8A90A3; padding-left:20px;">Belum ada anggota.</div>'}
+        </div>`;
+    });
+    return;
+  }
+
+  if (leaderTitle) leaderTitle.textContent = "🏆 Papan Peringkat";
+  animateLeaderboardRows(list, data, p => p.profile_id, (p, i, dir) => `
+    <div class="bt-row ${p.profile_id === profile.id ? 'me' : ''}" data-lb-key="${p.profile_id}">
+      <div class="bt-rank ${medalClass[i] || ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : (i+1)}</div>
+      ${avatarHtml(p, 34)}
+      <div class="bt-row-name">${escapeHtml(p.nama)} ${dir ? `<span class="lb-arrow ${dir}">${dir === 'up' ? '▲' : '▼'}</span>` : ''} ${p.streak >= 2 ? `<span class="bt-row-streak">🔥${p.streak}</span>` : ''}</div>
+      <div class="bt-row-score">${p.skor_total}</div>
+    </div>
+  `);
+}
+
+function showFinal(){
+  stopTimer();
+  stopResultCountdown();
+  showLeaderboardReveal(true); // versi lebih meriah untuk hasil akhir
+  stopLeaderboardPoll(); // battle sudah selesai, tidak perlu polling lagi
+  stopSesiSafetyPoll();
+  const arena = document.getElementById("arena");
+  arena.innerHTML = `
+    <div class="bt-final">
+      <div class="trophy">🏆</div>
+      <h2>Battle Selesai!</h2>
+      <p style="color:#8A90A3; font-size:13.5px;">Cek posisi akhirmu di papan peringkat di bawah.</p>
+    </div>`;
+  sessionStorage.removeItem("battle_kode_aktif");
+}
+
+function escapeHtml(s){
+  return (s || "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
