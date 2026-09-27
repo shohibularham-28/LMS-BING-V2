@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="en">
+<title>Recount Text — LMS</title>
+<style>
+  :root{
+    --paper:#EFF1EA;
+    --paper-alt:#E4E8DC;
+    --ink:#212B26;
+    --ink-soft:#4A554E;
+    --gold:#A9782C;
+    --sage:#4F6D52;
+    --rule:#C9CFC1;
+    --card:#FBFBF7;
+    --red:#8B4A3B;
+    --green:#3E6B47;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:Georgia,'Times New Roman',serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:640px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+  header.top{padding:16px 20px 12px; border-bottom:1px solid var(--rule);}
+  header.top .brand{font-family:var(--sans); font-size:12px; color:var(--sage); letter-spacing:.02em;}
+  .progressbar{height:5px; background:var(--paper-alt); border-radius:3px; margin-top:10px; overflow:hidden;}
+  .progressbar .fill{height:100%; background:var(--gold); width:0%; transition:width .3s ease;}
+  .unitrow{font-family:var(--sans); font-size:11.5px; color:var(--ink-soft); margin-top:8px; display:flex; justify-content:space-between;}
+
+  main{flex:1; padding:22px 22px 40px;}
+  .page{display:none; animation:fade .3s ease;}
+  .page.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .eyebrow{font-family:var(--sans); font-size:12px; color:var(--gold); margin:0 0 6px;}
+  h1{font-size:27px; line-height:1.18; margin:0 0 14px; font-weight:700;}
+  h2{font-size:20px; margin:0 0 12px; border-bottom:2px solid var(--ink); padding-bottom:8px;}
+  h3{font-size:16.5px; margin:20px 0 8px; color:var(--sage); font-style:italic;}
+  p{margin:0 0 13px; font-size:15.5px;}
+  ul,ol{margin:0 0 13px; padding-left:21px;}
+  li{margin-bottom:6px; font-size:15.5px;}
+  .lead{font-size:17px; color:var(--ink-soft);}
+
+  .card{background:var(--card); border:1px solid var(--rule); border-radius:2px; padding:14px 16px; margin:0 0 14px;}
+  .card.gold{border-left:4px solid var(--gold);}
+  .card.sage{border-left:4px solid var(--sage);}
+
+  table{width:100%; border-collapse:collapse; margin:0 0 14px; font-size:14px;}
+  th,td{text-align:left; padding:8px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  th{font-family:var(--sans); font-size:11px; color:var(--ink-soft); font-weight:600; border-bottom:2px solid var(--ink);}
+
+  .story{background:var(--card); border:1px solid var(--rule); padding:16px; margin-bottom:14px;}
+  .story p{margin-bottom:11px;}
+  mark.vb{background:#DCEAE0; color:var(--sage); padding:0 2px;}
+  mark.tc{background:#F1E3C9; color:var(--gold); padding:0 2px;}
+  mark.tw{background:#F3DED8; color:var(--red); padding:0 2px;}
+  .legend{font-family:var(--sans); font-size:12px; color:var(--ink-soft); margin-bottom:14px;}
+  .legend span{margin-right:12px;}
+  .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:4px; vertical-align:-1px;}
+
+  /* translate toggle */
+  .translatebar{
+    display:flex; justify-content:flex-end; margin-bottom:10px;
+  }
+  .translatebar button{
+    font-family:var(--sans); font-size:12.5px; padding:7px 12px; border:1px solid var(--sage);
+    background:transparent; color:var(--sage); border-radius:14px; cursor:pointer;
+    display:flex; align-items:center; gap:6px;
+  }
+  .translatebar button:hover{background:var(--paper-alt);}
+  .langtag{
+    font-family:var(--sans); font-size:10.5px; text-transform:uppercase; letter-spacing:.04em;
+    background:var(--sage); color:var(--paper); padding:1px 6px; border-radius:8px;
+  }
+
+  /* reading gate */
+  .gate{margin-top:24px; padding:16px; border:1px dashed var(--rule); text-align:center; font-family:var(--sans); color:var(--ink-soft); font-size:13.5px;}
+  .gate .clock{font-size:26px; font-weight:700; color:var(--gold); font-family:var(--sans); margin:6px 0;}
+
+  /* quiz */
+  .quiz{margin-top:22px; display:none;}
+  .quiz.show{display:block;}
+  .quiz h2{border-bottom:2px solid var(--gold);}
+  .quiznote{font-family:var(--sans); font-size:12px; color:var(--ink-soft); margin:-6px 0 14px;}
+  .qcard{background:var(--card); border:1px solid var(--rule); padding:14px 16px; margin-bottom:14px; border-radius:2px;}
+  .qcard.wrong{border-color:var(--red);}
+  .qcard.correct{border-color:var(--green);}
+  .qcard p.q{font-family:var(--sans); font-size:14.5px; font-weight:600; margin:0 0 10px;}
+  .opt{display:flex; align-items:flex-start; gap:8px; padding:8px 10px; border:1px solid var(--rule); border-radius:2px; margin-bottom:6px; cursor:pointer; font-family:var(--sans); font-size:14px; background:var(--paper);}
+  .opt:hover{border-color:var(--gold);}
+  .opt.selected{border-color:var(--gold); background:#F6EEDD;}
+  .opt input{margin-top:2px;}
+  .qcard .feedback{font-family:var(--sans); font-size:12.5px; margin-top:6px;}
+  .qcard.wrong .feedback{color:var(--red);}
+  .qcard.correct .feedback{color:var(--green);}
+
+  .submitbar{display:flex; justify-content:center; margin:8px 0 4px;}
+  .submitbar button{font-family:var(--sans); font-size:14px; padding:11px 22px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer;}
+  .resultmsg{font-family:var(--sans); font-size:13.5px; text-align:center; margin:10px 0 0; min-height:18px;}
+  .resultmsg.ok{color:var(--green);}
+  .resultmsg.bad{color:var(--red);}
+
+  nav.pager{position:sticky; bottom:0; background:var(--paper); border-top:1px solid var(--rule); padding:12px 20px calc(12px + env(safe-area-inset-bottom)); display:flex; align-items:center; justify-content:space-between; gap:12px;}
+  nav.pager button{font-family:var(--sans); font-size:14px; padding:10px 16px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); border-radius:2px; cursor:pointer;}
+  nav.pager button.ghost{background:transparent; color:var(--ink);}
+  nav.pager button:disabled{opacity:.3; cursor:default;}
+  .dots{display:flex; gap:6px; flex-wrap:wrap; justify-content:center;}
+  .dots span{width:8px; height:8px; border-radius:50%; background:var(--rule); font-size:0; display:block;}
+  .dots span.on{background:var(--gold); width:18px; border-radius:4px;}
+  .dots span.done{background:var(--sage);}
+
+  @media (max-width:380px){
+    h1{font-size:23px;}
+    main{padding:18px 15px 34px;}
+  }
+
+  /* final submit block */
+  .finalbox{
+    margin-top:26px; padding:18px; border:1px solid var(--rule); background:var(--card); border-radius:2px;
+  }
+  .finalbox h2{border-bottom:2px solid var(--sage);}
+  .studentcard{
+    display:flex; align-items:center; gap:12px; background:var(--paper-alt); border-radius:2px;
+    padding:12px 14px; margin-bottom:14px; font-family:var(--sans);
+  }
+  .studentcard .avatar{
+    width:38px; height:38px; border-radius:50%; background:var(--sage); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; flex-shrink:0;
+  }
+  .studentcard .who{font-size:14px; color:var(--ink);}
+  .studentcard .who small{display:block; font-size:12px; color:var(--ink-soft); margin-top:2px;}
+  .loginwarn{
+    font-family:var(--sans); font-size:13.5px; color:var(--red); background:#F6EAE7;
+    border:1px solid #E2C4BC; padding:12px 14px; border-radius:2px; margin-bottom:14px;
+  }
+  .loginwarn a{color:var(--red); font-weight:700;}
+  .submitfinal-bar{display:flex; justify-content:center;}
+  .submitfinal-bar button{
+    font-family:var(--sans); font-size:14.5px; padding:12px 24px; border:1px solid var(--sage);
+    background:var(--sage); color:#fff; border-radius:2px; cursor:pointer; width:100%;
+  }
+  .submitfinal-bar button:disabled{opacity:.5; cursor:default;}
+  .finalstatus{
+    font-family:var(--sans); font-size:13.5px; text-align:center; margin-top:12px; min-height:18px;
+  }
+  .finalstatus.ok{color:var(--green);}
+  .finalstatus.bad{color:var(--red);}
+</style>
+</head>
+<body translate="no" class="notranslate">
+<div class="app">
+
+  <header class="top notranslate" translate="no">
+    <span class="brand">RECOUNT TEXT · LEARNING MODULE</span>
+    <div class="progressbar"><div class="fill" id="progFill"></div></div>
+    <div class="unitrow"><span id="unitLabel">Unit 1 of 6</span><span id="unitStatus">Reading material</span></div>
+  </header>
+
+  <main id="mainArea"></main>
+
+  <nav class="pager notranslate" translate="no">
+    <button class="ghost" id="prevBtn">Prev</button>
+    <div class="dots" id="dots"></div>
+    <button id="nextBtn">Next</button>
+  </nav>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================= SUPABASE (same LMS project) ================= */
+const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WORKSHEET_SLUG = "recount-text";
+
+// Ambil profil siswa yang sedang login di LMS (nama & kelas TIDAK bisa diubah manual).
+async function getLoggedInProfile(){
+  const { data: { user } } = await sb.auth.getUser();
+  if(!user) return null;
+  const { data, error } = await sb
+    .from("profiles")
+    .select("id, nama, role, kelas:kelas_id ( nama )")
+    .eq("id", user.id)
+    .single();
+  if(error || !data) return null;
+  return data;
+}
+
+/* ================= DATA ================= */
+const UNITS = [
+{
+  eyebrow:"UNIT 1 · INTRODUCTION",
+  title_en:"What is a Recount Text?",
+  title_id:"Apa itu Recount Text?",
+  content_en:`
+    <p class="lead">A recount text is a text that retells past events or experiences, in the order in which they happened.</p>
+    <div class="card gold"><p style="margin:0;">Social function: <strong>to retell an event</strong> in order to inform or entertain the reader.</p></div>
+    <h3>Everyday examples</h3>
+    <ul>
+      <li>Telling a story about a weekend holiday</li>
+      <li>Writing a diary entry</li>
+      <li>A field trip report</li>
+      <li>A short biography</li>
+    </ul>
+    <h3>Recount vs Narrative Text</h3>
+    <table>
+      <tr><th>Recount Text</th><th>Narrative Text</th></tr>
+      <tr><td>Real event / personal experience</td><td>May be fictional</td></tr>
+      <tr><td>Does not always have a conflict</td><td>Always has a conflict &amp; resolution</td></tr>
+    </table>
+  `,
+  content_id:`
+    <p class="lead">Recount text adalah teks yang menceritakan kembali kejadian atau pengalaman di masa lalu, secara berurutan sesuai waktu terjadinya.</p>
+    <div class="card gold"><p style="margin:0;">Tujuan sosial: <strong>menceritakan kembali suatu peristiwa</strong> untuk menginformasikan atau menghibur pembaca.</p></div>
+    <h3>Contoh situasi sehari-hari</h3>
+    <ul>
+      <li>Menceritakan liburan akhir pekan</li>
+      <li>Menulis buku harian (diary)</li>
+      <li>Laporan kunjungan lapangan</li>
+      <li>Biografi singkat seseorang</li>
+    </ul>
+    <h3>Recount vs Narrative Text</h3>
+    <table>
+      <tr><th>Recount Text</th><th>Narrative Text</th></tr>
+      <tr><td>Kejadian nyata / pengalaman pribadi</td><td>Boleh fiksi / khayalan</td></tr>
+      <tr><td>Tidak selalu punya konflik</td><td>Selalu ada konflik &amp; penyelesaian</td></tr>
+    </table>
+  `,
+  quiz:[
+    {q:"A recount text is used to...",opt:["Persuade the reader","Retell a past event","Explain a process","Describe an object"],c:1},
+    {q:"A recount text is about...",opt:["A real event in the past","An imaginary future event","Step-by-step instructions","An argument about an issue"],c:0},
+    {q:"Which of these is an example of a recount text?",opt:["A recipe","A diary entry","A product advertisement","A job application letter"],c:1},
+    {q:"The main difference between recount and narrative text is...",opt:["Recount is always fictional","Narrative always has a conflict & resolution","Recount is not in chronological order","There is no difference"],c:1},
+    {q:"The purpose of a text is also called its...",opt:["Social function","Generic structure","Language feature","Moral value"],c:0}
+  ]
+},
+{
+  eyebrow:"UNIT 2 · TEXT STRUCTURE",
+  title_en:"Generic Structure",
+  title_id:"Struktur Generik",
+  content_en:`
+    <p class="lead">A recount text is made up of three main parts, in order.</p>
+    <div class="card sage"><h3 style="margin-top:0;">1. Orientation</h3><p style="margin:0;">Answers <strong>who, when, and where</strong> the event took place.</p></div>
+    <div class="card sage"><h3 style="margin-top:0;">2. Events</h3><p style="margin:0;">A series of events told in <strong>chronological order</strong>, linked with time conjunctions.</p></div>
+    <div class="card sage"><h3 style="margin-top:0;">3. Reorientation</h3><p style="margin:0;">A closing that gives the writer's impression or feeling about the whole event (optional, but recommended).</p></div>
+    <h3>Flow</h3>
+    <div class="card"><p style="margin:0; font-family:var(--sans); font-size:13.5px; color:var(--ink-soft);">Orientation → Event 1 → Event 2 → Event 3 → Reorientation</p></div>
+  `,
+  content_id:`
+    <p class="lead">Recount text tersusun atas tiga bagian utama yang berurutan.</p>
+    <div class="card sage"><h3 style="margin-top:0;">1. Orientation</h3><p style="margin:0;">Menjawab <strong>siapa, kapan, di mana</strong> peristiwa terjadi.</p></div>
+    <div class="card sage"><h3 style="margin-top:0;">2. Events</h3><p style="margin:0;">Rangkaian kejadian secara <strong>kronologis</strong>, dihubungkan kata penghubung waktu.</p></div>
+    <div class="card sage"><h3 style="margin-top:0;">3. Reorientation</h3><p style="margin:0;">Kesimpulan atau kesan penulis terhadap keseluruhan peristiwa (opsional, tapi disarankan).</p></div>
+    <h3>Alur</h3>
+    <div class="card"><p style="margin:0; font-family:var(--sans); font-size:13.5px; color:var(--ink-soft);">Orientation → Event 1 → Event 2 → Event 3 → Reorientation</p></div>
+  `,
+  quiz:[
+    {q:"The part that answers who, when, and where is called...",opt:["Orientation","Events","Reorientation","Conclusion"],c:0},
+    {q:"The part that contains a chronological series of events is called...",opt:["Orientation","Events","Reorientation","Thesis"],c:1},
+    {q:"The closing part that gives the writer's feelings is called...",opt:["Orientation","Events","Reorientation","Argument"],c:2},
+    {q:"The correct order of the recount structure is...",opt:["Events - Orientation - Reorientation","Orientation - Events - Reorientation","Reorientation - Orientation - Events","Events - Reorientation - Orientation"],c:1},
+    {q:"Is reorientation compulsory in a recount text?",opt:["Yes, always compulsory","Optional, but recommended","No, it is not allowed","It must be placed at the beginning"],c:1}
+  ]
+},
+{
+  eyebrow:"UNIT 3 · LANGUAGE FEATURE",
+  title_en:"Simple Past Tense in Recount",
+  title_id:"Simple Past Tense dalam Recount",
+  content_en:`
+    <p class="lead">Because it retells past events, a recount text is dominated by <strong>simple past tense</strong>.</p>
+    <h3>Regular verbs (+ed)</h3>
+    <div class="card gold"><p style="margin:0;"><em>visit → visited, walk → walked, play → played, watch → watched</em></p></div>
+    <h3>Irregular verbs (change form)</h3>
+    <table>
+      <tr><th>V1</th><th>V2</th></tr>
+      <tr><td>go</td><td>went</td></tr>
+      <tr><td>see</td><td>saw</td></tr>
+      <tr><td>buy</td><td>bought</td></tr>
+      <tr><td>eat</td><td>ate</td></tr>
+    </table>
+    <h3>"To be" in simple past</h3>
+    <div class="card gold"><p style="margin:0;">I / He / She / It → <strong>was</strong> &nbsp;|&nbsp; You / We / They → <strong>were</strong></p></div>
+  `,
+  content_id:`
+    <p class="lead">Karena menceritakan kejadian lampau, recount text didominasi oleh <strong>simple past tense</strong>.</p>
+    <h3>Kata kerja regular (+ed)</h3>
+    <div class="card gold"><p style="margin:0;"><em>visit → visited, walk → walked, play → played, watch → watched</em></p></div>
+    <h3>Kata kerja irregular (berubah bentuk)</h3>
+    <table>
+      <tr><th>V1</th><th>V2</th></tr>
+      <tr><td>go</td><td>went</td></tr>
+      <tr><td>see</td><td>saw</td></tr>
+      <tr><td>buy</td><td>bought</td></tr>
+      <tr><td>eat</td><td>ate</td></tr>
+    </table>
+    <h3>"To be" dalam simple past</h3>
+    <div class="card gold"><p style="margin:0;">I / He / She / It → <strong>was</strong> &nbsp;|&nbsp; You / We / They → <strong>were</strong></p></div>
+  `,
+  quiz:[
+    {q:"A recount text is dominated by which tense?",opt:["Simple present","Simple past","Simple future","Present continuous"],c:1},
+    {q:"The past form (V2) of 'go' is...",opt:["goes","gone","went","going"],c:2},
+    {q:"Which sentence correctly uses simple past?",opt:["She go to school","She goes to school","She went to school","She going to school"],c:2},
+    {q:"The past form of 'to be' for the subject 'I' is...",opt:["am","is","was","were"],c:2},
+    {q:"Which is a correct regular verb (+ed)?",opt:["eat → eated","visit → visited","buy → buyed","see → seed"],c:1}
+  ]
+},
+{
+  eyebrow:"UNIT 4 · LANGUAGE FEATURE",
+  title_en:"Time Conjunctions, Adverbs & Specific Participants",
+  title_id:"Time Conjunction, Adverb & Partisipan Spesifik",
+  content_en:`
+    <h3>Time conjunctions</h3>
+    <p>Link events together so the story is chronological.</p>
+    <div class="card sage"><p style="margin:0;"><em>first, then, after that, next, later, finally, before, when, while</em></p></div>
+    <h3>Adverbs of time &amp; place</h3>
+    <table>
+      <tr><th>Time</th><th>Place</th></tr>
+      <tr><td>yesterday, last week, in 2023</td><td>at the beach, in Bali, at school</td></tr>
+    </table>
+    <h3>Specific participants</h3>
+    <p>Characters are mentioned specifically, not in general terms.</p>
+    <table>
+      <tr><th>Specific</th><th>General</th></tr>
+      <tr><td>My family, Rina, Bandung Zoo</td><td>People, an animal, a city</td></tr>
+    </table>
+  `,
+  content_id:`
+    <h3>Time conjunctions</h3>
+    <p>Menghubungkan urutan peristiwa agar kronologis.</p>
+    <div class="card sage"><p style="margin:0;"><em>first, then, after that, next, later, finally, before, when, while</em></p></div>
+    <h3>Adverb of time &amp; place</h3>
+    <table>
+      <tr><th>Waktu</th><th>Tempat</th></tr>
+      <tr><td>yesterday, last week, in 2023</td><td>at the beach, in Bali, at school</td></tr>
+    </table>
+    <h3>Specific participants</h3>
+    <p>Tokoh disebutkan secara spesifik, bukan umum.</p>
+    <table>
+      <tr><th>Spesifik</th><th>Umum</th></tr>
+      <tr><td>My family, Rina, Bandung Zoo</td><td>People, an animal, a city</td></tr>
+    </table>
+  `,
+  quiz:[
+    {q:"A word that links the time order of events is called a...",opt:["Time conjunction","Adjective","Preposition of place","Linking verb"],c:0},
+    {q:"Which of these is a time conjunction?",opt:["beautiful","then","quickly","under"],c:1},
+    {q:"'Last week' is an example of...",opt:["Adverb of place","Adverb of time","Action verb","Conjunction"],c:1},
+    {q:"A recount text uses participants that are...",opt:["General","Specific","Not mentioned","Random"],c:1},
+    {q:"Which is an example of a specific participant?",opt:["some people","an animal","Rina and her family","a place"],c:2}
+  ]
+},
+{
+  eyebrow:"UNIT 5 · READING",
+  title_en:"Reading a Sample Text",
+  title_id:"Membaca Contoh Teks",
+  content_en:`
+    <div class="legend">
+      <span><i style="background:#DCEAE0;"></i>action verb</span>
+      <span><i style="background:#F1E3C9;"></i>time conjunction</span>
+      <span><i style="background:#F3DED8;"></i>time/place</span>
+    </div>
+    <div class="story">
+      <p><strong>Orientation:</strong> <mark class="tw">Last month</mark>, my family and I <mark class="vb">visited</mark> Yogyakarta for three days. We <mark class="vb">stayed</mark> at a small hotel near Malioboro Street.</p>
+      <p><strong>Events:</strong> <mark class="tc">On the first day</mark>, we <mark class="vb">explored</mark> Malioboro and <mark class="vb">bought</mark> some souvenirs. <mark class="tc">Then</mark>, we <mark class="vb">tried</mark> gudeg, the local food. <mark class="tc">The next morning</mark>, we <mark class="vb">went</mark> to Borobudur Temple and <mark class="vb">took</mark> photos <mark class="tw">at sunrise</mark>.</p>
+      <p><strong>Reorientation:</strong> It was an unforgettable trip. I felt so happy.</p>
+    </div>
+  `,
+  content_id:`
+    <div class="legend">
+      <span><i style="background:#DCEAE0;"></i>kata kerja tindakan</span>
+      <span><i style="background:#F1E3C9;"></i>time conjunction</span>
+      <span><i style="background:#F3DED8;"></i>waktu/tempat</span>
+    </div>
+    <div class="story">
+      <p><strong>Orientation (terjemahan):</strong> Bulan lalu, keluarga saya dan saya mengunjungi Yogyakarta selama tiga hari. Kami menginap di sebuah hotel kecil dekat Jalan Malioboro.</p>
+      <p><strong>Events (terjemahan):</strong> Pada hari pertama, kami menjelajahi Malioboro dan membeli beberapa oleh-oleh. Kemudian, kami mencoba gudeg, makanan khas daerah. Keesokan paginya, kami pergi ke Candi Borobudur dan mengambil foto saat matahari terbit.</p>
+      <p><strong>Reorientation (terjemahan):</strong> Itu adalah perjalanan yang tak terlupakan. Saya merasa sangat senang.</p>
+    </div>
+    <p style="font-family:var(--sans); font-size:12.5px; color:var(--ink-soft);">Catatan: teks asli tetap dalam Bahasa Inggris pada soal kuis.</p>
+  `,
+  quiz:[
+    {q:"Where did the writer stay during the trip?",opt:["A homestay in Solo","A hotel near Malioboro Street","A resort in Bali","A tent near the beach"],c:1},
+    {q:"What did the writer do on the second day?",opt:["Shopping only","Visited Borobudur Temple","Went straight home","Stayed at the hotel"],c:1},
+    {q:"Which word from the text is a time conjunction?",opt:["Yogyakarta","then","family","hotel"],c:1},
+    {q:"Which word from the text is a simple past verb?",opt:["visit","visited","visiting","visits"],c:1},
+    {q:"How did the writer feel about the trip?",opt:["Bored","Sad","Happy and unforgettable","Angry"],c:2}
+  ]
+},
+{
+  eyebrow:"UNIT 6 · WRITING (SENTENCE LEVEL)",
+  title_en:"Writing Recount Sentences with Simple Past",
+  title_id:"Menulis Kalimat Recount dengan Simple Past",
+  content_en:`
+    <p class="lead">At this stage you practice building <strong>sentences</strong> for a recount, not a full text yet.</p>
+    <h3>Basic sentence pattern</h3>
+    <div class="card gold"><p style="margin:0; font-family:var(--sans);">Subject + Verb 2 + Object/Complement + (Time/Place)</p></div>
+    <h3>Examples</h3>
+    <div class="card sage"><p style="margin:0;"><em>I visited my grandmother last weekend.</em><br><em>We went to the beach yesterday.</em><br><em>She cooked dinner last night.</em></p></div>
+    <h3>Steps to build a sentence</h3>
+    <ol>
+      <li>Decide on the subject (who).</li>
+      <li>Change the verb into its past form (V2).</li>
+      <li>Add an object or complement if needed.</li>
+      <li>Close with a time expression (yesterday, last night, etc.).</li>
+    </ol>
+  `,
+  content_id:`
+    <p class="lead">Pada tahap ini kamu berlatih menyusun <strong>kalimat</strong> recount, bukan teks penuh dulu.</p>
+    <h3>Pola kalimat dasar</h3>
+    <div class="card gold"><p style="margin:0; font-family:var(--sans);">Subject + Verb 2 + Object/Complement + (Time/Place)</p></div>
+    <h3>Contoh</h3>
+    <div class="card sage"><p style="margin:0;"><em>I visited my grandmother last weekend.</em><br><em>We went to the beach yesterday.</em><br><em>She cooked dinner last night.</em></p></div>
+    <h3>Langkah membuat kalimat</h3>
+    <ol>
+      <li>Tentukan subject (pelaku).</li>
+      <li>Ubah kata kerja ke bentuk V2 (past).</li>
+      <li>Tambahkan objek/keterangan bila perlu.</li>
+      <li>Tutup dengan keterangan waktu (yesterday, last night, dll).</li>
+    </ol>
+  `,
+  quiz:[
+    {q:"The correct recount sentence pattern is...",opt:["Subject + V1 + Object","Subject + V2 + Object","Subject + will + V1","Subject + is + V-ing"],c:1},
+    {q:"Change into simple past: 'I visit my grandmother.'",opt:["I visits my grandmother","I visited my grandmother","I am visiting my grandmother","I will visit my grandmother"],c:1},
+    {q:"Which sentence is correctly written in simple past?",opt:["We goes to the beach yesterday","We went to the beach yesterday","We go to the beach yesterday","We going to the beach yesterday"],c:1},
+    {q:"Complete: 'They arrived at the airport ___.'",opt:["tomorrow","next week","last night","every day"],c:2},
+    {q:"Which is a complete and correct recount sentence?",opt:["She cook dinner last night","She cooked dinner last night","She cooking dinner last night","She will cook dinner last night"],c:1}
+  ]
+}
+];
+
+const READ_SECONDS = 60;
+
+/* ================= STATE ================= */
+let current = 0;
+const state = UNITS.map(()=>({
+  readDone:false,
+  completed:false,
+  answers:[],
+  checked:false,
+  lang:'en'
+}));
+
+/* ================= RENDER ================= */
+const mainArea = document.getElementById('mainArea');
+const dotsEl = document.getElementById('dots');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const progFill = document.getElementById('progFill');
+const unitLabel = document.getElementById('unitLabel');
+const unitStatus = document.getElementById('unitStatus');
+
+UNITS.forEach((u,i)=>{
+  const d = document.createElement('span');
+  d.dataset.i = i;
+  dotsEl.appendChild(d);
+});
+
+let timerInterval = null;
+
+function renderUnit(i){
+  clearInterval(timerInterval);
+  const u = UNITS[i];
+  const s = state[i];
+  const isID = s.lang === 'id';
+
+  let html = `<section class="page active" data-unit="${i}">
+    <p class="eyebrow">${u.eyebrow}</p>
+    <div class="translatebar">
+      <button id="translateBtn">
+        <span class="langtag">${isID ? 'ID' : 'EN'}</span>
+        ${isID ? 'Show original (English)' : 'Translate to Indonesian'}
+      </button>
+    </div>
+    <h1 class="material" translate="no">${isID ? u.title_id : u.title_en}</h1>
+    <div class="material" id="materialContent" translate="no">${isID ? u.content_id : u.content_en}</div>`;
+
+  if(!s.readDone){
+    html += `<div class="gate" id="gate">
+        <div>Read the material above first.</div>
+        <div class="clock" id="clockDisplay">${READ_SECONDS}s</div>
+        <div>The quiz will unlock automatically once the minimum reading time is done.</div>
+      </div>`;
+  }
+
+  html += `<div class="quiz notranslate ${s.readDone ? 'show':''}" id="quizBlock" translate="no">
+      <h2>Quiz · 5 Questions</h2>
+      <p class="quiznote">This quiz is always in English and cannot be translated. All answers must be correct to move on.</p>`;
+
+  u.quiz.forEach((q,qi)=>{
+    const chosenClass = s.checked ? (s.answers[qi]===q.c ? 'correct' : 'wrong') : '';
+    html += `<div class="qcard ${chosenClass}" data-qi="${qi}">
+        <p class="q">${qi+1}. ${q.q}</p>`;
+    q.opt.forEach((optText, oi)=>{
+      const sel = s.answers[qi]===oi ? 'selected' : '';
+      html += `<label class="opt ${sel}">
+          <input type="radio" name="q${i}_${qi}" value="${oi}" ${s.answers[qi]===oi?'checked':''}>
+          <span>${optText}</span>
+        </label>`;
+    });
+    if(s.checked){
+      html += `<div class="feedback">${s.answers[qi]===q.c ? 'Correct' : 'Not quite, try again'}</div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += `<div class="submitbar"><button id="submitQuiz">Check Answers</button></div>
+      <div class="resultmsg" id="resultMsg"></div>
+    </div>`;
+
+  const isLastUnit = i === UNITS.length - 1;
+  if(isLastUnit && s.completed){
+    html += `<div class="finalbox notranslate" translate="no" id="finalBox">
+        <h2>Submit to Your Teacher</h2>
+        <p style="font-family:var(--sans); font-size:13px; color:var(--ink-soft); margin-top:-4px;">
+          Loading your account...
+        </p>
+      </div>`;
+  }
+
+  html += `</section>`;
+
+  mainArea.innerHTML = html;
+
+  if(isLastUnit && s.completed){
+    setupFinalSubmit();
+  }
+
+  document.getElementById('translateBtn').addEventListener('click', ()=>{
+    state[i].lang = state[i].lang === 'en' ? 'id' : 'en';
+    renderUnit(i);
+  });
+
+  mainArea.querySelectorAll('.opt input').forEach(inp=>{
+    inp.addEventListener('change', e=>{
+      const qcard = e.target.closest('.qcard');
+      const qi = +qcard.dataset.qi;
+      state[i].answers[qi] = +e.target.value;
+      qcard.querySelectorAll('.opt').forEach(o=>o.classList.remove('selected'));
+      e.target.closest('.opt').classList.add('selected');
+    });
+  });
+
+  const submitBtn = document.getElementById('submitQuiz');
+  if(submitBtn){
+    submitBtn.addEventListener('click', ()=>checkQuiz(i));
+  }
+
+  if(!s.readDone){
+    startTimer(i);
+  }
+
+  updateChrome();
+}
+
+function startTimer(i){
+  let remaining = READ_SECONDS;
+  const clockEl = document.getElementById('clockDisplay');
+  timerInterval = setInterval(()=>{
+    remaining--;
+    if(clockEl) clockEl.textContent = remaining+'s';
+    if(remaining<=0){
+      clearInterval(timerInterval);
+      state[i].readDone = true;
+      const gate = document.getElementById('gate');
+      if(gate) gate.remove();
+      const qb = document.getElementById('quizBlock');
+      if(qb) qb.classList.add('show');
+      updateChrome();
+    }
+  },1000);
+}
+
+function checkQuiz(i){
+  const u = UNITS[i];
+  const s = state[i];
+  const answeredAll = u.quiz.every((q,qi)=> s.answers[qi] !== undefined && s.answers[qi] !== null);
+  const resultMsg = document.getElementById('resultMsg');
+  if(!answeredAll){
+    resultMsg.textContent = 'Please answer all questions first.';
+    resultMsg.className = 'resultmsg bad';
+    return;
+  }
+  s.checked = true;
+  const allCorrect = u.quiz.every((q,qi)=> s.answers[qi] === q.c);
+  if(allCorrect){
+    s.completed = true;
+    if(i === UNITS.length - 1){
+      // Unit terakhir: render ulang penuh supaya blok submit ke guru muncul.
+      renderUnit(i);
+      return;
+    }
+    resultMsg.textContent = 'All answers are correct! You can move on to the next unit.';
+    resultMsg.className = 'resultmsg ok';
+  }else{
+    resultMsg.textContent = 'Some answers are not correct yet. Fix them and check again.';
+    resultMsg.className = 'resultmsg bad';
+  }
+  renderQuizFeedbackOnly(i);
+  updateChrome();
+}
+
+function renderQuizFeedbackOnly(i){
+  const u = UNITS[i];
+  const s = state[i];
+  mainArea.querySelectorAll('.qcard').forEach(card=>{
+    const qi = +card.dataset.qi;
+    const isCorrect = s.answers[qi] === u.quiz[qi].c;
+    card.classList.remove('correct','wrong');
+    card.classList.add(isCorrect ? 'correct' : 'wrong');
+    let fb = card.querySelector('.feedback');
+    if(!fb){
+      fb = document.createElement('div');
+      fb.className = 'feedback';
+      card.appendChild(fb);
+    }
+    fb.textContent = isCorrect ? 'Correct' : 'Not quite, try again';
+  });
+}
+
+/* ================= FINAL SUBMIT TO TEACHER ================= */
+let finalSubmitted = false;
+
+async function setupFinalSubmit(){
+  const box = document.getElementById('finalBox');
+  if(!box) return;
+
+  const profile = await getLoggedInProfile();
+
+  if(!profile){
+    box.innerHTML = `
+      <h2>Submit to Your Teacher</h2>
+      <div class="loginwarn">
+        You are not logged in to the LMS, so your name and class cannot be verified.
+        Please <a href="../index.html">log in</a> first, then come back to this page to submit your score.
+      </div>
+      <div class="submitfinal-bar"><button disabled>Send My Result</button></div>
+    `;
+    return;
+  }
+
+  if(profile.role === 'guru'){
+    box.innerHTML = `
+      <h2>Submit to Your Teacher</h2>
+      <div class="loginwarn">This account is registered as a teacher account, so a result cannot be submitted as a student.</div>
+    `;
+    return;
+  }
+
+  const kelasNama = profile.kelas ? profile.kelas.nama : '-';
+  const initial = (profile.nama || '?').charAt(0).toUpperCase();
+
+  box.innerHTML = `
+    <h2>Submit to Your Teacher</h2>
+    <p style="font-family:var(--sans); font-size:13px; color:var(--ink-soft); margin-top:-4px;">
+      You completed all 6 units with a perfect score on every quiz. Your name and class below come from your LMS login and cannot be edited.
+    </p>
+    <div class="studentcard">
+      <div class="avatar">${initial}</div>
+      <div class="who">${profile.nama}<small>Class ${kelasNama}</small></div>
+    </div>
+    <div class="submitfinal-bar"><button id="finalSubmitBtn">Send My Result</button></div>
+    <div class="finalstatus" id="finalStatus"></div>
+  `;
+
+  if(finalSubmitted){
+    const btn = document.getElementById('finalSubmitBtn');
+    const status = document.getElementById('finalStatus');
+    btn.disabled = true;
+    btn.textContent = 'Result Sent ✓';
+    status.textContent = 'Your result has already been sent to your teacher.';
+    status.className = 'finalstatus ok';
+  }
+
+  document.getElementById('finalSubmitBtn').addEventListener('click', async ()=>{
+    if(finalSubmitted) return;
+    const btn = document.getElementById('finalSubmitBtn');
+    const status = document.getElementById('finalStatus');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    const payload = {
+      worksheet_slug: WORKSHEET_SLUG,
+      jenis: 'individu',
+      nama: profile.nama,
+      anggota: null,
+      kelas: kelasNama,
+      nilai: 100,
+      nilai_maks: 100,
+      status: 'selesai'
+    };
+
+    const { error } = await sb.from('hasil_worksheet').insert(payload);
+
+    if(error){
+      finalSubmitted = false;
+      btn.disabled = false;
+      btn.textContent = 'Try Sending Again';
+      status.textContent = 'Failed to send. Please check your connection and try again.';
+      status.className = 'finalstatus bad';
+    }else{
+      finalSubmitted = true;
+      btn.textContent = 'Result Sent ✓';
+      status.textContent = 'Your result has been sent to your teacher.';
+      status.className = 'finalstatus ok';
+    }
+  });
+}
+
+function updateChrome(){
+  const total = UNITS.length;
+  unitLabel.textContent = `Unit ${current+1} of ${total}`;
+  const s = state[current];
+  if(s.completed){
+    unitStatus.textContent = 'Completed';
+  }else if(s.readDone){
+    unitStatus.textContent = 'Working on quiz';
+  }else{
+    unitStatus.textContent = 'Reading material';
+  }
+
+  const doneCount = state.filter(x=>x.completed).length;
+  progFill.style.width = (doneCount/total*100)+'%';
+
+  [...dotsEl.children].forEach((d,i)=>{
+    d.classList.toggle('on', i===current);
+    d.classList.toggle('done', state[i].completed);
+  });
+
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = !state[current].completed || current===total-1;
+  nextBtn.textContent = current===total-1 ? (state[current].completed ? 'Finished' : 'Next') : 'Next';
+}
+
+prevBtn.addEventListener('click', ()=>{
+  if(current>0){ current--; renderUnit(current); }
+});
+nextBtn.addEventListener('click', ()=>{
+  if(state[current].completed && current<UNITS.length-1){ current++; renderUnit(current); }
+});
+dotsEl.addEventListener('click', e=>{
+  const i = +e.target.dataset.i;
+  if(isNaN(i)) return;
+  if(state[i].completed || i===current || (i>0 && state[i-1].completed) || i===0){
+    current = i;
+    renderUnit(current);
+  }
+});
+
+renderUnit(current);
+</script>
+</body>
+</html>
