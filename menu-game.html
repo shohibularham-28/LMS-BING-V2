@@ -93,10 +93,9 @@
               <div class="gtt-label">Benar / Salah</div>
               <div class="gtt-badge">Segera Hadir</div>
             </div>
-            <div class="game-type-tile disabled" title="Segera hadir">
+            <div class="game-type-tile" data-jenis="cari_kata">
               <div class="gtt-icon">🔍</div>
               <div class="gtt-label">Cari Kata</div>
-              <div class="gtt-badge">Segera Hadir</div>
             </div>
           </div>
         </div>
@@ -143,6 +142,27 @@
           <div id="materiListSlotJodoh">Memuat…</div>
         </div>
 
+        <!-- ===== VIEW 4: Cari Kata (live banner + join kode + daftar materi mandiri) ===== -->
+        <div id="view-cari-kata" style="display:none;">
+          <a class="back-link" id="btnBackJenisCari">‹ Pilih jenis game lain</a>
+          <div class="page-header">
+            <div class="eyebrow">Cari Kata</div>
+            <h1>Temukan kata yang tersembunyi di dalam papan huruf</h1>
+          </div>
+
+          <div id="liveBannerSlotCari"></div>
+
+          <div class="section-label">Punya kode dari gurumu?</div>
+          <div class="kode-join-box">
+            <input type="text" id="kodeManualInputCari" placeholder="Masukkan kode sesi, mis. GM-7F3K" maxlength="12">
+            <button id="btnJoinKodeCari">Gabung</button>
+          </div>
+          <p class="login-error" id="kodeJoinErrorCari" style="display:none;"></p>
+
+          <div class="section-label" style="margin-top:22px;">Main Sendiri</div>
+          <div id="materiListSlotCari">Memuat…</div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -163,6 +183,10 @@ function showJenis(jenis) {
     document.getElementById('view-pilih-jenis').style.display = 'none';
     document.getElementById('view-jodoh').style.display = '';
     loadJodohView();
+  } else if (jenis === 'cari_kata') {
+    document.getElementById('view-pilih-jenis').style.display = 'none';
+    document.getElementById('view-cari-kata').style.display = '';
+    loadCariKataView();
   }
 }
 
@@ -175,6 +199,10 @@ document.getElementById('btnBackJenis').addEventListener('click', () => {
 });
 document.getElementById('btnBackJenisJodoh').addEventListener('click', () => {
   document.getElementById('view-jodoh').style.display = 'none';
+  document.getElementById('view-pilih-jenis').style.display = '';
+});
+document.getElementById('btnBackJenisCari').addEventListener('click', () => {
+  document.getElementById('view-cari-kata').style.display = 'none';
   document.getElementById('view-pilih-jenis').style.display = '';
 });
 
@@ -306,9 +334,72 @@ document.getElementById('btnJoinKodeJodoh').addEventListener('click', async () =
   bukaGameSesuaiJenis(data);
 });
 
+async function loadCariKataView() {
+  const bannerSlot = document.getElementById('liveBannerSlotCari');
+  const listSlot = document.getElementById('materiListSlotCari');
+  bannerSlot.innerHTML = '';
+  listSlot.innerHTML = 'Memuat…';
+
+  // Cek sesi live (mode mandiri_live) untuk kelas siswa ini, jenis cari_kata
+  const { data: sesiAktif } = await supabase
+    .from('game_sesi')
+    .select('id, kode, mode, status, kelas_id')
+    .eq('jenis', 'cari_kata')
+    .eq('mode', 'mandiri_live')
+    .eq('status', 'berjalan')
+    .or(`kelas_id.eq.${PROFILE.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (sesiAktif && sesiAktif.length) {
+    const s = sesiAktif[0];
+    bannerSlot.innerHTML = `
+      <div class="live-banner">
+        <div class="lb-text"><b>🔴 Sesi live sedang berlangsung</b><span>Gurumu sedang memantau papan skor secara langsung</span></div>
+        <button onclick="location.href='game-cari-kata.html?mode=live&kode=${encodeURIComponent(s.kode)}'">Gabung Sekarang</button>
+      </div>`;
+  }
+
+  // Daftar materi untuk main sendiri
+  const { data: materi } = await supabase
+    .from('bank_game')
+    .select('id, judul, data')
+    .eq('jenis', 'cari_kata')
+    .eq('published', true)
+    .or(`kelas_id.eq.${PROFILE.kelas_id},kelas_id.is.null`)
+    .order('created_at', { ascending: false });
+
+  const list = materi || [];
+  listSlot.innerHTML = list.length ? `<div class="materi-list-game">${list.map(m => `
+    <div class="mg-card">
+      <h4>${esc(m.judul)}</h4>
+      <div class="mg-meta">${(m.data || []).length} kata</div>
+      <button onclick="location.href='game-cari-kata.html?mode=mandiri&id=${m.id}'">▶️ Main Sendiri</button>
+    </div>
+  `).join('')}</div>` : emptyState('Belum ada materi Cari Kata', 'Mintalah gurumu menambahkan materi lewat menu Game Kelas.', '🔍');
+}
+
+document.getElementById('btnJoinKodeCari').addEventListener('click', async () => {
+  const errEl = document.getElementById('kodeJoinErrorCari');
+  errEl.style.display = 'none';
+  const kode = (document.getElementById('kodeManualInputCari').value || '').trim().toUpperCase();
+  if (!kode) return;
+  const { data, error } = await supabase
+    .from('game_sesi')
+    .select('id, kode, mode, status, jenis')
+    .eq('kode', kode)
+    .maybeSingle();
+  if (error || !data) { errEl.textContent = 'Kode tidak ditemukan.'; errEl.style.display = ''; return; }
+  if (data.status !== 'berjalan') { errEl.textContent = 'Sesi ini sudah selesai.'; errEl.style.display = ''; return; }
+  if (data.mode !== 'mandiri_live') { errEl.textContent = 'Sesi ini dikerjakan lewat device gurumu, bukan lewat HP kamu.'; errEl.style.display = ''; return; }
+  bukaGameSesuaiJenis(data);
+});
+
 function bukaGameSesuaiJenis(sesi) {
   if (sesi.jenis === 'jodoh') {
     location.href = `game-menjodohkan.html?mode=live&kode=${encodeURIComponent(sesi.kode)}`;
+  } else if (sesi.jenis === 'cari_kata') {
+    location.href = `game-cari-kata.html?mode=live&kode=${encodeURIComponent(sesi.kode)}`;
   } else {
     location.href = `game-susun-kata.html?mode=live&kode=${encodeURIComponent(sesi.kode)}`;
   }
