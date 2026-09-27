@@ -202,11 +202,20 @@ function getLevel(kelasNama) {
 async function getProfile() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
-  const { data, error } = await supabase
+  const kolomDasar = "id, username, nama, role, kelas_id, status, last_seen_updates, last_seen_obrolan, kelas:kelas_id ( id, nama, level )";
+  let { data, error } = await supabase
     .from("profiles")
-    .select("id, username, nama, role, kelas_id, status, last_seen_updates, last_seen_obrolan, pref_theme_color, pref_icon_style, kelas:kelas_id ( id, nama, level )")
+    .select(kolomDasar + ", pref_theme_color, pref_icon_style")
     .eq("id", user.id)
     .single();
+  if (error) {
+    // Kompatibel dengan project yang belum menjalankan MIGRASI_PERSONALISASI.sql
+    // (kolom pref_theme_color / pref_icon_style belum ada) -- supaya login tidak
+    // ikut gagal gara-gara itu. Personalisasi cukup kembali ke default (violet/outline).
+    const fallback = await supabase.from("profiles").select(kolomDasar).eq("id", user.id).single();
+    data = fallback.data;
+    error = fallback.error;
+  }
   if (error || !data) return null;
   return data;
 }
