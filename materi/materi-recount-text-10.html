@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mastering Recount Text - Grade X English</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN for reactive state management -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Responsive Proportional Overlay Styling for Fullscreen Mode */
+        .fullscreen-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background-color: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .fullscreen-card-container {
+            width: 100%;
+            max-width: 56rem; /* 896px max width */
+            margin-top: 0.25rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .fullscreen-card-container h2 {
+            font-size: 1.75rem !important;
+            line-height: 2.25rem !important;
+        }
+        .fullscreen-card-container h3 {
+            font-size: 1.4rem !important;
+            line-height: 1.85rem !important;
+        }
+        .fullscreen-card-container h4 {
+            font-size: 1.2rem !important;
+            line-height: 1.6rem !important;
+        }
+        .fullscreen-card-container p, 
+        .fullscreen-card-container li,
+        .fullscreen-card-container div {
+            font-size: 1rem !important;
+            line-height: 1.65 !important;
+        }
+
+        @media (min-width: 640px) {
+            .fullscreen-overlay {
+                padding: 2rem;
+            }
+            .fullscreen-card-container h2 {
+                font-size: 2.25rem !important;
+                line-height: 2.5rem !important;
+            }
+            .fullscreen-card-container h3 {
+                font-size: 1.65rem !important;
+                line-height: 2.15rem !important;
+            }
+            .fullscreen-card-container h4 {
+                font-size: 1.3rem !important;
+                line-height: 1.75rem !important;
+            }
+            .fullscreen-card-container p, 
+            .fullscreen-card-container li {
+                font-size: 1.1rem !important;
+                line-height: 1.75 !important;
+            }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between pb-20 md:pb-6" x-data="recountApp()">
+
+    <!-- Top Bar Header -->
+    <header class="sticky top-0 z-40 bg-indigo-900 text-white shadow-lg border-b border-indigo-800">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-black text-xl text-yellow-300 shadow-inner">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold leading-tight flex items-center gap-2">
+                        Recount Master
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-700 text-indigo-200 border border-indigo-500 font-semibold">Grade X</span>
+                    </h1>
+                    <p class="text-xs text-indigo-300 hidden sm:block">Interactive Learning Media for High School Students</p>
+                </div>
+            </div>
+
+            <!-- Progress Meter -->
+            <div class="flex items-center gap-3 bg-indigo-950/60 px-3 py-1.5 rounded-full border border-indigo-700/50">
+                <div class="text-right">
+                    <div class="text-[10px] text-indigo-300 uppercase tracking-wider font-semibold">Progress</div>
+                    <div class="text-xs font-bold text-yellow-300" x-text="calculateProgress() + '%'"></div>
+                </div>
+                <div class="w-12 bg-indigo-800 rounded-full h-2.5 overflow-hidden border border-indigo-600">
+                    <div class="bg-yellow-400 h-2.5 rounded-full transition-all duration-500" :style="'width: ' + calculateProgress() + '%'"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-5xl mx-auto px-4 py-6 w-full flex-grow">
+
+        <!-- Tab 0: Home / Overview -->
+        <section x-show="activeTab === 'home'" x-transition:enter="transition ease-out duration-300 transform opacity-0 scale-95" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="space-y-6">
+            
+            <!-- Hero Banner -->
+            <div :class="expandedCard === 'hero' ? 'fullscreen-overlay' : 'relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white p-6 md:p-8 shadow-xl'">
+                <div :class="expandedCard === 'hero' ? 'fullscreen-card-container relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white p-6 sm:p-8 md:p-10 shadow-2xl border border-indigo-500/30' : ''">
+                    <!-- Fullscreen Back Header -->
+                    <div x-show="expandedCard === 'hero'" class="flex items-center justify-between bg-indigo-950/90 p-3 sm:p-4 rounded-2xl mb-6 sticky top-0 z-20 border border-indigo-600/50 backdrop-blur-md shadow-lg">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-indigo-950 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 transition shadow">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300 flex items-center gap-1">
+                            <i class="fa-solid fa-expand"></i> Full Screen Mode
+                        </span>
+                    </div>
+
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl font-black pointer-events-none">
+                        <i class="fa-solid fa-history"></i>
+                    </div>
+                    <div class="relative z-10 max-w-3xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400 text-indigo-950 shadow-sm">
+                                <i class="fa-solid fa-star text-xs"></i> English Learning Module
+                            </span>
+                            <button @click="toggleFullscreen('hero')" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition text-xs font-semibold flex items-center gap-1">
+                                <i class="fa-solid" :class="expandedCard === 'hero' ? 'fa-compress' : 'fa-expand'"></i>
+                                <span x-text="expandedCard === 'hero' ? 'Exit Full Screen' : 'Full Screen'"></span>
+                            </button>
+                        </div>
+                        <h2 class="text-2xl md:text-4xl font-extrabold tracking-tight">
+                            Tell Your Past Stories Like a Pro!
+                        </h2>
+                        <p class="text-indigo-100 text-sm md:text-base leading-relaxed">
+                            Recount text is used to tell stories or events that happened in the past. Master its structure, grammar features, and learn how to write vivid personal and historical recounts!
+                        </p>
+                        <div class="pt-2 flex flex-wrap gap-3">
+                            <button @click="activeTab = 'concept'; expandedCard = null" class="px-5 py-2.5 rounded-xl bg-white text-indigo-700 font-bold text-sm shadow-md hover:bg-yellow-300 hover:text-indigo-900 transition flex items-center gap-2">
+                                <i class="fa-solid fa-play"></i> Start Learning
+                            </button>
+                            <button @click="activeTab = 'inspector'; expandedCard = null" class="px-5 py-2.5 rounded-xl bg-indigo-900/50 hover:bg-indigo-900/80 text-white font-semibold text-sm border border-indigo-400/30 transition flex items-center gap-2 backdrop-blur-md">
+                                <i class="fa-solid fa-magnifying-glass"></i> Interactive Inspector
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Objectives Cards -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-bullseye text-indigo-600"></i> Learning Objectives (Tujuan Pembelajaran)
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- Objective 1 -->
+                    <div :class="expandedCard === 'obj1' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj1' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj1'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">01</div>
+                                <button @click="toggleFullscreen('obj1')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj1' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Understand Function</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Identify the social function and main purposes of various recount texts in daily context.</p>
+                        </div>
+                    </div>
+
+                    <!-- Objective 2 -->
+                    <div :class="expandedCard === 'obj2' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj2' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj2'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">02</div>
+                                <button @click="toggleFullscreen('obj2')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj2' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Analyze Structure</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Break down text into Orientation, Chronological Events, and Re-orientation seamlessly.</p>
+                        </div>
+                    </div>
+
+                    <!-- Objective 3 -->
+                    <div :class="expandedCard === 'obj3' ? 'fullscreen-overlay' : 'p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition relative'">
+                        <div :class="expandedCard === 'obj3' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-2'">
+                            <div x-show="expandedCard === 'obj3'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                                <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                    <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                                </button>
+                                <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                            </div>
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">03</div>
+                                <button @click="toggleFullscreen('obj3')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                    <i class="fa-solid" :class="expandedCard === 'obj3' ? 'fa-compress' : 'fa-expand'"></i>
+                                </button>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm md:text-base mb-1">Master Grammar</h4>
+                            <p class="text-xs md:text-sm text-slate-600 leading-relaxed">Apply Simple Past Tense verbs, time connectives, and action verbs with accuracy.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Module Roadmap -->
+            <div :class="expandedCard === 'roadmap' ? 'fullscreen-overlay' : 'bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'roadmap' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-3'">
+                    <div x-show="expandedCard === 'roadmap'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-map text-indigo-600 mr-2"></i> Learning Steps</span>
+                        <button @click="toggleFullscreen('roadmap')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'roadmap' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </h3>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <button @click="activeTab = 'concept'; expandedCard = null" class="p-3 rounded-xl border border-indigo-100 bg-indigo-50/50 hover:bg-indigo-100 text-left transition group">
+                            <div class="text-indigo-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-lightbulb"></i></div>
+                            <div class="text-xs font-bold text-slate-800">1. Concepts</div>
+                            <div class="text-[10px] text-slate-500">Definition & Types</div>
+                        </button>
+                        <button @click="activeTab = 'inspector'; expandedCard = null" class="p-3 rounded-xl border border-emerald-100 bg-emerald-50/50 hover:bg-emerald-100 text-left transition group">
+                            <div class="text-emerald-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="text-xs font-bold text-slate-800">2. Inspector</div>
+                            <div class="text-[10px] text-slate-500">Structural Analysis</div>
+                        </button>
+                        <button @click="activeTab = 'flashcards'; expandedCard = null" class="p-3 rounded-xl border border-amber-100 bg-amber-50/50 hover:bg-amber-100 text-left transition group">
+                            <div class="text-amber-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-bolt"></i></div>
+                            <div class="text-xs font-bold text-slate-800">3. Grammar</div>
+                            <div class="text-[10px] text-slate-500">Past Verbs & Time</div>
+                        </button>
+                        <button @click="activeTab = 'quiz'; expandedCard = null" class="p-3 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-100 text-left transition group">
+                            <div class="text-rose-600 group-hover:scale-110 transition-transform mb-1 text-lg"><i class="fa-solid fa-gamepad"></i></div>
+                            <div class="text-xs font-bold text-slate-800">4. Challenges</div>
+                            <div class="text-[10px] text-slate-500">Quizzes & Games</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab 1: Concepts & Core Material -->
+        <section x-show="activeTab === 'concept'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <!-- Header Banner -->
+            <div class="bg-indigo-600 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">1. Concept & Fundamentals</h2>
+                    <p class="text-indigo-100 text-xs mt-0.5">Understanding what Recount Text is and why we write it.</p>
+                </div>
+                <i class="fa-solid fa-lightbulb text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Definition & Social Function -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Card: What is Recount Text -->
+                <div :class="expandedCard === 'concept_def' ? 'fullscreen-overlay' : 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'concept_def' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-3'">
+                        <div x-show="expandedCard === 'concept_def'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold"><i class="fa-solid fa-quote-left"></i></span>
+                                <h3 class="font-bold text-slate-800 text-base md:text-lg">What is Recount Text?</h3>
+                            </div>
+                            <button @click="toggleFullscreen('concept_def')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'concept_def' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                            A <strong class="text-indigo-700">Recount Text</strong> is a text that retells events, experiences, or actions that took place in the <span class="bg-yellow-200 px-1.5 py-0.5 rounded font-semibold text-slate-800">PAST</span>.
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs md:text-sm text-slate-700">
+                            <strong class="text-indigo-900 block mb-1">Key Characteristic:</strong>
+                            Events are told in <em>chronological order</em> (in the sequence they actually happened).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Social Function -->
+                <div :class="expandedCard === 'concept_func' ? 'fullscreen-overlay' : 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'concept_func' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-3'">
+                        <div x-show="expandedCard === 'concept_func'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold"><i class="fa-solid fa-bullseye"></i></span>
+                                <h3 class="font-bold text-slate-800 text-base md:text-lg">Social Function (Purpose)</h3>
+                            </div>
+                            <button @click="toggleFullscreen('concept_func')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'concept_func' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm md:text-base text-slate-600 leading-relaxed">
+                            The main purpose of a recount text is:
+                        </p>
+                        <ul class="space-y-2 text-xs md:text-sm text-slate-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>To <strong>inform</strong> readers about an event that occurred.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>To <strong>entertain</strong> readers through engaging personal stories.</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fa-solid fa-circle-check text-emerald-500 mt-1"></i>
+                                <span>To <strong>record</strong> historical milestones or prominent biographies.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Types of Recount Text -->
+            <div :class="expandedCard === 'concept_types' ? 'fullscreen-overlay' : 'bg-white p-5 rounded-2xl border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'concept_types' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-3'">
+                    <div x-show="expandedCard === 'concept_types'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 text-base md:text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-indigo-600"></i> Types of Recount Text
+                        </h3>
+                        <button @click="toggleFullscreen('concept_types')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'concept_types' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200">
+                            <div class="text-blue-700 font-bold text-sm mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-user"></i> Personal Recount
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">Tells about personal experiences of the writer (e.g., <em>My Trip to Yogyakarta</em>).</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+                            <div class="text-amber-700 font-bold text-sm mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-landmark"></i> Historical Recount
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">Records important historical events in the past (e.g., <em>The Battle of Surabaya</em>).</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-purple-50/70 border border-purple-200">
+                            <div class="text-purple-700 font-bold text-sm mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-address-book"></i> Biographical Recount
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">Recounts the life story or achievements of a famous person (e.g., <em>B.J. Habibie</em>).</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                            <div class="text-emerald-700 font-bold text-sm mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-newspaper"></i> Factual Recount
+                            </div>
+                            <p class="text-xs text-slate-600 leading-relaxed">Reports details of particular incidents factually (e.g., <em>Traffic Accident Report</em>).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generic Structure Deep Dive -->
+            <div :class="expandedCard === 'concept_structure' ? 'fullscreen-overlay' : 'bg-slate-900 text-white p-5 md:p-6 rounded-2xl shadow-lg relative'">
+                <div :class="expandedCard === 'concept_structure' ? 'fullscreen-card-container bg-slate-900 text-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-700 shadow-2xl space-y-5' : 'space-y-4'">
+                    <div x-show="expandedCard === 'concept_structure'" class="flex items-center justify-between bg-slate-800 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow border border-slate-700">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-yellow-300 flex items-center gap-2">
+                            <i class="fa-solid fa-sitemap"></i> Generic Structure of Recount Text
+                        </h3>
+                        <button @click="toggleFullscreen('concept_structure')" class="p-1.5 text-slate-400 hover:text-yellow-300 rounded-lg hover:bg-slate-800 transition">
+                            <i class="fa-solid" :class="expandedCard === 'concept_structure' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-blue-500/20 text-blue-300 font-bold text-xs border border-blue-500/30">STEP 1</div>
+                            <h4 class="font-bold text-white text-base">Orientation</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">Gives the background information. Answers <strong>Who</strong> was involved, <strong>Where</strong> it took place, and <strong>When</strong> it happened.</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-bold text-xs border border-emerald-500/30">STEP 2</div>
+                            <h4 class="font-bold text-white text-base">Events</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">A series of paragraphs telling what happened in <strong>chronological order</strong> (Event 1, Event 2, Event 3...).</p>
+                        </div>
+                        <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
+                            <div class="inline-block px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 font-bold text-xs border border-purple-500/30">STEP 3</div>
+                            <h4 class="font-bold text-white text-base">Re-orientation</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed"><em>(Optional)</em> A closing statement, personal impression, or summary of how the writer felt about the experience.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button @click="activeTab = 'inspector'; markModuleComplete('concept'); expandedCard = null" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Interactive Text Inspector</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 2: Interactive Text Breakdown Inspector -->
+        <section x-show="activeTab === 'inspector'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-emerald-700 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">2. Interactive Text Inspector</h2>
+                    <p class="text-emerald-100 text-xs mt-0.5">Click structural buttons below to highlight corresponding parts in real-time!</p>
+                </div>
+                <i class="fa-solid fa-magnifying-glass-location text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Inspector Container Card -->
+            <div :class="expandedCard === 'inspector_main' ? 'fullscreen-overlay' : 'relative'">
+                <div :class="expandedCard === 'inspector_main' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'inspector_main'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Inspector</span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full justify-between">
+                            <label class="text-xs font-bold text-slate-700 flex items-center gap-2">
+                                <i class="fa-solid fa-file-text text-indigo-600"></i> Select Sample Text:
+                            </label>
+                            <div class="flex flex-wrap gap-2">
+                                <button @click="selectedSample = 'trip'" :class="selectedSample === 'trip' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    Personal: Vacation in Bali
+                                </button>
+                                <button @click="selectedSample = 'history'" :class="selectedSample === 'history' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    Historical: Proclamation 1945
+                                </button>
+                            </div>
+                        </div>
+                        <button @click="toggleFullscreen('inspector_main')" class="p-1.5 ml-2 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'inspector_main' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <!-- Interactive Structure Controls -->
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                        <button @click="inspectorHighlight = 'all'" :class="inspectorHighlight === 'all' ? 'ring-2 ring-indigo-600 bg-indigo-50 text-indigo-900' : 'bg-white text-slate-700'" class="p-3 rounded-xl border border-slate-200 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-eye text-indigo-600"></i> Show All Structure
+                        </button>
+                        <button @click="inspectorHighlight = 'orientation'" :class="inspectorHighlight === 'orientation' ? 'ring-2 ring-blue-600 bg-blue-50 text-blue-900' : 'bg-white text-slate-700'" class="p-3 rounded-xl border border-slate-200 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                            <span class="w-3 h-3 rounded-full bg-blue-500"></span> Orientation
+                        </button>
+                        <button @click="inspectorHighlight = 'events'" :class="inspectorHighlight === 'events' ? 'ring-2 ring-emerald-600 bg-emerald-50 text-emerald-900' : 'bg-white text-slate-700'" class="p-3 rounded-xl border border-slate-200 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Events
+                        </button>
+                        <button @click="inspectorHighlight = 'reorientation'" :class="inspectorHighlight === 'reorientation' ? 'ring-2 ring-purple-600 bg-purple-50 text-purple-900' : 'bg-white text-slate-700'" class="p-3 rounded-xl border border-slate-200 font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm">
+                            <span class="w-3 h-3 rounded-full bg-purple-500"></span> Re-orientation
+                        </button>
+                    </div>
+
+                    <!-- Inspector Display Area -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-md space-y-4">
+                        
+                        <!-- Sample 1: Trip to Bali -->
+                        <template x-if="selectedSample === 'trip'">
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                                    <span>A Memorable Holiday in Bali</span>
+                                    <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">Personal Recount</span>
+                                </h3>
+
+                                <!-- Paragraph 1: Orientation -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-blue-50/90 border-blue-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'orientation', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'orientation'}">
+                                    <div class="flex items-center justify-between border-b border-blue-200/60 pb-2">
+                                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-compass text-blue-600"></i> Part 1: Background Information
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-600 text-white shadow-sm">Orientation</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed pt-0.5">
+                                        Last year, during the long school holiday, my family and I went to Bali for three days. We stayed at a cozy hotel near Kuta Beach. It was my first time visiting the Island of Gods, and I was extremely excited.
+                                    </p>
+                                </div>
+
+                                <!-- Paragraph 2: Events -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-emerald-50/90 border-emerald-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'events', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'events'}">
+                                    <div class="flex items-center justify-between border-b border-emerald-200/60 pb-2">
+                                        <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-list-check text-emerald-600"></i> Part 2: Sequence of Events
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-emerald-600 text-white shadow-sm">Events</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed">
+                                        On the first day, we visited Sanur Beach in the morning to watch the breathtaking sunrise. After that, we drove to Ubud to see the Monkey Forest and enjoy traditional Balinese rice terraces. 
+                                    </p>
+                                    <p class="text-sm text-slate-800 leading-relaxed">
+                                        On the second day, we tried water sports at Tanjung Benoa. I tried banana boat riding with my brother, which was thrilling. In the evening, we had a delicious seafood dinner at Jimbaran Bay while watching the sunset.
+                                    </p>
+                                </div>
+
+                                <!-- Paragraph 3: Reorientation -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-purple-50/90 border-purple-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'reorientation', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'reorientation'}">
+                                    <div class="flex items-center justify-between border-b border-purple-200/60 pb-2">
+                                        <span class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-flag-checkered text-purple-600"></i> Part 3: Personal Comment / Conclusion
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-purple-600 text-white shadow-sm">Re-orientation</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed pt-0.5">
+                                        On the final day, we bought some souvenirs at Sukawati Art Market before heading back to the airport. It was truly an unforgettable holiday, and I hope we can visit Bali again soon!
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Sample 2: Historical Proclamation -->
+                        <template x-if="selectedSample === 'history'">
+                            <div class="space-y-4">
+                                <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center justify-between">
+                                    <span>The Proclamation of Indonesian Independence</span>
+                                    <span class="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-semibold">Historical Recount</span>
+                                </h3>
+
+                                <!-- Paragraph 1: Orientation -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-blue-50/90 border-blue-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'orientation', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'orientation'}">
+                                    <div class="flex items-center justify-between border-b border-blue-200/60 pb-2">
+                                        <span class="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-compass text-blue-600"></i> Part 1: Background Information
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-blue-600 text-white shadow-sm">Orientation</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed pt-0.5">
+                                        On August 17, 1945, the Proclamation of Indonesian Independence was officially read by Ir. Soekarno, accompanied by Drs. Mohammad Hatta, at Jalan Pegangsaan Timur No. 56, Jakarta.
+                                    </p>
+                                </div>
+
+                                <!-- Paragraph 2: Events -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-emerald-50/90 border-emerald-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'events', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'events'}">
+                                    <div class="flex items-center justify-between border-b border-emerald-200/60 pb-2">
+                                        <span class="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-list-check text-emerald-600"></i> Part 2: Chronological Events
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-emerald-600 text-white shadow-sm">Events</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed">
+                                        Earlier that morning, youth leaders and freedom fighters gathered at Soekarno’s residence to prepare for the historic event. Sayuti Melik typed the final draft of the proclamation text.
+                                    </p>
+                                    <p class="text-sm text-slate-800 leading-relaxed">
+                                        At 10:00 AM, Soekarno read the declaration text aloud. Right after the reading, the Red and White flag (sewn by Fatmawati) was hoisted while the audience sang the national anthem "Indonesia Raya".
+                                    </p>
+                                </div>
+
+                                <!-- Paragraph 3: Reorientation -->
+                                <div class="p-4 rounded-xl transition-all duration-300 border space-y-2.5"
+                                    :class="{'bg-purple-50/90 border-purple-300 shadow-sm': inspectorHighlight === 'all' || inspectorHighlight === 'reorientation', 'bg-slate-50 border-slate-200 opacity-40': inspectorHighlight !== 'all' && inspectorHighlight !== 'reorientation'}">
+                                    <div class="flex items-center justify-between border-b border-purple-200/60 pb-2">
+                                        <span class="text-xs font-bold text-purple-900 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-flag-checkered text-purple-600"></i> Part 3: Historical Significance / Conclusion
+                                        </span>
+                                        <span class="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase bg-purple-600 text-white shadow-sm">Re-orientation</span>
+                                    </div>
+                                    <p class="text-sm text-slate-800 leading-relaxed pt-0.5">
+                                        This momentous event marked the official birth of the Republic of Indonesia as a sovereign nation, ending centuries of foreign colonial rule.
+                                    </p>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button @click="activeTab = 'concept'; expandedCard = null" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button @click="activeTab = 'flashcards'; markModuleComplete('inspector'); expandedCard = null" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Language & Grammar</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 3: Language Features & Grammar Flashcards -->
+        <section x-show="activeTab === 'flashcards'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-amber-600 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">3. Language Features & Grammar</h2>
+                    <p class="text-amber-100 text-xs mt-0.5">Master Simple Past Tense, Action Verbs, and Time Connectives.</p>
+                </div>
+                <i class="fa-solid fa-bolt text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Feature Summary Chips -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div :class="expandedCard === 'gram_f1' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f1' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f1'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-amber-600">Feature 1</div>
+                            <button @click="toggleFullscreen('gram_f1')" class="p-1 text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f1' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Simple Past Tense</div>
+                        <p class="text-xs md:text-sm text-slate-500">Uses Past Verbs (V2): <em>went, visited, built, was/were</em>.</p>
+                    </div>
+                </div>
+
+                <div :class="expandedCard === 'gram_f2' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f2' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f2'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-indigo-600">Feature 2</div>
+                            <button @click="toggleFullscreen('gram_f2')" class="p-1 text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f2' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Time Connectives</div>
+                        <p class="text-xs md:text-sm text-slate-500">Connects story order: <em>First, Then, After that, Finally</em>.</p>
+                    </div>
+                </div>
+
+                <div :class="expandedCard === 'gram_f3' ? 'fullscreen-overlay' : 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative'">
+                    <div :class="expandedCard === 'gram_f3' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-4' : 'space-y-1'">
+                        <div x-show="expandedCard === 'gram_f3'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-4 sticky top-0 z-20 shadow">
+                            <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                                <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                            </button>
+                            <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Mode</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="text-xs uppercase font-extrabold text-emerald-600">Feature 3</div>
+                            <button @click="toggleFullscreen('gram_f3')" class="p-1 text-slate-400 hover:text-indigo-600 transition"><i class="fa-solid" :class="expandedCard === 'gram_f3' ? 'fa-compress' : 'fa-expand'"></i></button>
+                        </div>
+                        <div class="font-bold text-slate-800 text-sm md:text-base">Action Verbs</div>
+                        <p class="text-xs md:text-sm text-slate-500">Verbs showing activity: <em>walked, swam, cooked, wrote</em>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Flashcard Drill Section -->
+            <div :class="expandedCard === 'flashcards_card' ? 'fullscreen-overlay' : 'bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'flashcards_card' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'flashcards_card'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Flashcard Drill</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base md:text-lg">Interactive Past Tense Flashcard</h3>
+                            <p class="text-xs text-slate-500">Tap card to flip between Present (V1) and Past (V2)</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold px-3 py-1 bg-amber-100 text-amber-800 rounded-full" x-text="'Card ' + (currentCardIndex + 1) + ' of ' + flashcards.length"></span>
+                            <button @click="toggleFullscreen('flashcards_card')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                <i class="fa-solid" :class="expandedCard === 'flashcards_card' ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Flashcard Widget -->
+                    <div class="flex justify-center my-4">
+                        <div @click="isCardFlipped = !isCardFlipped" 
+                             class="w-full max-w-sm h-56 rounded-2xl p-6 cursor-pointer transition-all duration-500 transform flex flex-col items-center justify-center text-center shadow-lg border border-slate-200 select-none relative"
+                             :class="isCardFlipped ? 'bg-indigo-900 text-white rotate-y-180' : 'bg-gradient-to-br from-amber-400 to-orange-500 text-slate-900'">
+                            
+                            <div class="absolute top-3 right-3 text-xs font-bold opacity-80 flex items-center gap-1">
+                                <i class="fa-solid fa-arrows-rotate"></i> Click to Flip
+                            </div>
+
+                            <!-- Front Side -->
+                            <template x-if="!isCardFlipped">
+                                <div class="space-y-2">
+                                    <span class="text-xs uppercase tracking-widest font-extrabold text-slate-800 opacity-75">Base Verb (V1) / Present</span>
+                                    <div class="text-3xl font-black text-slate-900" x-text="flashcards[currentCardIndex].v1"></div>
+                                    <p class="text-xs text-slate-800 italic" x-text="'Indonesian: ' + flashcards[currentCardIndex].meaning"></p>
+                                </div>
+                            </template>
+
+                            <!-- Back Side -->
+                            <template x-if="isCardFlipped">
+                                <div class="space-y-2">
+                                    <span class="text-xs uppercase tracking-widest font-extrabold text-amber-300">Past Form (V2)</span>
+                                    <div class="text-3xl font-black text-yellow-300" x-text="flashcards[currentCardIndex].v2"></div>
+                                    <div class="inline-block px-2.5 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-700 text-indigo-200" x-text="flashcards[currentCardIndex].type"></div>
+                                    <p class="text-xs text-indigo-200 italic mt-2" x-text="'Example: ' + flashcards[currentCardIndex].example"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Card Controls -->
+                    <div class="flex justify-center items-center gap-4">
+                        <button @click="prevCard()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button @click="nextCard()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold text-xs shadow-sm">
+                            Next Flashcard
+                        </button>
+                        <button @click="nextCard()" class="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sequence Connectives Reference Box -->
+            <div :class="expandedCard === 'grammar_guide' ? 'fullscreen-overlay' : 'bg-indigo-900 text-white p-5 rounded-2xl shadow-md relative'">
+                <div :class="expandedCard === 'grammar_guide' ? 'fullscreen-card-container bg-indigo-950 text-white p-6 sm:p-8 md:p-10 rounded-3xl border border-indigo-700 shadow-2xl space-y-5' : 'space-y-3'">
+                    
+                    <div x-show="expandedCard === 'grammar_guide'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow border border-indigo-700">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Connectives Guide</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-base md:text-lg text-yellow-300 flex items-center gap-2">
+                            <i class="fa-solid fa-clock"></i> Useful Time Connectives Guide
+                        </h3>
+                        <button @click="toggleFullscreen('grammar_guide')" class="p-1.5 text-slate-300 hover:text-yellow-300 rounded-lg hover:bg-indigo-800 transition">
+                            <i class="fa-solid" :class="expandedCard === 'grammar_guide' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs md:text-sm">
+                        <div class="bg-indigo-800/80 p-3 rounded-lg border border-indigo-700">
+                            <span class="text-indigo-300 block font-semibold text-[10px] uppercase">BEGINNING</span>
+                            <strong class="text-white">First, In the beginning, Initially</strong>
+                        </div>
+                        <div class="bg-indigo-800/80 p-3 rounded-lg border border-indigo-700">
+                            <span class="text-indigo-300 block font-semibold text-[10px] uppercase">CONTINUATION</span>
+                            <strong class="text-white">Next, Then, After that, Afterwards</strong>
+                        </div>
+                        <div class="bg-indigo-800/80 p-3 rounded-lg border border-indigo-700">
+                            <span class="text-indigo-300 block font-semibold text-[10px] uppercase">SIMULTANEOUS</span>
+                            <strong class="text-white">Meanwhile, At the same time</strong>
+                        </div>
+                        <div class="bg-indigo-800/80 p-3 rounded-lg border border-indigo-700">
+                            <span class="text-indigo-300 block font-semibold text-[10px] uppercase">ENDING</span>
+                            <strong class="text-white">Finally, In the end, Eventually</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between">
+                <button @click="activeTab = 'inspector'; expandedCard = null" class="px-5 py-2.5 bg-slate-200 text-slate-700 font-bold text-sm rounded-xl hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Back
+                </button>
+                <button @click="activeTab = 'quiz'; markModuleComplete('flashcards'); expandedCard = null" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition flex items-center gap-2 shadow-md">
+                    <span>Next: Practice & Quizzes</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- Tab 4: Practice & Gamified Quizzes -->
+        <section x-show="activeTab === 'quiz'" x-transition:enter="transition ease-out duration-300" class="space-y-6" style="display: none;">
+            
+            <div class="bg-rose-600 text-white p-5 rounded-2xl shadow-md flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold">4. Practice & Knowledge Check</h2>
+                    <p class="text-rose-100 text-xs mt-0.5">Test your understanding with interactive challenges!</p>
+                </div>
+                <i class="fa-solid fa-gamepad text-3xl opacity-30"></i>
+            </div>
+
+            <!-- Quiz Type Selector -->
+            <div class="flex rounded-xl bg-slate-200 p-1 font-bold text-xs">
+                <button @click="quizMode = 'mcq'" :class="quizMode === 'mcq' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-2 rounded-lg transition">
+                    Multiple Choice Quiz
+                </button>
+                <button @click="quizMode = 'sequence'" :class="quizMode === 'sequence' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-600 hover:text-slate-900'" class="flex-1 py-2 rounded-lg transition">
+                    Sentence Ordering Challenge
+                </button>
+            </div>
+
+            <!-- MODE 1: Multiple Choice Quiz -->
+            <div x-show="quizMode === 'mcq'" :class="expandedCard === 'quiz_mcq' ? 'fullscreen-overlay' : 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative'">
+                <div :class="expandedCard === 'quiz_mcq' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-5'">
+                    
+                    <div x-show="expandedCard === 'quiz_mcq'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Quiz Mode</span>
+                    </div>
+
+                    <template x-if="!quizFinished">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-400" x-text="'Question ' + (currentQuestion + 1) + ' of ' + questions.length"></span>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold rounded-lg text-xs" x-text="'Score: ' + quizScore"></span>
+                                    <button @click="toggleFullscreen('quiz_mcq')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                                        <i class="fa-solid" :class="expandedCard === 'quiz_mcq' ? 'fa-compress' : 'fa-expand'"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Question Prompt -->
+                            <h3 class="text-base md:text-lg font-bold text-slate-800 leading-snug" x-text="questions[currentQuestion].prompt"></h3>
+
+                            <!-- Optional Text Snippet for Question -->
+                            <template x-if="questions[currentQuestion].snippet">
+                                <div class="p-3 bg-slate-50 border-l-4 border-indigo-500 rounded text-xs md:text-sm italic text-slate-700" x-text="questions[currentQuestion].snippet"></div>
+                            </template>
+
+                            <!-- Answer Choices -->
+                            <div class="space-y-2">
+                                <template x-for="(option, idx) in questions[currentQuestion].options" :key="idx">
+                                    <button @click="selectAnswer(idx)" 
+                                            :disabled="selectedOption !== null"
+                                            class="w-full text-left p-3.5 rounded-xl border text-xs md:text-sm font-semibold transition flex items-center justify-between"
+                                            :class="getOptionClass(idx)">
+                                        <span x-text="option"></span>
+                                        <i x-show="selectedOption === idx && idx === questions[currentQuestion].answer" class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                                        <i x-show="selectedOption === idx && idx !== questions[currentQuestion].answer" class="fa-solid fa-circle-xmark text-rose-600 text-sm"></i>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <!-- Feedback Box -->
+                            <template x-if="selectedOption !== null">
+                                <div class="p-3.5 rounded-xl text-xs md:text-sm font-medium space-y-1"
+                                     :class="selectedOption === questions[currentQuestion].answer ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'">
+                                    <div class="font-bold flex items-center gap-1.5">
+                                        <i :class="selectedOption === questions[currentQuestion].answer ? 'fa-solid fa-check text-emerald-600' : 'fa-solid fa-xmark text-rose-600'"></i>
+                                        <span x-text="selectedOption === questions[currentQuestion].answer ? 'Correct!' : 'Incorrect!'"></span>
+                                    </div>
+                                    <p x-text="questions[currentQuestion].explanation"></p>
+                                </div>
+                            </template>
+
+                            <!-- Next Question Button -->
+                            <div class="pt-2 flex justify-end">
+                                <button x-show="selectedOption !== null" @click="nextQuestion()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs md:text-sm rounded-xl shadow transition">
+                                    <span x-text="currentQuestion < questions.length - 1 ? 'Next Question' : 'View Results'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Quiz Results / Certificate Screen -->
+                    <template x-if="quizFinished">
+                        <div class="text-center py-6 space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800">Quiz Completed!</h3>
+                                <p class="text-xs text-slate-500 mt-1">Here is how you performed in Recount Text Mastery:</p>
+                            </div>
+
+                            <div class="max-w-xs mx-auto bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                <div class="text-3xl font-black text-indigo-600" x-text="quizScore + ' / ' + (questions.length * 20)"></div>
+                                <p class="text-xs font-bold text-slate-600 mt-1" x-text="getScoreFeedback()"></p>
+                            </div>
+
+                            <div class="pt-2 flex justify-center gap-3">
+                                <button @click="resetQuiz()" class="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition">
+                                    Retry Quiz
+                                </button>
+                                <button @click="markModuleComplete('quiz'); activeTab = 'home'; expandedCard = null" class="px-5 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition">
+                                    Return to Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- MODE 2: Sentence Ordering Challenge -->
+            <div x-show="quizMode === 'sequence'" :class="expandedCard === 'quiz_seq' ? 'fullscreen-overlay' : 'bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative'" style="display: none;">
+                <div :class="expandedCard === 'quiz_seq' ? 'fullscreen-card-container bg-white p-6 sm:p-8 md:p-10 rounded-3xl border border-slate-200 shadow-2xl space-y-5' : 'space-y-4'">
+                    
+                    <div x-show="expandedCard === 'quiz_seq'" class="flex items-center justify-between bg-indigo-900 text-white p-3 sm:p-4 rounded-xl mb-2 sticky top-0 z-20 shadow">
+                        <button @click="expandedCard = null" class="px-4 py-2 bg-yellow-400 text-slate-900 font-extrabold text-xs sm:text-sm rounded-xl flex items-center gap-2 hover:bg-yellow-300 transition">
+                            <i class="fa-solid fa-arrow-left"></i><span>Kembali (Back)</span>
+                        </button>
+                        <span class="text-xs font-semibold text-yellow-300"><i class="fa-solid fa-expand"></i> Full Screen Sequence Mode</span>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-base md:text-lg">Arrange in Chronological Order</h3>
+                            <p class="text-xs text-slate-500">Use the Up/Down arrows to reorder sentences into a logical recount paragraph.</p>
+                        </div>
+                        <button @click="toggleFullscreen('quiz_seq')" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition">
+                            <i class="fa-solid" :class="expandedCard === 'quiz_seq' ? 'fa-compress' : 'fa-expand'"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <template x-for="(item, index) in sequenceItems" :key="item.id">
+                            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 transition">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center" x-text="index + 1"></span>
+                                    <p class="text-xs md:text-sm text-slate-800 font-medium leading-relaxed" x-text="item.text"></p>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <button @click="moveSequence(index, -1)" :disabled="index === 0" class="w-6 h-6 rounded bg-white hover:bg-slate-200 text-slate-600 border flex items-center justify-center text-xs disabled:opacity-30">
+                                        <i class="fa-solid fa-chevron-up"></i>
+                                    </button>
+                                    <button @click="moveSequence(index, 1)" :disabled="index === sequenceItems.length - 1" class="w-6 h-6 rounded bg-white hover:bg-slate-200 text-slate-600 border flex items-center justify-center text-xs disabled:opacity-30">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="pt-2 flex justify-between items-center">
+                        <button @click="checkSequenceOrder()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs md:text-sm rounded-xl shadow transition">
+                            Check Sequence
+                        </button>
+                        <span x-show="sequenceChecked" class="text-xs font-bold" :class="isSequenceCorrect ? 'text-emerald-600' : 'text-rose-600'" x-text="sequenceFeedback"></span>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION (Optimized for Phones & Tablets) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg px-2 py-2 md:py-3">
+        <div class="max-w-md mx-auto flex justify-around items-center">
+            
+            <button @click="activeTab = 'home'" :class="activeTab === 'home' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'" class="flex flex-col items-center gap-1 text-[11px] transition">
+                <i class="fa-solid fa-house text-base"></i>
+                <span>Home</span>
+            </button>
+
+            <button @click="activeTab = 'concept'" :class="activeTab === 'concept' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'" class="flex flex-col items-center gap-1 text-[11px] transition">
+                <i class="fa-solid fa-book text-base"></i>
+                <span>Concepts</span>
+            </button>
+
+            <button @click="activeTab = 'inspector'" :class="activeTab === 'inspector' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'" class="flex flex-col items-center gap-1 text-[11px] transition">
+                <i class="fa-solid fa-magnifying-glass text-base"></i>
+                <span>Inspector</span>
+            </button>
+
+            <button @click="activeTab = 'flashcards'" :class="activeTab === 'flashcards' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'" class="flex flex-col items-center gap-1 text-[11px] transition">
+                <i class="fa-solid fa-bolt text-base"></i>
+                <span>Grammar</span>
+            </button>
+
+            <button @click="activeTab = 'quiz'" :class="activeTab === 'quiz' ? 'text-indigo-600 font-bold' : 'text-slate-400 hover:text-slate-600'" class="flex flex-col items-center gap-1 text-[11px] transition">
+                <i class="fa-solid fa-gamepad text-base"></i>
+                <span>Practice</span>
+            </button>
+
+        </div>
+    </nav>
+
+    <script>
+        function recountApp() {
+            return {
+                activeTab: 'home',
+                expandedCard: null,                completedModules: {
+                    concept: false,
+                    inspector: false,
+                    flashcards: false,
+                    quiz: false
+                },
+
+                // Fullscreen toggle helper method
+                toggleFullscreen(cardId) {
+                    this.expandedCard = this.expandedCard === cardId ? null : cardId;
+                },
+
+                // Inspector State
+                selectedSample: 'trip',
+                inspectorHighlight: 'all',
+
+                // Flashcard State
+                currentCardIndex: 0,
+                isCardFlipped: false,
+                flashcards: [
+                    { v1: 'Go', v2: 'Went', meaning: 'Pergi', type: 'Irregular Verb', example: 'We went to Bali last week.' },
+                    { v1: 'Visit', v2: 'Visited', meaning: 'Mengunjungi', type: 'Regular Verb (-ed)', example: 'They visited the museum yesterday.' },
+                    { v1: 'See', v2: 'Saw', meaning: 'Melihat', type: 'Irregular Verb', example: 'I saw a beautiful sunrise.' },
+                    { v1: 'Build', v2: 'Built', meaning: 'Membangun', type: 'Irregular Verb', example: 'They built a sandcastle on the beach.' },
+                    { v1: 'Buy', v2: 'Bought', meaning: 'Membeli', type: 'Irregular Verb', example: 'She bought souvenirs for her friends.' },
+                    { v1: 'Enjoy', v2: 'Enjoyed', meaning: 'Menikmati', type: 'Regular Verb (-ed)', example: 'We enjoyed the seafood dinner.' }
+                ],
+
+                // Quiz State
+                quizMode: 'mcq',
+                currentQuestion: 0,
+                selectedOption: null,
+                quizScore: 0,
+                quizFinished: false,
+                questions: [
+                    {
+                        prompt: "What is the main purpose of a Recount Text?",
+                        snippet: null,
+                        options: [
+                            "A) To describe how to make or do something step-by-step.",
+                            "B) To retell past events or experiences in chronological order.",
+                            "C) To persuade the reader to agree with a point of view.",
+                            "D) To explain a natural phenomenon in detail."
+                        ],
+                        answer: 1,
+                        explanation: "Correct! Recount text retells past events or experiences in chronological order."
+                    },
+                    {
+                        prompt: "Which part of the recount text introduces WHO, WHERE, and WHEN the story happened?",
+                        snippet: null,
+                        options: [
+                            "A) Re-orientation",
+                            "B) Complication",
+                            "C) Orientation",
+                            "D) Resolution"
+                        ],
+                        answer: 2,
+                        explanation: "Correct! The Orientation sets the background information (Who, Where, When)."
+                    },
+                    {
+                        prompt: "Identify the Simple Past Tense verb in this sentence: 'They visited Prambanan Temple yesterday.'",
+                        snippet: "'They visited Prambanan Temple yesterday.'",
+                        options: [
+                            "A) They",
+                            "B) Visited",
+                            "C) Temple",
+                            "D) Yesterday"
+                        ],
+                        answer: 1,
+                        explanation: "Correct! 'Visited' is the Past Form (V2) of the verb 'visit'."
+                    },
+                    {
+                        prompt: "Which of the following is a Time Connective commonly used in Recount Texts?",
+                        snippet: null,
+                        options: [
+                            "A) Therefore",
+                            "B) After that",
+                            "C) In contrast",
+                            "D) Although"
+                        ],
+                        answer: 1,
+                        explanation: "Correct! 'After that' signals chronological sequence between events."
+                    },
+                    {
+                        prompt: "What is the function of the Re-orientation paragraph?",
+                        snippet: null,
+                        options: [
+                            "A) To start a new argument.",
+                            "B) To give a closing personal comment or conclusion about the experience.",
+                            "C) To describe physical attributes of a place.",
+                            "D) To list ingredients needed."
+                        ],
+                        answer: 1,
+                        explanation: "Correct! Re-orientation provides an optional closing comment or impression."
+                    }
+                ],
+
+                // Sentence Sequence State
+                sequenceChecked: false,
+                isSequenceCorrect: false,
+                sequenceFeedback: '',
+                sequenceItems: [
+                    { id: 3, text: "Finally, we took a photo together and went home happily.", correctOrder: 3 },
+                    { id: 1, text: "First, we arrived at the botanical garden at 9:00 AM.", correctOrder: 1 },
+                    { id: 0, text: "Last Sunday, my friends and I had a picnic at the garden.", correctOrder: 0 },
+                    { id: 2, text: "After that, we ate snacks while enjoying the fresh air.", correctOrder: 2 }
+                ],
+
+                // Methods
+                calculateProgress() {
+                    let total = 0;
+                    if (this.completedModules.concept) total += 25;
+                    if (this.completedModules.inspector) total += 25;
+                    if (this.completedModules.flashcards) total += 25;
+                    if (this.completedModules.quiz) total += 25;
+                    return total;
+                },
+
+                markModuleComplete(module) {
+                    this.completedModules[module] = true;
+                },
+
+                nextCard() {
+                    this.isCardFlipped = false;
+                    this.currentCardIndex = (this.currentCardIndex + 1) % this.flashcards.length;
+                },
+
+                prevCard() {
+                    this.isCardFlipped = false;
+                    this.currentCardIndex = (this.currentCardIndex - 1 + this.flashcards.length) % this.flashcards.length;
+                },
+
+                selectAnswer(idx) {
+                    this.selectedOption = idx;
+                    if (idx === this.questions[this.currentQuestion].answer) {
+                        this.quizScore += 20;
+                    }
+                },
+
+                getOptionClass(idx) {
+                    if (this.selectedOption === null) {
+                        return 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-indigo-50 hover:border-indigo-300';
+                    }
+                    if (idx === this.questions[this.currentQuestion].answer) {
+                        return 'bg-emerald-50 border-emerald-500 text-emerald-900';
+                    }
+                    if (this.selectedOption === idx) {
+                        return 'bg-rose-50 border-rose-500 text-rose-900';
+                    }
+                    return 'bg-slate-50 border-slate-200 text-slate-400 opacity-50';
+                },
+
+                nextQuestion() {
+                    if (this.currentQuestion < this.questions.length - 1) {
+                        this.currentQuestion++;
+                        this.selectedOption = null;
+                    } else {
+                        this.quizFinished = true;
+                    }
+                },
+
+                resetQuiz() {
+                    this.currentQuestion = 0;
+                    this.selectedOption = null;
+                    this.quizScore = 0;
+                    this.quizFinished = false;
+                },
+
+                getScoreFeedback() {
+                    if (this.quizScore === 100) return "Outstanding! You are a Recount Text Expert! 🌟";
+                    if (this.quizScore >= 80) return "Great job! You have a solid grasp of Recount Text! 👍";
+                    if (this.quizScore >= 60) return "Good effort! Review the flashcards and try again. 📚";
+                    return "Keep practicing! Review the concepts and try again. 💪";
+                },
+
+                moveSequence(index, direction) {
+                    const targetIndex = index + direction;
+                    if (targetIndex < 0 || targetIndex >= this.sequenceItems.length) return;
+                    const temp = this.sequenceItems[index];
+                    this.sequenceItems[index] = this.sequenceItems[targetIndex];
+                    this.sequenceItems[targetIndex] = temp;
+                    this.sequenceChecked = false;
+                },
+
+                checkSequenceOrder() {
+                    this.sequenceChecked = true;
+                    let correct = true;
+                    for (let i = 0; i < this.sequenceItems.length; i++) {
+                        if (this.sequenceItems[i].correctOrder !== i) {
+                            correct = false;
+                            break;
+                        }
+                    }
+                    this.isSequenceCorrect = correct;
+                    if (correct) {
+                        this.sequenceFeedback = "Perfect Chronological Order! 🎉";
+                    } else {
+                        this.sequenceFeedback = "Not quite right yet. Check the time connectives! 💡";
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
