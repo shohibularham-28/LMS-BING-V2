@@ -11,6 +11,7 @@
   --ink-faint:#5D6478;
   --violet:#7C5CFC;
   --violet-soft:rgba(124,92,252,0.15);
+  --violet-light:#9B7BFF;
   --lime:#C6F135;
   --coral:#FF6B5E;
   --sky:#4CC9F0;
@@ -48,6 +49,17 @@ html[data-theme="dark"]{
   --app-overlay:rgba(0,0,0,0.6);
   color-scheme:dark;
 }
+
+/* ===== PERSONALISASI: tema warna aksen (siswa) =====
+   Ganti var(--violet) / --violet-soft / --violet-light dipakai di seluruh
+   halaman (tombol, nav aktif, gradient sambutan, dst). Diaktifkan lewat
+   atribut data-accent di <html>, diset dari personalisasi.html + app.js. */
+html[data-accent="biru"]{ --violet:#2F80ED; --violet-soft:rgba(47,128,237,0.15); --violet-light:#6FA8FF; }
+html[data-accent="hijau"]{ --violet:#1FA15A; --violet-soft:rgba(31,161,90,0.15); --violet-light:#4FC97F; }
+html[data-accent="pink"]{ --violet:#E5527E; --violet-soft:rgba(229,82,126,0.15); --violet-light:#FF8FAE; }
+html[data-accent="oranye"]{ --violet:#E2822E; --violet-soft:rgba(226,130,46,0.15); --violet-light:#FFB066; }
+html[data-accent="coklat"]{ --violet:#8B5E3C; --violet-soft:rgba(139,94,60,0.15); --violet-light:#B98A5E; }
+
 *{box-sizing:border-box;}
 html{background:var(--app-bg);}
 body{
@@ -625,6 +637,7 @@ html[data-theme="dark"] .theme-toggle-btn .icon-sun{ display:block; }
   font-size:27px;
 }
 .app-drawer .ad-tile .ad-icon svg{ width:26px; height:26px; display:block; }
+.app-drawer .ad-tile .ad-icon-emoji{ font-size:24px; line-height:1; }
 .app-drawer .ad-tile .ad-label{ font-size:13.5px; font-weight:700; }
 .app-drawer .ad-tile .ad-desc{ font-size:11.5px; color:var(--app-text-faint); line-height:1.4; }
 @media (max-width:700px){

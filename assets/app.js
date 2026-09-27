@@ -51,6 +51,145 @@ if (document.readyState === "loading") {
   initThemeToggle();
 }
 
+// ===================== PERSONALISASI: TEMA WARNA & MODEL IKON (siswa) =====================
+// Preferensi utamanya disimpan di Supabase (profiles.pref_theme_color /
+// profiles.pref_icon_style) supaya ikut siswa walau ganti perangkat, tapi
+// juga di-cache ke localStorage supaya bisa langsung diterapkan begini profil
+// belum selesai dimuat (mencegah kedip balik ke tema default). syncPersonalization()
+// dipanggil dari renderShell() dan jadi sumber kebenaran akhir begitu profil siap.
+const ACCENT_KEY = "lms_accent";
+const ICONSTYLE_KEY = "lms_icon_style";
+const VALID_ACCENTS = ["violet", "biru", "hijau", "pink", "oranye", "coklat"];
+const VALID_ICON_STYLES = ["outline", "filled", "soft", "emoji"];
+
+// Kumpulan ikon per menu app-drawer siswa, satu set per model ikon.
+// "soft" tidak didaftar di sini -- dibuat otomatis dari versi "outline"
+// (lihat softenOutlineIcon) supaya bentuknya tetap konsisten satu sama lain.
+const ICON_SETS = {
+  pengumuman: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="3,9 3,15 6,15 7,20 9,20 8,15 20,19 20,5"/></svg>',
+    emoji: '📣',
+  },
+  materi: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,3 19,21 12,17 5,21"/></svg>',
+    emoji: '📚',
+  },
+  worksheet: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,2 15,2 19,6 19,22 6,22"/><polygon points="15,2 15,6 19,6" opacity="0.55"/></svg>',
+    emoji: '📝',
+  },
+  ujian: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6M12 2v6M6 8h12l1.5 12a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2L6 8Z"/><path d="M9 14h6M9 18h4"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 18,3 18,21 6,21"/><polygon points="9,1 15,1 15,4 9,4"/></svg>',
+    emoji: '📋',
+  },
+  battle: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>',
+    emoji: '⚔️',
+  },
+  game: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="13" r="1"/><circle cx="18" cy="11" r="1"/><rect x="2" y="6" width="20" height="12" rx="6"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="4,8 18,8 20,10 20,16 18,18 4,18 2,16 2,10"/><circle cx="8" cy="13" r="1.6" fill="#fff" fill-opacity="0.85"/><circle cx="16" cy="13" r="1.6" fill="#fff" fill-opacity="0.85"/></svg>',
+    emoji: '🎮',
+  },
+  obrolan: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="4,4 20,4 20,15 10,15 6,19 6,15 4,15"/></svg>',
+    emoji: '💬',
+  },
+  bintang: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>',
+    emoji: '⭐',
+  },
+  pengaturan: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12,2 14,5 17,4 17,7 20,8 19,11 22,12 19,13 20,16 17,17 17,20 14,19 12,22 10,19 7,20 7,17 4,16 5,13 2,12 5,11 4,8 7,7 7,4 10,5"/></svg>',
+    emoji: '⚙️',
+  },
+  personalisasi: {
+    outline: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.3" fill="currentColor" stroke="none"/></svg>',
+    filled: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><circle cx="8" cy="10" r="1.3" fill="#fff" fill-opacity="0.85"/><circle cx="12" cy="8" r="1.3" fill="#fff" fill-opacity="0.85"/><circle cx="16" cy="10" r="1.3" fill="#fff" fill-opacity="0.85"/><circle cx="9" cy="15" r="1.3" fill="#fff" fill-opacity="0.85"/></svg>',
+    emoji: '🎨',
+  },
+};
+
+function getStoredAccent() {
+  try {
+    const v = localStorage.getItem(ACCENT_KEY);
+    return VALID_ACCENTS.includes(v) ? v : "violet";
+  } catch (e) { return "violet"; }
+}
+
+function getStoredIconStyle() {
+  try {
+    const v = localStorage.getItem(ICONSTYLE_KEY);
+    return VALID_ICON_STYLES.includes(v) ? v : "outline";
+  } catch (e) { return "outline"; }
+}
+
+// Terapkan tema warna aksen (violet/biru/hijau/pink/oranye/coklat) ke seluruh
+// halaman lewat atribut data-accent di <html> (dibaca oleh var(--violet) dkk di style.css).
+function applyAccent(accent) {
+  const a = VALID_ACCENTS.includes(accent) ? accent : "violet";
+  if (a === "violet") {
+    document.documentElement.removeAttribute("data-accent");
+  } else {
+    document.documentElement.setAttribute("data-accent", a);
+  }
+  try { localStorage.setItem(ACCENT_KEY, a); } catch (e) {}
+}
+
+// Bikin versi ikon outline jadi lebih "soft" (garis lebih tebal & bulat, tanpa
+// perlu gambar ulang tiap ikon) -- dipasangkan dengan wadah bulat (border-radius:50%)
+// lewat atribut data-icon-style="soft" di CSS.
+function softenOutlineIcon(svgMarkup) {
+  return svgMarkup.replace(/stroke-width="1\.8"/g, 'stroke-width="2.6"');
+}
+
+// Ganti tampilan ikon menu (app-drawer) siswa sesuai model yang dipilih:
+// outline (garis, default) / filled (solid) / soft (garis tebal + wadah bulat) / emoji.
+function renderDrawerIcons(style) {
+  document.querySelectorAll(".ad-tile[data-icon-key]").forEach((tile) => {
+    const set = ICON_SETS[tile.dataset.iconKey];
+    const iconEl = tile.querySelector(".ad-icon");
+    if (!set || !iconEl) return;
+    if (style === "emoji") {
+      iconEl.innerHTML = `<span class="ad-icon-emoji">${set.emoji}</span>`;
+    } else if (style === "soft") {
+      iconEl.innerHTML = softenOutlineIcon(set.outline);
+    } else if (style === "filled") {
+      iconEl.innerHTML = set.filled;
+    } else {
+      iconEl.innerHTML = set.outline;
+    }
+  });
+}
+
+// Terapkan model ikon: set atribut (buat CSS wadah bulat/persegi) + render ulang ikonnya.
+function applyIconStyle(style) {
+  const s = VALID_ICON_STYLES.includes(style) ? style : "outline";
+  document.documentElement.setAttribute("data-icon-style", s);
+  try { localStorage.setItem(ICONSTYLE_KEY, s); } catch (e) {}
+  renderDrawerIcons(s);
+}
+
+// Sinkronkan personalisasi dari profil Supabase (sumber kebenaran, ikut akun
+// lintas perangkat) -- dipanggil dari renderShell() di tiap halaman siswa.
+function syncPersonalization(profile) {
+  applyAccent(profile.pref_theme_color || "violet");
+  applyIconStyle(profile.pref_icon_style || "outline");
+}
+
+// Terapkan cache localStorage duluan (secepat mungkin) supaya tidak kedip
+// balik ke default violet/outline selagi profil masih dimuat dari server.
+applyAccent(getStoredAccent());
+applyIconStyle(getStoredIconStyle());
+
 function getLevel(kelasNama) {
   const n = (kelasNama || "").trim().toUpperCase();
   if (n.startsWith("XII")) return "XII";
@@ -65,7 +204,7 @@ async function getProfile() {
   if (!user) return null;
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, username, nama, role, kelas_id, status, last_seen_updates, last_seen_obrolan, kelas:kelas_id ( id, nama, level )")
+    .select("id, username, nama, role, kelas_id, status, last_seen_updates, last_seen_obrolan, pref_theme_color, pref_icon_style, kelas:kelas_id ( id, nama, level )")
     .eq("id", user.id)
     .single();
   if (error || !data) return null;
@@ -136,6 +275,8 @@ function renderShell(profile, activePage) {
   document.querySelectorAll(".nav-item").forEach((n) => {
     n.classList.toggle("active", n.dataset.page === activePage);
   });
+
+  syncPersonalization(profile);
 
   // Badge "pesan belum dibaca" di menu Obrolan Kelas — jalan di semua
   // halaman siswa (bukan cuma obrolan.html) karena renderShell dipanggil
@@ -352,6 +493,82 @@ function jodohRondeFromData(data) {
 // Total semua pasangan di seluruh ronde (dipakai buat ringkasan & skor maksimal).
 function jodohTotalPasangan(rondeList) {
   return (rondeList || []).reduce((sum, r) => sum + ((r.pasangan || []).length), 0);
+}
+
+// ===================== GAME: util Cari Kata (word search) =====================
+// Bikin papan huruf acak berisi WORDS yang ditempatkan lurus (8 arah: mendatar,
+// menurun, diagonal, termasuk terbalik), sisanya diisi huruf acak. Dipakai bareng
+// oleh game-cari-kata.html (siswa) & guru-game.html (mode giliran/live guru).
+// Return: { size, grid: string[][], placements: [{ kata, cells:[[r,c],...] }] }
+function buatGridCariKata(words) {
+  const list = (words || [])
+    .map(w => String(w || '').toUpperCase().replace(/[^A-Z]/g, ''))
+    .filter(Boolean);
+  if (!list.length) return { size: 0, grid: [], placements: [] };
+
+  const terpanjang = Math.max(...list.map(w => w.length));
+  const size = Math.min(16, Math.max(terpanjang, 8, Math.ceil(Math.sqrt(list.length) * terpanjang * 0.65)));
+
+  const arah8 = [
+    [0, 1], [0, -1], [1, 0], [-1, 0],
+    [1, 1], [1, -1], [-1, 1], [-1, -1],
+  ];
+
+  const grid = Array.from({ length: size }, () => Array(size).fill(null));
+  const placements = [];
+
+  function cobaTaruh(kata) {
+    if (kata.length > size) return false;
+    for (let percobaan = 0; percobaan < 150; percobaan++) {
+      const [dr, dc] = arah8[Math.floor(Math.random() * arah8.length)];
+      const r0 = Math.floor(Math.random() * size);
+      const c0 = Math.floor(Math.random() * size);
+      const rAkhir = r0 + dr * (kata.length - 1);
+      const cAkhir = c0 + dc * (kata.length - 1);
+      if (rAkhir < 0 || rAkhir >= size || cAkhir < 0 || cAkhir >= size) continue;
+
+      const cells = [];
+      let cocok = true;
+      for (let k = 0; k < kata.length; k++) {
+        const r = r0 + dr * k, c = c0 + dc * k;
+        const isi = grid[r][c];
+        if (isi !== null && isi !== kata[k]) { cocok = false; break; }
+        cells.push([r, c]);
+      }
+      if (!cocok) continue;
+
+      cells.forEach(([r, c], k) => { grid[r][c] = kata[k]; });
+      placements.push({ kata, cells });
+      return true;
+    }
+    return false;
+  }
+
+  // Kata terpanjang ditaruh duluan supaya lebih gampang dapat tempat di papan.
+  [...list].sort((a, b) => b.length - a.length).forEach(cobaTaruh);
+
+  const abjad = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c] === null) grid[r][c] = abjad[Math.floor(Math.random() * abjad.length)];
+    }
+  }
+
+  return { size, grid, placements };
+}
+
+// Cek apakah jalur seret siswa (array [r,c]) cocok persis dengan salah satu kata
+// di papan (boleh diseret dari arah manapun / terbalik) dan belum ditemukan
+// sebelumnya. Return placement yang cocok ({kata, cells}) atau null.
+function cocokkanJalurCariKata(jalur, placements, ditemukan) {
+  if (!jalur || jalur.length < 2) return null;
+  const jalurKey = jalur.map(([r, c]) => `${r},${c}`).join('|');
+  const jalurTerbalikKey = [...jalur].slice().reverse().map(([r, c]) => `${r},${c}`).join('|');
+  return (placements || []).find(p => {
+    if (ditemukan && ditemukan.has(p.kata)) return false;
+    const key = p.cells.map(([r, c]) => `${r},${c}`).join('|');
+    return key === jalurKey || key === jalurTerbalikKey;
+  }) || null;
 }
 
 // ===================== GAME: util Tim (giliran IPD bisa >1 siswa) =====================
