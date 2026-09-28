@@ -818,7 +818,7 @@
             <div class="form-field"><label>Link Materi (URL)</label><input type="text" id="materiUrlInput" placeholder="https://..."></div>
             <div class="form-field"><label>Target Sasaran</label><select id="materiTingkatSelect"></select></div>
           </div>
-          <div class="hint" style="margin-top:-4px;">Pilih "Semua Tingkat (Umum)" untuk semua siswa, "Semua Kelas Tingkat X/XI/XII" untuk satu tingkat penuh, atau kelas tertentu (mis. "X-IPA 1") kalau hanya untuk kelas itu saja.</div>
+          <div class="hint" style="margin-top:-4px;">Pilih "Semua Tingkat (Umum)" untuk semua siswa, "Semua Kelas Tingkat X/XI/XII" untuk satu tingkat penuh, atau kelas tertentu (mis. "X-IPA 1") kalau hanya untuk kelas itu saja. Pilih <b>🔒 Khusus Guru</b> agar materi hanya terlihat oleh guru (tidak muncul di akun siswa) dan tampil di menu <b>Konten</b> tab Khusus Guru.</div>
           <button class="btn-secondary-sm" id="btnTambahMateri">+ Tambahkan Materi</button>
           <p class="login-error" id="materiError" style="display:none;"></p>
           <div class="section-label" style="margin-top:24px;">Materi Aktif</div>
@@ -896,10 +896,11 @@
   // Isi <select> target materi/worksheet: pilihan per tingkat (X/XI/XII), lalu
   // daftar kelas spesifik (mis. "X-IPA 1") dikelompokkan per tingkat lewat <optgroup>.
   // Value kelas diberi prefix "kelas:" supaya bisa dibedakan dari value tingkat ('X'/'XI'/'XII').
-  function fillTargetSelectWithKelas(selectEl, { includeSemua = false, semuaLabel = 'Semua Tingkat (Umum)' } = {}) {
+  function fillTargetSelectWithKelas(selectEl, { includeSemua = false, semuaLabel = 'Semua Tingkat (Umum)', includeGuru = false } = {}) {
     if (!selectEl) return;
     const prevValue = selectEl.value;
-    let html = includeSemua ? `<option value="">${semuaLabel}</option>` : '';
+    let html = includeGuru ? `<option value="__guru__">🔒 Khusus Guru (siswa tidak bisa melihat)</option>` : '';
+    html += includeSemua ? `<option value="">${semuaLabel}</option>` : '';
     ['X', 'XI', 'XII'].forEach(lv => {
       html += `<option value="${lv}">Semua Kelas Tingkat ${lv}</option>`;
       const kelasDiTingkat = allKelas.filter(k => k.level === lv);
@@ -3150,11 +3151,11 @@
     const el = document.getElementById('materiList');
     const { data } = await supabase
       .from('materi')
-      .select('id, tag, judul, deskripsi, url, level, kelas:kelas_id ( nama )')
+      .select('id, tag, judul, deskripsi, url, level, khusus_guru, kelas:kelas_id ( nama )')
       .order('created_at', { ascending: false });
     const list = data || [];
     el.innerHTML = list.length ? list.map(m => {
-      const targetLabel = m.level ? `Tingkat ${m.level}` : (m.kelas ? m.kelas.nama : 'Semua Tingkat');
+      const targetLabel = m.khusus_guru ? '🔒 Khusus Guru' : (m.level ? `Tingkat ${m.level}` : (m.kelas ? m.kelas.nama : 'Semua Tingkat'));
       return `
       <div class="list-row" style="align-items:flex-start;">
         <div>
@@ -3184,7 +3185,9 @@
     const tag = document.getElementById('materiTagInput').value.trim();
     const deskripsi = document.getElementById('materiDeskripsiInput').value.trim();
     const url = document.getElementById('materiUrlInput').value.trim();
-    const { level, kelasId } = parseTargetSelectValue(document.getElementById('materiTingkatSelect').value);
+    const targetVal = document.getElementById('materiTingkatSelect').value;
+    const khususGuru = targetVal === '__guru__';
+    const { level, kelasId } = khususGuru ? { level: null, kelasId: null } : parseTargetSelectValue(targetVal);
     const err = document.getElementById('materiError');
     err.style.display = 'none';
 
@@ -3194,7 +3197,7 @@
       return;
     }
     const { error } = await supabase.from('materi').insert({
-      judul, tag: tag || null, deskripsi: deskripsi || null, url, kelas_id: kelasId, level,
+      judul, tag: tag || null, deskripsi: deskripsi || null, url, kelas_id: kelasId, level, khusus_guru: khususGuru,
     });
     if (error) { err.textContent = 'Gagal menambah materi: ' + error.message; err.style.display = 'block'; return; }
 
@@ -4436,7 +4439,7 @@
     fillObrolanKelasSelect();
     fillKehadiranKelasSelect();
     fillTargetSelectWithKelas(document.getElementById('wsTingkatSelect'));
-    fillTargetSelectWithKelas(document.getElementById('materiTingkatSelect'), { includeSemua: true });
+    fillTargetSelectWithKelas(document.getElementById('materiTingkatSelect'), { includeSemua: true, includeGuru: true });
     await renderKehadiranSesiOptions();
     renderAnnKelasChecklist();
     await renderKelasList();

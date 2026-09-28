@@ -33,7 +33,7 @@
           <h1>Konten Terbit</h1>
         </div>
 
-        <div class="filter-select-row">
+        <div class="filter-select-row" id="kgFilterRow">
           <div class="filter-select-field"><label for="kgLevelSelect">Tingkat Kelas</label><select id="kgLevelSelect"></select></div>
           <div class="filter-select-field"><label for="kgKelasSelect">Kelas</label><select id="kgKelasSelect"></select></div>
         </div>
@@ -41,10 +41,12 @@
         <div class="ws-tabs" id="kgTabs">
           <button type="button" class="ws-tab active" data-tab="materi">📘 Materi <span class="ws-tab-count" id="kgCountMateri">0</span></button>
           <button type="button" class="ws-tab" data-tab="worksheet">📝 Worksheet <span class="ws-tab-count" id="kgCountWorksheet">0</span></button>
+          <button type="button" class="ws-tab" data-tab="guru">🔒 Khusus Guru <span class="ws-tab-count" id="kgCountGuru">0</span></button>
         </div>
 
         <div id="kgMateriContainer" class="materi-drawer-list">Memuat…</div>
         <div id="kgWorksheetContainer" class="materi-drawer-list" style="display:none;">Memuat…</div>
+        <div id="kgGuruContainer" class="materi-drawer-list" style="display:none;">Memuat…</div>
       </div>
     </div>
   </div>
@@ -66,6 +68,7 @@
 
   const materiC = document.getElementById('kgMateriContainer');
   const wsC = document.getElementById('kgWorksheetContainer');
+  const guruC = document.getElementById('kgGuruContainer');
   const levelSelect = document.getElementById('kgLevelSelect');
   const kelasSelect = document.getElementById('kgKelasSelect');
 
@@ -107,6 +110,48 @@
     return 'Semua Kelas';
   }
 
+  const bookIconG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>';
+  const chevronIconG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+
+  async function loadGuruContent() {
+    guruC.innerHTML = 'Memuat…';
+    const { data, error } = await supabase
+      .from('materi')
+      .select('tag, judul, deskripsi, url, created_at')
+      .eq('khusus_guru', true)
+      .order('created_at', { ascending: false });
+    if (error) {
+      guruC.innerHTML = emptyState('Gagal memuat', 'Pastikan MIGRASI_MATERI_KHUSUS_GURU.sql sudah dijalankan. (' + error.message + ')', '⚠️');
+      return;
+    }
+    const list = data || [];
+    document.getElementById('kgCountGuru').textContent = list.length;
+    guruC.innerHTML = list.length ? list.map((m, i) => `
+      <div class="materi-drawer-item" id="kg-guru-item-${i}">
+        <button type="button" class="materi-drawer-header" data-target="kg-guru-item-${i}">
+          <div class="materi-drawer-icon">${bookIconG}</div>
+          <div class="materi-drawer-heading">
+            <div class="materi-drawer-tag">${esc(m.tag || 'Materi')} · 🔒 Khusus Guru</div>
+            <div class="materi-drawer-title">${esc(m.judul)}</div>
+          </div>
+          <div class="materi-drawer-chevron">${chevronIconG}</div>
+        </button>
+        <div class="materi-drawer-body">
+          <div class="materi-drawer-body-inner">
+            <p>${esc(m.deskripsi || 'Belum ada deskripsi untuk materi ini.')}</p>
+            <a class="dl" href="${m.url ? esc(m.url) : '#'}" target="_blank" rel="noopener">Buka Materi →</a>
+          </div>
+        </div>
+      </div>
+    `).join('') : emptyState('Belum ada materi khusus guru', 'Terbitkan lewat Kelola Materi dengan target "Khusus Guru".', '🔒');
+    guruC.querySelectorAll('.materi-drawer-header').forEach((btn) => {
+      btn.onclick = () => {
+        const item = document.getElementById(btn.dataset.target);
+        if (item) item.classList.toggle('open');
+      };
+    });
+  }
+
   async function loadContent() {
     if (!state.kelasId) {
       materiC.innerHTML = emptyState('Belum ada kelas', 'Tambahkan kelas dulu di menu Kelola Kelas.', '🏫');
@@ -123,6 +168,7 @@
       supabase
         .from('materi')
         .select('tag, judul, deskripsi, url, kelas_id, level, created_at')
+        .eq('khusus_guru', false)
         .or(`and(kelas_id.is.null,level.is.null),kelas_id.eq.${state.kelasId},level.eq.${state.level}`)
         .order('created_at', { ascending: false }),
       supabase
@@ -203,11 +249,14 @@
       const tab = btn.dataset.tab;
       materiC.style.display = tab === 'materi' ? '' : 'none';
       wsC.style.display = tab === 'worksheet' ? '' : 'none';
+      guruC.style.display = tab === 'guru' ? '' : 'none';
+      document.getElementById('kgFilterRow').style.display = tab === 'guru' ? 'none' : '';
     });
   });
 
   renderLevelSelect();
   renderKelasSelect();
+  loadGuruContent();
 })();
 </script>
 
