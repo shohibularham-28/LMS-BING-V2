@@ -134,7 +134,7 @@
                     <div>
                         <span class="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 1 of 5</span>
                         <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Unscramble Words into 10 Sentences</h2>
-                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Arrange simple past tense sentences with one adverb (if placed at the front, include the comma!).</p>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Arrange simple past tense sentences about personal experience with one adverb (if placed at the front, include the comma!).</p>
                     </div>
                     <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 shrink-0">
                         <div class="text-center px-3">
@@ -563,18 +563,18 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // STAGE 1 LOGIC: 10 Simple Past Sentences (1 Adverb each, comma if adverb is at the front)
+        // STAGE 1 LOGIC: 10 Personal Experience Simple Past Sentences (1 Adverb each, comma if adverb is at the front)
         const stage1Questions = [
-            { id: 1, correct: "Yesterday, I played football" },
-            { id: 2, correct: "She sang sweetly" },
-            { id: 3, correct: "Suddenly, the phone rang" },
-            { id: 4, correct: "We arrived early" },
-            { id: 5, correct: "Finally, we won the game" },
-            { id: 6, correct: "The cat slept outside" },
-            { id: 7, correct: "Happily, she accepted the gift" },
-            { id: 8, correct: "I opened the door carefully" },
-            { id: 9, correct: "Earlier, he called me" },
-            { id: 10, correct: "The children laughed loudly" }
+            { id: 1, correct: "Last holiday, I visited my grandparents" },
+            { id: 2, correct: "We walked along the beach slowly" },
+            { id: 3, correct: "Suddenly, my brother dropped his ice cream" },
+            { id: 4, correct: "I lost my favorite watch yesterday" },
+            { id: 5, correct: "Finally, we reached the mountain peak" },
+            { id: 6, correct: "My family stayed at a hotel nearby" },
+            { id: 7, correct: "Happily, we took a lot of photos" },
+            { id: 8, correct: "I woke up early last Sunday" },
+            { id: 9, correct: "Yesterday, my friends invited me to swim" },
+            { id: 10, correct: "Everyone laughed joyfully during the game" }
         ];
 
         let s1State = [];
@@ -1586,49 +1586,70 @@
 
         function collectStage2() {
             const targets = s2TextData.map((w, i) => ({ w, i })).filter(x => x.w.type !== null);
-            const typeLabel = { verb: 'Verb', adj: 'Adjective', adv: 'Adverb' };
+            const typeLabel = { verb: 'Verb', adj: 'Adjective', adv: 'Adverb of Place' };
             let correct = 0;
-            const details = targets.map(({ w, i }) => {
-                const ok = s2UserSelections[i] === w.type;
+            const details = targets.map(t => {
+                const sel = s2UserSelections[t.i];
+                const ok = sel === t.w.type;
                 if (ok) correct++;
-                return { label: `"${w.text}" (${typeLabel[w.type]})`, your: ok ? `Ditandai ${typeLabel[w.type]}` : '(belum ditandai)', correct: typeLabel[w.type], ok };
+                return {
+                    label: `Kata "${t.w.text.replace(/[,.]/g, '')}"`,
+                    your: sel ? typeLabel[sel] : '(belum ditandai)',
+                    correct: typeLabel[t.w.type],
+                    ok
+                };
             });
-            return { name: 'Stage 2 — Analyze (Parts of Speech)', correct, total: targets.length, details };
+            return { name: 'Stage 2 — Text Analysis (POS)', correct, total: targets.length, details };
         }
 
         function collectStage3() {
-            const details = s3CurrentList.map((item, i) => {
-                const ok = item.id === s3CorrectParagraph[i].id;
-                return { label: `Posisi ${i + 1} — ${s3CorrectParagraph[i].section}`, your: item.text, correct: s3CorrectParagraph[i].text, ok };
+            let correct = 0;
+            const details = s3CurrentList.map((item, idx) => {
+                const expected = s3CorrectParagraph[idx];
+                const ok = item.id === expected.id;
+                if (ok) correct++;
+                return {
+                    label: `Urutan ke-${idx + 1}`,
+                    your: item.text,
+                    correct: expected.text,
+                    ok
+                };
             });
-            const correct = details.filter(d => d.ok).length;
-            return { name: 'Stage 3 — Paragraph Ordering', correct, total: s3CorrectParagraph.length, details };
+            return { name: 'Stage 3 — Paragraph Unscramble', correct, total: s3CorrectParagraph.length, details };
         }
 
         function collectStage4() {
-            const f = [
-                ['Who', 'mm-who'], ['When', 'mm-when'], ['Where', 'mm-where'],
-                ['Event 1', 'mm-event1'], ['Event 2', 'mm-event2'], ['Event 3', 'mm-event3'],
-                ['Feeling', 'mm-feeling'], ['Conclusion', 'mm-conclusion']
-            ];
-            const details = f.map(([label, id]) => ({ label, your: document.getElementById(id).value.trim() || '(kosong)' }));
-            return { name: 'Stage 4 — Mind Map (dinilai manual)', details };
+            return {
+                name: 'Stage 4 — Mind Map',
+                details: [
+                    { label: 'Who', text: document.getElementById('mm-who').value || '-' },
+                    { label: 'When', text: document.getElementById('mm-when').value || '-' },
+                    { label: 'Where', text: document.getElementById('mm-where').value || '-' },
+                    { label: 'First Event', text: document.getElementById('mm-event1').value || '-' },
+                    { label: 'Next Event', text: document.getElementById('mm-event2').value || '-' },
+                    { label: 'Then Event', text: document.getElementById('mm-event3').value || '-' },
+                    { label: 'Feeling', text: document.getElementById('mm-feeling').value || '-' },
+                    { label: 'Conclusion', text: document.getElementById('mm-conclusion').value || '-' }
+                ]
+            };
         }
 
         function collectStage5(title, body) {
-            const words = body ? body.split(/\s+/).length : 0;
-            return { name: 'Stage 5 — Recount Text (dinilai manual)', details: [
-                { label: 'Judul', your: title || '(kosong)' },
-                { label: `Isi teks (${words} kata)`, your: body }
-            ] };
+            return {
+                name: 'Stage 5 — Recount Writing',
+                details: [
+                    { label: 'Judul', text: title || '(Tanpa Judul)' },
+                    { label: 'Isi Karangan', text: body || '(kosong)' }
+                ]
+            };
         }
 
-        // Initialization on Load
-        window.onload = function() {
+        // Initialize application on page load
+        window.addEventListener('DOMContentLoaded', () => {
             initStage1();
             renderStage2Text();
             initStage3();
-        };
+        });
     </script>
 </body>
 </html>
