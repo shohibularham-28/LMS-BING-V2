@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recount Text Interactive Media - Personal Experience</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            touch-action: manipulation;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 6px;
+        }
+        .word-badge {
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+        }
+        .word-badge:hover {
+            transform: translateY(-2px);
+        }
+        .stage-card {
+            animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5 w-full lg:w-auto">
+                <div class="bg-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-indigo-200 text-xl md:text-2xl flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg md:text-2xl lg:text-3xl text-slate-800 leading-tight">Recount Text Learning Studio</h1>
+                    <p class="text-xs md:text-sm font-semibold text-slate-500">Personal Experience Masterclass</p>
+                </div>
+            </div>
+
+            <!-- Stage Stepper Navigation -->
+            <nav class="flex items-center gap-1.5 sm:gap-2 lg:gap-3 overflow-x-auto w-full lg:w-auto pb-2 lg:pb-0 custom-scrollbar shrink-0">
+                <button onclick="goToStage(1)" id="step-btn-1" class="stage-step-btn flex items-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm lg:text-base font-bold bg-indigo-600 text-white shadow-md transition-all shrink-0">
+                    <span class="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-white/20 flex items-center justify-center text-xs md:text-sm font-extrabold">1</span>
+                    <span>Words</span>
+                </button>
+                <div class="h-0.5 w-3 md:w-4 bg-slate-200 shrink-0"></div>
+                <button onclick="goToStage(2)" id="step-btn-2" class="stage-step-btn flex items-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm lg:text-base font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0">
+                    <span class="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-slate-200 flex items-center justify-center text-xs md:text-sm font-extrabold">2</span>
+                    <span>Analyze</span>
+                </button>
+                <div class="h-0.5 w-3 md:w-4 bg-slate-200 shrink-0"></div>
+                <button onclick="goToStage(3)" id="step-btn-3" class="stage-step-btn flex items-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm lg:text-base font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0">
+                    <span class="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-slate-200 flex items-center justify-center text-xs md:text-sm font-extrabold">3</span>
+                    <span>Paragraph</span>
+                </button>
+                <div class="h-0.5 w-3 md:w-4 bg-slate-200 shrink-0"></div>
+                <button onclick="goToStage(4)" id="step-btn-4" class="stage-step-btn flex items-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm lg:text-base font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0">
+                    <span class="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-slate-200 flex items-center justify-center text-xs md:text-sm font-extrabold">4</span>
+                    <span>Mind Map</span>
+                </button>
+                <div class="h-0.5 w-3 md:w-4 bg-slate-200 shrink-0"></div>
+                <button onclick="goToStage(5)" id="step-btn-5" class="stage-step-btn flex items-center gap-2 px-3.5 py-2 md:px-4 md:py-2.5 rounded-xl text-xs md:text-sm lg:text-base font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all shrink-0">
+                    <span class="w-6 h-6 md:w-7 md:h-7 rounded-lg bg-slate-200 flex items-center justify-center text-xs md:text-sm font-extrabold">5</span>
+                    <span>Write</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 w-full flex-grow">
+
+
+        <!-- ================= IDENTITAS SISWA (terhubung LMS) ================= -->
+        <section id="lms-identity" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 md:p-7 mb-6">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-user-graduate text-indigo-600"></i>
+                <h2 class="font-extrabold text-slate-800 text-base md:text-lg">Identitas Pengerjaan</h2>
+            </div>
+            <div id="lmsNote" class="text-xs md:text-sm text-slate-500 mb-4">Isi identitas dulu. Hasil worksheet akan dikirim ke guru di Stage 5. (Kalau kamu sudah login LMS, nama &amp; kelas terisi otomatis.)</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Jenis Pengerjaan</label>
+                    <select id="jenisSelect" class="w-full px-4 py-3 border border-slate-300 rounded-2xl font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="individu">Individu</option>
+                        <option value="kelompok">Kelompok</option>
+                    </select>
+                </div>
+                <div>
+                    <label id="namaLabel" class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Nama</label>
+                    <input type="text" id="namaInput" placeholder="Nama lengkap" class="w-full px-4 py-3 border border-slate-300 rounded-2xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Kelas</label>
+                    <input type="text" id="kelasInput" list="kelasList" placeholder="mis. X IPA 1" class="w-full px-4 py-3 border border-slate-300 rounded-2xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <datalist id="kelasList"></datalist>
+                </div>
+            </div>
+            <div id="kelompokFields" class="hidden mt-4">
+                <label class="block text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1.5">Anggota Kelompok</label>
+                <div id="memberList" class="space-y-2"></div>
+                <button type="button" id="addMemberBtn" class="mt-2 px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold rounded-xl transition"><i class="fa-solid fa-plus mr-1"></i> Tambah Anggota</button>
+            </div>
+            <div id="idWarn" class="hidden mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-semibold"></div>
+            <div id="saveStatus" class="hidden"></div>
+        </section>
+
+        <!-- ================= STAGE 1: WORD UNSCRAMBLE ================= -->
+        <section id="stage-1" class="stage-card">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 lg:p-12">
+                <!-- Header Info -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <span class="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 1 of 5</span>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Unscramble Words into 10 Sentences</h2>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Arrange simple past tense sentences with one adverb (if placed at the front, include the comma!).</p>
+                    </div>
+                    <div class="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 shrink-0">
+                        <div class="text-center px-3">
+                            <span class="text-xs md:text-sm text-slate-400 block font-semibold">Total Items</span>
+                            <span class="font-extrabold text-indigo-600 text-xl md:text-2xl">10 Sentences</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All 10 Sentences Container -->
+                <div id="s1-sentences-container" class="mt-8 space-y-6 md:space-y-8">
+                    <!-- Dynamic rendering of 10 sentence blocks -->
+                </div>
+
+                <!-- Stage 1 Feedback Box -->
+                <div id="s1-feedback" class="hidden mt-8 p-5 rounded-2xl text-base md:text-lg font-bold"></div>
+
+                <!-- Stage 1 Actions -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8 mt-8 border-t border-slate-100">
+                    <button onclick="resetAllStage1Sentences()" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm md:text-base font-bold rounded-2xl transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Reset All Sentences
+                    </button>
+                    <button onclick="submitStage1Answer()" id="s1-submit-btn" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base md:text-lg font-bold rounded-2xl shadow-lg shadow-indigo-200 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Stage 1
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAGE 2: TEXT ANALYSIS (POS) ================= -->
+        <section id="stage-2" class="stage-card hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 lg:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <span class="inline-block px-4 py-1.5 bg-amber-50 text-amber-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 2 of 5</span>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Analyze Recount Text Language Features</h2>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Select a highlighter tool, then tap or click words in the text that match that grammar feature.</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                        <span class="text-xs md:text-sm font-bold text-slate-500">Identified:</span>
+                        <span id="s2-found-count" class="font-extrabold text-indigo-600 text-lg md:text-xl">0 / 18 Target Words</span>
+                    </div>
+                </div>
+
+                <!-- Category Tool Selector -->
+                <div class="mt-8">
+                    <label class="block text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-3">Select Highlighter Tool Mode:</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-5">
+                        <button onclick="setS2Tool('verb')" id="tool-verb" class="s2-tool-btn p-4 md:p-5 rounded-2xl border-2 border-rose-500 bg-rose-50 text-rose-700 font-extrabold text-sm md:text-base lg:text-lg flex items-center justify-center gap-3 transition shadow-sm">
+                            <i class="fa-solid fa-bolt text-rose-500 text-xl"></i>
+                            <span>Action Verb</span>
+                        </button>
+                        <button onclick="setS2Tool('adj')" id="tool-adj" class="s2-tool-btn p-4 md:p-5 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-600 font-extrabold text-sm md:text-base lg:text-lg flex items-center justify-center gap-3 transition">
+                            <i class="fa-solid fa-wand-magic-sparkles text-sky-500 text-xl"></i>
+                            <span>Adjective</span>
+                        </button>
+                        <button onclick="setS2Tool('adv')" id="tool-adv" class="s2-tool-btn p-4 md:p-5 rounded-2xl border-2 border-slate-200 bg-slate-50 text-slate-600 font-extrabold text-sm md:text-base lg:text-lg flex items-center justify-center gap-3 transition">
+                            <i class="fa-solid fa-location-dot text-emerald-500 text-xl"></i>
+                            <span>Adverb of Place</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Text Interactive Reading Card -->
+                <div class="mt-8 bg-slate-50 rounded-3xl p-6 md:p-10 border border-slate-200">
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
+                        <h3 class="font-bold text-slate-800 text-lg md:text-xl flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-indigo-600"></i> My Trip to the City Park
+                        </h3>
+                        <button onclick="openS2CardPopup()" class="px-3.5 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs md:text-sm font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-expand"></i> Pop Up View
+                        </button>
+                    </div>
+                    <div id="s2-text-container" class="leading-relaxed md:leading-loose lg:leading-loose text-lg md:text-xl lg:text-2xl text-slate-800 font-medium">
+                        <!-- Text with clickable word spans generated by JS -->
+                    </div>
+                </div>
+
+                <div id="s2-feedback" class="hidden mt-8 p-5 rounded-2xl text-base md:text-lg font-bold"></div>
+
+                <!-- Legend & Actions -->
+                <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-5 pt-6 border-t border-slate-100">
+                    <div class="flex flex-wrap justify-center gap-4 text-xs md:text-sm lg:text-base font-bold">
+                        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-rose-200 border-2 border-rose-500"></span> Action Verb</div>
+                        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-sky-200 border-2 border-sky-500"></span> Adjective</div>
+                        <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-emerald-200 border-2 border-emerald-500"></span> Adverb of Place</div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3">
+                        <button onclick="resetStage2()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm md:text-base font-bold rounded-2xl transition">
+                            Reset Highlights
+                        </button>
+                        <button onclick="submitStage2()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-base md:text-lg font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Stage 2
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAGE 3: PARAGRAPH UNSCRAMBLE ================= -->
+        <section id="stage-3" class="stage-card hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 lg:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <span class="inline-block px-4 py-1.5 bg-emerald-50 text-emerald-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 3 of 5</span>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Arrange Sentences into a Paragraph</h2>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Reorder the scrambled sentences below to form a coherent recount text (Orientation → Events → Reorientation).</p>
+                    </div>
+                    <button onclick="openS3CardPopup()" class="px-4 py-2.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs md:text-sm font-bold rounded-xl transition flex items-center justify-center gap-2 shrink-0 shadow-sm">
+                        <i class="fa-solid fa-expand"></i> Pop Up View
+                    </button>
+                </div>
+
+                <div class="mt-8 space-y-4" id="s3-sentence-list">
+                    <!-- Sentences will be dynamically populated here -->
+                </div>
+
+                <div id="s3-feedback" class="hidden mt-8 p-5 rounded-2xl text-base md:text-lg font-bold"></div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
+                    <button onclick="resetStage3()" class="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm md:text-base font-bold rounded-2xl transition">
+                        Shuffle Sentences
+                    </button>
+                    <button onclick="submitStage3Order()" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base md:text-lg font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Paragraph
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAGE 4: MIND MAP BUILDER ================= -->
+        <section id="stage-4" class="stage-card hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 lg:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <span class="inline-block px-4 py-1.5 bg-purple-50 text-purple-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 4 of 5</span>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Build Your Personal Experience Mind Map</h2>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Fill out the outline below to structure your story before writing in Stage 5.</p>
+                    </div>
+                    <button onclick="loadMindmapPreset()" class="px-5 py-3 bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs md:text-sm font-extrabold rounded-2xl transition flex items-center justify-center gap-2 shrink-0">
+                        <i class="fa-solid fa-wand-magic"></i> Auto-Fill Sample
+                    </button>
+                </div>
+
+                <!-- Interactive Mind Map Grid -->
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+
+                    <!-- Node 1: Orientation -->
+                    <div class="bg-indigo-50/70 border-2 border-indigo-200 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-8 h-8 bg-indigo-600 text-white rounded-xl text-sm font-extrabold flex items-center justify-center shrink-0">1</span>
+                                    <h3 class="font-extrabold text-indigo-950 text-lg md:text-xl">ORIENTATION</h3>
+                                </div>
+                                <button onclick="openS4NodePopup('orientation')" class="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-expand"></i> Pop Up
+                                </button>
+                            </div>
+                            <p class="text-xs md:text-sm text-indigo-700 font-semibold mb-4">Background setting (Who, When, Where).</p>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Who:</label>
+                                    <input type="text" id="mm-who" placeholder="e.g. My family and I" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">When:</label>
+                                    <input type="text" id="mm-when" placeholder="e.g. Last school holiday" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Where:</label>
+                                    <input type="text" id="mm-where" placeholder="e.g. Pangandaran Beach" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-indigo-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Node 2: Events -->
+                    <div class="bg-amber-50/70 border-2 border-amber-200 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-8 h-8 bg-amber-600 text-white rounded-xl text-sm font-extrabold flex items-center justify-center shrink-0">2</span>
+                                    <h3 class="font-extrabold text-amber-950 text-lg md:text-xl">EVENTS</h3>
+                                </div>
+                                <button onclick="openS4NodePopup('events')" class="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-expand"></i> Pop Up
+                                </button>
+                            </div>
+                            <p class="text-xs md:text-sm text-amber-700 font-semibold mb-4">Chronological sequence of actions.</p>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">First Event:</label>
+                                    <input type="text" id="mm-event1" placeholder="e.g. We arrived and set up our tent" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Next Event:</label>
+                                    <input type="text" id="mm-event2" placeholder="e.g. Played volleyball and swam in the sea" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Then Event:</label>
+                                    <input type="text" id="mm-event3" placeholder="e.g. Ate grilled fish at a seaside stall" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Node 3: Reorientation -->
+                    <div class="bg-emerald-50/70 border-2 border-emerald-200 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-8 h-8 bg-emerald-600 text-white rounded-xl text-sm font-extrabold flex items-center justify-center shrink-0">3</span>
+                                    <h3 class="font-extrabold text-emerald-950 text-lg md:text-xl">REORIENTATION</h3>
+                                </div>
+                                <button onclick="openS4NodePopup('reorientation')" class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-expand"></i> Pop Up
+                                </button>
+                            </div>
+                            <p class="text-xs md:text-sm text-emerald-700 font-semibold mb-4">Conclusion & personal impression.</p>
+
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Feeling:</label>
+                                    <input type="text" id="mm-feeling" placeholder="e.g. Very exhausted but super happy" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                                </div>
+                                <div>
+                                    <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Conclusion:</label>
+                                    <input type="text" id="mm-conclusion" placeholder="e.g. It was the best holiday ever!" class="w-full px-4 py-3 text-base md:text-lg bg-white border border-emerald-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-10 pt-6 border-t border-slate-100">
+                    <span class="text-xs md:text-sm text-slate-500 font-semibold">* This mind map outline will automatically sync to Stage 5</span>
+                    <button onclick="submitMindmapStage()" class="w-full sm:w-auto px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-base md:text-lg font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Mind Map
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STAGE 5: RECOUNT WRITING STUDIO ================= -->
+        <section id="stage-5" class="stage-card hidden">
+            <div class="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 md:p-10 lg:p-12">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                    <div>
+                        <span class="inline-block px-4 py-1.5 bg-rose-50 text-rose-700 text-xs md:text-sm font-extrabold rounded-full mb-2">Stage 5 of 5</span>
+                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-extrabold text-slate-800">Compose Your Recount Text</h2>
+                        <p class="text-sm md:text-base lg:text-lg text-slate-500 mt-1">Use your Mind Map reference on the left to write a complete recount text.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left Column: Mindmap Summary Reference -->
+                    <div class="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-3xl p-5 md:p-6 space-y-5">
+                        <h3 class="font-extrabold text-slate-800 text-base md:text-lg flex items-center gap-2 border-b border-slate-200 pb-3">
+                            <i class="fa-solid fa-sitemap text-indigo-600"></i> Mind Map Reference:
+                        </h3>
+
+                        <div class="space-y-4 text-xs md:text-sm">
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                <span class="font-extrabold text-indigo-600 block mb-1 text-sm">Orientation:</span>
+                                <p id="ref-orientation" class="text-slate-600 font-medium italic">Not filled yet in Stage 4</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                <span class="font-extrabold text-amber-600 block mb-1 text-sm">Events:</span>
+                                <p id="ref-events" class="text-slate-600 font-medium italic">Not filled yet in Stage 4</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                                <span class="font-extrabold text-emerald-600 block mb-1 text-sm">Reorientation:</span>
+                                <p id="ref-reorientation" class="text-slate-600 font-medium italic">Not filled yet in Stage 4</p>
+                            </div>
+                        </div>
+
+                        <!-- Writing Checklist -->
+                        <div class="bg-indigo-50/80 p-5 rounded-2xl border border-indigo-100">
+                            <h4 class="font-extrabold text-indigo-950 text-sm md:text-base mb-2">Recount Text Checklist:</h4>
+                            <ul class="text-xs md:text-sm space-y-2 text-indigo-900 font-semibold">
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-base"></i> Simple Past Tense (V2)</li>
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-base"></i> Time Connectors (First, Next, Then)</li>
+                                <li class="flex items-center gap-2"><i class="fa-solid fa-check text-emerald-600 text-base"></i> Specific Time & Place Details</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Text Editor -->
+                    <div class="lg:col-span-8 flex flex-col justify-between space-y-6">
+                        <div>
+                            <label class="block text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Story Title:</label>
+                            <input type="text" id="s5-title" placeholder="e.g. My Unforgettable Holiday at Pangandaran Beach" class="w-full px-5 py-3.5 text-base md:text-lg font-bold border border-slate-300 rounded-2xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-5">
+
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-wider">Recount Text Content:</label>
+                                <button onclick="openS5EditorPopup()" class="px-3.5 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-expand"></i> Pop Up Full Screen
+                                </button>
+                            </div>
+                            <textarea id="s5-body" rows="12" placeholder="Type your story here... (Remember to use Simple Past Tense)" class="w-full p-5 text-base md:text-lg lg:text-xl border border-slate-300 rounded-2xl leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 custom-scrollbar font-medium"></textarea>
+                        </div>
+
+                        <div id="s5-feedback" class="hidden p-5 rounded-2xl text-base md:text-lg font-bold"></div>
+
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100">
+                            <span id="s5-word-count" class="text-sm font-bold text-slate-400">0 Words</span>
+                            <div class="flex flex-wrap gap-3 w-full sm:w-auto justify-end">
+                                <button onclick="copyRecountText()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition flex items-center gap-2">
+                                    <i class="fa-regular fa-copy"></i> Copy Text
+                                </button>
+                                <button onclick="downloadRecountText()" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-bold rounded-2xl transition flex items-center gap-2">
+                                    <i class="fa-solid fa-download"></i> Download (.txt)
+                                </button>
+                                <button id="submitBtn" onclick="submitStage5Essay()" class="px-7 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-bold rounded-2xl shadow-lg transition flex items-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> <span id="submitBtnLabel">Kirim ke Guru</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-5 text-center text-xs md:text-sm text-slate-500 font-semibold mt-8">
+        English Learning Media - Recount Text Interactive Studio &copy; 2026
+    </footer>
+
+    <!-- Interactive Card Pop-Up Modal -->
+    <div id="card-popup-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 md:p-8 animate-fadeIn">
+        <div class="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+                <h3 id="popup-modal-title" class="font-extrabold text-lg md:text-2xl text-slate-800 flex items-center gap-2.5">
+                    Card Details
+                </h3>
+                <button onclick="closeCardPopup()" class="w-10 h-10 rounded-2xl bg-slate-200 hover:bg-rose-500 hover:text-white text-slate-700 font-bold transition flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- Modal Body Content -->
+            <div id="popup-modal-body" class="p-6 md:p-8 overflow-y-auto custom-scrollbar flex-grow space-y-6">
+                <!-- Dynamic Content Rendered Here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Modal -->
+    <div id="toast-modal" class="fixed bottom-8 right-8 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div id="toast-content" class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl text-base md:text-lg font-bold flex items-center gap-3.5">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+            <span id="toast-msg">Notification message</span>
+        </div>
+    </div>
+
+    <!-- Supabase (koneksi LMS) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Audio synthesis for web sound effects
+        const playSound = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.25);
+                } else if (type === 'wrong') {
+                    osc.frequency.setValueAtTime(220, ctx.currentTime); // A3
+                    osc.frequency.setValueAtTime(196, ctx.currentTime + 0.1); // G3
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.25);
+                } else if (type === 'pop') {
+                    osc.frequency.setValueAtTime(400, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                }
+            } catch (e) {
+                // Audio context fallbacks silently
+            }
+        };
+
+        // Navigation state
+        let currentStage = 1;
+
+        function goToStage(stageNum) {
+            currentStage = stageNum;
+            
+            for (let i = 1; i <= 5; i++) {
+                const stage = document.getElementById(`stage-${i}`);
+                const btn = document.getElementById(`step-btn-${i}`);
+                if (stage) stage.classList.add('hidden');
+                
+                if (btn) {
+                    btn.className = "stage-step-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+                }
+            }
+
+            const activeStage = document.getElementById(`stage-${stageNum}`);
+            const activeBtn = document.getElementById(`step-btn-${stageNum}`);
+            if (activeStage) activeStage.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.className = "stage-step-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 text-white shadow-sm transition-all";
+            }
+
+            if (stageNum === 5) {
+                updateStage5References();
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // STAGE 1 LOGIC: 10 Simple Past Sentences (1 Adverb each, comma if adverb is at the front)
+        const stage1Questions = [
+            { id: 1, correct: "Yesterday, I played football" },
+            { id: 2, correct: "She sang sweetly" },
+            { id: 3, correct: "Suddenly, the phone rang" },
+            { id: 4, correct: "We arrived early" },
+            { id: 5, correct: "Finally, we won the game" },
+            { id: 6, correct: "The cat slept outside" },
+            { id: 7, correct: "Happily, she accepted the gift" },
+            { id: 8, correct: "I opened the door carefully" },
+            { id: 9, correct: "Earlier, he called me" },
+            { id: 10, correct: "The children laughed loudly" }
+        ];
+
+        let s1State = [];
+
+        function initStage1() {
+            s1State = stage1Questions.map(q => {
+                const wordsArray = q.correct.split(' ');
+                return {
+                    id: q.id,
+                    correct: q.correct,
+                    selectedWords: [],
+                    poolWords: shuffleArray([...wordsArray]),
+                    isSubmitted: false,
+                    isCorrect: false
+                };
+            });
+
+            document.getElementById('s1-feedback').className = 'hidden';
+            renderStage1AllSentences();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function renderStage1AllSentences() {
+            const container = document.getElementById('s1-sentences-container');
+            container.innerHTML = s1State.map((item, qIdx) => {
+                const answerBoxContent = item.selectedWords.length === 0 
+                    ? `<span class="text-slate-400 text-sm md:text-base italic select-none">Select words from the pool below...</span>`
+                    : item.selectedWords.map((word, wIdx) => `
+                        <button onclick="unselectStage1Word(${qIdx}, ${wIdx})" class="word-badge bg-indigo-600 text-white text-sm md:text-base font-bold px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl shadow-sm flex items-center gap-2 hover:bg-rose-500 transition">
+                            <span>${word}</span>
+                            <i class="fa-solid fa-xmark text-xs opacity-80"></i>
+                        </button>
+                    `).join('');
+
+                const poolBoxContent = item.poolWords.map((word, pIdx) => `
+                    <button onclick="selectStage1Word(${qIdx}, '${word.replace(/'/g, "\\'")}', ${pIdx})" class="word-badge bg-white border border-indigo-200 text-indigo-950 text-sm md:text-base font-bold px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl shadow-sm hover:border-indigo-400 hover:bg-indigo-50 transition">
+                        ${word}
+                    </button>
+                `).join('');
+
+                let cardBorder = "border-slate-200 bg-slate-50/50";
+                let statusBadge = "";
+                if (item.isSubmitted) {
+                    if (item.isCorrect) {
+                        cardBorder = "border-emerald-300 bg-emerald-50/40";
+                        statusBadge = `<span class="text-xs md:text-sm font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-check"></i> Correct</span>`;
+                    } else {
+                        cardBorder = "border-rose-300 bg-rose-50/40";
+                        statusBadge = `<span class="text-xs md:text-sm font-bold text-rose-700 bg-rose-100 px-3 py-1 rounded-full flex items-center gap-1.5"><i class="fa-solid fa-xmark"></i> Needs Correction</span>`;
+                    }
+                }
+
+                return `
+                    <div class="p-5 md:p-6 lg:p-8 rounded-3xl border-2 ${cardBorder} transition space-y-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-xs md:text-sm font-extrabold uppercase tracking-wider text-indigo-700 bg-indigo-100 px-3 py-1 rounded-lg">Sentence ${qIdx + 1}</span>
+                            <div class="flex items-center gap-2">
+                                ${statusBadge}
+                                <button onclick="openS1CardPopup(${qIdx})" class="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs md:text-sm font-bold rounded-xl transition flex items-center gap-1.5" title="Pop up Card">
+                                    <i class="fa-solid fa-expand"></i> Pop Up
+                                </button>
+                                <button onclick="resetStage1Sentence(${qIdx})" class="text-xs md:text-sm font-bold text-slate-400 hover:text-slate-700 transition flex items-center gap-1 ml-1" title="Reset this sentence">
+                                    <i class="fa-solid fa-rotate-left"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Constructed Sentence:</label>
+                            <div class="min-h-[64px] md:min-h-[72px] p-4 bg-white border-2 border-dashed border-slate-300 rounded-2xl flex flex-wrap gap-2 items-center">
+                                ${answerBoxContent}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Word Pool:</label>
+                            <div class="min-h-[64px] md:min-h-[72px] p-4 bg-indigo-50/60 border border-indigo-100 rounded-2xl flex flex-wrap gap-2.5 items-center">
+                                ${poolBoxContent}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (activeS1PopupIdx !== null) {
+                renderS1PopupContent();
+            }
+        }
+
+        function selectStage1Word(qIdx, word, poolIdx) {
+            playSound('pop');
+            s1State[qIdx].selectedWords.push(word);
+            s1State[qIdx].poolWords.splice(poolIdx, 1);
+            renderStage1AllSentences();
+        }
+
+        function unselectStage1Word(qIdx, selectedIdx) {
+            playSound('pop');
+            const word = s1State[qIdx].selectedWords.splice(selectedIdx, 1)[0];
+            s1State[qIdx].poolWords.push(word);
+            renderStage1AllSentences();
+        }
+
+        function resetStage1Sentence(qIdx) {
+            playSound('pop');
+            const wordsArray = stage1Questions[qIdx].correct.split(' ');
+            s1State[qIdx].selectedWords = [];
+            s1State[qIdx].poolWords = shuffleArray([...wordsArray]);
+            s1State[qIdx].isSubmitted = false;
+            s1State[qIdx].isCorrect = false;
+            renderStage1AllSentences();
+        }
+
+        function resetAllStage1Sentences() {
+            playSound('pop');
+            initStage1();
+        }
+
+        function submitStage1Answer() {
+            let correctCount = 0;
+
+            s1State.forEach(item => {
+                const userSentence = item.selectedWords.join(' ');
+                item.isSubmitted = true;
+                if (item.selectedWords.length > 0 && userSentence === item.correct) {
+                    item.isCorrect = true;
+                    correctCount++;
+                } else {
+                    item.isCorrect = false;
+                }
+            });
+
+            renderStage1AllSentences();
+
+            const feedbackEl = document.getElementById('s1-feedback');
+            if (correctCount === stage1Questions.length) {
+                playSound('correct');
+                feedbackEl.className = "p-4 rounded-xl text-sm font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800 flex flex-col md:flex-row items-center justify-between gap-3";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>
+                        <span>Outstanding! All 10 sentences are arranged perfectly!</span>
+                    </div>
+                    <button onclick="goToStage(2)" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition shrink-0">
+                        Proceed to Stage 2 <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                `;
+            } else {
+                playSound(correctCount > 5 ? 'correct' : 'wrong');
+                feedbackEl.className = "p-4 rounded-xl text-sm font-semibold bg-indigo-50 border border-indigo-200 text-indigo-900 flex flex-col md:flex-row items-center justify-between gap-3";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-check text-indigo-600 text-xl"></i>
+                        <span>Stage 1 Submitted! You got <strong>${correctCount} out of 10</strong> sentences correct. You can fix remaining sentences or proceed!</span>
+                    </div>
+                    <button onclick="goToStage(2)" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition shrink-0">
+                        Proceed to Stage 2 <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                `;
+            }
+            feedbackEl.classList.remove('hidden');
+            showToast(`Stage 1 Submitted! (${correctCount}/10 correct)`);
+            stagesDone.s1 = true; autoSave('Stage 1');
+        }
+
+        // STAGE 2 LOGIC: Word Parts of Speech Analyzer
+        const s2TextData = [
+            { text: "Yesterday,", type: null },
+            { text: "my", type: null },
+            { text: "friends", type: null },
+            { text: "and", type: null },
+            { text: "I", type: null },
+            { text: "visited", type: "verb" },
+            { text: "a", type: null },
+            { text: "beautiful", type: "adj" },
+            { text: "park", type: "adv" },
+            { text: "in", type: "adv" },
+            { text: "Bandung.", type: "adv" },
+            { text: "We", type: null },
+            { text: "rode", type: "verb" },
+            { text: "our", type: null },
+            { text: "bicycles", type: null },
+            { text: "along", type: "adv" },
+            { text: "the", type: "adv" },
+            { text: "green", type: "adj" },
+            { text: "pathway.", type: "adv" },
+            { text: "The", type: null },
+            { text: "weather", type: null },
+            { text: "was", type: null },
+            { text: "very", type: null },
+            { text: "sunny.", type: "adj" },
+            { text: "Later,", type: null },
+            { text: "we", type: null },
+            { text: "bought", type: "verb" },
+            { text: "fresh", type: "adj" },
+            { text: "ice cream", type: null },
+            { text: "at", type: "adv" },
+            { text: "a", type: "adv" },
+            { text: "cozy", type: "adj" },
+            { text: "cafe", type: "adv" },
+            { text: "and", type: null },
+            { text: "sat", type: "verb" },
+            { text: "under", type: "adv" },
+            { text: "a", type: "adv" },
+            { text: "shady", type: "adj" },
+            { text: "tree.", type: "adv" },
+            { text: "We", type: null },
+            { text: "enjoyed", type: "verb" },
+            { text: "our", type: null },
+            { text: "wonderful", type: "adj" },
+            { text: "time", type: null },
+            { text: "and", type: null },
+            { text: "returned", type: "verb" },
+            { text: "home", type: "adv" },
+            { text: "happily.", type: null }
+        ];
+
+        let currentS2Tool = 'verb';
+        let s2UserSelections = {};
+        const totalS2Targets = s2TextData.filter(item => item.type !== null).length;
+
+        function setS2Tool(tool) {
+            playSound('pop');
+            currentS2Tool = tool;
+            
+            const tools = ['verb', 'adj', 'adv'];
+            tools.forEach(t => {
+                const btn = document.getElementById(`tool-${t}`);
+                if (t === tool) {
+                    if (t === 'verb') btn.className = "s2-tool-btn p-3 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-2 transition shadow-sm";
+                    if (t === 'adj') btn.className = "s2-tool-btn p-3 rounded-xl border-2 border-sky-500 bg-sky-50 text-sky-700 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-2 transition shadow-sm";
+                    if (t === 'adv') btn.className = "s2-tool-btn p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-emerald-700 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-2 transition shadow-sm";
+                } else {
+                    btn.className = "s2-tool-btn p-3 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-600 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-2 transition";
+                }
+            });
+        }
+
+        function renderStage2Text() {
+            const container = document.getElementById('s2-text-container');
+            container.innerHTML = s2TextData.map((item, idx) => {
+                const userChoice = s2UserSelections[idx];
+                let bgClass = "hover:bg-slate-200 cursor-pointer rounded px-1 py-0.5 transition";
+                
+                if (userChoice === 'verb') bgClass = "bg-rose-200 text-rose-900 border-b-2 border-rose-500 font-bold px-1.5 py-0.5 rounded cursor-pointer";
+                if (userChoice === 'adj') bgClass = "bg-sky-200 text-sky-900 border-b-2 border-sky-500 font-bold px-1.5 py-0.5 rounded cursor-pointer";
+                if (userChoice === 'adv') bgClass = "bg-emerald-200 text-emerald-900 border-b-2 border-emerald-500 font-bold px-1.5 py-0.5 rounded cursor-pointer";
+
+                return `<span onclick="toggleS2Word(${idx})" class="inline-block mx-0.5 my-1 ${bgClass}">${item.text}</span>`;
+            }).join(' ');
+
+            updateS2Score();
+        }
+
+        function toggleS2Word(index) {
+            const targetType = s2TextData[index].type;
+            
+            if (s2UserSelections[index] === currentS2Tool) {
+                delete s2UserSelections[index];
+                playSound('pop');
+            } else {
+                if (targetType === currentS2Tool) {
+                    playSound('correct');
+                    s2UserSelections[index] = currentS2Tool;
+                } else {
+                    playSound('wrong');
+                    showToast("This word belongs to a different category!", "wrong");
+                    return;
+                }
+            }
+            renderStage2Text();
+        }
+
+        function updateS2Score() {
+            const correctCount = Object.keys(s2UserSelections).length;
+            document.getElementById('s2-found-count').innerText = `${correctCount} / ${totalS2Targets} Target Words`;
+        }
+
+        function resetStage2() {
+            s2UserSelections = {};
+            document.getElementById('s2-feedback').className = "hidden";
+            renderStage2Text();
+        }
+
+        function submitStage2() {
+            const count = Object.keys(s2UserSelections).length;
+            const feedbackEl = document.getElementById('s2-feedback');
+
+            if (count === 0) {
+                showToast("Please highlight at least a few target words before submitting!", "wrong");
+                return;
+            }
+
+            playSound('correct');
+            feedbackEl.className = "p-4 rounded-xl text-sm font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between gap-3";
+            feedbackEl.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> 
+                    <span>Stage 2 Submitted! You found ${count} out of ${totalS2Targets} target grammar elements.</span>
+                </div>
+                <button onclick="goToStage(3)" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition">
+                    Proceed to Stage 3 <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            `;
+            feedbackEl.classList.remove('hidden');
+            showToast("Stage 2 successfully submitted!");
+            stagesDone.s2 = true; autoSave('Stage 2');
+        }
+
+        // STAGE 3 LOGIC: Paragraph Reordering
+        const s3CorrectParagraph = [
+            { id: 'p1', text: "Last Sunday, my family and I had a pleasant picnic at West Lake Park.", section: "Orientation" },
+            { id: 'p2', text: "First, we set up our large blanket under a shady pine tree near the lake shore.", section: "Event 1" },
+            { id: 'p3', text: "After that, my sister and I played badminton while our parents prepared delicious sandwiches.", section: "Event 2" },
+            { id: 'p4', text: "In the afternoon, we fed the ducks and took many family photos together.", section: "Event 3" },
+            { id: 'p5', text: "We felt very tired but extremely happy after spending such a great day together.", section: "Reorientation" }
+        ];
+
+        let s3CurrentList = [];
+
+        function initStage3() {
+            s3CurrentList = shuffleArray([...s3CorrectParagraph]);
+            renderStage3Sentences();
+            document.getElementById('s3-feedback').className = "hidden";
+        }
+
+        function renderStage3Sentences() {
+            const container = document.getElementById('s3-sentence-list');
+            container.innerHTML = s3CurrentList.map((item, idx) => `
+                <div class="bg-slate-50 border-2 border-slate-200 p-5 md:p-6 rounded-2xl flex items-center justify-between gap-4 transition hover:border-indigo-300">
+                    <div class="flex items-center gap-4">
+                        <span class="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center text-sm md:text-base shrink-0">${idx + 1}</span>
+                        <p class="text-base md:text-lg lg:text-xl font-bold text-slate-800 leading-relaxed">${item.text}</p>
+                    </div>
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                        <button onclick="moveS3Sentence(${idx}, -1)" ${idx === 0 ? 'disabled class="opacity-30 cursor-not-allowed text-slate-400 p-2"' : 'class="p-2.5 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 rounded-xl transition text-base md:text-lg"'}>
+                            <i class="fa-solid fa-chevron-up"></i>
+                        </button>
+                        <button onclick="moveS3Sentence(${idx}, 1)" ${idx === s3CurrentList.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed text-slate-400 p-2"' : 'class="p-2.5 hover:bg-indigo-100 hover:text-indigo-700 text-slate-600 rounded-xl transition text-base md:text-lg"'}>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function moveS3Sentence(index, direction) {
+            playSound('pop');
+            const targetIndex = index + direction;
+            if (targetIndex >= 0 && targetIndex < s3CurrentList.length) {
+                const temp = s3CurrentList[index];
+                s3CurrentList[index] = s3CurrentList[targetIndex];
+                s3CurrentList[targetIndex] = temp;
+                renderStage3Sentences();
+            }
+        }
+
+        function resetStage3() {
+            initStage3();
+        }
+
+        function submitStage3Order() {
+            let isCorrect = true;
+            for (let i = 0; i < s3CurrentList.length; i++) {
+                if (s3CurrentList[i].id !== s3CorrectParagraph[i].id) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            stagesDone.s3 = true; autoSave('Stage 3');
+            const feedbackEl = document.getElementById('s3-feedback');
+            if (isCorrect) {
+                playSound('correct');
+                feedbackEl.className = "p-4 rounded-xl text-sm font-semibold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between gap-3";
+                feedbackEl.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> 
+                        <span>Stage 3 Submitted! The sentence order is completely logical and correct.</span>
+                    </div>
+                    <button onclick="goToStage(4)" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition">
+                        Proceed to Stage 4 <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                `;
+                showToast("Stage 3 Submitted Successfully!");
+            } else {
+                playSound('wrong');
+                feedbackEl.className = "p-4 rounded-xl text-sm font-semibold bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i> <span>The paragraph order does not match standard recount text structure (Orientation → Events → Reorientation). Adjust positions and re-submit!</span>`;
+            }
+            feedbackEl.classList.remove('hidden');
+        }
+
+        // STAGE 4 LOGIC: Mind Map Builder
+        function loadMindmapPreset() {
+            playSound('pop');
+            document.getElementById('mm-who').value = "My friends and I";
+            document.getElementById('mm-when').value = "Last Sunday afternoon";
+            document.getElementById('mm-where').value = "Batu Karas Beach";
+
+            document.getElementById('mm-event1').value = "We arrived early and rented surfboards";
+            document.getElementById('mm-event2').value = "Learned how to surf and caught big waves";
+            document.getElementById('mm-event3').value = "Had fresh coconut drinks near the shore";
+
+            document.getElementById('mm-feeling').value = "Super excited and thrilled";
+            document.getElementById('mm-conclusion').value = "It was the most memorable beach day ever!";
+
+            showToast("Sample Mind Map data loaded!");
+        }
+
+        function submitMindmapStage() {
+            const who = document.getElementById('mm-who').value.trim();
+            const where = document.getElementById('mm-where').value.trim();
+
+            if (!who || !where) {
+                showToast("Please fill in at least 'Who' and 'Where' before submitting!", "wrong");
+                return;
+            }
+
+            playSound('correct');
+            showToast("Stage 4 Mind Map submitted!");
+            stagesDone.s4 = true; autoSave('Stage 4');
+            goToStage(5);
+        }
+
+        // STAGE 5 LOGIC: Recount Writing Studio
+        function updateStage5References() {
+            const who = document.getElementById('mm-who').value || "-";
+            const when = document.getElementById('mm-when').value || "-";
+            const where = document.getElementById('mm-where').value || "-";
+
+            const ev1 = document.getElementById('mm-event1').value || "";
+            const ev2 = document.getElementById('mm-event2').value || "";
+            const ev3 = document.getElementById('mm-event3').value || "";
+
+            const feeling = document.getElementById('mm-feeling').value || "-";
+            const conclusion = document.getElementById('mm-conclusion').value || "-";
+
+            document.getElementById('ref-orientation').innerText = `Who: ${who} | When: ${when} | Where: ${where}`;
+            
+            const eventsText = [ev1, ev2, ev3].filter(e => e.trim() !== "").join(" -> ");
+            document.getElementById('ref-events').innerText = eventsText || "Not filled in Stage 4";
+
+            document.getElementById('ref-reorientation').innerText = `Feeling: ${feeling} | Conclusion: ${conclusion}`;
+        }
+
+        document.getElementById('s5-body').addEventListener('input', function() {
+            const text = this.value.trim();
+            const words = text ? text.split(/\s+/).length : 0;
+            document.getElementById('s5-word-count').innerText = `${words} Words`;
+        });
+
+        function copyRecountText() {
+            const title = document.getElementById('s5-title').value;
+            const body = document.getElementById('s5-body').value;
+            
+            if (!body) {
+                showToast("Write your story before copying!", "wrong");
+                return;
+            }
+
+            const fullText = `${title}\n\n${body}`;
+            
+            const tempInput = document.createElement('textarea');
+            tempInput.value = fullText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            playSound('correct');
+            showToast("Copied recount text to clipboard!");
+        }
+
+        function downloadRecountText() {
+            const title = document.getElementById('s5-title').value || "My Recount Text";
+            const body = document.getElementById('s5-body').value;
+
+            if (!body) {
+                showToast("Write your story before downloading!", "wrong");
+                return;
+            }
+
+            const fullText = `${title}\n\n${body}`;
+            const blob = new Blob([fullText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            playSound('correct');
+            showToast("Text file downloaded!");
+        }
+
+        async function submitStage5Essay() {
+            if (lmsSubmitted) { showToast("Tugas sudah terkirim ke guru.", "wrong"); return; }
+
+            const title = document.getElementById('s5-title').value.trim();
+            const body = document.getElementById('s5-body').value.trim();
+            const feedbackEl = document.getElementById('s5-feedback');
+
+            if (!body) {
+                showToast("Please write your recount text before submitting!", "wrong");
+                return;
+            }
+            if (!validateIdentitas()) {
+                goToStage(1);
+                document.getElementById('lms-identity').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast("Lengkapi Identitas Pengerjaan dulu.", "wrong");
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const btnLabel = document.getElementById('submitBtnLabel');
+            btn.disabled = true;
+            btnLabel.textContent = 'Mengirim...';
+
+            const r = await saveToLms(true);
+            if (r.ok) {
+                lmsSubmitted = true;
+                playSound('correct');
+                btnLabel.textContent = 'Terkirim ✓';
+                feedbackEl.className = "p-5 rounded-2xl text-base md:text-lg font-bold bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3";
+                feedbackEl.innerHTML = `<i class="fa-solid fa-trophy text-amber-500 text-xl"></i> <span>Tugas "${escHtml(title || 'Untitled Recount')}" terkirim ke guru. Nilai otomatis Stage 1-3: <strong>${r.nilai}/${r.nilaiMaks}</strong>. Mind Map &amp; esai dinilai manual oleh guru.</span>`;
+                setSaveStatus('✅ Semua tahap terkirim ke guru.', true);
+                showToast("Terkirim ke guru!");
+            } else {
+                btn.disabled = false;
+                btnLabel.textContent = 'Kirim ke Guru';
+                feedbackEl.className = "p-5 rounded-2xl text-base font-bold bg-rose-50 border border-rose-200 text-rose-800";
+                feedbackEl.textContent = 'Gagal mengirim (' + r.message + '). Coba lagi.';
+                playSound('wrong');
+            }
+        }
+
+        // Toast Notification Helper
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast-modal');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            toastMsg.innerText = message;
+            if (type === "wrong") {
+                toastIcon.className = "fa-solid fa-circle-xmark text-rose-400";
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Pop-Up Modal State & Controller Functions
+        let activeS1PopupIdx = null;
+
+        function showCardPopup(titleHtml, contentHtml) {
+            document.getElementById('popup-modal-title').innerHTML = titleHtml;
+            document.getElementById('popup-modal-body').innerHTML = contentHtml;
+            document.getElementById('card-popup-modal').classList.remove('hidden');
+        }
+
+        function closeCardPopup() {
+            activeS1PopupIdx = null;
+            document.getElementById('card-popup-modal').classList.add('hidden');
+        }
+
+        // STAGE 1 CARD POP-UP
+        function openS1CardPopup(qIdx) {
+            activeS1PopupIdx = qIdx;
+            renderS1PopupContent();
+            document.getElementById('card-popup-modal').classList.remove('hidden');
+        }
+
+        function renderS1PopupContent() {
+            if (activeS1PopupIdx === null) return;
+            const item = s1State[activeS1PopupIdx];
+            const qIdx = activeS1PopupIdx;
+
+            const title = `<i class="fa-solid fa-puzzle-piece text-indigo-600"></i> Sentence ${qIdx + 1} - Pop-Up View`;
+
+            const answerBoxContent = item.selectedWords.length === 0 
+                ? `<span class="text-slate-400 text-lg md:text-xl italic select-none">Select words from the pool below...</span>`
+                : item.selectedWords.map((word, wIdx) => `
+                    <button onclick="unselectStage1Word(${qIdx}, ${wIdx})" class="word-badge bg-indigo-600 text-white text-lg md:text-xl font-bold px-5 py-3 rounded-2xl shadow-md flex items-center gap-3 hover:bg-rose-500 transition">
+                        <span>${word}</span>
+                        <i class="fa-solid fa-xmark text-sm opacity-80"></i>
+                    </button>
+                `).join('');
+
+            const poolBoxContent = item.poolWords.map((word, pIdx) => `
+                <button onclick="selectStage1Word(${qIdx}, '${word.replace(/'/g, "\\'")}', ${pIdx})" class="word-badge bg-white border-2 border-indigo-200 text-indigo-950 text-lg md:text-xl font-bold px-5 py-3 rounded-2xl shadow-sm hover:border-indigo-400 hover:bg-indigo-50 transition">
+                    ${word}
+                </button>
+            `).join('');
+
+            const content = `
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <span class="text-sm font-extrabold uppercase tracking-wider text-indigo-700">Sentence ${qIdx + 1} of 10</span>
+                        <button onclick="resetStage1Sentence(${qIdx})" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-sm transition flex items-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Sentence
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Constructed Sentence:</label>
+                        <div class="min-h-[90px] p-5 bg-white border-2 border-dashed border-slate-300 rounded-3xl flex flex-wrap gap-3 items-center">
+                            ${answerBoxContent}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Word Pool:</label>
+                        <div class="min-h-[90px] p-5 bg-indigo-50/60 border border-indigo-100 rounded-3xl flex flex-wrap gap-3 items-center">
+                            ${poolBoxContent}
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button onclick="closeCardPopup()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition">
+                            Done / Return to Stage 1
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('popup-modal-title').innerHTML = title;
+            document.getElementById('popup-modal-body').innerHTML = content;
+        }
+
+        // STAGE 2 CARD POP-UP
+        function openS2CardPopup() {
+            const title = `<i class="fa-solid fa-file-lines text-indigo-600"></i> My Trip to the City Park - Pop-Up Reader`;
+            const textHtml = document.getElementById('s2-text-container').innerHTML;
+
+            const content = `
+                <div class="space-y-6">
+                    <div class="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 text-sm font-bold text-indigo-900 flex items-center gap-3">
+                        <i class="fa-solid fa-lightbulb text-amber-500 text-xl"></i>
+                        <span>Select a highlighter tool mode on the main page, then tap any word in this enlarged reading card!</span>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-3xl p-6 md:p-8 border border-slate-200 leading-loose md:leading-loose text-2xl md:text-3xl text-slate-800 font-medium">
+                        ${textHtml}
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button onclick="closeCardPopup()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition">
+                            Close Pop-Up View
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            showCardPopup(title, content);
+        }
+
+        // STAGE 3 CARD POP-UP
+        function openS3CardPopup() {
+            const title = `<i class="fa-solid fa-list-check text-indigo-600"></i> Paragraph Reordering - Pop-Up View`;
+            const content = `
+                <div class="space-y-6">
+                    <p class="text-sm md:text-base font-semibold text-slate-500">Reorder sentences in large format. Use the up/down controls to arrange the full recount story logically.</p>
+
+                    <div class="space-y-4">
+                        ${s3CurrentList.map((item, idx) => `
+                            <div class="bg-slate-50 border-2 border-slate-200 p-6 rounded-3xl flex items-center justify-between gap-5 transition hover:border-indigo-300">
+                                <div class="flex items-center gap-4">
+                                    <span class="w-10 h-10 rounded-2xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-lg shrink-0">${idx + 1}</span>
+                                    <p class="text-xl md:text-2xl font-bold text-slate-800 leading-relaxed">${item.text}</p>
+                                </div>
+                                <div class="flex flex-col gap-2 shrink-0">
+                                    <button onclick="moveS3Sentence(${idx}, -1); openS3CardPopup();" ${idx === 0 ? 'disabled class="opacity-30 cursor-not-allowed text-slate-400 p-3"' : 'class="p-3 bg-indigo-100 hover:bg-indigo-600 hover:text-white text-indigo-700 rounded-2xl transition text-lg"'}>
+                                        <i class="fa-solid fa-chevron-up"></i>
+                                    </button>
+                                    <button onclick="moveS3Sentence(${idx}, 1); openS3CardPopup();" ${idx === s3CurrentList.length - 1 ? 'disabled class="opacity-30 cursor-not-allowed text-slate-400 p-3"' : 'class="p-3 bg-indigo-100 hover:bg-indigo-600 hover:text-white text-indigo-700 rounded-2xl transition text-lg"'}>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex justify-end">
+                        <button onclick="closeCardPopup()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition">
+                            Done Reordering
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            showCardPopup(title, content);
+        }
+
+        // STAGE 4 CARD POP-UP (ORIENTATION, EVENTS, REORIENTATION)
+        function openS4NodePopup(nodeType) {
+            let title = "";
+            let content = "";
+
+            if (nodeType === 'orientation') {
+                title = `<i class="fa-solid fa-sitemap text-indigo-600"></i> Pop-Up: Orientation Node`;
+                content = `
+                    <div class="space-y-5">
+                        <p class="text-sm md:text-base font-semibold text-slate-500">Provide background details (Who, When, Where).</p>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Who:</label>
+                            <input type="text" id="pop-mm-who" value="${document.getElementById('mm-who').value}" placeholder="e.g. My family and I" class="w-full px-5 py-4 text-xl bg-slate-50 border border-indigo-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">When:</label>
+                            <input type="text" id="pop-mm-when" value="${document.getElementById('mm-when').value}" placeholder="e.g. Last school holiday" class="w-full px-5 py-4 text-xl bg-slate-50 border border-indigo-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Where:</label>
+                            <input type="text" id="pop-mm-where" value="${document.getElementById('mm-where').value}" placeholder="e.g. Pangandaran Beach" class="w-full px-5 py-4 text-xl bg-slate-50 border border-indigo-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                        </div>
+                        <div class="pt-4 border-t border-slate-100 flex justify-end">
+                            <button onclick="saveS4NodePopup('orientation')" class="px-7 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition">
+                                Save Orientation
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (nodeType === 'events') {
+                title = `<i class="fa-solid fa-sitemap text-amber-600"></i> Pop-Up: Events Node`;
+                content = `
+                    <div class="space-y-5">
+                        <p class="text-sm md:text-base font-semibold text-slate-500">Chronological sequence of actions.</p>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">First Event:</label>
+                            <input type="text" id="pop-mm-event1" value="${document.getElementById('mm-event1').value}" placeholder="e.g. We arrived and set up our tent" class="w-full px-5 py-4 text-xl bg-slate-50 border border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Next Event:</label>
+                            <input type="text" id="pop-mm-event2" value="${document.getElementById('mm-event2').value}" placeholder="e.g. Played volleyball and swam in the sea" class="w-full px-5 py-4 text-xl bg-slate-50 border border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Then Event:</label>
+                            <input type="text" id="pop-mm-event3" value="${document.getElementById('mm-event3').value}" placeholder="e.g. Ate grilled fish at a seaside stall" class="w-full px-5 py-4 text-xl bg-slate-50 border border-amber-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
+                        </div>
+                        <div class="pt-4 border-t border-slate-100 flex justify-end">
+                            <button onclick="saveS4NodePopup('events')" class="px-7 py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-2xl transition">
+                                Save Events
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (nodeType === 'reorientation') {
+                title = `<i class="fa-solid fa-sitemap text-emerald-600"></i> Pop-Up: Reorientation Node`;
+                content = `
+                    <div class="space-y-5">
+                        <p class="text-sm md:text-base font-semibold text-slate-500">Conclusion & personal impression.</p>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Feeling:</label>
+                            <input type="text" id="pop-mm-feeling" value="${document.getElementById('mm-feeling').value}" placeholder="e.g. Very exhausted but super happy" class="w-full px-5 py-4 text-xl bg-slate-50 border border-emerald-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-1.5">Conclusion:</label>
+                            <input type="text" id="pop-mm-conclusion" value="${document.getElementById('mm-conclusion').value}" placeholder="e.g. It was the best holiday ever!" class="w-full px-5 py-4 text-xl bg-slate-50 border border-emerald-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium">
+                        </div>
+                        <div class="pt-4 border-t border-slate-100 flex justify-end">
+                            <button onclick="saveS4NodePopup('reorientation')" class="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition">
+                                Save Reorientation
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            showCardPopup(title, content);
+        }
+
+        function saveS4NodePopup(nodeType) {
+            playSound('pop');
+            if (nodeType === 'orientation') {
+                document.getElementById('mm-who').value = document.getElementById('pop-mm-who').value;
+                document.getElementById('mm-when').value = document.getElementById('pop-mm-when').value;
+                document.getElementById('mm-where').value = document.getElementById('pop-mm-where').value;
+            } else if (nodeType === 'events') {
+                document.getElementById('mm-event1').value = document.getElementById('pop-mm-event1').value;
+                document.getElementById('mm-event2').value = document.getElementById('pop-mm-event2').value;
+                document.getElementById('mm-event3').value = document.getElementById('pop-mm-event3').value;
+            } else if (nodeType === 'reorientation') {
+                document.getElementById('mm-feeling').value = document.getElementById('pop-mm-feeling').value;
+                document.getElementById('mm-conclusion').value = document.getElementById('pop-mm-conclusion').value;
+            }
+
+            closeCardPopup();
+            showToast("Saved Mind Map details!");
+        }
+
+        // STAGE 5 FULL SCREEN WRITING EDITOR POP-UP
+        function openS5EditorPopup() {
+            const title = `<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Full-Screen Writing Workspace`;
+            const currentTitle = document.getElementById('s5-title').value;
+            const currentBody = document.getElementById('s5-body').value;
+
+            const content = `
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Story Title:</label>
+                        <input type="text" id="pop-s5-title" value="${currentTitle}" placeholder="e.g. My Unforgettable Holiday at Pangandaran Beach" class="w-full px-5 py-4 text-xl font-bold border border-slate-300 rounded-2xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-extrabold text-slate-400 uppercase tracking-wider mb-2">Recount Text Content:</label>
+                        <textarea id="pop-s5-body" rows="14" placeholder="Type your story here... (Remember to use Simple Past Tense)" class="w-full p-6 text-xl md:text-2xl border border-slate-300 rounded-3xl leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 custom-scrollbar font-medium">${currentBody}</textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                        <span id="pop-s5-word-count" class="text-base font-bold text-slate-400">0 Words</span>
+                        <button onclick="saveS5EditorPopup()" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-bold rounded-2xl shadow-lg transition">
+                            Save & Keep Writing
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            showCardPopup(title, content);
+
+            // Add live word counter listener in pop-up
+            const popBody = document.getElementById('pop-s5-body');
+            popBody.addEventListener('input', function() {
+                const text = this.value.trim();
+                const words = text ? text.split(/\s+/).length : 0;
+                document.getElementById('pop-s5-word-count').innerText = `${words} Words`;
+            });
+            popBody.dispatchEvent(new Event('input'));
+        }
+
+        function saveS5EditorPopup() {
+            playSound('pop');
+            document.getElementById('s5-title').value = document.getElementById('pop-s5-title').value;
+            document.getElementById('s5-body').value = document.getElementById('pop-s5-body').value;
+            document.getElementById('s5-body').dispatchEvent(new Event('input'));
+            closeCardPopup();
+            showToast("Saved writing content!");
+        }
+
+        // ==================================================================
+        // KONEKSI LMS — kirim hasil ke tabel hasil_worksheet (Supabase)
+        // ==================================================================
+        const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+        const lmsClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const WORKSHEET_SLUG = "recount-text-interactive-media";
+
+        let loggedInProfile = null; // { id, nama, kelas }
+        let lmsSubmitted = false;
+
+        function escHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        (async function detectLmsLogin() {
+            try {
+                const { data: { user } } = await lmsClient.auth.getUser();
+                if (!user) return;
+                const { data: profile } = await lmsClient.from('profiles')
+                    .select('id, nama, kelas:kelas_id ( nama )').eq('id', user.id).single();
+                if (!profile) return;
+                loggedInProfile = { id: profile.id, nama: profile.nama, kelas: profile.kelas ? profile.kelas.nama : '' };
+                document.getElementById('jenisSelect').value = 'individu';
+                document.getElementById('jenisSelect').dispatchEvent(new Event('change'));
+                const n = document.getElementById('namaInput'), k = document.getElementById('kelasInput');
+                n.value = loggedInProfile.nama || ''; n.readOnly = true;
+                k.value = loggedInProfile.kelas || ''; k.readOnly = true;
+                document.getElementById('lmsNote').innerHTML = `<span class="text-emerald-700 font-semibold">✅ Masuk sebagai ${escHtml(loggedInProfile.nama)} — nama &amp; kelas otomatis diisi, hasil tersimpan di akunmu.</span>`;
+            } catch (e) { /* dibuka tanpa login LMS — form manual tetap jalan */ }
+        })();
+
+        (async function loadKelasOptions() {
+            try {
+                const { data } = await lmsClient.from('kelas').select('nama').order('nama');
+                document.getElementById('kelasList').innerHTML = (data || []).map(k => `<option value="${escHtml(k.nama)}">`).join('');
+            } catch (e) { /* abaikan, input kelas tetap bebas diketik */ }
+        })();
+
+        // ---- Jenis pengerjaan: individu / kelompok ----
+        const jenisSelect = document.getElementById('jenisSelect');
+        function addMemberRow() {
+            const row = document.createElement('div');
+            row.className = 'flex gap-2';
+            row.innerHTML = '<input type="text" class="memberInput flex-1 px-4 py-2.5 border border-slate-300 rounded-2xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Nama anggota"><button type="button" class="px-3 bg-slate-100 hover:bg-rose-500 hover:text-white rounded-2xl text-slate-600 font-bold transition">✕</button>';
+            row.querySelector('button').addEventListener('click', () => row.remove());
+            document.getElementById('memberList').appendChild(row);
+        }
+        addMemberRow();
+        document.getElementById('addMemberBtn').addEventListener('click', addMemberRow);
+        jenisSelect.addEventListener('change', () => {
+            const kel = jenisSelect.value === 'kelompok';
+            document.getElementById('kelompokFields').classList.toggle('hidden', !kel);
+            document.getElementById('namaLabel').textContent = kel ? 'Nama Kelompok' : 'Nama';
+            document.getElementById('namaInput').placeholder = kel ? 'Nama kelompok' : 'Nama lengkap';
+        });
+
+        function validateIdentitas() {
+            const jenis = jenisSelect.value;
+            const nama = document.getElementById('namaInput').value.trim();
+            const kelas = document.getElementById('kelasInput').value.trim();
+            const anggota = jenis === 'kelompok'
+                ? Array.from(document.querySelectorAll('.memberInput')).map(i => i.value.trim()).filter(Boolean).join(', ')
+                : null;
+            const warn = document.getElementById('idWarn');
+            let msg = '';
+            if (!kelas) msg = 'Isi dulu Kelas kamu.';
+            else if (!nama) msg = jenis === 'individu' ? 'Isi dulu Nama kamu.' : 'Isi dulu Nama Kelompok.';
+            else if (jenis === 'kelompok' && !anggota) msg = 'Tambahkan minimal satu Anggota Kelompok.';
+            if (msg) { warn.textContent = msg; warn.classList.remove('hidden'); return null; }
+            warn.classList.add('hidden');
+            return { jenis, nama, kelas, anggota };
+        }
+
+        // ---- Simpan ke LMS (per tahap + final) ----
+        const stagesDone = { s1: false, s2: false, s3: false, s4: false };
+        let lmsRowId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+        let rpcAvailable = true;
+        const NILAI_MAKS = () => stage1Questions.length + s2TextData.filter(w => w.type !== null).length + s3CorrectParagraph.length;
+
+        function setSaveStatus(msg, ok) {
+            const el = document.getElementById('saveStatus');
+            el.textContent = msg;
+            el.className = 'mt-4 p-3 rounded-xl text-sm font-semibold border ' + (ok ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800');
+        }
+
+        function buildPayload(final, ident) {
+            const parts = [], scored = [];
+            if (final || stagesDone.s1) { const x = collectStage1(); parts.push(x); scored.push(x); }
+            if (final || stagesDone.s2) { const x = collectStage2(); parts.push(x); scored.push(x); }
+            if (final || stagesDone.s3) { const x = collectStage3(); parts.push(x); scored.push(x); }
+            if (final || stagesDone.s4) parts.push(collectStage4());
+            if (final) parts.push(collectStage5(document.getElementById('s5-title').value.trim(), document.getElementById('s5-body').value.trim()));
+            return {
+                jenis: ident.jenis, nama: ident.nama, anggota: ident.anggota, kelas: ident.kelas,
+                nilai: scored.reduce((n, x) => n + x.correct, 0),
+                nilai_maks: NILAI_MAKS(),
+                status: final ? 'selesai' : 'belum',
+                jawaban: parts
+            };
+        }
+
+        async function saveToLms(final) {
+            const ident = validateIdentitas();
+            if (!ident) return { ok: false, reason: 'identitas', message: 'identitas belum lengkap' };
+            const p = buildPayload(final, ident);
+            try {
+                if (rpcAvailable) {
+                    const { error } = await lmsClient.rpc('simpan_hasil_worksheet', {
+                        p_id: lmsRowId, p_slug: WORKSHEET_SLUG, p_jenis: p.jenis, p_nama: p.nama, p_anggota: p.anggota,
+                        p_kelas: p.kelas, p_nilai: p.nilai, p_nilai_maks: p.nilai_maks, p_status: p.status, p_jawaban: p.jawaban
+                    });
+                    if (!error) return { ok: true, nilai: p.nilai, nilaiMaks: p.nilai_maks };
+                    const txt = (error.code || '') + ' ' + (error.message || '');
+                    if (/PGRST202|PGRST203|42883|schema cache|could not find the function|best candidate function/i.test(txt)) rpcAvailable = false;
+                    else throw error;
+                }
+                if (!final) return { ok: false, reason: 'norpc', message: 'fungsi simpan_hasil_worksheet belum dipasang' };
+                const { error } = await lmsClient.from('hasil_worksheet').insert({
+                    id: lmsRowId, worksheet_slug: WORKSHEET_SLUG, jenis: p.jenis, nama: p.nama, anggota: p.anggota, kelas: p.kelas,
+                    nilai: p.nilai, nilai_maks: p.nilai_maks, status: p.status,
+                    siswa_id: loggedInProfile ? loggedInProfile.id : null, jawaban: p.jawaban
+                });
+                if (error) throw error;
+                return { ok: true, nilai: p.nilai, nilaiMaks: p.nilai_maks };
+            } catch (err) {
+                console.error('Simpan LMS gagal:', err);
+                return { ok: false, reason: 'error', message: err.message || 'kesalahan jaringan' };
+            }
+        }
+
+        async function autoSave(label) {
+            if (lmsSubmitted) return;
+            setSaveStatus('⏳ Menyimpan ' + label + ' ke guru...', true);
+            const r = await saveToLms(false);
+            if (r.ok) setSaveStatus('✅ ' + label + ' tersimpan ke guru.', true);
+            else if (r.reason === 'identitas') setSaveStatus('⚠️ ' + label + ' BELUM tersimpan — lengkapi Identitas Pengerjaan di atas, lalu submit tahap ini lagi.', false);
+            else if (r.reason === 'norpc') setSaveStatus('ℹ️ Simpan per tahap belum aktif (fungsi database belum dipasang). Semua jawaban tetap terkirim saat kamu klik "Kirim ke Guru" di Stage 5.', false);
+            else setSaveStatus('❌ ' + label + ' gagal tersimpan: ' + r.message, false);
+        }
+
+        // ---- Pengumpul jawaban per stage (format dibaca guru.html "Cek Worksheet") ----
+        function collectStage1() {
+            let correct = 0;
+            const details = s1State.map(item => {
+                const your = item.selectedWords.join(' ');
+                const ok = item.selectedWords.length > 0 && your === item.correct;
+                if (ok) correct++;
+                return { label: `Kalimat ${item.id}`, your: your || '(kosong)', correct: item.correct, ok };
+            });
+            return { name: 'Stage 1 — Word Unscramble', correct, total: stage1Questions.length, details };
+        }
+
+        function collectStage2() {
+            const targets = s2TextData.map((w, i) => ({ w, i })).filter(x => x.w.type !== null);
+            const typeLabel = { verb: 'Verb', adj: 'Adjective', adv: 'Adverb' };
+            let correct = 0;
+            const details = targets.map(({ w, i }) => {
+                const ok = s2UserSelections[i] === w.type;
+                if (ok) correct++;
+                return { label: `"${w.text}" (${typeLabel[w.type]})`, your: ok ? `Ditandai ${typeLabel[w.type]}` : '(belum ditandai)', correct: typeLabel[w.type], ok };
+            });
+            return { name: 'Stage 2 — Analyze (Parts of Speech)', correct, total: targets.length, details };
+        }
+
+        function collectStage3() {
+            const details = s3CurrentList.map((item, i) => {
+                const ok = item.id === s3CorrectParagraph[i].id;
+                return { label: `Posisi ${i + 1} — ${s3CorrectParagraph[i].section}`, your: item.text, correct: s3CorrectParagraph[i].text, ok };
+            });
+            const correct = details.filter(d => d.ok).length;
+            return { name: 'Stage 3 — Paragraph Ordering', correct, total: s3CorrectParagraph.length, details };
+        }
+
+        function collectStage4() {
+            const f = [
+                ['Who', 'mm-who'], ['When', 'mm-when'], ['Where', 'mm-where'],
+                ['Event 1', 'mm-event1'], ['Event 2', 'mm-event2'], ['Event 3', 'mm-event3'],
+                ['Feeling', 'mm-feeling'], ['Conclusion', 'mm-conclusion']
+            ];
+            const details = f.map(([label, id]) => ({ label, your: document.getElementById(id).value.trim() || '(kosong)' }));
+            return { name: 'Stage 4 — Mind Map (dinilai manual)', details };
+        }
+
+        function collectStage5(title, body) {
+            const words = body ? body.split(/\s+/).length : 0;
+            return { name: 'Stage 5 — Recount Text (dinilai manual)', details: [
+                { label: 'Judul', your: title || '(kosong)' },
+                { label: `Isi teks (${words} kata)`, your: body }
+            ] };
+        }
+
+        // Initialization on Load
+        window.onload = function() {
+            initStage1();
+            renderStage2Text();
+            initStage3();
+        };
+    </script>
+</body>
+</html>
