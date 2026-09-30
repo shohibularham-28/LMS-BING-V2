@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -146,7 +146,7 @@
   #resetBtn{background:transparent; color:var(--maroon); border:1px solid var(--maroon) !important;}
   #status{ font-family:'Oswald',sans-serif; font-size:.72rem; opacity:.6; }
 
-  /* ---- Jenis Pengerjaan (Individu/Kelompok) & identitas dari login ---- */
+  /* ---- Work Type (Individual/Group) & identity from login ---- */
   .jenis-row{ grid-column:1/-1; display:flex; align-items:center; gap:.8rem; flex-wrap:wrap; margin-bottom:.2rem; }
   .jenis-toggle{ display:flex; border:1px solid var(--line); border-radius:20px; overflow:hidden; }
   .jenis-toggle button{ font-family:'Oswald',sans-serif; font-size:.78rem; font-weight:600; border:none; background:transparent; color:var(--ink); padding:.42rem .95rem; cursor:pointer; }
@@ -177,15 +177,15 @@
 
 <div id="authGate">
   <div class="box">
-    <p id="authGateMsg">Memeriksa akun kamu…</p>
+    <p id="authGateMsg">Checking your account…</p>
     <p id="authGateHint"></p>
-    <a id="authGateLink" href="../index.html">Masuk ke LMS →</a>
+    <a id="authGateLink" href="../index.html">Log in to LMS →</a>
   </div>
 </div>
 
 <header class="hero">
-  <p class="eyebrow">PR Bahasa Inggris · Kelas 10A · Bab "Cherished Experiences"</p>
-  <h1>Worksheet Interaktif — Cherished Experiences</h1>
+  <p class="eyebrow">English Homework · Class 10A · Chapter "Cherished Experiences"</p>
+  <h1>Interactive Worksheet — Cherished Experiences</h1>
 </header>
 
 <nav class="pagetabs" id="tabs"></nav>
@@ -193,37 +193,37 @@
 <main>
   <div class="idcard">
     <div class="jenis-row">
-      <label style="margin:0; font-family:'Oswald',sans-serif; font-size:.72rem; letter-spacing:.03em; color:var(--navy);">Jenis Pengerjaan</label>
+      <label style="margin:0; font-family:'Oswald',sans-serif; font-size:.72rem; letter-spacing:.03em; color:var(--navy);">Work Type</label>
       <div class="jenis-toggle" id="jenisToggle">
-        <button type="button" data-jenis="individu" class="on">Individu</button>
-        <button type="button" data-jenis="kelompok">Kelompok</button>
+        <button type="button" data-jenis="individu" class="on">Individual</button>
+        <button type="button" data-jenis="kelompok">Group</button>
       </div>
     </div>
-    <div><label for="nama">Nama Siswa</label><input id="nama" type="text" value="…" readonly></div>
-    <div><label for="kelas">Kelas</label><input id="kelas" type="text" value="…" readonly></div>
-    <p class="idnote">Nama &amp; kelas otomatis diambil dari akun LMS kamu yang sedang login, tidak bisa diketik manual.</p>
+    <div><label for="nama">Student Name</label><input id="nama" type="text" value="…" readonly></div>
+    <div><label for="kelas">Class</label><input id="kelas" type="text" value="…" readonly></div>
+    <p class="idnote">Name &amp; class are automatically taken from the LMS account you are logged in with and cannot be typed manually.</p>
   </div>
 
   <div class="kelompok-card" id="kelompokCard" style="display:none;">
-    <label for="namaKelompok">Nama Kelompok</label>
-    <input id="namaKelompok" type="text" placeholder="mis. Kelompok 1 / The Explorers">
-    <label>Anggota Kelompok (pilih dari daftar teman sekelas)</label>
-    <div class="member-list" id="anggotaList"><p class="hint-sm">Memuat daftar teman sekelas…</p></div>
+    <label for="namaKelompok">Group Name</label>
+    <input id="namaKelompok" type="text" placeholder="e.g. Group 1 / The Explorers">
+    <label>Group Members (choose from the list of classmates)</label>
+    <div class="member-list" id="anggotaList"><p class="hint-sm">Loading classmates list…</p></div>
   </div>
 
   <div id="pages"></div>
 </main>
 
 <div class="toolbar">
-  <button id="saveBtn">Simpan</button>
-  <button id="syncBtn">Sinkronkan ke LMS</button>
+  <button id="saveBtn">Save</button>
+  <button id="syncBtn">Sync to LMS</button>
   <button id="resetBtn">Reset</button>
 </div>
 <div style="text-align:center; padding-bottom:1rem;"><span id="status">&nbsp;</span></div>
 
-<!-- File ini harus dibuka dari dalam website LMS (folder "assets" ada satu
-     tingkat di atas folder tempat file ini berada, mis. worksheet/...html),
-     supaya login, identitas siswa, dan kirim nilai ke guru berfungsi. -->
+<!-- This file must be opened from within the LMS website (the "assets" folder is one
+     level above the folder where this file is located, e.g. worksheet/...html),
+     so that login, student identity, and sending scores to the teacher work. -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../assets/supabaseClient.js"></script>
 <script src="../assets/app.js"></script>
@@ -231,7 +231,7 @@
 (function(){
   var WORKSHEET_SLUG = 'cherished-experiences';
   var STORAGE_KEY = 'cherished_experiences_worksheet_v2';
-  var currentProfile = null; // diisi bootstrap() dari akun LMS yang login
+  var currentProfile = null; // filled by bootstrap() from the logged-in LMS account
   var currentJenis = 'individu';
 
   var verbs2 = ["hold","hear","gather","be","be","notice","show","arouse","realize","impress"];
@@ -276,39 +276,39 @@
       '<div class="act-head"><span class="badge">'+badge+'</span><h2>'+title+'</h2></div>' +
       (instr ? '<p class="instr">'+instr+'</p>' : '') +
       bodyHTML +
-      '<div class="pagefoot"><button class="prevBtn">&larr; Sebelumnya</button><span class="pos"></span><button class="nextBtn primary">Selanjutnya &rarr;</button></div>';
+      '<div class="pagefoot"><button class="prevBtn">&larr; Previous</button><span class="pos"></span><button class="nextBtn primary">Next &rarr;</button></div>';
     return sec;
   }
 
-  pagesWrap.appendChild(pageShell('act1','Activity 1','Reading and Viewing — Diskusi',
-    'Lihat foto pertandingan bola voli antarkelas Bagus pada buku (hlm. 34). Diskusikan dengan teman sebangkumu, lalu tulis jawaban kalian.',
-    '<div class="disc-box"><label>Apa yang bisa kamu ceritakan tentang foto tersebut?</label><textarea id="disc1a" placeholder="Tulis hasil diskusimu di sini…"></textarea></div>' +
-    '<div class="disc-box"><label>Menurutmu, momen apa dalam foto itu yang membuatnya jadi pengalaman berkesan bagi Bagus?</label><textarea id="disc1b" placeholder="Tulis pendapatmu di sini…"></textarea></div>'
+  pagesWrap.appendChild(pageShell('act1','Activity 1','Reading and Viewing — Discussion',
+    'Look at the photo of the inter-class volleyball match of Bagus in the book (p. 34). Discuss it with your deskmate, then write down your answers.',
+    '<div class="disc-box"><label>What can you tell about the photo?</label><textarea id="disc1a" placeholder="Write your discussion results here…"></textarea></div>' +
+    '<div class="disc-box"><label>In your opinion, what moment in the photo made it a memorable experience for Bagus?</label><textarea id="disc1b" placeholder="Write your opinion here…"></textarea></div>'
   ));
 
   var blanks2Shell = '<div class="blank-grid" id="blanks2"></div>';
-  pagesWrap.appendChild(pageShell('act2','Activity 2','Lengkapi kalimat',
-    'Lengkapi teks di buku (hlm. 34) dengan bentuk kata kerja dalam kurung yang sesuai. Tulis jawabanmu untuk tiap nomor.',
+  pagesWrap.appendChild(pageShell('act2','Activity 2','Complete the sentences',
+    'Complete the text in the book (p. 34) with the appropriate form of the verb in parentheses. Write your answer for each number.',
     blanks2Shell
   ));
 
   pagesWrap.appendChild(pageShell('act3','Activity 3','True or False',
-    'Baca ulang teks lengkap pada Activity 2, lalu tentukan pernyataan berikut True atau False.',
+    'Reread the complete text in Activity 2, then decide whether the following statements are True or False.',
     '<div class="tf-list" id="tf3"></div>'
   ));
 
-  pagesWrap.appendChild(pageShell('act4','Activity 4','Time Sequencer & Gagasan Utama',
-    'Baca teks tentang science fair (hlm. 35). Tulis time sequencer yang kamu temukan, lalu isi gagasan utama tiap paragraf.',
-    '<div class="chips" id="chips4"></div><table class="idea"><thead><tr><th>Paragraf</th><th>Gagasan Utama</th></tr></thead><tbody id="idea4"></tbody></table>'
+  pagesWrap.appendChild(pageShell('act4','Activity 4','Time Sequencer & Main Ideas',
+    'Read the text about the science fair (p. 35). Write the time sequencers you find, then fill in the main idea of each paragraph.',
+    '<div class="chips" id="chips4"></div><table class="idea"><thead><tr><th>Paragraph</th><th>Main Idea</th></tr></thead><tbody id="idea4"></tbody></table>'
   ));
 
   pagesWrap.appendChild(pageShell('act5','Activity 5','Email — True or False',
-    'Baca email Rodian tentang "First Time Experience of Trying Bowling" (hlm. 36). Untuk tiap pernyataan pada buku, tentukan True atau False.',
-    '<div class="note-box">Teks pernyataan tidak dicetak ulang di sini — lihat langsung daftar pernyataan 1–5 pada buku, lalu tandai jawabanmu.</div><div class="tf-list" id="tf5"></div>'
+    'Read the email from Rodian about "First Time Experience of Trying Bowling" (p. 36). For each statement in the book, decide whether it is True or False.',
+    '<div class="note-box">The statement text is not reprinted here — look directly at the list of statements 1–5 in the book, then mark your answers.</div><div class="tf-list" id="tf5"></div>'
   ));
 
   pagesWrap.appendChild(pageShell('assess2','Assessment 2','True or False',
-    'Berdasarkan teks tentang lomba menyelam (diving competition) pada hlm. 36, tentukan pernyataan berikut True atau False.',
+    'Based on the text about the diving competition on p. 36, decide whether the following statements are True or False.',
     '<div class="tf-list" id="tfA2"></div>'
   ));
 
@@ -316,7 +316,7 @@
   var blanks2Wrap = document.getElementById('blanks2');
   verbs2.forEach(function(v,i){
     var b = document.createElement('div'); b.className='blank';
-    b.innerHTML = '<span class="num">'+(i+1)+'.</span> <span class="hint">('+v+')</span><input type="text" id="v2-'+i+'" placeholder="jawaban…">';
+    b.innerHTML = '<span class="num">'+(i+1)+'.</span> <span class="hint">('+v+')</span><input type="text" id="v2-'+i+'" placeholder="answer…">';
     blanks2Wrap.appendChild(b);
   });
 
@@ -329,7 +329,7 @@
   var ideaBody = document.getElementById('idea4');
   for(var p=1;p<=paragraphs4;p++){
     var tr = document.createElement('tr');
-    tr.innerHTML = '<td>Paragraf '+p+'</td><td><textarea id="idea4-'+p+'" placeholder="gagasan utama…"></textarea></td>';
+    tr.innerHTML = '<td>Paragraph '+p+'</td><td><textarea id="idea4-'+p+'" placeholder="main idea…"></textarea></td>';
     ideaBody.appendChild(tr);
   }
 
@@ -338,7 +338,7 @@
     statements.forEach(function(s, i){
       var row = document.createElement('div'); row.className='tf-row';
       row.innerHTML =
-        '<div class="stmt"><span class="n">'+(i+1)+'.</span>'+(s?s:('Pernyataan '+(i+1)))+'</div>' +
+        '<div class="stmt"><span class="n">'+(i+1)+'.</span>'+(s?s:('Statement '+(i+1)))+'</div>' +
         '<div class="tf-toggle">' +
           '<button data-v="true" data-id="'+idPrefix+i+'">True</button>' +
           '<button data-v="false" data-id="'+idPrefix+i+'">False</button>' +
@@ -360,7 +360,7 @@
     sections[idx].querySelector('.pos').textContent = (idx+1)+' / '+sections.length;
     sections[idx].querySelector('.prevBtn').disabled = (idx===0);
     var nextBtn = sections[idx].querySelector('.nextBtn');
-    nextBtn.textContent = (idx===sections.length-1) ? 'Selesai ✓' : 'Selanjutnya →';
+    nextBtn.textContent = (idx===sections.length-1) ? 'Done ✓' : 'Next →';
     window.scrollTo(0,0);
   }
   tabsWrap.addEventListener('click', function(e){
@@ -406,8 +406,8 @@
   function saveState(){
     try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
-      setStatus('Tersimpan di perangkat ini · ' + new Date().toLocaleTimeString());
-    }catch(err){ setStatus('Tidak bisa menyimpan otomatis di perangkat ini.'); }
+      setStatus('Saved on this device · ' + new Date().toLocaleTimeString());
+    }catch(err){ setStatus('Unable to autosave on this device.'); }
   }
 
   function loadState(){
@@ -428,18 +428,18 @@
           if(btn) btn.classList.add('on');
         });
       });
-      setStatus('Jawaban sebelumnya dimuat.');
+      setStatus('Previous answers loaded.');
     }catch(err){ console.error('load error', err); }
   }
 
   function setStatus(msg){ var s=document.getElementById('status'); if(s) s.textContent = msg; }
 
-  /* ===================== JENIS PENGERJAAN: Individu / Kelompok =====================
-     Anggota kelompok TIDAK diketik bebas — dipilih lewat ceklis dari daftar
-     anak di kelas yang sama (RPC get_siswa_kelas, sama seperti yang dipakai
-     worksheet-puss-in-boots.html — lihat MIGRASI_ROSTER_SISWA_KELAS.sql).
-     Diri sendiri otomatis tercentang
-     & terkunci sebagai anggota. */
+  /* ===================== WORK TYPE: Individual / Group =====================
+     Group members are NOT typed freely — they are chosen via a checklist from the list of
+     students in the same class (RPC get_siswa_kelas, the same one used by
+     worksheet-puss-in-boots.html — see MIGRASI_ROSTER_SISWA_KELAS.sql).
+     The student themself is automatically checked
+     & locked as a member. */
   var jenisToggle = document.getElementById('jenisToggle');
   var kelompokCard = document.getElementById('kelompokCard');
   var anggotaList = document.getElementById('anggotaList');
@@ -465,10 +465,10 @@
 
   async function loadTemanSekelas(){
     temanSekelasLoaded = true;
-    anggotaList.innerHTML = '<p class="hint-sm">Memuat daftar teman sekelas…</p>';
+    anggotaList.innerHTML = '<p class="hint-sm">Loading classmates list…</p>';
     var kelasId = currentProfile.kelas_id || (currentProfile.kelas ? currentProfile.kelas.id : null);
     if(!kelasId){
-      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Akunmu belum terdaftar di kelas manapun — hubungi guru.</p>';
+      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Your account is not registered in any class — contact your teacher.</p>';
       return;
     }
     try{
@@ -476,18 +476,18 @@
       if(res.error) throw res.error;
       var teman = (res.data || []).filter(function(s){ return s.id !== currentProfile.id; });
       anggotaList.innerHTML = '';
-      anggotaList.appendChild(memberCheckRow(currentProfile.id, currentProfile.nama + ' (kamu)', true, true));
+      anggotaList.appendChild(memberCheckRow(currentProfile.id, currentProfile.nama + ' (you)', true, true));
       if(teman.length === 0){
         var p = document.createElement('p'); p.className = 'hint-sm';
-        p.textContent = 'Belum ada teman sekelas lain yang terdaftar di akun LMS.';
+        p.textContent = 'No other classmates are registered in the LMS yet.';
         anggotaList.appendChild(p);
       } else {
         teman.forEach(function(s){ anggotaList.appendChild(memberCheckRow(s.id, s.nama, false, false)); });
       }
     }catch(err){
       temanSekelasLoaded = false;
-      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Gagal memuat daftar teman sekelas. ' +
-        '(' + ((err && err.message) || 'kesalahan jaringan') + ') <a href="#" id="retryTeman" style="color:var(--maroon); font-weight:600;">Coba lagi</a></p>';
+      anggotaList.innerHTML = '<p class="hint-sm" style="color:var(--bad)">Failed to load the classmates list. ' +
+        '(' + ((err && err.message) || 'network error') + ') <a href="#" id="retryTeman" style="color:var(--maroon); font-weight:600;">Try again</a></p>';
       var retry = document.getElementById('retryTeman');
       if(retry) retry.addEventListener('click', function(e){ e.preventDefault(); loadTemanSekelas(); });
     }
@@ -498,23 +498,23 @@
       .map(function(c){ return c.dataset.nama; });
   }
 
-  /* ===================== KIRIM JAWABAN KE LMS (hasil_worksheet) ===================== */
+  /* ===================== SEND ANSWERS TO LMS (hasil_worksheet) ===================== */
   async function kirimKeLMS(){
-    if(!currentProfile){ setStatus('Belum masuk ke akun LMS — muat ulang halaman ini lewat menu Worksheet.'); return; }
+    if(!currentProfile){ setStatus('Not logged in to an LMS account — reload this page through the Worksheet menu.'); return; }
 
     var namaKelompok = document.getElementById('namaKelompok').value.trim();
     if(currentJenis === 'kelompok' && !namaKelompok){
-      setStatus('Isi nama kelompok dulu sebelum mengirim.');
+      setStatus('Fill in the group name before submitting.');
       return;
     }
     var anggota = currentJenis === 'kelompok' ? getAnggotaTerpilih() : null;
     if(currentJenis === 'kelompok' && (!anggota || anggota.length === 0)){
-      setStatus('Pilih minimal satu anggota kelompok (centang dari daftar).');
+      setStatus('Select at least one group member (check from the list).');
       return;
     }
 
     saveState();
-    setStatus('Mengirim jawaban ke guru…');
+    setStatus('Sending answers to the teacher…');
 
     var payload = {
       worksheet_slug: WORKSHEET_SLUG,
@@ -530,25 +530,25 @@
     try{
       var res = await supabase.from('hasil_worksheet').insert(payload);
       if(res.error) throw res.error;
-      setStatus('✅ Terkirim ke guru · ' + new Date().toLocaleTimeString());
+      setStatus('✅ Sent to teacher · ' + new Date().toLocaleTimeString());
     }catch(err){
-      setStatus('Gagal mengirim (' + ((err && err.message) || 'kesalahan jaringan') + '). Jawabanmu tetap tersimpan di perangkat ini — coba tombol "Sinkronkan ke LMS" lagi.');
+      setStatus('Failed to send (' + ((err && err.message) || 'network error') + '). Your answers are still saved on this device — try the "Sync to LMS" button again.');
     }
   }
 
   document.getElementById('saveBtn').addEventListener('click', saveState);
   document.getElementById('resetBtn').addEventListener('click', function(){
-    if(!confirm('Hapus semua jawaban di worksheet ini?')) return;
+    if(!confirm('Delete all answers in this worksheet?')) return;
     try{ localStorage.removeItem(STORAGE_KEY); }catch(err){}
     location.reload();
   });
   document.getElementById('syncBtn').addEventListener('click', kirimKeLMS);
 
   /* ===================== LOGIN GATE =====================
-     Tidak ada input Nama/Kelas manual: siswa sudah diautentikasi lewat akun
-     LMS. Nama & Kelas otomatis diambil dari profil akun mereka dan terkunci
-     (lihat requireLogin() & assets/app.js). Kalau belum login, requireLogin()
-     otomatis redirect ke ../index.html. */
+     There is no manual Name/Class input: students are already authenticated through their
+     LMS account. Name & Class are automatically taken from their account profile and locked
+     (see requireLogin() & assets/app.js). If not logged in, requireLogin()
+     automatically redirects to ../index.html. */
   function showGateError(msg, hint, showLink){
     var m = document.getElementById('authGateMsg');
     var h = document.getElementById('authGateHint');
@@ -561,29 +561,29 @@
   (async function bootstrap(){
     if(typeof requireLogin !== 'function' || typeof supabase === 'undefined'){
       showGateError(
-        'Halaman ini tidak bisa memuat sistem login LMS.',
-        'Pastikan file ini dibuka dari dalam website LMS (folder "assets" harus ada satu tingkat di atas folder "worksheet"), bukan dibuka sendirian di luar project.'
+        'This page cannot load the LMS login system.',
+        'Make sure this file is opened from within the LMS website (the "assets" folder must be one level above the "worksheet" folder), not opened on its own outside the project.'
       );
       return;
     }
     var gateTimeout = setTimeout(function(){
       showGateError(
-        'Proses login terlalu lama / tidak merespons.',
-        'Cek koneksi internetmu, lalu muat ulang halaman ini. Kalau masih macet, masuk ulang lewat halaman login.',
+        'The login process is taking too long / not responding.',
+        'Check your internet connection, then reload this page. If it is still stuck, log in again through the login page.',
         true
       );
     }, 12000);
 
     var profile = null;
     try{
-      profile = await requireLogin(); // redirect ke ../index.html kalau belum login
+      profile = await requireLogin(); // redirects to ../index.html if not logged in
     }catch(err){
       clearTimeout(gateTimeout);
-      showGateError('Gagal memeriksa status login.', (err && err.message) || 'Terjadi kesalahan tak terduga. Coba muat ulang halaman.', true);
+      showGateError('Failed to check login status.', (err && err.message) || 'An unexpected error occurred. Try reloading the page.', true);
       return;
     }
     clearTimeout(gateTimeout);
-    if(!profile) return; // requireLogin sudah redirect
+    if(!profile) return; // requireLogin has already redirected
 
     currentProfile = profile;
     STORAGE_KEY = STORAGE_KEY + '_' + profile.id;
