@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cari Kata Versus — English Learning Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<script>try{document.documentElement.setAttribute("data-theme", localStorage.getItem("lms_theme")==="dark"?"dark":"light");}catch(e){}</script>
+<style>
+  :root{ --g1:#1fa15a; --g2:#43d17a; --a1:#ffb703; --a2:#ff9f1c; --tA:#1fa15a; --tB:#3b82f6; }
+  body{ background:linear-gradient(180deg,#f6fffa 0%, #fffef6 100%); margin:0; }
+  .vs-wrap{ max-width:1200px; margin:0 auto; padding:14px 12px 40px; }
+  .vs-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; }
+  .vs-top a{ color:#1fa15a; font-weight:800; text-decoration:none; font-size:13.5px; }
+  .vs-timer{ font-weight:900; background:#1f2937; color:#fff; padding:6px 16px; border-radius:99px; font-size:14px; font-variant-numeric:tabular-nums; }
+  .vs-btn{ padding:11px 20px; border-radius:13px; border:none; background:linear-gradient(135deg,var(--g1),var(--g2)); color:#fff; font-weight:800; cursor:pointer; font-size:14px; }
+  .vs-btn.sec{ background:#F1F2F6; color:#1f2937; }
+  .vs-btn.red{ background:#ef4444; }
+
+  /* Setup */
+  .set-card{ background:#fff; border-radius:22px; padding:22px 18px; box-shadow:0 14px 34px rgba(30,90,60,.12); max-width:760px; margin:0 auto; }
+  .set-card h2{ margin:0 0 4px; font-size:20px; }
+  .set-sub{ color:#6b7280; font-size:13px; margin-bottom:16px; }
+  .seg{ display:inline-flex; background:#eafaf0; border-radius:99px; padding:4px; margin-bottom:18px; }
+  .seg button{ border:none; background:transparent; padding:9px 20px; border-radius:99px; font-weight:800; cursor:pointer; color:#136b38; font-size:14px; }
+  .seg button.on{ background:linear-gradient(135deg,var(--g1),var(--g2)); color:#fff; }
+  .team-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .team-box{ border:3px solid var(--c); border-radius:16px; padding:12px; background:#fff; }
+  .team-box input, .team-box textarea{ width:100%; box-sizing:border-box; border:2px solid #e5e7eb; border-radius:10px; padding:9px 10px; font:inherit; font-size:14px; margin-bottom:8px; }
+  .team-box textarea{ min-height:130px; resize:vertical; }
+  .team-box label{ font-size:12px; font-weight:800; color:#4b5563; display:block; margin-bottom:4px; }
+  .set-err{ color:#dc2626; font-size:13px; font-weight:700; margin-top:10px; min-height:18px; }
+
+  /* Arena */
+  .split{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .split.solo{ grid-template-columns:minmax(0,640px); justify-content:center; }
+  .pane{ background:#fff; border-radius:20px; padding:12px 10px 14px; box-shadow:0 10px 26px rgba(30,90,60,.12); border-top:8px solid var(--c); min-width:0; }
+  .pane.done{ outline:4px solid var(--a1); }
+  .pane-head{ display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px; }
+  .pane-name{ font-weight:900; font-size:16px; color:var(--c); }
+  .pane-score{ font-weight:900; font-size:13px; background:var(--c); color:#fff; padding:4px 12px; border-radius:99px; white-space:nowrap; }
+  .pane-members{ font-size:11.5px; color:#6b7280; margin-bottom:8px; line-height:1.4; }
+  .wl{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+  .chip{ background:#f1f5f9; border:2px solid #e2e8f0; border-radius:99px; padding:4px 10px; font-weight:800; font-size:11.5px; color:#334155; }
+  .chip.found{ background:var(--c); border-color:transparent; color:#fff; text-decoration:line-through; opacity:.85; }
+  .grid{ display:grid; gap:2px; user-select:none; touch-action:none; margin:0 auto; width:fit-content; background:#f1f5f9; padding:6px; border-radius:12px; }
+  .cell{ display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; font-weight:800; font-family:'Courier New',monospace; color:#1f2937; cursor:pointer; box-shadow:0 2px 0 #e2e8f0; }
+  .cell.selecting{ background:linear-gradient(135deg,var(--a1),var(--a2)); color:#fff; transform:scale(1.06); }
+  .cell.found{ background:var(--c); color:#fff; box-shadow:none; }
+
+  /* Hasil */
+  .res{ text-align:center; padding:28px 14px; max-width:640px; margin:0 auto; background:#fff; border-radius:22px; box-shadow:0 14px 34px rgba(30,90,60,.12); }
+  .res h2{ font-size:26px; margin:6px 0 14px; }
+  .res-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-radius:12px; margin-bottom:8px; background:#f8fafc; border-left:8px solid var(--c); font-weight:800; text-align:left; }
+  .res-row.win{ background:#fff7e0; }
+  .res-row small{ display:block; font-weight:600; color:#6b7280; }
+
+  @media (max-width:560px){
+    .split{ grid-template-columns:1fr; }
+    .team-grid{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="vs-wrap">
+  <div class="vs-top">
+    <a href="menu-game.html">‹ Keluar</a>
+    <div class="vs-timer" id="vsTimer" style="display:none">00:00</div>
+    <button class="vs-btn red" id="btnAkhiri" style="display:none">Akhiri</button>
+  </div>
+  <div id="vsRoot"><div style="text-align:center;padding:60px 10px;color:#8A90A3;font-weight:700;">Memuat soal…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabaseClient.js"></script>
+<script src="assets/app.js"></script>
+<script>
+// Pakai: game-cari-kata-versus.html?id=<bank_game_id>
+const BANK_ID = new URLSearchParams(location.search).get('id');
+const WARNA = ['#1fa15a', '#3b82f6'];
+let WORDS = [];
+let TEAMS = [];            // { nama, anggota[], puzzle, found:Set, sel, warna, selesaiMs }
+let jumlahTim = 2;
+let tMulai = 0, timerId = null, berakhir = false;
+
+const $ = (id) => document.getElementById(id);
+const fmt = (ms) => { const s = Math.floor(ms / 1000); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+
+// ---------- Setup (guru) ----------
+function renderSetup() {
+  $('vsTimer').style.display = 'none';
+  $('btnAkhiri').style.display = 'none';
+  const box = (i) => `
+    <div class="team-box" style="--c:${WARNA[i]}">
+      <label>Nama tim</label>
+      <input id="tn${i}" value="Tim ${i ? 'B' : 'A'}" maxlength="24">
+      <label>Nama anggota (satu nama per baris)</label>
+      <textarea id="tm${i}" placeholder="Contoh:&#10;Budi&#10;Sari&#10;Andi"></textarea>
+    </div>`;
+  $('vsRoot').innerHTML = `
+    <div class="set-card">
+      <h2>⚔️ Cari Kata — Tim vs Tim</h2>
+      <div class="set-sub">${WORDS.length} kata. Setiap tim mengerjakan kata yang sama, tetapi letak hurufnya diacak berbeda.</div>
+      <div class="seg" id="segTim">
+        <button data-n="1" class="${jumlahTim === 1 ? 'on' : ''}">1 Tim</button>
+        <button data-n="2" class="${jumlahTim === 2 ? 'on' : ''}">2 Tim</button>
+      </div>
+      <div class="team-grid" id="teamGrid" style="${jumlahTim === 1 ? 'grid-template-columns:1fr' : ''}">
+        ${box(0)}${jumlahTim === 2 ? box(1) : ''}
+      </div>
+      <div class="set-err" id="setErr"></div>
+      <button class="vs-btn" id="btnMulai" style="width:100%;margin-top:6px;">▶ Mulai Permainan</button>
+    </div>`;
+  $('segTim').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const simpan = ambilInputSetup();
+    jumlahTim = Number(b.dataset.n);
+    renderSetup();
+    simpan.forEach((s, i) => { if ($('tn' + i)) { $('tn' + i).value = s.nama; $('tm' + i).value = s.anggotaRaw; } });
+  });
+  $('btnMulai').onclick = mulai;
+}
+
+function ambilInputSetup() {
+  const out = [];
+  for (let i = 0; i < 2; i++) {
+    if (!$('tn' + i)) continue;
+    out.push({ nama: $('tn' + i).value.trim(), anggotaRaw: $('tm' + i).value,
+      anggota: $('tm' + i).value.split('\n').map(s => s.trim()).filter(Boolean) });
+  }
+  return out;
+}
+
+function mulai() {
+  const input = ambilInputSetup();
+  if (input.some(t => !t.nama)) { $('setErr').textContent = 'Isi nama tim terlebih dahulu.'; return; }
+  if (input.some(t => !t.anggota.length)) { $('setErr').textContent = 'Setiap tim harus punya minimal satu anggota.'; return; }
+  TEAMS = input.map((t, i) => ({ nama: t.nama, anggota: t.anggota, warna: WARNA[i], found: new Set(), sel: null, selesaiMs: null, puzzle: null }));
+  // papan berbeda per tim
+  let tries = 0;
+  do {
+    TEAMS.forEach(t => t.puzzle = buatGridCariKata(WORDS));
+    tries++;
+  } while (TEAMS.length === 2 && tries < 5 && TEAMS[0].puzzle.grid.flat().join('') === TEAMS[1].puzzle.grid.flat().join(''));
+  if (TEAMS.some(t => !t.puzzle || !t.puzzle.size)) { $('setErr').textContent = 'Daftar kata terlalu banyak/panjang untuk dibuat papan.'; return; }
+  berakhir = false;
+  renderArena();
+  tMulai = Date.now();
+  $('vsTimer').style.display = ''; $('btnAkhiri').style.display = '';
+  clearInterval(timerId);
+  timerId = setInterval(() => { $('vsTimer').textContent = fmt(Date.now() - tMulai); }, 500);
+}
+
+// ---------- Arena (layar terbagi) ----------
+function renderArena() {
+  const n = TEAMS.length;
+  $('vsRoot').innerHTML = `<div class="split ${n === 1 ? 'solo' : ''}">` + TEAMS.map((t, i) => `
+    <div class="pane" id="pane${i}" style="--c:${t.warna}">
+      <div class="pane-head"><div class="pane-name">${esc(t.nama)}</div><div class="pane-score" id="sc${i}"></div></div>
+      <div class="pane-members">${t.anggota.map(esc).join(' · ')}</div>
+      <div class="wl" id="wl${i}"></div>
+      <div class="grid" id="gr${i}"></div>
+    </div>`).join('') + `</div>`;
+  TEAMS.forEach((_, i) => { renderTim(i); });
+}
+
+function ukuranSel(i) {
+  const pane = $('pane' + i);
+  const lebar = (pane ? pane.clientWidth : 360) - 40;
+  return Math.max(18, Math.min(38, Math.floor(lebar / TEAMS[i].puzzle.size) - 2));
+}
+
+function renderTim(i) {
+  const t = TEAMS[i], p = t.puzzle;
+  $('sc' + i).textContent = `${t.found.size}/${WORDS.length} · ${t.found.size * 10} poin`;
+  $('wl' + i).innerHTML = WORDS.map(w => `<span class="chip ${t.found.has(w) ? 'found' : ''}">${esc(w)}</span>`).join('');
+  const px = ukuranSel(i);
+  const fs = new Set();
+  p.placements.forEach(pl => { if (t.found.has(pl.kata)) pl.cells.forEach(([r, c]) => fs.add(r + ',' + c)); });
+  const g = $('gr' + i);
+  g.style.gridTemplateColumns = `repeat(${p.size}, ${px}px)`;
+  g.innerHTML = '';
+  for (let r = 0; r < p.size; r++) for (let c = 0; c < p.size; c++) {
+    const d = document.createElement('div');
+    d.className = 'cell' + (fs.has(r + ',' + c) ? ' found' : '');
+    d.style.cssText = `width:${px}px;height:${px}px;font-size:${Math.floor(px * .5)}px`;
+    d.dataset.r = r; d.dataset.c = c; d.textContent = p.grid[r][c];
+    g.appendChild(d);
+  }
+  pasang(g, i);
+}
+
+function jalur(sel) {
+  if (!sel) return [];
+  const dr = Math.sign(sel.b.r - sel.a.r), dc = Math.sign(sel.b.c - sel.a.c);
+  const n = Math.max(Math.abs(sel.b.r - sel.a.r), Math.abs(sel.b.c - sel.a.c)) + 1;
+  return Array.from({ length: n }, (_, k) => [sel.a.r + dr * k, sel.a.c + dc * k]);
+}
+
+function gambar(i) {
+  const set = new Set(jalur(TEAMS[i].sel).map(([r, c]) => r + ',' + c));
+  $('gr' + i).querySelectorAll('.cell').forEach(el => {
+    if (!el.classList.contains('found')) el.classList.toggle('selecting', set.has(el.dataset.r + ',' + el.dataset.c));
+  });
+}
+
+function pasang(g, i) {
+  // Tiap papan punya status seleksi sendiri, jadi dua tim bisa bermain bersamaan (multi-touch)
+  g.addEventListener('pointerdown', (e) => {
+    if (berakhir || TEAMS[i].selesaiMs !== null) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (!el || !el.classList.contains('cell')) return;
+    e.preventDefault();
+    const p = { r: +el.dataset.r, c: +el.dataset.c };
+    TEAMS[i].sel = { a: p, b: p, id: e.pointerId };
+    gambar(i);
+  });
+  g.addEventListener('pointermove', (e) => {
+    const s = TEAMS[i].sel;
+    if (!s || s.id !== e.pointerId) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (!el || !el.classList.contains('cell')) return;
+    const c = { r: +el.dataset.r, c: +el.dataset.c };
+    const dr = c.r - s.a.r, dc = c.c - s.a.c;
+    if (dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc)) { s.b = c; gambar(i); }
+  });
+}
+
+window.addEventListener('pointerup', (e) => {
+  TEAMS.forEach((t, i) => {
+    if (!t.sel || t.sel.id !== e.pointerId) return;
+    const jl = jalur(t.sel);
+    t.sel = null;
+    $('gr' + i).querySelectorAll('.cell.selecting').forEach(el => el.classList.remove('selecting'));
+    const m = cocokkanJalurCariKata(jl, t.puzzle.placements, t.found);
+    if (!m) return;
+    t.found.add(m.kata);
+    if (t.found.size >= WORDS.length) {
+      t.selesaiMs = Date.now() - tMulai;
+      renderTim(i);
+      $('pane' + i).classList.add('done');
+      setTimeout(akhiri, 600); // tim pertama yang selesai = pemenang
+      return;
+    }
+    renderTim(i);
+  });
+});
+window.addEventListener('pointercancel', () => TEAMS.forEach((t, i) => { t.sel = null; if ($('gr' + i)) gambar(i); }));
+
+// ---------- Hasil ----------
+function akhiri() {
+  if (berakhir) return;
+  berakhir = true;
+  clearInterval(timerId);
+  const total = Date.now() - tMulai;
+  const urut = TEAMS.map((t, i) => ({ t, i })).sort((a, b) => {
+    const fa = b.t.found.size - a.t.found.size;
+    if (fa) return fa;
+    return (a.t.selesaiMs ?? 9e15) - (b.t.selesaiMs ?? 9e15);
+  });
+  const seri = urut.length === 2 && urut[0].t.found.size === urut[1].t.found.size && urut[0].t.selesaiMs === null && urut[1].t.selesaiMs === null;
+  const judul = TEAMS.length === 1 ? 'Waktu habis! 🎉' : seri ? 'Seri! 🤝' : `${esc(urut[0].t.nama)} menang! 🏆`;
+  $('btnAkhiri').style.display = 'none';
+  $('vsRoot').innerHTML = `
+    <div class="res">
+      <div style="font-size:44px">${seri ? '🤝' : '🏆'}</div>
+      <h2>${judul}</h2>
+      ${urut.map((u, k) => `
+        <div class="res-row ${k === 0 && !seri && TEAMS.length > 1 ? 'win' : ''}" style="--c:${u.t.warna}">
+          <div>${esc(u.t.nama)}<small>${u.t.anggota.map(esc).join(', ')}</small></div>
+          <div style="text-align:right">${u.t.found.size * 10} poin<small>${u.t.found.size}/${WORDS.length} kata · ${u.t.selesaiMs !== null ? fmt(u.t.selesaiMs) : 'belum selesai'}</small></div>
+        </div>`).join('')}
+      <div style="color:#8A90A3;font-size:12.5px;margin:8px 0 14px">Total waktu ${fmt(total)}</div>
+      <button class="vs-btn" id="btnUlang">🔁 Main Lagi (papan baru)</button>
+      <button class="vs-btn sec" id="btnSetup">Ubah Tim</button>
+    </div>`;
+  $('btnUlang').onclick = () => {
+    // pertahankan tim, acak papan baru
+    const input = TEAMS.map(t => ({ nama: t.nama, anggota: t.anggota }));
+    renderSetup();
+    input.forEach((s, i) => { if ($('tn' + i)) { $('tn' + i).value = s.nama; $('tm' + i).value = s.anggota.join('\n'); } });
+    mulai();
+  };
+  $('btnSetup').onclick = () => {
+    const input = TEAMS.map(t => ({ nama: t.nama, anggota: t.anggota }));
+    renderSetup();
+    input.forEach((s, i) => { if ($('tn' + i)) { $('tn' + i).value = s.nama; $('tm' + i).value = s.anggota.join('\n'); } });
+  };
+}
+$('btnAkhiri').onclick = () => { if (confirm('Akhiri permainan sekarang?')) akhiri(); };
+
+// ---------- Init ----------
+(async function () {
+  const profile = await requireLogin();
+  if (!profile) return;
+  if (!BANK_ID) { $('vsRoot').innerHTML = emptyState('Halaman tidak valid', 'Silakan masuk lewat menu Game.', '⚠️'); return; }
+  const { data, error } = await supabase.from('bank_game').select('id, judul, data').eq('id', BANK_ID).maybeSingle();
+  if (error || !data || !(data.data || []).length) {
+    $('vsRoot').innerHTML = emptyState('Materi tidak ditemukan', 'Materi ini mungkin sudah dihapus.', '🔍');
+    return;
+  }
+  WORDS = data.data.map(d => String(d.kata || '').toUpperCase().replace(/[^A-Z]/g, '')).filter(Boolean);
+  renderSetup();
+})();
+</script>
+</body>
+</html>
