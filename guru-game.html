@@ -158,6 +158,74 @@
   .ck-cell{ display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; font-weight:800; font-family:'Courier New',monospace; color:#1f2937; cursor:pointer; }
   .ck-cell.selecting{ background:linear-gradient(135deg,#ffb703,#ff9f1c); color:#fff; }
   .ck-cell.found{ background:linear-gradient(135deg,var(--ipd-accent1,#1fa15a),var(--ipd-accent2,#43d17a)); color:#fff; }
+
+  /* ===== Cari Kata: IPD Tim vs Tim ===== */
+  .vs-block{ background:#fff; border:1px solid #E7E9F2; border-radius:14px; padding:12px 14px; margin-top:12px; }
+  .vs-block-title{ font-weight:800; font-size:14px; margin-bottom:8px; color:#1f2937; }
+  .vs-time-row{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .vs-time-row input{ width:70px; padding:10px; border:2px solid #E7E9F2; border-radius:10px; font:inherit; font-weight:800; font-size:18px; text-align:center; }
+  .vs-presets{ display:inline-flex; gap:6px; flex-wrap:wrap; margin-left:6px; }
+  .vs-preset{ border:none; background:#F1F2F6; padding:8px 12px; border-radius:99px; font-weight:700; cursor:pointer; font-size:13px; }
+  .vs-preset:hover{ background:#E7E9F2; }
+  .vs-brush{ display:flex; gap:8px; margin-bottom:10px; }
+  .vs-brush-btn{ flex:1; border:3px solid var(--c); background:#fff; color:var(--c); padding:11px 8px; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; }
+  .vs-brush-btn.on{ background:var(--c); color:#fff; }
+  .vs-roster{ display:flex; flex-wrap:wrap; gap:8px; }
+  .vs-chip{ border:2px solid #E7E9F2; background:#F1F2F6; padding:8px 13px; border-radius:99px; font-weight:600; font-size:13.5px; cursor:pointer; font-family:inherit; }
+  .vs-chip.tA{ background:#1fa15a; border-color:#1fa15a; color:#fff; }
+  .vs-chip.tB{ background:#2f6fe4; border-color:#2f6fe4; color:#fff; }
+  .vs-team-sum{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .vs-sum-box{ border:3px solid var(--c); border-radius:14px; padding:10px; background:#fff; min-height:70px; }
+  .vs-name-input{ width:100%; box-sizing:border-box; border:2px solid #E7E9F2; border-radius:10px; padding:8px 10px; font:inherit; font-weight:800; margin-bottom:8px; }
+  .vs-mem{ display:inline-block; background:#F1F2F6; border-radius:99px; padding:3px 10px; margin:0 5px 5px 0; font-size:12.5px; font-weight:600; color:#334155; }
+
+  /* Arena layar penuh */
+  .vs-ov{ position:fixed; inset:0; z-index:9999; background:#12233b; display:flex; flex-direction:column; padding:10px 12px 12px; box-sizing:border-box; gap:10px; }
+  .vs-head{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:10px; }
+  .vs-hteam{ color:#fff; border-left:8px solid var(--c); padding-left:12px; min-width:0; }
+  .vs-hteam.right{ border-left:0; border-right:8px solid var(--c); padding-left:0; padding-right:12px; text-align:right; }
+  .vs-hname{ font-weight:900; font-size:clamp(16px,2.4vw,30px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .vs-hscore{ font-weight:700; font-size:clamp(12px,1.5vw,18px); opacity:.9; }
+  .vs-center{ text-align:center; }
+  .vs-timer{ font-weight:900; font-size:clamp(34px,6vw,72px); line-height:1; color:#ffd166; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+  .vs-timer.low{ color:#ff5d5d; animation:vsPulse 1s infinite; }
+  @keyframes vsPulse{ 50%{ transform:scale(1.08); } }
+  .vs-ctrl{ display:flex; gap:8px; justify-content:center; margin-top:6px; }
+  .vs-ctrl button{ border:none; background:rgba(255,255,255,.14); color:#fff; padding:6px 12px; border-radius:99px; font-weight:700; font-size:12.5px; cursor:pointer; font-family:inherit; }
+  .vs-arena{ position:relative; flex:1; min-height:0; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .vs-pane{ background:#fff; border-radius:18px; border-top:10px solid var(--c); padding:8px 10px 10px; display:flex; flex-direction:column; min-width:0; min-height:0; }
+  .vs-members{ margin-bottom:4px; line-height:1.2; }
+  .vs-words{ display:flex; flex-wrap:wrap; gap:5px; margin-bottom:6px; }
+  .vs-word{ background:#f1f5f9; border:2px solid #e2e8f0; border-radius:99px; padding:3px 10px; font-weight:800; font-size:clamp(11px,1.3vw,15px); color:#334155; }
+  .vs-word.found{ background:var(--c); border-color:transparent; color:#fff; text-decoration:line-through; opacity:.85; }
+  .vs-host{ flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+  .vs-grid{ display:grid; gap:2px; user-select:none; -webkit-user-select:none; touch-action:none; background:#f1f5f9; padding:6px; border-radius:12px; }
+  .vs-cell{ width:var(--px,28px); height:var(--px,28px); font-size:calc(var(--px,28px) * .52); display:flex; align-items:center; justify-content:center; background:#fff; border-radius:6px; font-weight:800; font-family:'Courier New',monospace; color:#1f2937; box-shadow:0 2px 0 #e2e8f0; cursor:pointer; }
+  .vs-cell.selecting{ background:linear-gradient(135deg,#ffb703,#ff9f1c); color:#fff; }
+  .vs-cell.found{ background:var(--c); color:#fff; box-shadow:none; }
+  .vs-pane:nth-child(1) .vs-cell.found{ background:#1fa15a; }
+  .vs-pane:nth-child(2) .vs-cell.found{ background:#2f6fe4; }
+  .vs-paused{ position:absolute; inset:0; background:rgba(18,35,59,.86); color:#fff; font-weight:900; font-size:clamp(28px,6vw,64px); display:flex; align-items:center; justify-content:center; border-radius:18px; }
+  .vs-count{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(18,35,59,.9); color:#ffd166; font-weight:900; font-size:clamp(80px,22vw,240px); }
+  .vs-count.pop{ animation:vsPop .7s ease-out; }
+  @keyframes vsPop{ from{ transform:scale(.4); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+  /* Hasil */
+  .vs-result{ margin:auto; width:min(640px,100%); background:#fff; border-radius:22px; padding:26px 18px; text-align:center; max-height:100%; overflow:auto; }
+  .vs-trophy{ font-size:52px; }
+  .vs-result h2{ font-size:28px; margin:4px 0 4px; }
+  .vs-res-ket{ color:#6b7280; margin:0 0 16px; font-weight:600; }
+  .vs-res-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 14px; border-radius:12px; margin-bottom:8px; background:#f8fafc; border-left:8px solid var(--c); text-align:left; }
+  .vs-res-row.win{ background:#fff7e0; }
+  .vs-res-row small{ display:block; font-weight:600; color:#6b7280; }
+  .vs-res-right{ text-align:right; white-space:nowrap; }
+  .vs-res-save{ font-size:12.5px; color:#6b7280; margin:10px 0 14px; }
+  .vs-res-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .vs-big{ border:none; background:linear-gradient(135deg,#1fa15a,#43d17a); color:#fff; font-weight:800; padding:12px 20px; border-radius:13px; cursor:pointer; font-size:14.5px; font-family:inherit; }
+  .vs-big.sec{ background:#F1F2F6; color:#1f2937; }
+  @media (max-aspect-ratio:1/1){ .vs-arena{ grid-template-columns:1fr; grid-template-rows:1fr 1fr; } }
+  @media (max-width:560px){ .vs-team-sum{ grid-template-columns:1fr; } }
+  @media (prefers-reduced-motion:reduce){ .vs-timer.low, .vs-count.pop{ animation:none; } }
 </style>
 </head>
 <body>
@@ -254,6 +322,7 @@ async function renderDaftarMateri(jenis) {
       <div class="gg-meta">${metaJumlah} · ${m.kelas ? esc(m.kelas.nama) : (m.level ? 'Tingkat ' + m.level : 'Semua kelas')}</div>
       <div class="gg-card-actions">
         <button class="btn-launch-ipd" data-id="${m.id}" data-mode="ipd">🖥️ Launch IPD</button>
+        ${jenisAktif === 'cari_kata' ? `<button class="btn-launch-ipd" data-id="${m.id}" data-mode="ipd_vs">⚔️ IPD Tim vs Tim</button>` : ''}
         <button class="btn-launch-live" data-id="${m.id}" data-mode="mandiri_live">📱 Launch Live HP</button>
       </div>
       <div class="gg-card-actions" style="margin-top:6px;">
@@ -493,8 +562,8 @@ function bukaFormLaunch(bankId, mode, bank, jenis) {
   c.innerHTML = `
     <a class="btn-text-sm" id="btnBackList2" style="cursor:pointer;">‹ Batal</a>
     <div class="gg-form" style="margin-top:10px;">
-      <div class="section-label">${mode === 'ipd' ? '🖥️ Launch di IPD (Giliran Maju)' : '📱 Launch Live (HP Siswa)'}</div>
-      <div class="hint">${mode === 'ipd' ? 'Siswa akan maju bergiliran ke depan dan mengerjakan langsung di layar/perangkat ini.' : 'Siswa mengerjakan lewat HP masing-masing dengan kecepatannya sendiri; layar ini menampilkan papan skor secara langsung.'}</div>
+      <div class="section-label">${mode === 'ipd_vs' ? '⚔️ Launch di IPD (Tim vs Tim)' : mode === 'ipd' ? '🖥️ Launch di IPD (Giliran Maju)' : '📱 Launch Live (HP Siswa)'}</div>
+      <div class="hint">${mode === 'ipd_vs' ? 'Dua tim beradu di layar terbagi kiri-kanan dengan kata yang sama (papan diacak berbeda). Waktu mundur dan anggota tim diatur di langkah berikutnya.' : mode === 'ipd' ? 'Siswa akan maju bergiliran ke depan dan mengerjakan langsung di layar/perangkat ini.' : 'Siswa mengerjakan lewat HP masing-masing dengan kecepatannya sendiri; layar ini menampilkan papan skor secara langsung.'}</div>
       <div class="form-field" style="margin-top:10px;"><label>Kelas (opsional, kosongkan untuk semua kelas)</label>
         <select id="fLaunchKelas"><option value="">Semua Kelas</option></select>
       </div>
@@ -512,14 +581,16 @@ function bukaFormLaunch(bankId, mode, bank, jenis) {
     const kelasId = document.getElementById('fLaunchKelas').value || null;
     const kode = fmtKode();
     const { data: sesi, error } = await supabase.from('game_sesi').insert({
-      kode, jenis, bank_game_id: bankId, guru_id: PROFILE.id, kelas_id: kelasId, mode, status: 'berjalan'
+      kode, jenis, bank_game_id: bankId, guru_id: PROFILE.id, kelas_id: kelasId, mode: mode === 'ipd_vs' ? 'ipd' : mode, status: 'berjalan'
     }).select().single();
     if (error || !sesi) { alert('Gagal membuat sesi.'); return; }
     ACTIVE_SESI = sesi;
     ACTIVE_JENIS = jenis;
     const { data: bankFull } = await supabase.from('bank_game').select('id, data').eq('id', bankId).maybeSingle();
     ACTIVE_BANK = bankFull;
-    if (mode === 'ipd') {
+    if (mode === 'ipd_vs') {
+      renderVersusCariKata();
+    } else if (mode === 'ipd') {
       if (jenis === 'jodoh') renderLiveIpdJodoh();
       else if (jenis === 'cari_kata') renderLiveIpdCariKata();
       else renderLiveIpd();
@@ -1342,6 +1413,440 @@ function subscribeSesiCariKata() {
       if (!ipdCariKataPicked) { refreshBoard('ipdCariBoardSlot'); loadRosterChipsCari(); }
     })
     .subscribe();
+}
+
+// ============ VIEW: LIVE — IPD Tim vs Tim untuk Cari Kata ============
+// Alur: guru atur waktu mundur + pilih siswa ke Tim A / Tim B -> layar terbelah kiri/kanan.
+// Kata-katanya SAMA, tetapi tiap tim mendapat papan huruf yang diacak sendiri-sendiri.
+// Tidak butuh migrasi database: memakai game_sesi (mode 'ipd'), game_peserta, game_jawaban yang sudah ada.
+const VS_WARNA = { A: '#1fa15a', B: '#2f6fe4' };
+let VS = null;   // pengaturan (waktu, tim, anggota) — bertahan selama sesi
+let M = null;    // state pertandingan yang sedang berjalan
+
+const vsEl = (id) => document.getElementById(id);
+const vsFmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+
+function vsKataDariBank() {
+  const seen = new Set(), out = [];
+  (ACTIVE_BANK.data || []).forEach(d => {
+    const label = String(d.kata || '').trim();
+    const key = label.toUpperCase().replace(/[^A-Z]/g, '');
+    if (key && !seen.has(key)) { seen.add(key); out.push({ label, key }); }
+  });
+  return out;
+}
+
+async function renderVersusCariKata() {
+  setBackLink('menu');
+  let q = supabase.from('profiles').select('id, nama').eq('role', 'siswa').order('nama');
+  if (ACTIVE_SESI.kelas_id) q = q.eq('kelas_id', ACTIVE_SESI.kelas_id);
+  const { data: roster } = await q;
+  VS = {
+    words: vsKataDariBank(), roster: roster || [], ronde: 0,
+    menit: 3, detik: 0, brush: 'A',
+    nama: { A: 'Tim A', B: 'Tim B' },
+    anggota: { A: new Map(), B: new Map() },
+    ac: null
+  };
+  renderVersusSetup();
+}
+
+// ---------- Layar atur: waktu + pilih anggota tim ----------
+function renderVersusSetup() {
+  setBackLink('menu');
+  vsTutupOverlay();
+  const c = vsEl('ggContainer');
+  const preset = [1, 2, 3, 5].map(m => `<button type="button" class="vs-preset" data-m="${m}">${m} menit</button>`).join('');
+  c.innerHTML = `
+    <div class="gg-form">
+      <div class="section-label">⚔️ Tim vs Tim · Kode Sesi: <b>${ACTIVE_SESI.kode}</b></div>
+      <div class="hint">${VS.words.length} kata. Kedua tim mencari kata yang sama, tetapi letak hurufnya diacak berbeda.</div>
+
+      <div class="vs-block">
+        <div class="vs-block-title">Waktu mundur</div>
+        <div class="vs-time-row">
+          <input type="number" id="vsMenit" min="0" max="60" value="${VS.menit}"> <span>menit</span>
+          <input type="number" id="vsDetik" min="0" max="59" value="${VS.detik}"> <span>detik</span>
+          <span class="vs-presets">${preset}</span>
+        </div>
+      </div>
+
+      <div class="vs-block">
+        <div class="vs-block-title">Pilih siswa</div>
+        <div class="hint" style="margin-bottom:8px;">Pilih tim dulu, lalu ketuk nama siswa. Ketuk lagi untuk mengeluarkan dari tim.</div>
+        <div class="vs-brush">
+          <button type="button" class="vs-brush-btn" data-b="A" style="--c:${VS_WARNA.A}"></button>
+          <button type="button" class="vs-brush-btn" data-b="B" style="--c:${VS_WARNA.B}"></button>
+        </div>
+        <div class="vs-roster" id="vsRoster"></div>
+      </div>
+
+      <div class="vs-team-sum">
+        ${['A', 'B'].map(k => `
+          <div class="vs-sum-box" style="--c:${VS_WARNA[k]}">
+            <input type="text" class="vs-name-input" id="vsNama${k}" maxlength="24" value="${esc(VS.nama[k])}" aria-label="Nama tim ${k}">
+            <div id="vsSum${k}"></div>
+          </div>`).join('')}
+      </div>
+
+      <p class="login-error" id="vsErr" style="display:none;"></p>
+      <div class="gg-actions-row" style="margin-top:12px;">
+        <button class="btn-launch-ipd" id="vsBtnMulai">▶️ Mulai Pertandingan</button>
+        <button class="btn-hapus-sm" id="vsBtnAkhiriSesi">⏹️ Akhiri Sesi</button>
+      </div>
+    </div>`;
+
+  c.querySelectorAll('.vs-preset').forEach(b => b.addEventListener('click', () => {
+    vsEl('vsMenit').value = b.dataset.m; vsEl('vsDetik').value = 0;
+  }));
+  c.querySelectorAll('.vs-brush-btn').forEach(b => b.addEventListener('click', () => { VS.brush = b.dataset.b; vsRefreshSetup(); }));
+  ['A', 'B'].forEach(k => vsEl('vsNama' + k).addEventListener('input', (e) => { VS.nama[k] = e.target.value; vsRefreshSetup(true); }));
+  vsEl('vsMenit').addEventListener('input', (e) => { VS.menit = Number(e.target.value) || 0; });
+  vsEl('vsDetik').addEventListener('input', (e) => { VS.detik = Number(e.target.value) || 0; });
+  vsEl('vsBtnMulai').addEventListener('click', vsMulai);
+  vsEl('vsBtnAkhiriSesi').addEventListener('click', akhiriSesi);
+  vsRefreshSetup();
+}
+
+function vsNamaTim(k) { return (VS.nama[k] || '').trim() || ('Tim ' + k); }
+
+function vsRefreshSetup(hanyaLabel) {
+  document.querySelectorAll('.vs-brush-btn').forEach(b => {
+    const k = b.dataset.b;
+    b.textContent = `${vsNamaTim(k)} (${VS.anggota[k].size})`;
+    b.classList.toggle('on', VS.brush === k);
+  });
+  ['A', 'B'].forEach(k => {
+    const slot = vsEl('vsSum' + k);
+    if (!slot) return;
+    const nama = [...VS.anggota[k].values()];
+    slot.innerHTML = nama.length ? nama.map(n => `<span class="vs-mem">${esc(n)}</span>`).join('') : `<span class="hint">Belum ada anggota</span>`;
+  });
+  if (hanyaLabel) return;
+  const r = vsEl('vsRoster');
+  if (!r) return;
+  r.innerHTML = VS.roster.map(s => {
+    const tim = VS.anggota.A.has(s.id) ? 'A' : VS.anggota.B.has(s.id) ? 'B' : '';
+    return `<button type="button" class="vs-chip ${tim ? 't' + tim : ''}" data-id="${s.id}" data-nama="${esc(s.nama)}">${tim ? `<b>${tim}</b> ` : ''}${esc(s.nama)}</button>`;
+  }).join('') || `<span class="hint">Tidak ada siswa di kelas ini.</span>`;
+  r.querySelectorAll('.vs-chip').forEach(ch => ch.addEventListener('click', () => {
+    const id = ch.dataset.id, b = VS.brush, lain = b === 'A' ? 'B' : 'A';
+    if (VS.anggota[b].has(id)) VS.anggota[b].delete(id);
+    else { VS.anggota[lain].delete(id); VS.anggota[b].set(id, ch.dataset.nama); }
+    vsRefreshSetup();
+  }));
+}
+
+// ---------- Membuat papan: kata sama, posisi berbeda ----------
+function vsBuatPapan(words) {
+  for (let i = 0; i < 40; i++) {
+    const p = buatGridCariKata(words);
+    if (p.size && p.placements.length === words.length) return p;   // semua kata harus muat
+  }
+  return null;
+}
+const vsTandaTangan = (p) => p.placements.map(x => x.kata + ':' + x.cells.map(c => c.join('.')).join('-')).sort().join('|');
+
+function vsMulai() {
+  const err = vsEl('vsErr'); err.style.display = 'none';
+  const tampil = (t) => { err.textContent = t; err.style.display = ''; };
+  const detikTotal = (Number(vsEl('vsMenit').value) || 0) * 60 + (Number(vsEl('vsDetik').value) || 0);
+  VS.menit = Number(vsEl('vsMenit').value) || 0; VS.detik = Number(vsEl('vsDetik').value) || 0;
+  if (detikTotal < 10) return tampil('Waktu minimal 10 detik.');
+  if (!VS.anggota.A.size || !VS.anggota.B.size) return tampil('Setiap tim harus punya minimal satu siswa.');
+  if (VS.words.length < 2) return tampil('Materi ini perlu minimal 2 kata.');
+  vsJalankan(detikTotal);
+}
+
+function vsJalankan(detikTotal) {
+  const words = VS.words.map(w => w.key);
+  const pA = vsBuatPapan(words);
+  let pB = vsBuatPapan(words);
+  for (let i = 0; pA && pB && i < 10 && vsTandaTangan(pA) === vsTandaTangan(pB); i++) pB = vsBuatPapan(words);
+  if (!pA || !pB) {
+    if (!vsEl('vsErr')) renderVersusSetup();
+    const err = vsEl('vsErr'); err.textContent = 'Daftar kata terlalu banyak/panjang untuk dibuat papan. Kurangi jumlah kata.'; err.style.display = '';
+    return;
+  }
+  VS.ronde++;
+  const buatTim = (k, puzzle) => ({
+    k, nama: vsNamaTim(k), warna: VS_WARNA[k], puzzle,
+    anggota: [...VS.anggota[k].entries()].map(([profile_id, nama]) => ({ profile_id, nama })),
+    found: new Set(), foundMs: new Map(), lastMs: null, sel: null
+  });
+  M = {
+    teams: { A: buatTim('A', pA), B: buatTim('B', pB) },
+    durasiMs: detikTotal * 1000, sisaMs: detikTotal * 1000, endAt: 0,
+    aktif: false, paused: false, timerId: null, tersimpan: false, lastBeep: null
+  };
+  vsBukaOverlay();
+  vsCountdown();
+}
+
+// ---------- Layar arena (overlay penuh: kiri Tim A, kanan Tim B) ----------
+function vsTutupOverlay() {
+  const ov = vsEl('vsOv');
+  if (ov) ov.remove();
+  document.body.style.overflow = '';
+  if (M && M.timerId) { clearInterval(M.timerId); M.timerId = null; }
+  window.removeEventListener('resize', vsUkur);
+}
+
+function vsBukaOverlay() {
+  vsTutupOverlay();
+  const ov = document.createElement('div');
+  ov.id = 'vsOv'; ov.className = 'vs-ov';
+  const kepala = (k, kanan) => `
+    <div class="vs-hteam ${kanan ? 'right' : ''}" style="--c:${VS_WARNA[k]}">
+      <div class="vs-hname">${esc(M.teams[k].nama)}</div>
+      <div class="vs-hscore" id="vsScore${k}"></div>
+    </div>`;
+  ov.innerHTML = `
+    <div class="vs-head">
+      ${kepala('A', false)}
+      <div class="vs-center">
+        <div class="vs-timer" id="vsTimer">${vsFmt(M.sisaMs)}</div>
+        <div class="vs-ctrl">
+          <button type="button" id="vsBtnJeda">⏸ Jeda</button>
+          <button type="button" id="vsBtnKeluar">✕ Keluar</button>
+        </div>
+      </div>
+      ${kepala('B', true)}
+    </div>
+    <div class="vs-arena" id="vsArena">
+      ${['A', 'B'].map(k => `
+        <section class="vs-pane" style="--c:${VS_WARNA[k]}">
+          <div class="vs-members">${M.teams[k].anggota.map(a => `<span class="vs-mem">${esc(a.nama)}</span>`).join('')}</div>
+          <div class="vs-words" id="vsWords${k}"></div>
+          <div class="vs-host" id="vsHost${k}"><div class="vs-grid" id="vsGrid${k}"></div></div>
+        </section>`).join('')}
+      <div class="vs-paused" id="vsPaused" style="display:none;">⏸ Dijeda</div>
+    </div>
+    <div class="vs-count" id="vsCount" style="display:none;"></div>`;
+  document.body.appendChild(ov);
+  document.body.style.overflow = 'hidden';
+  ['A', 'B'].forEach(k => { vsBangunGrid(k); vsGambarKata(k); vsGambarSkor(k); });
+  vsEl('vsBtnJeda').addEventListener('click', () => vsJeda(!M.paused));
+  vsEl('vsBtnKeluar').addEventListener('click', vsKeluar);
+  window.addEventListener('resize', vsUkur);
+  requestAnimationFrame(vsUkur);
+}
+
+function vsUkur() {
+  if (!M) return;
+  ['A', 'B'].forEach(k => {
+    const host = vsEl('vsHost' + k), g = vsEl('vsGrid' + k);
+    if (!host || !g) return;
+    const n = M.teams[k].puzzle.size;
+    const sisi = Math.min(host.clientWidth, host.clientHeight) - 20;
+    const px = Math.max(16, Math.floor(sisi / n) - 2);
+    g.style.setProperty('--px', px + 'px');
+  });
+}
+
+function vsBangunGrid(k) {
+  const t = M.teams[k], p = t.puzzle, g = vsEl('vsGrid' + k);
+  g.style.gridTemplateColumns = `repeat(${p.size}, var(--px, 28px))`;
+  g.innerHTML = '';
+  for (let r = 0; r < p.size; r++) for (let c = 0; c < p.size; c++) {
+    const d = document.createElement('div');
+    d.className = 'vs-cell';
+    d.dataset.r = r; d.dataset.c = c;
+    d.textContent = p.grid[r][c];
+    g.appendChild(d);
+  }
+  // Tiap papan punya seleksi sendiri, jadi dua tim bisa main bersamaan (multi-touch di IPD).
+  g.addEventListener('pointerdown', (e) => {
+    if (!M.aktif || M.paused) return;
+    const cell = e.target.closest('.vs-cell');
+    if (!cell) return;
+    e.preventDefault();
+    try { g.setPointerCapture(e.pointerId); } catch (_) {}
+    const a = { r: +cell.dataset.r, c: +cell.dataset.c };
+    t.sel = { a, b: a, id: e.pointerId };
+    vsGambarSeleksi(k);
+  });
+  g.addEventListener('pointermove', (e) => {
+    const s = t.sel;
+    if (!s || s.id !== e.pointerId) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    if (!el || !el.classList || !el.classList.contains('vs-cell') || !g.contains(el)) return;
+    const b = { r: +el.dataset.r, c: +el.dataset.c };
+    const dr = b.r - s.a.r, dc = b.c - s.a.c;
+    if (dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc)) { s.b = b; vsGambarSeleksi(k); }
+  });
+  g.addEventListener('pointerup', (e) => { if (t.sel && t.sel.id === e.pointerId) vsSelesaiSeleksi(k); });
+  g.addEventListener('pointercancel', () => { t.sel = null; vsGambarSeleksi(k); });
+}
+
+function vsJalur(sel) {
+  if (!sel) return [];
+  const dr = Math.sign(sel.b.r - sel.a.r), dc = Math.sign(sel.b.c - sel.a.c);
+  const n = Math.max(Math.abs(sel.b.r - sel.a.r), Math.abs(sel.b.c - sel.a.c)) + 1;
+  return Array.from({ length: n }, (_, i) => [sel.a.r + dr * i, sel.a.c + dc * i]);
+}
+
+function vsGambarSeleksi(k) {
+  const set = new Set(vsJalur(M.teams[k].sel).map(([r, c]) => r + ',' + c));
+  vsEl('vsGrid' + k).querySelectorAll('.vs-cell').forEach(el => {
+    if (!el.classList.contains('found')) el.classList.toggle('selecting', set.has(el.dataset.r + ',' + el.dataset.c));
+  });
+}
+
+function vsSelesaiSeleksi(k) {
+  const t = M.teams[k];
+  const jalur = vsJalur(t.sel);
+  t.sel = null;
+  vsGambarSeleksi(k);
+  if (!M.aktif || M.paused) return;
+  const cocok = cocokkanJalurCariKata(jalur, t.puzzle.placements, t.found);
+  if (!cocok) return;
+  const ms = M.durasiMs - Math.max(0, M.endAt - Date.now());
+  t.found.add(cocok.kata); t.foundMs.set(cocok.kata, ms); t.lastMs = ms;
+  const g = vsEl('vsGrid' + k), n = t.puzzle.size;
+  cocok.cells.forEach(([r, c]) => g.children[r * n + c].classList.add('found'));
+  vsGambarKata(k); vsGambarSkor(k);
+  vsBeep(660, 0.08);
+  if (t.found.size >= t.puzzle.placements.length) setTimeout(() => vsAkhiri('selesai', k), 500);   // tim pertama yang tuntas = pemenang
+}
+
+function vsGambarKata(k) {
+  const t = M.teams[k];
+  vsEl('vsWords' + k).innerHTML = VS.words.map(w => `<span class="vs-word ${t.found.has(w.key) ? 'found' : ''}">${esc(w.label)}</span>`).join('');
+}
+function vsGambarSkor(k) {
+  vsEl('vsScore' + k).textContent = `${M.teams[k].found.size}/${VS.words.length} kata · ${M.teams[k].found.size * 10} poin`;
+}
+
+// ---------- Hitung mundur & jeda ----------
+function vsCountdown() {
+  const box = vsEl('vsCount');
+  const urut = ['3', '2', '1', 'Mulai!'];
+  let i = 0;
+  box.style.display = '';
+  const tampil = () => { box.textContent = urut[i]; box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop'); vsBeep(i === urut.length - 1 ? 988 : 660, 0.12); };
+  tampil();
+  const id = setInterval(() => {
+    i++;
+    if (i >= urut.length) { clearInterval(id); box.style.display = 'none'; vsMulaiWaktu(); return; }
+    tampil();
+  }, 800);
+}
+
+function vsMulaiWaktu() {
+  if (!vsEl('vsOv')) return;
+  M.aktif = true; M.paused = false;
+  M.endAt = Date.now() + M.sisaMs;
+  M.timerId = setInterval(vsTick, 200);
+}
+
+function vsTick() {
+  if (!M.aktif || M.paused) return;
+  M.sisaMs = Math.max(0, M.endAt - Date.now());
+  const el = vsEl('vsTimer');
+  if (el) {
+    el.textContent = vsFmt(M.sisaMs);
+    el.classList.toggle('low', M.sisaMs <= 10000);
+    const detik = Math.ceil(M.sisaMs / 1000);
+    if (M.sisaMs <= 5000 && M.sisaMs > 0 && detik !== M.lastBeep) { M.lastBeep = detik; vsBeep(520, 0.1); }
+  }
+  if (M.sisaMs <= 0) vsAkhiri('waktu');
+}
+
+function vsJeda(jeda) {
+  if (!M.aktif) return;
+  if (jeda) { M.sisaMs = Math.max(0, M.endAt - Date.now()); M.paused = true; }
+  else { M.endAt = Date.now() + M.sisaMs; M.paused = false; }
+  vsEl('vsPaused').style.display = M.paused ? '' : 'none';
+  vsEl('vsBtnJeda').textContent = M.paused ? '▶ Lanjut' : '⏸ Jeda';
+}
+
+function vsKeluar() {
+  const sedangJalan = M.aktif && !M.paused;
+  if (sedangJalan) vsJeda(true);
+  if (M.aktif && !confirm('Keluar dari pertandingan? Hasil ronde ini tidak disimpan.')) { if (sedangJalan) vsJeda(false); return; }
+  M.aktif = false;
+  renderVersusSetup();
+}
+
+// ---------- Hasil ----------
+function vsHitungHasil() {
+  const arr = ['A', 'B'].map(k => { const t = M.teams[k]; return { k, t, n: t.found.size, ms: t.lastMs === null ? Infinity : t.lastMs }; });
+  arr.sort((a, b) => (b.n - a.n) || (a.ms - b.ms));
+  const seri = arr[0].n === arr[1].n && (arr[0].n === 0 || arr[0].ms === arr[1].ms);
+  return { urut: arr, seri };
+}
+
+function vsAkhiri(sebab, penuntas) {
+  if (!M || !M.aktif) return;
+  M.aktif = false;
+  clearInterval(M.timerId); M.timerId = null;
+  ['A', 'B'].forEach(k => { M.teams[k].sel = null; });
+  const { urut, seri } = vsHitungHasil();
+  const ov = vsEl('vsOv');
+  window.removeEventListener('resize', vsUkur);
+  const ket = sebab === 'selesai' ? `${esc(M.teams[penuntas].nama)} menemukan semua kata!` : 'Waktu habis!';
+  ov.innerHTML = `
+    <div class="vs-result">
+      <div class="vs-trophy">${seri ? '🤝' : '🏆'}</div>
+      <h2>${seri ? 'Seri!' : esc(urut[0].t.nama) + ' menang!'}</h2>
+      <p class="vs-res-ket">${ket}</p>
+      ${urut.map((u, i) => `
+        <div class="vs-res-row ${i === 0 && !seri ? 'win' : ''}" style="--c:${u.t.warna}">
+          <div><b>${esc(u.t.nama)}</b><small>${u.t.anggota.map(a => esc(a.nama)).join(', ')}</small></div>
+          <div class="vs-res-right"><b>${u.n * 10} poin</b><small>${u.n}/${VS.words.length} kata${u.t.lastMs !== null ? ' · selesai di ' + vsFmt(u.t.lastMs) : ''}</small></div>
+        </div>`).join('')}
+      <div class="vs-res-save" id="vsSaveInfo">Menyimpan hasil…</div>
+      <div class="vs-res-actions">
+        <button type="button" class="vs-big" id="vsBtnUlang">🔁 Main Lagi (papan baru)</button>
+        <button type="button" class="vs-big sec" id="vsBtnAtur">Atur Tim & Waktu</button>
+      </div>
+    </div>`;
+  vsEl('vsBtnUlang').addEventListener('click', () => vsJalankan(Math.round(M.durasiMs / 1000)));
+  vsEl('vsBtnAtur').addEventListener('click', renderVersusSetup);
+  vsBeep(880, 0.25);
+  vsSimpan();
+}
+
+async function vsSimpan() {
+  if (M.tersimpan) return;
+  M.tersimpan = true;
+  const info = () => vsEl('vsSaveInfo');
+  try {
+    for (const k of ['A', 'B']) {
+      const t = M.teams[k];
+      const nama = `${t.nama} (${namaTim(t.anggota)})` + (VS.ronde > 1 ? ` · Ronde ${VS.ronde}` : '');
+      const { data: peserta, error } = await supabase.from('game_peserta').insert({
+        sesi_id: ACTIVE_SESI.id,
+        profile_id: t.anggota.length === 1 ? t.anggota[0].profile_id : null,
+        nama, anggota: t.anggota,
+        skor_total: t.found.size * 10, soal_selesai: t.found.size, status: 'selesai'
+      }).select().single();
+      if (error || !peserta) throw error || new Error('gagal simpan peserta');
+      const jawaban = [...t.found].map(kata => ({
+        sesi_id: ACTIVE_SESI.id, peserta_id: peserta.id,
+        soal_index: VS.words.findIndex(w => w.key === kata),
+        benar: true, waktu_ms: Math.round(t.foundMs.get(kata) || 0), skor_didapat: 10
+      }));
+      if (jawaban.length) { const { error: e2 } = await supabase.from('game_jawaban').insert(jawaban); if (e2) throw e2; }
+    }
+    if (info()) info().textContent = '✅ Hasil tersimpan ke papan skor sesi.';
+  } catch (e) {
+    console.error(e);
+    if (info()) info().textContent = '⚠️ Hasil belum tersimpan (cek koneksi). Skor tetap terlihat di layar ini.';
+  }
+}
+
+function vsBeep(freq, dur) {
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    VS.ac = VS.ac || new C();
+    const o = VS.ac.createOscillator(), g = VS.ac.createGain();
+    o.frequency.value = freq; g.gain.value = 0.07;
+    o.connect(g); g.connect(VS.ac.destination);
+    o.start(); o.stop(VS.ac.currentTime + dur);
+  } catch (_) { /* suara opsional */ }
 }
 
 // ============ VIEW: LIVE — mode mandiri_live (HP siswa, papan live) ============
