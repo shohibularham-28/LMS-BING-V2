@@ -1082,6 +1082,7 @@ function grade(auto){
 
   stopTimer();
   submitted = true;
+  resultDelivered = false;
   examActive = false;
   updateFullscreenButton();
   updateResetButton();
@@ -1375,58 +1376,32 @@ window.addEventListener('pagehide', ()=>{
    (dibuat oleh assets/supabaseClient.js), BUKAN client terpisah lagi.
    Hasil dikirim ke tabel hasil_ujian_lms, terikat ke akun siswa yang
    sedang login (currentProfile), bukan Nama/Kelas ketikan manual. */
-let pendingSend = null;
+let pendingSend = null;      // hasil yang belum berhasil masuk ke server
+let resultDelivered = false; // true setelah server benar-benar menerima hasil
+let sendInProgress = false;
+let sendRetryTimer = null;
+let sendAttempt = 0;
+const SEND_RETRY_DELAYS = [1000, 2000, 3000, 5000]; // lalu tetap tiap 5 detik
 
-function isReallyOnline(){
-  return new Promise(resolve=>{
-    if(!navigator.onLine){ resolve(false); return; }
-    let done = false;
-    const finish = (val)=>{ if(!done){ done = true; resolve(val); } };
-    const timer = setTimeout(()=>finish(false), 4000);
-    const img = new Image();
-    img.onload = ()=>{ clearTimeout(timer); finish(true); };
-    img.onerror = ()=>{ clearTimeout(timer); finish(true); };
-    img.src = 'https://www.google.com/favicon.ico?_=' + Date.now();
-  });
+/* Antrean (outbox) disimpan di localStorage supaya kalau siswa menutup tab,
+   refresh, atau HP mati sebelum hasil terkirim, hasilnya TIDAK hilang dan
+   otomatis dikirim ulang begitu halaman dibuka lagi. */
+function outboxKey(){ return STORAGE_KEY + '_outbox'; }
+function saveOutbox(p){ try{ localStorage.setItem(outboxKey(), JSON.stringify(p)); }catch(e){} }
+function clearOutbox(){ try{ localStorage.removeItem(outboxKey()); }catch(e){} }
+function loadOutbox(){
+  try{ const r = localStorage.getItem(outboxKey()); return r ? JSON.parse(r) : null; }
+  catch(e){ return null; }
 }
 
-function attemptSend(name, stuClass, score){
-  const note = document.getElementById('sendNote');
-  const retryBtn = document.getElementById('retrySendBtn');
-  pendingSend = {name, stuClass, score};
-
-  note.textContent = 'Checking internet connection...';
-  note.className = 'send-note';
-  retryBtn.style.display = 'none';
-
-  isReallyOnline().then(online=>{
-    if(!online){
-      note.textContent = 'No internet connection. Your answers have NOT been sent.';
-      note.className = 'send-note err';
-      retryBtn.style.display = 'inline-block';
-      return;
-    }
-    sendResultToForm(pendingSend.name, pendingSend.stuClass, pendingSend.score);
-  });
+function newSubmitKey(){
+  try{ if(window.crypto && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+  return 'k' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 }
 
-document.getElementById('retrySendBtn').addEventListener('click', ()=>{
-  if(pendingSend){
-    attemptSend(pendingSend.name, pendingSend.stuClass, pendingSend.score);
-  }
-});
-
-function sendResultToForm(name, stuClass, score){
-  const note = document.getElementById('sendNote');
-  const retryBtn = document.getElementById('retrySendBtn');
-  const scoreText = score.penalti>0
-    ? `Nilai: ${score.nilai} (Skor mentah: ${score.earned}/${score.total}, Penalti: -${score.penalti} poin dari ${score.violationCount} pelanggaran)`
-    : `Nilai: ${score.nilai} (Skor: ${score.earned}/${score.total})`;
-
-  note.textContent = 'Mengirim hasil...';
-  note.className = 'send-note';
-
-  supabase.from('hasil_ujian_lms').insert({
+function buildPayload(name, stuClass, score){
+  return {
+    submit_key: newSubmitKey(),   // kunci anti-duplikat (lihat MIGRASI_HASIL_UJIAN_ANTI_DUPLIKAT.sql)
     bank_soal_id: BANK_SOAL_ID,
     jadwal_ujian_id: JADWAL_UJIAN_ID,
     worksheet_id: WORKSHEET_ID,
@@ -1440,26 +1415,90 @@ function sendResultToForm(name, stuClass, score){
     pelanggaran: score.violationCount,
     jawaban: buildAnswerReport(),
     dipublikasikan: TAMPILKAN_NILAI_LANGSUNG
-  }).then(({ error }) => {
-    if (error) {
-      console.error('Gagal mengirim hasil:', error);
-      note.textContent = 'Gagal mengirim hasil ke guru. Coba lagi.';
-      note.className = 'send-note err';
-      retryBtn.style.display = 'inline-block';
-      return;
-    }
-    pendingSend = null;
-    retryBtn.style.display = 'none';
-    note.textContent = 'Jawaban terkirim! Nilaimu sudah tercatat di akunmu.';
-    note.className = 'send-note ok';
-  });
+  };
 }
+
+function setSendNote(text, cls){
+  const note = document.getElementById('sendNote');
+  if(!note) return;
+  note.textContent = text;
+  note.className = 'send-note' + (cls ? ' ' + cls : '');
+}
+
+/* Dipanggil dari grade(): simpan dulu ke antrean lokal, baru kirim. */
+function attemptSend(name, stuClass, score){
+  pendingSend = buildPayload(name, stuClass, score);
+  saveOutbox(pendingSend);
+  sendAttempt = 0;
+  deliverPending();
+}
+
+async function deliverPending(){
+  if(!pendingSend || sendInProgress) return;
+  sendInProgress = true;
+  clearTimeout(sendRetryTimer);
+  const retryBtn = document.getElementById('retrySendBtn');
+  retryBtn.style.display = 'none';
+  setSendNote('Mengirim hasil…', '');
+
+  try{
+    const payload = pendingSend;
+    // upsert + ignoreDuplicates = kalau percobaan sebelumnya sebenarnya sudah
+    // masuk (tapi balasannya hilang di jaringan), pengiriman ulang tidak
+    // membuat baris ganda.
+    let { error } = await supabase
+      .from('hasil_ujian_lms')
+      .upsert(payload, { onConflict: 'submit_key', ignoreDuplicates: true });
+
+    // Kalau migrasi anti-duplikat belum dijalankan, kolom submit_key belum ada
+    // -> kirim tanpa kolom itu supaya jawaban tetap masuk.
+    if(error && /submit_key|42703|PGRST204|42P10/.test((error.code || '') + ' ' + (error.message || ''))){
+      const rest = Object.assign({}, payload);
+      delete rest.submit_key;
+      ({ error } = await supabase.from('hasil_ujian_lms').insert(rest));
+    }
+    if(error) throw error;
+
+    pendingSend = null;
+    resultDelivered = true;
+    clearOutbox();
+    saveState();
+    retryBtn.style.display = 'none';
+    setSendNote('Jawaban terkirim! Nilaimu sudah tercatat di akunmu.', 'ok');
+  }catch(err){
+    console.error('Gagal mengirim hasil:', err);
+    sendAttempt++;
+    // Token login bisa kedaluwarsa kalau ujian berlangsung lama -> segarkan.
+    try{ await supabase.auth.refreshSession(); }catch(e){ /* diabaikan */ }
+    const delay = SEND_RETRY_DELAYS[Math.min(sendAttempt - 1, SEND_RETRY_DELAYS.length - 1)];
+    setSendNote('Jawabanmu BELUM masuk ke guru. Jangan tutup halaman ini — mencoba lagi otomatis (percobaan ke-' + (sendAttempt + 1) + ')…', 'err');
+    retryBtn.textContent = 'Kirim Ulang Sekarang';
+    retryBtn.style.display = 'inline-block';
+    sendRetryTimer = setTimeout(deliverPending, delay);
+  }finally{
+    sendInProgress = false;
+  }
+}
+
+document.getElementById('retrySendBtn').addEventListener('click', ()=>{
+  clearTimeout(sendRetryTimer);
+  deliverPending();
+});
+
+// Begitu internet kembali, langsung kirim ulang tanpa menunggu timer.
+window.addEventListener('online', ()=>{ if(pendingSend){ clearTimeout(sendRetryTimer); deliverPending(); } });
+// Peringatan kalau siswa mencoba menutup halaman saat hasil belum terkirim.
+window.addEventListener('beforeunload', (e)=>{
+  if(pendingSend){ e.preventDefault(); e.returnValue = ''; }
+});
 
 function resetQuiz(){
   answers = {};
   submitted = false;
   currentIndex = 0;
   pendingSend = null;
+  resultDelivered = false;
+  clearOutbox();
   violationCount = 0;
   examActive = true;
   updateViolationBadge();
@@ -1733,6 +1772,7 @@ function saveState(){
       answers: answers,
       currentIndex: currentIndex,
       submitted: submitted,
+      terkirim: resultDelivered,
       endAt: examEndAt,
       remainingTimeMs: isTimerPaused ? remainingTimeMs : (examEndAt ? Math.max(0, examEndAt - Date.now()) : TIMER_MS),
       isTimerPaused: isTimerPaused,
@@ -1901,6 +1941,23 @@ function runInitAfterDataReady(){
       document.getElementById('resultsBox').classList.add('show');
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('timerBadge').textContent = 'Finished';
+      // Sudah submit di sesi sebelumnya tapi hasil BELUM sampai ke server
+      // (mis. internet putus lalu tab ditutup) -> kirim ulang sekarang.
+      if(saved.terkirim === false){
+        resultDelivered = false;
+        pendingSend = loadOutbox();
+        if(!pendingSend){
+          pendingSend = buildPayload(
+            document.getElementById('stuName').value,
+            document.getElementById('stuClass').value,
+            {nilai: nilaiR, earned: earnedR, total: totalR, penalti: penaltiR, violationCount: violationCount}
+          );
+          saveOutbox(pendingSend);
+        }
+        deliverPending();
+      } else {
+        resultDelivered = true;
+      }
     } else {
       examActive = true;
       requestExamFullscreen();
