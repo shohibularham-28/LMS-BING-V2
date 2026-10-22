@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fairy Tale Writing Worksheet</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Lora:ital,wght@0,600;1,400&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night1:#120b2e; --night2:#2a1659; --gold:#f2c14e; --gold-d:#c8922a; --plum:#7a4fd1;
+  --bg:#fffdf6; --card:#fff8ea; --ink:#2a2145; --sub:#6d6488; --line:#e6dcc4; --chip:#f1e6cc;
+  --pink:#f6c3d6; --pink-d:#d9648f; --green:#bfe8d4; --green-d:#3f9a76;
+  --accent:#3f9a76; --accent2:#7a4fd1;
+  color-scheme:dark; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+*{box-sizing:border-box;}
+body{margin:0;color:#efe9ff;font-family:'Quicksand',system-ui,sans-serif;font-weight:500;line-height:1.55;min-height:100vh;
+  background:
+   radial-gradient(1.5px 1.5px at 20px 30px,#fff8,transparent),
+   radial-gradient(1px 1px at 80px 120px,#fffc,transparent),
+   radial-gradient(1.5px 1.5px at 150px 60px,#f2c14ecc,transparent),
+   radial-gradient(1px 1px at 200px 170px,#fff9,transparent),
+   linear-gradient(180deg,var(--night1),var(--night2) 55%,#3a1c6e);
+  background-size:220px 200px,220px 200px,220px 200px,220px 200px,100% 100%;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;animation:twinkle 5s ease-in-out infinite alternate;
+  background:
+   radial-gradient(2px 2px at 60px 90px,#fff,transparent),
+   radial-gradient(2px 2px at 170px 20px,#f2c14e,transparent),
+   radial-gradient(1.5px 1.5px at 120px 160px,#fff,transparent);
+  background-size:240px 220px;}
+@keyframes twinkle{from{opacity:.25}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none;opacity:.7}}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+.hidden{display:none;}
+
+header{position:sticky;top:0;z-index:5;text-align:center;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 12px;
+  background:linear-gradient(180deg,rgba(18,11,46,.96),rgba(42,22,89,.92));backdrop-filter:blur(6px);
+  border-bottom:1.5px solid var(--gold-d);}
+header h1{margin:0;font-family:'Cinzel Decorative',Georgia,serif;font-weight:700;font-size:clamp(1.15rem,4.6vw,1.6rem);
+  color:var(--gold);text-shadow:0 0 14px rgba(242,193,78,.55);letter-spacing:.02em;}
+header p{margin:3px 0 0;font-family:'Lora',serif;font-style:italic;font-size:.82rem;color:#cdbdf5;}
+
+nav{position:relative;z-index:1;display:flex;gap:8px;justify-content:center;max-width:720px;margin:16px auto 0;padding:0 12px;flex-wrap:wrap;}
+nav button{flex:1;min-width:84px;padding:10px 8px;border-radius:999px;cursor:pointer;font-family:inherit;font-weight:700;font-size:.85rem;
+  background:rgba(255,255,255,.06);color:#e7dcff;border:1.5px solid rgba(242,193,78,.45);}
+nav button:hover{background:rgba(242,193,78,.16);}
+nav button.active{background:linear-gradient(180deg,#ffd978,var(--gold-d));color:#2a1659;border-color:var(--gold);box-shadow:0 0 16px rgba(242,193,78,.5);}
+
+main{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:16px 14px 8px;}
+.card,.id-card{position:relative;z-index:1;background:var(--card);color:var(--ink);border-radius:18px;padding:16px;margin-bottom:16px;
+  border:1.5px solid #ecd9a2;box-shadow:0 12px 30px rgba(0,0,0,.4);}
+.intro{background:linear-gradient(135deg,#3b2380,#6b3fc0);color:#fff;border:1.5px solid var(--gold);}
+.intro h2{margin:0 0 6px;font-family:'Lora',serif;font-size:1.1rem;color:var(--gold);}
+.intro p{margin:0;font-size:.92rem;color:#efe9ff;}
+
+.match-wrap{display:flex;gap:12px;flex-wrap:wrap;}
+.match-col{flex:1;min-width:140px;display:flex;flex-direction:column;gap:9px;}
+.mcard{border-radius:12px;padding:10px 12px;font-size:.9rem;cursor:pointer;border:2px solid transparent;position:relative;transition:transform .12s,box-shadow .12s;box-shadow:0 2px 6px rgba(42,33,69,.15);}
+.mcard:hover{transform:translateY(-2px);}
+.mcard.left{background:var(--pink);color:#5b1f3d;font-weight:700;border-left:6px solid var(--pink-d);}
+.mcard.right{background:var(--green);color:#16402f;border-left:6px solid var(--green-d);}
+.mcard.selected{border-color:var(--plum);box-shadow:0 0 0 3px rgba(122,79,209,.35);}
+.mcard.correct{border-color:var(--green-d);box-shadow:0 0 0 2px var(--green-d) inset;}
+.mcard.wrong{border-color:#c0392b;box-shadow:0 0 0 2px #c0392b inset;}
+.tag{position:absolute;top:-9px;right:-9px;background:var(--plum);color:#fff;font-size:.72rem;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid #fff;}
+
+.btnrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+button.action{border:none;padding:10px 18px;border-radius:999px;font-family:inherit;font-weight:700;cursor:pointer;font-size:.86rem;}
+.btn-primary{background:linear-gradient(180deg,#ffd978,var(--gold-d));color:#2a1659;box-shadow:0 3px 10px rgba(200,146,42,.45);}
+.btn-secondary{background:transparent;color:var(--plum);border:1.5px solid var(--plum);}
+.score{font-size:.88rem;margin-top:10px;font-weight:700;color:var(--plum);}
+
+.q2{padding:14px 0;border-bottom:1px dashed var(--line);}
+.q2:last-child{border-bottom:none;}
+.kind{display:inline-block;font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--chip);color:var(--plum);}
+.bank,.ans{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0;}
+.ans{min-height:48px;padding:8px;border:2px dashed var(--gold-d);border-radius:12px;background:var(--bg);}
+.ans.good{border-color:var(--green-d);border-style:solid;background:rgba(63,154,118,.14);}
+.ans.bad{border-color:#c0392b;border-style:solid;background:rgba(192,57,43,.1);}
+.chip{background:var(--chip);border:1.5px solid #e3cf9b;border-radius:999px;padding:6px 13px;font-size:.86rem;font-weight:700;cursor:pointer;color:var(--ink);font-family:inherit;}
+.chip:hover{background:var(--gold);border-color:var(--gold-d);}
+.chip.used{opacity:.28;pointer-events:none;}
+.fb{font-size:.84rem;font-weight:700;margin-top:6px;}
+.fb.ok{color:#2c7a58;}.fb.no{color:#b03a2a;}
+
+.line{display:flex;gap:10px;align-items:center;padding:10px;border:1.5px solid var(--line);border-radius:12px;margin:9px 0;font-size:.9rem;background:var(--bg);}
+.line.good{border-color:var(--green-d);background:rgba(63,154,118,.14);}
+.line.bad{border-color:#c0392b;background:rgba(192,57,43,.1);}
+.line span{flex:1;font-family:'Lora',serif;}
+.mv{display:flex;flex-direction:column;gap:4px;}
+.mv button{border:1.5px solid var(--gold-d);background:var(--chip);color:var(--ink);border-radius:8px;cursor:pointer;padding:2px 10px;}
+.mv button:hover{background:var(--gold);}
+
+.bx label{display:block;font-size:.9rem;font-weight:700;margin:12px 0 6px;color:var(--plum);}
+.bx textarea{width:100%;min-height:68px;padding:10px 12px;border-radius:12px;border:1.5px solid #e3cf9b;background:var(--bg);color:var(--ink);font-family:'Lora',serif;font-size:.92rem;resize:vertical;}
+
+footer{position:relative;z-index:1;text-align:center;color:#b8a9e8;font-size:.74rem;padding:10px 0 20px;}
+
+.id-card{max-width:720px;margin:16px auto 0;border-color:var(--gold-d);}
+.id-card h2{margin:0 0 8px;font-family:'Lora',serif;font-size:1rem;color:var(--plum);}
+.id-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+.id-field{flex:1;min-width:140px;}
+.id-field label{display:block;font-size:.78rem;font-weight:700;margin-bottom:4px;color:var(--sub);}
+.id-field input,.id-field select,.member-row input{width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid #e3cf9b;background:var(--bg);color:var(--ink);font-family:inherit;font-size:.88rem;}
+.id-field input[readonly]{background:var(--green);color:#16402f;}
+.member-row{display:flex;gap:6px;margin-bottom:6px;}
+.member-row input{flex:1;}
+.member-row button{border:none;background:var(--pink);color:#5b1f3d;border-radius:10px;padding:0 12px;font-weight:700;cursor:pointer;}
+.add-member{background:none;border:1.5px dashed var(--plum);color:var(--plum);border-radius:10px;padding:6px 12px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.lms-note{font-size:.78rem;background:var(--green);color:#16402f;border-radius:10px;padding:7px 10px;margin-bottom:8px;}
+.id-warn{font-size:.8rem;color:#b03a2a;font-weight:700;margin-top:4px;display:none;}
+.id-warn.show{display:block;}
+
+.submit-bar{position:sticky;bottom:0;z-index:5;background:linear-gradient(180deg,rgba(42,22,89,.96),rgba(18,11,46,.98));border-top:1.5px solid var(--gold-d);
+  padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px;align-items:center;}
+.submit-bar button{border:none;padding:12px 22px;border-radius:999px;font-family:inherit;font-weight:700;font-size:.92rem;cursor:pointer;
+  background:linear-gradient(180deg,#ffd978,var(--gold-d));color:#2a1659;width:100%;max-width:460px;box-shadow:0 0 18px rgba(242,193,78,.45);}
+.submit-bar button:disabled{opacity:.55;cursor:default;box-shadow:none;}
+.submit-status{font-size:.8rem;text-align:center;max-width:460px;color:#e7dcff;}
+.submit-status.ok{color:#8be0b6;}
+.submit-status.err{color:#ffa7a0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>✨ Fairy Tale Writing ✨</h1>
+  <p>Once upon a time, you become the storyteller</p>
+</header>
+
+<div class="id-card">
+  <h2>👤 Identitas Pengerjaan</h2>
+  <div id="lmsNote"></div>
+  <div class="id-row">
+    <div class="id-field">
+      <label>Jenis Pengerjaan</label>
+      <select id="jenisSelect">
+        <option value="individu">Individu</option>
+        <option value="kelompok">Kelompok</option>
+      </select>
+    </div>
+    <div class="id-field">
+      <label>Kelas</label>
+      <input type="text" id="kelasInput" placeholder="mis. XI A">
+    </div>
+  </div>
+  <div id="individuFields" class="id-row">
+    <div class="id-field">
+      <label>Nama</label>
+      <input type="text" id="namaIndividu" placeholder="Nama lengkap kamu">
+    </div>
+  </div>
+  <div id="kelompokFields" class="hidden">
+    <div class="id-row">
+      <div class="id-field">
+        <label>Nama Kelompok</label>
+        <input type="text" id="namaKelompok" placeholder="mis. Kelompok 1">
+      </div>
+    </div>
+    <label style="font-size:.78rem;font-weight:600;color:var(--sub);display:block;margin-bottom:4px;">Anggota Kelompok</label>
+    <div id="memberList"></div>
+    <button type="button" class="add-member" id="addMemberBtn">+ Tambah anggota</button>
+  </div>
+  <div class="id-warn" id="idWarn"></div>
+</div>
+
+<nav>
+  <button class="active" data-tab="s1">🔮 Stage 1</button>
+  <button data-tab="s2">🪄 Stage 2</button>
+  <button data-tab="s3">📜 Stage 3</button>
+  <button data-tab="s4">🐉 Bonus</button>
+</nav>
+
+<main>
+
+<section id="s1">
+  <div class="card intro">
+    <h2>🔮 Stage 1 — Match the words</h2>
+    <p>Tap a word on the left, then tap its meaning on the right.</p>
+  </div>
+  <div class="card">
+    <div class="match-wrap">
+      <div class="match-col" id="leftCol"></div>
+      <div class="match-col" id="rightCol"></div>
+    </div>
+  </div>
+</section>
+
+<section id="s2" class="hidden">
+  <div class="card intro">
+    <h2>🪄 Stage 2 — Make sentences</h2>
+    <p>Tap the words in the right order to make simple present sentences, positive and negative. Tap a word in the answer box to remove it.</p>
+  </div>
+  <div class="card">
+    <div id="s2q"></div>
+    <div class="btnrow"><button class="action btn-secondary" id="reset2">Ulangi</button></div>
+  </div>
+</section>
+
+<section id="s3" class="hidden">
+  <div class="card intro">
+    <h2>📜 Stage 3 — Build the paragraph</h2>
+    <p>These sentences tell one fairy tale, but they are mixed up. Use the arrows to put them in the right order.</p>
+  </div>
+  <div class="card">
+    <div id="s3l"></div>
+    <div class="btnrow">
+      <button class="action btn-primary" id="check3">Cek Urutan</button>
+      <button class="action btn-secondary" id="reset3">Acak Lagi</button>
+    </div>
+    <div class="score" id="sc3"></div>
+  </div>
+</section>
+
+<section id="s4" class="hidden">
+  <div class="card intro">
+    <h2>🐉 Bonus — Write your own</h2>
+    <p>Write 3 sentences of your own fairy tale in simple present tense. Use at least 1 negative sentence and 1 word from Stage 1. Your teacher will read this part.</p>
+  </div>
+  <div class="card bx">
+    <label for="b1">Sentence 1</label><textarea id="b1" placeholder="Once upon a time, ..."></textarea>
+    <label for="b2">Sentence 2</label><textarea id="b2"></textarea>
+    <label for="b3">Sentence 3</label><textarea id="b3"></textarea>
+  </div>
+</section>
+
+</main>
+
+<div class="submit-bar">
+  <button type="button" id="submitBtn">📤 Kirim Stage 1</button>
+  <div class="submit-status" id="submitStatus"></div>
+</div>
+
+<footer>Bahasa Inggris · Fairy Tale Writing</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+function safeGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function safeSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function sh(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+const $=id=>document.getElementById(id);
+
+// ---- data ----
+const WORDS=[["kingdom","kerajaan"],["castle","istana"],["witch","penyihir"],["dragon","naga"],["magic","sihir"],["forest","hutan"],["brave","berani"],["curse","kutukan"]];
+const SENT=[
+ ["The princess lives in a big castle.",1],
+ ["The witch makes a magic potion.",1],
+ ["The prince loves the kind princess.",1],
+ ["The fairy helps poor people.",1],
+ ["The dragon does not live in the village.",0],
+ ["The king does not trust the witch.",0],
+ ["The brave boy does not run away.",0],
+ ["The little girl does not like the dark forest.",0]];
+const PARA=[
+ "Once upon a time, a poor girl named Mira lives in a small house near a forest.",
+ "Every day, she cleans the house and feeds the animals.",
+ "One night, a fairy appears and gives her a magic dress.",
+ "Mira goes to the castle and meets the prince.",
+ "The prince does not know her name, but he loves her smile.",
+ "In the end, they get married and live happily ever after."];
+
+// ---- tabs ----
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['s1','s2','s3','s4'].forEach(id=>$(id).classList.toggle('hidden', id!==btn.dataset.tab));
+    activeTab=btn.dataset.tab; updateSubmitBar();
+  });
+});
+
+// ---- Stage 1: matching ----
+const LET='abcdefgh';
+let key={}, pairs={}, selNum=null, R=[];
+let LO=[];
+function init1(){
+  const idx=WORDS.map((_,i)=>i);
+  LO=sh(idx);
+  do{R=sh(WORDS.map((w,i)=>({i:i,t:w[1]})));}while(R.some((r,k)=>r.i===LO[k]));
+  key={}; R.forEach((r,k)=>{key[r.i]=LET[k];});
+  pairs={}; selNum=null;
+  $('leftCol').innerHTML=LO.map((wi,k)=>'<div class="mcard left" data-id="'+wi+'">'+(k+1)+'. '+WORDS[wi][0]+'</div>').join('');
+  $('rightCol').innerHTML=R.map((r,k)=>'<div class="mcard right" data-id="'+LET[k]+'">'+LET[k]+'. '+r.t+'</div>').join('');
+  render1();
+}
+function render1(){
+  document.querySelectorAll('#leftCol .mcard').forEach(c=>{
+    c.classList.remove('selected','correct','wrong');
+    const old=c.querySelector('.tag'); if(old) old.remove();
+    const n=c.dataset.id;
+    if(pairs[n]){const t=document.createElement('span');t.className='tag';t.textContent=pairs[n];c.appendChild(t);}
+    if(n===selNum) c.classList.add('selected');
+  });
+  document.querySelectorAll('#rightCol .mcard').forEach(c=>{
+    const old=c.querySelector('.tag'); if(old) old.remove();
+    const n=Object.keys(pairs).find(k=>pairs[k]===c.dataset.id);
+    if(n!==undefined){const t=document.createElement('span');t.className='tag';t.textContent=(LO.indexOf(+n)+1);c.appendChild(t);}
+  });
+}
+$('leftCol').addEventListener('click',e=>{const c=e.target.closest('.mcard');if(!c)return;selNum=c.dataset.id;render1();});
+$('rightCol').addEventListener('click',e=>{
+  const c=e.target.closest('.mcard'); if(!c||selNum===null) return;
+  Object.keys(pairs).forEach(n=>{if(pairs[n]===c.dataset.id) delete pairs[n];});
+  pairs[selNum]=c.dataset.id; selNum=null; render1();
+});
+
+// ---- Stage 2: sentence builder ----
+let st=[];
+function init2(){
+  st=SENT.map(s=>{const w=s[0].replace(/\.$/,'').split(' ');return {w:w,bank:sh(w.map((x,i)=>({t:x,id:i}))),ans:[]};});
+  draw2();
+}
+function draw2(){
+  $('s2q').innerHTML=SENT.map((s,i)=>{
+    const q=st[i], used=q.ans.map(a=>a.id);
+    return '<div class="q2"><span class="kind">'+(i+1)+'. '+(s[1]?'Positive (+)':'Negative (−)')+'</span>'
+     +'<div class="bank">'+q.bank.map(b=>'<button class="chip'+(used.indexOf(b.id)>-1?' used':'')+'" data-i="'+i+'" data-id="'+b.id+'">'+b.t+'</button>').join('')+'</div>'
+     +'<div class="ans" id="ans'+i+'">'+q.ans.map((a,k)=>'<button class="chip" data-i="'+i+'" data-k="'+k+'">'+a.t+'</button>').join('')+'</div>'
+     +'<button class="action btn-primary" data-chk="'+i+'">Cek</button><div class="fb" id="fb'+i+'"></div></div>';
+  }).join('');
+}
+function sentOk(i){return st[i].ans.map(a=>a.t).join(' ')===SENT[i][0].replace(/\.$/,'');}
+$('s2q').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.chk!==undefined){
+    const i=+b.dataset.chk, ok=sentOk(i), a=$('ans'+i), f=$('fb'+i);
+    a.classList.toggle('good',ok); a.classList.toggle('bad',!ok);
+    f.className='fb '+(ok?'ok':'no');
+    f.textContent=ok?'Correct! '+SENT[i][0]:(st[i].ans.length<st[i].w.length?'Use all the words.':'Try again. Check the word order.');
+    return;
+  }
+  const i=+b.dataset.i;
+  if(b.dataset.id!==undefined){st[i].ans.push(st[i].bank.filter(x=>x.id===+b.dataset.id)[0]);}
+  else if(b.dataset.k!==undefined){st[i].ans.splice(+b.dataset.k,1);}
+  draw2();
+});
+$('reset2').addEventListener('click',init2);
+
+// ---- Stage 3: order the paragraph ----
+let ord=[];
+function init3(){
+  const idx=PARA.map((_,i)=>i); let r;
+  do{r=sh(idx);}while(r.join()===idx.join());
+  ord=r; draw3(); $('sc3').textContent='';
+}
+function draw3(){
+  $('s3l').innerHTML=ord.map((p,k)=>'<div class="line" id="ln'+k+'"><div class="mv"><button aria-label="Naik" data-k="'+k+'" data-d="-1">▲</button><button aria-label="Turun" data-k="'+k+'" data-d="1">▼</button></div><span>'+PARA[p]+'</span></div>').join('');
+}
+$('s3l').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  const k=+b.dataset.k, j=k+(+b.dataset.d);
+  if(j<0||j>=ord.length) return;
+  const t=ord[k]; ord[k]=ord[j]; ord[j]=t; draw3(); $('sc3').textContent='';
+});
+$('check3').addEventListener('click',()=>{
+  let n=0;
+  ord.forEach((p,k)=>{const ok=p===k; if(ok) n++; const l=$('ln'+k); l.classList.toggle('good',ok); l.classList.toggle('bad',!ok);});
+  $('sc3').textContent=n===PARA.length?'Perfect! Your paragraph is in the right order.':'Kalimat di posisi benar: '+n+' dari '+PARA.length+'.';
+});
+$('reset3').addEventListener('click',init3);
+
+// ---- Bonus: autosave ----
+['b1','b2','b3'].forEach(id=>{
+  const ta=$(id), v=safeGet('fairy-'+id); if(v) ta.value=v;
+  ta.addEventListener('input',()=>safeSet('fairy-'+id,ta.value));
+});
+
+init1(); init2(); init3();
+
+// ==================================================================
+// KONEKSI LMS — kirim hasil ke tabel hasil_worksheet (Supabase)
+// ==================================================================
+const SUPABASE_URL = "https://sviftypadyorgalehzxh.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_nJt3-cCaD-ejip456YgBbQ_KTZ2FjRC";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const WORKSHEET_SLUG = "fairy-tale-writing"; // samakan dengan slug worksheet di LMS
+
+let loggedInProfile = null;
+
+(async function detectLmsLogin(){
+  try{
+    const { data: { user } } = await sb.auth.getUser();
+    if(!user) return;
+    const { data: profile } = await sb.from('profiles')
+      .select('id, nama, kelas:kelas_id ( nama )').eq('id', user.id).single();
+    if(!profile) return;
+    loggedInProfile = { id: profile.id, nama: profile.nama, kelas: profile.kelas ? profile.kelas.nama : '' };
+    applyLoggedInIdentity();
+  }catch(e){ /* dibuka tanpa login LMS — form manual tetap jalan */ }
+})();
+
+function applyLoggedInIdentity(){
+  if(!loggedInProfile) return;
+  const n=$('namaIndividu'), k=$('kelasInput');
+  if(n){ n.value = loggedInProfile.nama || ''; n.readOnly = true; }
+  if(k){ k.value = loggedInProfile.kelas || ''; k.readOnly = true; }
+  $('lmsNote').innerHTML = '<div class="lms-note">✅ Masuk sebagai '+loggedInProfile.nama+' — nama &amp; kelas otomatis diisi, hasil akan tersimpan di Riwayat Worksheet kamu.</div>';
+}
+
+const jenisSelect=$('jenisSelect'), individuFields=$('individuFields'), kelompokFields=$('kelompokFields'), memberList=$('memberList');
+function addMemberRow(){
+  const row=document.createElement('div'); row.className='member-row';
+  row.innerHTML='<input type="text" class="memberInput" placeholder="Nama anggota"><button type="button">✕</button>';
+  row.querySelector('button').addEventListener('click',()=>row.remove());
+  memberList.appendChild(row);
+}
+addMemberRow();
+$('addMemberBtn').addEventListener('click',addMemberRow);
+jenisSelect.addEventListener('change',()=>{
+  const k=jenisSelect.value==='kelompok';
+  individuFields.classList.toggle('hidden',k); kelompokFields.classList.toggle('hidden',!k);
+});
+
+function getIdentitas(){
+  const kelas=$('kelasInput').value.trim(), jenis=jenisSelect.value;
+  if(jenis==='individu') return { jenis, nama:$('namaIndividu').value.trim(), anggota:null, kelas };
+  const anggota=Array.from(document.querySelectorAll('.memberInput')).map(i=>i.value.trim()).filter(Boolean).join(', ');
+  return { jenis, nama:$('namaKelompok').value.trim(), anggota, kelas };
+}
+function validateIdentitas(){
+  const d=getIdentitas(), warn=$('idWarn'); let msg='';
+  if(!d.kelas) msg='Isi dulu Kelas kamu.';
+  else if(d.jenis==='individu'&&!d.nama) msg='Isi dulu Nama kamu.';
+  else if(d.jenis==='kelompok'&&!d.nama) msg='Isi dulu Nama Kelompok.';
+  else if(d.jenis==='kelompok'&&!d.anggota) msg='Tambahkan minimal satu Anggota Kelompok.';
+  if(msg){ warn.textContent=msg; warn.classList.add('show'); return null; }
+  warn.classList.remove('show'); return d;
+}
+
+// ---- kumpulkan jawaban ----
+function collect1(){
+  let correct=0;
+  const details=WORDS.map((w,i)=>{
+    const yl=pairs[i]||'', ok=yl===key[i];
+    if(ok) correct++;
+    const txt=l=>{const r=R[LET.indexOf(l)];return r?l+'. '+r.t:'(kosong)';};
+    return { label:w[0], your:yl?txt(yl):'(kosong)', correct:txt(key[i]), ok };
+  });
+  return { name:'Stage 1 — Matching Words', correct, total:WORDS.length, details };
+}
+function collect2(){
+  let correct=0;
+  const details=SENT.map((s,i)=>{
+    const ok=sentOk(i); if(ok) correct++;
+    const yours=st[i].ans.map(a=>a.t).join(' ');
+    return { label:(s[1]?'(+) ':'(−) ')+'Kalimat '+(i+1), your:yours?yours+'.':'(kosong)', correct:s[0], ok };
+  });
+  return { name:'Stage 2 — Make Sentences', correct, total:SENT.length, details };
+}
+function collect3(){
+  let correct=0;
+  const details=ord.map((p,k)=>{
+    const ok=p===k; if(ok) correct++;
+    return { label:'Posisi '+(k+1), your:PARA[p], correct:PARA[k], ok };
+  });
+  return { name:'Stage 3 — Build the Paragraph', correct, total:PARA.length, details };
+}
+function collect4(){
+  const details=['b1','b2','b3'].map((id,i)=>({ label:'Bonus kalimat '+(i+1), your:$(id).value.trim()||'(kosong)', ok:true }));
+  return { name:'Bonus — Write Your Own (dinilai guru)', details, filled:details.filter(d=>d.your!=='(kosong)').length, total:3 };
+}
+
+// ---- submit per stage ----
+const STAGES={
+  s1:{label:'Stage 1',collect:collect1},
+  s2:{label:'Stage 2',collect:collect2},
+  s3:{label:'Stage 3',collect:collect3},
+  s4:{label:'Bonus',collect:collect4}
+};
+let activeTab='s1';
+const sent={}, sending={}, msg={}, msgCls={};
+function setStatus(id,text,cls){msg[id]=text;msgCls[id]=cls||'';if(id===activeTab)updateSubmitBar();}
+function updateSubmitBar(){
+  const sg=STAGES[activeTab], btn=$('submitBtn'), el=$('submitStatus');
+  btn.disabled=!!(sent[activeTab]||sending[activeTab]);
+  btn.textContent=sent[activeTab]?'Terkirim ✓ '+sg.label:(sending[activeTab]?'Mengirim...':'📤 Kirim '+sg.label);
+  el.textContent=msg[activeTab]||'';
+  el.className='submit-status'+(msgCls[activeTab]?' '+msgCls[activeTab]:'');
+}
+updateSubmitBar();
+
+$('submitBtn').addEventListener('click', async ()=>{
+  const sid=activeTab, sg=STAGES[sid];
+  if(sent[sid]||sending[sid]) return;
+  const identitas=validateIdentitas(); if(!identitas) return;
+  const part=sg.collect();
+  if(sid==='s4'&&part.filled===0){ setStatus(sid,'Isi dulu minimal satu kalimat Bonus.','err'); return; }
+
+  sending[sid]=true; setStatus(sid,'','');
+  const graded=sid!=='s4';
+  const payload={
+    worksheet_slug:WORKSHEET_SLUG,
+    jenis:identitas.jenis,
+    nama:identitas.nama,
+    anggota:identitas.anggota,
+    kelas:identitas.kelas,
+    nilai:graded?part.correct:null,
+    nilai_maks:graded?part.total:null,
+    status:'selesai',
+    siswa_id:loggedInProfile?loggedInProfile.id:null,
+    jawaban:[part]
+  };
+
+  try{
+    const { error }=await sb.from('hasil_worksheet').insert(payload);
+    if(error) throw error;
+    sent[sid]=true; sending[sid]=false;
+    setStatus(sid,graded
+      ? sg.label+' terkirim ke guru. Skor: '+part.correct+'/'+part.total+'.'
+      : 'Bonus terkirim ('+part.filled+'/3 kalimat terisi). Dinilai manual oleh guru.','ok');
+  }catch(err){
+    sending[sid]=false;
+    setStatus(sid,'Gagal mengirim ('+(err.message||'kesalahan jaringan')+'). Coba lagi.','err');
+  }
+});
+</script>
+</body>
+</html>
