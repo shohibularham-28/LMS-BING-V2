@@ -245,13 +245,15 @@ const $=id=>document.getElementById(id);
 const SK='fairy-worksheet-v1';
 let S0={}; try{S0=JSON.parse(safeGet(SK)||'{}')||{};}catch(e){S0={};}
 const sent=Object.assign({},S0.sent||{});
+let rowId=S0.rowId||null;                       // id baris di hasil_worksheet (satu baris per siswa)
+const parts=Object.assign({},S0.parts||{});      // jawaban stage yang sudah terkirim (ditumpuk)
 let ready=false;
 function save(){
   if(!ready) return;
   safeSet(SK,JSON.stringify({
     jenis:$('jenisSelect').value, kelas:$('kelasInput').value, nama:$('namaIndividu').value,
     kelompok:$('namaKelompok').value, members:Array.from(document.querySelectorAll('.memberInput')).map(i=>i.value),
-    lo:LO, r:R, pairs:pairs, st:st.map(q=>({bank:q.bank,ans:q.ans})), ord:ord, sent:sent
+    lo:LO, r:R, pairs:pairs, st:st.map(q=>({bank:q.bank,ans:q.ans})), ord:ord, sent:sent, rowId:rowId, parts:parts
   }));
 }
 
@@ -520,28 +522,43 @@ $('submitBtn').addEventListener('click', async ()=>{
 
   sending[sid]=true; setStatus(sid,'','');
   const graded=sid!=='s4';
+  parts[sid]=part;                                   // tumpuk jawaban stage ini
+  const keys=['s1','s2','s3','s4'].filter(k=>parts[k]);
+  const gk=keys.filter(k=>k!=='s4');
   const payload={
     worksheet_slug:WORKSHEET_SLUG,
     jenis:identitas.jenis,
     nama:identitas.nama,
     anggota:identitas.anggota,
     kelas:identitas.kelas,
-    nilai:graded?part.correct:null,
-    nilai_maks:graded?part.total:null,
+    nilai:gk.length?gk.reduce((a,k)=>a+parts[k].correct,0):null,
+    nilai_maks:gk.length?gk.reduce((a,k)=>a+parts[k].total,0):null,
     status:'selesai',
     siswa_id:loggedInProfile?loggedInProfile.id:null,
-    jawaban:[part]
+    jawaban:keys.map(k=>parts[k])                    // semua stage yang sudah dikirim
   };
 
   try{
-    const { error }=await sb.from('hasil_worksheet').insert(payload);
-    if(error) throw error;
+    let done=false, replaced=false;
+    if(rowId){                                       // stage berikutnya: perbarui baris yang sama
+      const { data, error }=await sb.from('hasil_worksheet').update(payload).eq('id',rowId).select('id');
+      if(error) throw error;
+      done=!!(data&&data.length);
+      replaced=!done;
+    }
+    if(!done){                                       // stage pertama (atau baris lama tidak bisa diperbarui)
+      let r=await sb.from('hasil_worksheet').insert(payload).select('id').single();
+      if(r.error) r=await sb.from('hasil_worksheet').insert(payload);
+      if(r.error) throw r.error;
+      rowId=(r.data&&r.data.id)||null;
+    }
     sent[sid]=true; sending[sid]=false; save();
-    setStatus(sid,graded
+    setStatus(sid,(graded
       ? sg.label+' terkirim ke guru. Skor: '+part.correct+'/'+part.total+'.'
-      : 'Bonus terkirim ('+part.filled+'/3 kalimat terisi). Dinilai manual oleh guru.','ok');
+      : 'Bonus terkirim ('+part.filled+'/3 kalimat terisi). Dinilai manual oleh guru.')
+      +(replaced?' (Baris sebelumnya tidak bisa diperbarui, jadi tersimpan sebagai baris baru.)':''),'ok');
   }catch(err){
-    sending[sid]=false;
+    sending[sid]=false; delete parts[sid]; save();
     setStatus(sid,'Gagal mengirim ('+(err.message||'kesalahan jaringan')+'). Coba lagi.','err');
   }
 });
