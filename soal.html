@@ -557,8 +557,8 @@
     <p id="violationMsg">Kamu meninggalkan layar ujian (berpindah tab/aplikasi, atau keluar dari fullscreen).</p>
     <div class="vcount" id="violationCount">Pelanggaran 1 — Nilai -2</div>
     <button type="button" id="violationOkBtn">Kembali ke Ujian</button>
-    <button type="button" id="violationEndBtn" class="violation-end-btn">Sudahi &amp; Submit Ujian</button>
-    <button type="button" id="violationExitBtn" class="violation-exit-btn">Keluar (Tanpa Kirim Jawaban)</button>
+    <button type="button" id="violationEndBtn" class="violation-end-btn" style="display:none;">Sudahi &amp; Submit Ujian</button>
+    <button type="button" id="violationExitBtn" class="violation-exit-btn" style="display:none;">Keluar (Tanpa Kirim Jawaban)</button>
   </div>
 </div>
 
@@ -1589,6 +1589,7 @@ document.addEventListener('keydown', e=>{
 let MAX_VIOLATIONS = 5;
 let VIOLATION_PENALTY = 2; // poin dikurangi per pelanggaran, dipakai HANYA kalau PENALTI_AKTIF true
 let PENALTI_AKTIF = true;
+let KUNCI_OTOMATIS = true;          // diisi dari jadwal_ujian.kunci_otomatis saat bootstrap (guru bisa matikan)
 let ACAK_SOAL = false;              // diisi dari bank_soal.acak_soal saat bootstrap
 let TAMPILKAN_NILAI_LANGSUNG = true; // diisi dari bank_soal.tampilkan_nilai_langsung saat bootstrap
 let violationCount = 0;
@@ -1716,11 +1717,45 @@ function registerViolation(reason){
   playAlarm();
   saveState();
 
-  // Kunci otomatis: siswa TIDAK bisa lanjut mengerjakan sendiri.
-  // Hanya guru yang bisa membuka lewat dashboard monitoring "Sedang Ujian".
-  showLockOverlay(violationCount);
-  kunciSesiUjian();
+  if(KUNCI_OTOMATIS){
+    // Kunci otomatis: siswa TIDAK bisa lanjut mengerjakan sendiri.
+    // Hanya guru yang bisa membuka lewat dashboard monitoring "Sedang Ujian".
+    showLockOverlay(violationCount);
+    kunciSesiUjian();
+  } else {
+    // Guru mematikan kunci otomatis: cukup peringatan + catat pelanggaran,
+    // ujian TIDAK terkunci dan timer tetap berjalan.
+    showViolationWarning(reason);
+    laporPelanggaranSesi();
+  }
 }
+
+async function laporPelanggaranSesi(){
+  if(!SESI_ID) return;
+  try{
+    await supabase.from('sesi_ujian').update({
+      pelanggaran: violationCount,
+      last_ping_at: new Date().toISOString()
+    }).eq('id', SESI_ID);
+  }catch(err){ /* koneksi bermasalah — ping berikutnya ikut mengirim jumlah pelanggaran */ }
+}
+
+function showViolationWarning(reason){
+  const msg = document.getElementById('violationMsg');
+  if(msg) msg.textContent = 'Terdeteksi: ' + reason + '. Ujianmu tidak dikunci, tetapi pelanggaran ini dicatat dan guru bisa melihatnya.';
+  const cnt = document.getElementById('violationCount');
+  if(cnt){
+    cnt.textContent = PENALTI_AKTIF
+      ? `Pelanggaran ${violationCount} — Nilai -${violationCount*VIOLATION_PENALTY}`
+      : `Pelanggaran ${violationCount} — tidak memotong nilai`;
+  }
+  document.getElementById('violationModal').classList.add('show');
+}
+
+document.getElementById('violationOkBtn').addEventListener('click', ()=>{
+  document.getElementById('violationModal').classList.remove('show');
+  if(isExamRunning() && !isFullscreenActive()) requestExamFullscreen();
+});
 
 document.getElementById('fullscreenBtn').addEventListener('click', ()=>{
   requestExamFullscreen();
@@ -2008,20 +2043,26 @@ function runInitAfterDataReady(){
 }
 
 function applyPenaltiUI(){
-  // Fullscreen & deteksi pelanggaran TETAP selalu tampil/aktif — hanya teks
-  // soal "poin yang dikurangi" dan perhitungan nilai yang berubah sesuai
-  // PENALTI_AKTIF (lihat grade() dan registerViolation()).
-  if(!PENALTI_AKTIF){
-    document.getElementById('rulesListUl').innerHTML = `
-      <li>Tetap dalam <b>mode fullscreen (layar penuh)</b> dan di tab ini selama ujian berlangsung.</li>
-      <li>Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm + popup peringatan</b>, dan tercatat sebagai pelanggaran.</li>
-      <li>Untuk soal ini, pelanggaran <b>TIDAK mengurangi nilai akhir</b> — hanya dicatat sebagai catatan bagi guru.</li>
-      <li>Ujian <b>TIDAK</b> akan otomatis dikirim karena pelanggaran — kamu tetap bisa lanjut mengerjakan.</li>
-      <li>Jika keluar dari fullscreen, gunakan tombol <b>"⛶ Fullscreen"</b> di bagian atas untuk kembali.</li>
-    `;
+  // Susun daftar peraturan sesuai pengaturan guru untuk ujian ini:
+  // KUNCI_OTOMATIS (ujian terkunci saat keluar) dan PENALTI_AKTIF (potong nilai).
+  // Fullscreen & deteksi pelanggaran selalu aktif; hanya konsekuensinya yang diatur guru.
+  const items = [];
+  items.push('Tetap dalam <b>mode fullscreen (layar penuh)</b> dan di tab ini selama ujian berlangsung.');
+  if(KUNCI_OTOMATIS){
+    items.push('Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm</b> dan ujian <b>terkunci otomatis</b>: jawabanmu tetap tersimpan, waktu berhenti, dan <b>hanya guru yang bisa membuka kunci</b>.');
   } else {
-    document.getElementById('rulesPenaltiPoin').textContent = VIOLATION_PENALTY;
+    items.push('Berpindah tab/aplikasi atau keluar dari fullscreen akan memicu <b>alarm + popup peringatan</b>, dan tercatat sebagai pelanggaran. Ujian <b>tidak terkunci</b> — kamu bisa langsung kembali mengerjakan.');
   }
+  if(PENALTI_AKTIF){
+    items.push('Setiap pelanggaran mengurangi <b>' + VIOLATION_PENALTY + ' poin</b> dari nilai akhir. Pelanggaran bersifat akumulatif — <b>tidak dihapus/diampuni</b>.');
+  } else {
+    items.push('Untuk ujian ini, pelanggaran <b>TIDAK mengurangi nilai akhir</b> — hanya dicatat sebagai catatan bagi guru.');
+  }
+  items.push('Ujian <b>TIDAK</b> akan otomatis dikirim karena pelanggaran.');
+  if(!KUNCI_OTOMATIS){
+    items.push('Jika keluar dari fullscreen, gunakan tombol <b>"⛶ Fullscreen"</b> di bagian atas untuk kembali.');
+  }
+  document.getElementById('rulesListUl').innerHTML = items.map(t => '<li>' + t + '</li>').join('');
 }
 
 function beginExamAfterConsent(){
@@ -2141,7 +2182,7 @@ function showTokenGate(requiredToken, sessionKey){
 
   const { data: juRow, error } = await supabase
     .from('jadwal_ujian')
-    .select('id, judul, mulai, deadline, durasi_menit, penalti_aktif, poin_penalti, acak_soal, tampilkan_nilai_langsung, token, bank_soal:bank_soal_id ( id, data )')
+    .select('id, judul, mulai, deadline, durasi_menit, penalti_aktif, poin_penalti, kunci_otomatis, acak_soal, tampilkan_nilai_langsung, token, bank_soal:bank_soal_id ( id, data )')
     .eq('id', JADWAL_UJIAN_ID)
     .single();
 
@@ -2181,6 +2222,7 @@ function showTokenGate(requiredToken, sessionKey){
   remainingTimeMs = TIMER_MS;
   WORKSHEET_ID = null;
   PENALTI_AKTIF = juRow.penalti_aktif !== false; // default aktif kalau kolom kosong/null
+  KUNCI_OTOMATIS = juRow.kunci_otomatis !== false; // default aktif (perilaku lama) kalau kolom kosong/null
   VIOLATION_PENALTY = (juRow.poin_penalti===0 || juRow.poin_penalti) ? juRow.poin_penalti : 2;
   ACAK_SOAL = juRow.acak_soal === true;
   TAMPILKAN_NILAI_LANGSUNG = juRow.tampilkan_nilai_langsung !== false; // default tampil kalau kolom kosong/null

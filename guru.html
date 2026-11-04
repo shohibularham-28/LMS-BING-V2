@@ -687,6 +687,13 @@
           </div>
           <div class="form-field" style="max-width:none;">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+              <input type="checkbox" id="juKunciCheckbox" checked style="width:auto;">
+              Kunci ujian otomatis kalau siswa pindah tab / keluar fullscreen
+            </label>
+            <div class="hint" style="margin-top:4px;">Aktif: ujian siswa terkunci dan hanya kamu yang bisa membuka lewat menu "Monitoring Ujian". Nonaktif: siswa hanya dapat alarm + peringatan, pelanggaran tetap dicatat, tapi ujian tidak terkunci (nilai tetap bisa dipotong kalau opsi potong nilai di atas aktif).</div>
+          </div>
+          <div class="form-field" style="max-width:none;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
               <input type="checkbox" id="juAcakCheckbox" style="width:auto;">
               Acak urutan soal (tiap siswa dapat urutan berbeda, soal dalam 1 teks bacaan tetap dikelompokkan)
             </label>
@@ -3017,7 +3024,7 @@
   // Menyimpan satu baris Jadwal Ujian baru (beserta target kelas tertentu kalau ada).
   async function simpanJadwalUjian({
     judul, bankSoalId, guruId, tingkat, targetTipe, kelasIds, pesertaIds = [],
-    durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
+    durasiMenit, penaltiAktif, poinPenalti, kunciOtomatis = true, acakSoal, tampilkanNilaiLangsung,
     mulai, deadline, token
   }) {
     const { data: inserted, error } = await supabase.from('jadwal_ujian').insert({
@@ -3029,6 +3036,7 @@
       durasi_menit: durasiMenit,
       penalti_aktif: penaltiAktif,
       poin_penalti: poinPenalti,
+      kunci_otomatis: kunciOtomatis,
       acak_soal: acakSoal,
       tampilkan_nilai_langsung: tampilkanNilaiLangsung,
       mulai,
@@ -3060,7 +3068,7 @@
     const el = document.getElementById('jadwalUjianDaftar');
     const { data, error } = await supabase
       .from('jadwal_ujian')
-      .select('id, judul, tingkat, target_tipe, mulai, deadline, token, bank_soal:bank_soal_id ( id, judul, data ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) ), jadwal_ujian_peserta ( profile:profile_id ( kelas:kelas_id ( nama ) ) )')
+      .select('id, judul, tingkat, target_tipe, mulai, deadline, token, kunci_otomatis, bank_soal:bank_soal_id ( id, judul, data ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) ), jadwal_ujian_peserta ( profile:profile_id ( kelas:kelas_id ( nama ) ) )')
       .order('created_at', { ascending: false });
     if (error) { el.innerHTML = emptyState('Gagal memuat', error.message, '⚠️'); return; }
     const list = data || [];
@@ -3089,6 +3097,8 @@
       const metaBits = [esc('Soal: ' + (j.bank_soal ? j.bank_soal.judul : '(soal dihapus)')), esc(target)];
       if (j.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(j.mulai));
       if (j.deadline) metaBits.push('Deadline ' + j.deadline);
+      const kunciAktif = j.kunci_otomatis !== false;
+      const kunciBit = `<span class="score-pill" style="background:${kunciAktif ? '#ecfdf5;color:#065f46' : '#fef3c7;color:#92400e'};">${kunciAktif ? '🔒 Kunci otomatis: Aktif' : '🔓 Kunci otomatis: Nonaktif'}</span>`;
       const tokenBit = j.token
         ? `<span class="score-pill" style="background:#eef2ff;color:#3730a3;">🔒 Token: <b style="font-family:'JetBrains Mono',monospace;">${esc(j.token)}</b></span>`
         : `<span class="hint" style="margin:0;">Tanpa token</span>`;
@@ -3097,9 +3107,10 @@
         <div>
           <strong>${esc(j.judul)}</strong> ${statusPill}
           <div style="color:#888;font-size:12.5px;">${metaBits.join(' · ')}</div>
-          <div style="margin-top:4px;">${tokenBit}</div>
+          <div style="margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">${tokenBit} ${kunciBit}</div>
         </div>
         <div style="display:flex; gap:8px; flex-shrink:0;">
+          <button class="btn-secondary-sm" data-ju-kunci="${j.id}" data-ju-kunci-now="${kunciAktif ? '1' : '0'}">${kunciAktif ? '🔓 Matikan Kunci' : '🔒 Aktifkan Kunci'}</button>
           ${j.bank_soal ? `<button class="btn-secondary-sm" data-ju-preview="${j.id}">👁️ Preview Soal</button>` : ''}
           <button class="btn-danger-sm" data-ju-hapus="${j.id}">Hapus</button>
         </div>
@@ -3107,6 +3118,15 @@
     `;
     }).join('') : emptyState('Belum ada Jadwal Ujian', 'Pilih soal dari Bank Soal di atas lalu klik "Terbitkan Jadwal Ujian".', '🗓️');
 
+    el.querySelectorAll('[data-ju-kunci]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const jadiAktif = btn.dataset.juKunciNow !== '1';
+        btn.disabled = true;
+        const { error: kErr } = await supabase.from('jadwal_ujian').update({ kunci_otomatis: jadiAktif }).eq('id', btn.dataset.juKunci);
+        if (kErr) { alert('Gagal mengubah pengaturan kunci: ' + kErr.message + '\n\nPastikan MIGRASI_KUNCI_OTOMATIS_UJIAN.sql sudah dijalankan.'); btn.disabled = false; return; }
+        await renderJadwalUjianList();
+      });
+    });
     el.querySelectorAll('[data-ju-hapus]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!confirm('Hapus jadwal ujian ini? Siswa tidak akan bisa membukanya lagi. Nilai yang sudah tersimpan tidak akan terhapus.')) return;
@@ -3203,6 +3223,7 @@
     const pesertaIds = targetTipe === 'peserta' ? Array.from(juPeserta.selected.keys()) : [];
     const poinPenalti = parseInt(document.getElementById('juPoinPenaltiInput').value, 10) || 0;
     const penaltiAktif = document.getElementById('juPenaltiCheckbox').checked;
+    const kunciOtomatis = document.getElementById('juKunciCheckbox').checked;
     const acakSoal = document.getElementById('juAcakCheckbox').checked;
     const tampilkanNilaiLangsung = document.getElementById('juTampilkanNilaiCheckbox').checked;
     const mulaiRaw = document.getElementById('juMulaiInput').value;
@@ -3222,7 +3243,7 @@
     try {
       await simpanJadwalUjian({
         judul, bankSoalId, guruId: teacher.id, tingkat, targetTipe, kelasIds, pesertaIds,
-        durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
+        durasiMenit, penaltiAktif, poinPenalti, kunciOtomatis, acakSoal, tampilkanNilaiLangsung,
         mulai, deadline, token
       });
       document.getElementById('juJudulInput').value = '';
