@@ -661,8 +661,19 @@
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
               <input type="radio" name="juTarget" id="juTargetTertentu" value="tertentu" style="width:auto;"> Kelas tertentu saja
             </label>
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top:6px;">
+              <input type="radio" name="juTarget" id="juTargetPeserta" value="peserta" style="width:auto;"> Pilih peserta (per siswa)
+            </label>
           </div>
           <div id="juKelasCheckboxWrap" style="display:none; margin-top:8px; gap:14px; flex-wrap:wrap;"></div>
+          <div id="juPesertaWrap" style="display:none; margin-top:10px;">
+            <div class="form-row">
+              <div class="form-field"><label>Kelas</label><select id="juPesertaKelasSelect"></select></div>
+            </div>
+            <div id="juPesertaList" style="border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; max-height:320px; overflow:auto;"></div>
+            <div class="hint" id="juPesertaSummary" style="margin-top:8px;"></div>
+            <div class="hint" style="margin-top:2px;">Pilih kelas, centang siswa yang ikut ujian (atau centang "Pilih semua siswa"). Kamu bisa ganti kelas lalu memilih siswa dari kelas lain — pilihan sebelumnya tetap tersimpan. Hanya siswa yang dicentang yang bisa melihat dan mengerjakan ujian ini.</div>
+          </div>
 
           <div class="section-label" style="margin-top:18px; font-size:14px;">Pengaturan Ujian</div>
           <div class="form-row">
@@ -2898,15 +2909,102 @@
       : '<span class="hint" style="margin:0;">Belum ada kelas untuk tingkat ini. Tambahkan dulu lewat "Kelola Kelas".</span>';
   }
 
+  // ---------- Pilih peserta per siswa (kelas -> centang siswa, ada "Pilih semua") ----------
+  const juPeserta = { kelasId: '', cache: {}, selected: new Map() }; // selected: profileId -> { nama, kelasNama }
+
+  function updateJuPesertaCounters() {
+    const cbs = Array.from(document.querySelectorAll('.ju-peserta-cb'));
+    const allCb = document.getElementById('juPesertaAll');
+    if (allCb) {
+      const n = cbs.filter(cb => cb.checked).length;
+      allCb.checked = cbs.length > 0 && n === cbs.length;
+      allCb.indeterminate = n > 0 && n < cbs.length;
+      const info = document.getElementById('juPesertaKelasCount');
+      if (info) info.textContent = n + ' / ' + cbs.length + ' dipilih di kelas ini';
+    }
+    const perKelas = {};
+    juPeserta.selected.forEach(v => { perKelas[v.kelasNama] = (perKelas[v.kelasNama] || 0) + 1; });
+    const total = juPeserta.selected.size;
+    document.getElementById('juPesertaSummary').innerHTML = total
+      ? '<b>' + total + ' siswa terpilih</b>: ' + Object.keys(perKelas).sort().map(k => esc(k) + ' (' + perKelas[k] + ')').join(', ')
+      : 'Belum ada siswa yang dipilih.';
+  }
+
+  async function renderJuPesertaList() {
+    const box = document.getElementById('juPesertaList');
+    const kelasId = juPeserta.kelasId;
+    if (!kelasId) { box.innerHTML = '<span class="hint" style="margin:0;">Belum ada kelas untuk tingkat ini. Tambahkan dulu lewat "Kelola Kelas".</span>'; updateJuPesertaCounters(); return; }
+    box.innerHTML = '<span class="hint" style="margin:0;">Memuat siswa…</span>';
+    if (!juPeserta.cache[kelasId]) {
+      const { data, error } = await supabase.from('profiles').select('id, nama').eq('kelas_id', kelasId).eq('role', 'siswa').order('nama');
+      if (error) { box.innerHTML = '<span class="login-error" style="display:block;">Gagal memuat siswa: ' + esc(error.message) + '</span>'; return; }
+      juPeserta.cache[kelasId] = data || [];
+    }
+    if (kelasId !== juPeserta.kelasId) return; // guru sudah pindah kelas saat data dimuat
+    const siswa = juPeserta.cache[kelasId];
+    const kelasNama = (allKelas.find(k => k.id === kelasId) || {}).nama || '';
+    if (!siswa.length) { box.innerHTML = '<span class="hint" style="margin:0;">Belum ada siswa di kelas ini.</span>'; updateJuPesertaCounters(); return; }
+    box.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; padding-bottom:8px; margin-bottom:8px; border-bottom:1px solid #eee;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600;">
+          <input type="checkbox" id="juPesertaAll" style="width:auto;"> Pilih semua siswa
+        </label>
+        <span class="hint" style="margin:0;" id="juPesertaKelasCount"></span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:6px 14px;">
+        ${siswa.map(sw => `<label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:13.5px;"><input type="checkbox" class="ju-peserta-cb" value="${esc(sw.id)}" data-nama="${esc(sw.nama)}" ${juPeserta.selected.has(sw.id) ? 'checked' : ''} style="width:auto;"> ${esc(sw.nama)}</label>`).join('')}
+      </div>`;
+    box.querySelectorAll('.ju-peserta-cb').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) juPeserta.selected.set(cb.value, { nama: cb.dataset.nama, kelasNama });
+        else juPeserta.selected.delete(cb.value);
+        updateJuPesertaCounters();
+      });
+    });
+    document.getElementById('juPesertaAll').addEventListener('change', (e) => {
+      box.querySelectorAll('.ju-peserta-cb').forEach(cb => {
+        cb.checked = e.target.checked;
+        if (cb.checked) juPeserta.selected.set(cb.value, { nama: cb.dataset.nama, kelasNama });
+        else juPeserta.selected.delete(cb.value);
+      });
+      updateJuPesertaCounters();
+    });
+    updateJuPesertaCounters();
+  }
+
+  async function renderJuPesertaPanel() {
+    const tingkat = document.getElementById('juTingkatSelect').value;
+    const kelasList = allKelas.filter(k => k.level === tingkat);
+    const sel = document.getElementById('juPesertaKelasSelect');
+    if (!kelasList.some(k => k.id === juPeserta.kelasId)) juPeserta.kelasId = kelasList.length ? kelasList[0].id : '';
+    sel.innerHTML = kelasList.length
+      ? kelasList.map(k => `<option value="${esc(k.id)}">${esc(k.nama)}</option>`).join('')
+      : '<option value="">(belum ada kelas)</option>';
+    sel.value = juPeserta.kelasId;
+    await renderJuPesertaList();
+  }
+  document.getElementById('juPesertaKelasSelect').addEventListener('change', async (e) => {
+    juPeserta.kelasId = e.target.value;
+    await renderJuPesertaList();
+  });
+
   function toggleJuKelasWrap() {
     const tertentu = document.getElementById('juTargetTertentu').checked;
+    const peserta = document.getElementById('juTargetPeserta').checked;
     document.getElementById('juKelasCheckboxWrap').style.display = tertentu ? 'flex' : 'none';
+    document.getElementById('juPesertaWrap').style.display = peserta ? 'block' : 'none';
     if (tertentu) renderJuKelasCheckboxes();
+    if (peserta) renderJuPesertaPanel();
   }
   document.getElementById('juTargetSemua').addEventListener('change', toggleJuKelasWrap);
   document.getElementById('juTargetTertentu').addEventListener('change', toggleJuKelasWrap);
+  document.getElementById('juTargetPeserta').addEventListener('change', toggleJuKelasWrap);
   document.getElementById('juTingkatSelect').addEventListener('change', () => {
     if (document.getElementById('juTargetTertentu').checked) renderJuKelasCheckboxes();
+    // ganti tingkat = daftar kelas berubah, jadi pilihan peserta sebelumnya dikosongkan
+    juPeserta.selected.clear();
+    juPeserta.kelasId = '';
+    if (document.getElementById('juTargetPeserta').checked) renderJuPesertaPanel();
   });
 
   document.getElementById('btnAcakToken').addEventListener('click', () => {
@@ -2918,7 +3016,7 @@
 
   // Menyimpan satu baris Jadwal Ujian baru (beserta target kelas tertentu kalau ada).
   async function simpanJadwalUjian({
-    judul, bankSoalId, guruId, tingkat, targetTipe, kelasIds,
+    judul, bankSoalId, guruId, tingkat, targetTipe, kelasIds, pesertaIds = [],
     durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
     mulai, deadline, token
   }) {
@@ -2945,6 +3043,16 @@
       if (kelasErr) throw kelasErr;
     }
 
+    if (targetTipe === 'peserta' && pesertaIds.length) {
+      const rows = pesertaIds.map(profileId => ({ jadwal_ujian_id: inserted.id, profile_id: profileId }));
+      const { error: pesertaErr } = await supabase.from('jadwal_ujian_peserta').insert(rows);
+      if (pesertaErr) {
+        // jangan biarkan ujian "kosong peserta" tersisa kalau penyimpanan peserta gagal
+        await supabase.from('jadwal_ujian').delete().eq('id', inserted.id);
+        throw pesertaErr;
+      }
+    }
+
     return inserted;
   }
 
@@ -2952,7 +3060,7 @@
     const el = document.getElementById('jadwalUjianDaftar');
     const { data, error } = await supabase
       .from('jadwal_ujian')
-      .select('id, judul, tingkat, target_tipe, mulai, deadline, token, bank_soal:bank_soal_id ( id, judul, data ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) )')
+      .select('id, judul, tingkat, target_tipe, mulai, deadline, token, bank_soal:bank_soal_id ( id, judul, data ), jadwal_ujian_kelas ( kelas:kelas_id ( nama ) ), jadwal_ujian_peserta ( profile:profile_id ( kelas:kelas_id ( nama ) ) )')
       .order('created_at', { ascending: false });
     if (error) { el.innerHTML = emptyState('Gagal memuat', error.message, '⚠️'); return; }
     const list = data || [];
@@ -2964,9 +3072,20 @@
       let statusPill = '<span class="score-pill status-tuntas">Terbuka</span>';
       if (belumMulai) statusPill = '<span class="score-pill status-belum">Belum Dibuka</span>';
       else if (sudahTutup) statusPill = '<span class="score-pill status-belum">Sudah Ditutup</span>';
-      const target = j.target_tipe === 'tertentu'
-        ? ('Kelas: ' + ((j.jadwal_ujian_kelas || []).map(x => x.kelas ? x.kelas.nama : '?').join(', ') || '-'))
-        : ('Semua kelas tingkat ' + j.tingkat);
+      let target;
+      if (j.target_tipe === 'peserta') {
+        const perKelas = {};
+        (j.jadwal_ujian_peserta || []).forEach(x => {
+          const nm = (x.profile && x.profile.kelas && x.profile.kelas.nama) || '?';
+          perKelas[nm] = (perKelas[nm] || 0) + 1;
+        });
+        const total = (j.jadwal_ujian_peserta || []).length;
+        target = 'Peserta: ' + total + ' siswa' + (total ? ' (' + Object.keys(perKelas).sort().map(k => k + ' ' + perKelas[k]).join(', ') + ')' : '');
+      } else if (j.target_tipe === 'tertentu') {
+        target = 'Kelas: ' + ((j.jadwal_ujian_kelas || []).map(x => x.kelas ? x.kelas.nama : '?').join(', ') || '-');
+      } else {
+        target = 'Semua kelas tingkat ' + j.tingkat;
+      }
       const metaBits = [esc('Soal: ' + (j.bank_soal ? j.bank_soal.judul : '(soal dihapus)')), esc(target)];
       if (j.mulai) metaBits.push((belumMulai ? 'Mulai ' : 'Dibuka sejak ') + fmtDateTimeID(j.mulai));
       if (j.deadline) metaBits.push('Deadline ' + j.deadline);
@@ -3076,10 +3195,12 @@
     const bankSoalId = document.getElementById('juBankSoalSelect').value;
     const tingkat = document.getElementById('juTingkatSelect').value;
     const durasiMenit = parseInt(document.getElementById('juDurasiInput').value, 10) || 90;
-    const targetTipe = document.getElementById('juTargetTertentu').checked ? 'tertentu' : 'semua';
+    const targetTipe = document.getElementById('juTargetPeserta').checked ? 'peserta'
+      : (document.getElementById('juTargetTertentu').checked ? 'tertentu' : 'semua');
     const kelasIds = targetTipe === 'tertentu'
       ? Array.from(document.querySelectorAll('.ju-kelas-cb:checked')).map(cb => cb.value)
       : [];
+    const pesertaIds = targetTipe === 'peserta' ? Array.from(juPeserta.selected.keys()) : [];
     const poinPenalti = parseInt(document.getElementById('juPoinPenaltiInput').value, 10) || 0;
     const penaltiAktif = document.getElementById('juPenaltiCheckbox').checked;
     const acakSoal = document.getElementById('juAcakCheckbox').checked;
@@ -3091,6 +3212,7 @@
 
     if (!judul) { errEl.textContent = 'Judul ujian wajib diisi.'; errEl.style.display = 'block'; return; }
     if (!bankSoalId) { errEl.textContent = 'Pilih soal dari Bank Soal dulu.'; errEl.style.display = 'block'; return; }
+    if (targetTipe === 'peserta' && !pesertaIds.length) { errEl.textContent = 'Pilih minimal satu siswa sebagai peserta, atau ganti target peserta.'; errEl.style.display = 'block'; return; }
     if (targetTipe === 'tertentu' && !kelasIds.length) { errEl.textContent = 'Pilih minimal satu kelas, atau pilih "Semua kelas di tingkat ini".'; errEl.style.display = 'block'; return; }
     if (mulai && deadline && mulai.slice(0, 10) > deadline) { errEl.textContent = 'Tanggal "Mulai Bisa Dibuka" tidak boleh setelah deadline.'; errEl.style.display = 'block'; return; }
 
@@ -3099,7 +3221,7 @@
     btn.textContent = 'Menerbitkan…';
     try {
       await simpanJadwalUjian({
-        judul, bankSoalId, guruId: teacher.id, tingkat, targetTipe, kelasIds,
+        judul, bankSoalId, guruId: teacher.id, tingkat, targetTipe, kelasIds, pesertaIds,
         durasiMenit, penaltiAktif, poinPenalti, acakSoal, tampilkanNilaiLangsung,
         mulai, deadline, token
       });
@@ -3109,6 +3231,7 @@
       document.getElementById('juDeadlineInput').value = '';
       document.getElementById('juTokenInput').value = '';
       document.getElementById('juTargetSemua').checked = true;
+      juPeserta.selected.clear();
       toggleJuKelasWrap();
       await renderJadwalUjianList();
       alert('Jadwal Ujian berhasil diterbitkan. Siswa yang menjadi target sudah bisa melihatnya di menu Worksheet.');
