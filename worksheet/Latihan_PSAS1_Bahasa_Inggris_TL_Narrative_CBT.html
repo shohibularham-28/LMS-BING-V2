@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en" translate="no" class="notranslate">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google" content="notranslate">
+<meta http-equiv="Content-Language" content="en">
+<title>Latihan PSAS 1 Bahasa Inggris TL Kelas X – Narrative Text</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --ink:#1c1b22;
+    --paper:#f6f4ee;
+    --paper-card:#ffffff;
+    --line:#e4e1d6;
+    --muted:#7b7768;
+    --navy:#161a2e;
+    --cream:#f3ead9;
+    --good:#1f9d68;
+    --good-bg:#e7f6ee;
+    --bad:#d5473a;
+    --bad-bg:#fceceb;
+
+    --t1:#7c5cd6;
+    --t1-bg:#f2eefb;
+    --t2:#0e9488;
+    --t2-bg:#e9f7f5;
+    --t3:#c98a1f;
+    --t3-bg:#fbf1de;
+    --t4:#d1477a;
+    --t4-bg:#fbeaf1;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+    padding-bottom:96px;
+  }
+  input, textarea, select{
+    -webkit-user-select:text;
+    -moz-user-select:text;
+    -ms-user-select:text;
+    user-select:text;
+  }
+  img{ -webkit-user-drag:none; pointer-events:none; }
+
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif;margin:0;}
+  .wrap{max-width:820px;margin:0 auto;padding:0 20px;}
+
+  .cover{
+    background:var(--navy); color:var(--cream);
+    padding:40px 0 30px; border-bottom:6px solid var(--t1);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px;
+    letter-spacing:.14em; text-transform:uppercase; color:#a9a6c4; margin-bottom:10px;
+  }
+  .cover h1{
+    font-size:clamp(24px,4.2vw,32px); font-weight:600; line-height:1.18; max-width:640px;
+  }
+  .cover p.desc{ color:#c9c6da; max-width:560px; margin-top:12px; font-size:14.5px; }
+  .id-card{
+    margin-top:22px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.16);
+    border-radius:14px; padding:16px 18px; display:grid; grid-template-columns:1fr 1fr; gap:14px;
+  }
+  @media (max-width:520px){ .id-card{grid-template-columns:1fr;} }
+  .id-field label{
+    display:block; font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:.08em; text-transform:uppercase; color:#a9a6c4; margin-bottom:6px;
+  }
+  .id-field input{
+    width:100%; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+    border-radius:8px; padding:10px 12px; color:#fff; font-size:16px; font-family:'Inter',sans-serif; outline:none;
+  }
+  .id-field input::placeholder{color:#8b88a3;}
+  .id-field input:focus{border-color:var(--t3);background:rgba(255,255,255,.13);}
+
+  .progress-shell{
+    position:sticky; top:0; z-index:30; background:var(--paper);
+    border-bottom:1px solid var(--line); padding:10px 0;
+  }
+  .progress-inner{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .progress-track{ flex:1 1 140px; height:8px; background:var(--line); border-radius:99px; overflow:hidden; min-width:100px; }
+  .progress-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--t1),var(--t4)); transition:width .3s ease; }
+  .progress-label{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--muted); white-space:nowrap; }
+  .palette-toggle{
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    background:#fff; border:1px solid var(--line); color:var(--ink);
+    padding:6px 12px; border-radius:99px; cursor:pointer;
+    transition:background .15s ease, border-color .15s ease;
+    display:flex; align-items:center; gap:6px;
+  }
+  .palette-toggle:hover{background:#f3f1ea; border-color:#d7d3c4;}
+
+  .hide-bar-btn{
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    background:var(--navy); border:1px solid var(--navy); color:#fff;
+    padding:6px 12px; border-radius:99px; cursor:pointer;
+    transition:background .15s ease, opacity .15s ease;
+    display:flex; align-items:center; gap:6px; margin-left:auto; flex-shrink:0;
+  }
+  .hide-bar-btn:hover{background:#232849;}
+  .progress-shell.bar-hidden .progress-inner > *:not(.hide-bar-row),
+  .progress-shell.bar-hidden .palette-panel{ display:none !important; }
+  .progress-shell.bar-hidden .progress-inner{ justify-content:flex-end; }
+  .hide-bar-row{ display:flex; margin-left:auto; }
+  .progress-shell.bar-hidden{ padding:6px 0; }
+
+  .timer-badge{
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--ink);
+    background:#eef0fb; border:1px solid #c9cdf0; padding:6px 12px; border-radius:99px; white-space:nowrap;
+  }
+  .timer-badge.warn{background:var(--t3-bg); border-color:var(--t3); color:#7a4e0a;}
+  .timer-badge.danger{background:var(--bad-bg); border-color:var(--bad); color:var(--bad); animation:timerPulse 1s infinite;}
+  .timer-badge.paused{background:#fff3cd; border-color:#ffeeba; color:#856404;}
+  @keyframes timerPulse{ 0%,100%{opacity:1;} 50%{opacity:.55;} }
+
+  .palette-panel{
+    display:none; background:var(--paper-card); border:1px solid var(--line); border-radius:12px;
+    padding:16px; margin-top:14px;
+  }
+  .palette-panel.open{display:block;}
+  .palette-legend{
+    display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--muted);
+    margin-bottom:12px; font-family:'JetBrains Mono',monospace;
+  }
+  .palette-legend span{display:inline-flex; align-items:center; gap:5px;}
+  .legend-dot{width:9px; height:9px; border-radius:3px; display:inline-block;}
+  .palette-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(38px,1fr)); gap:8px; }
+  .pnum{
+    aspect-ratio:1; border-radius:8px; border:1.5px solid var(--line); background:#fff;
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:700; color:var(--muted);
+    cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .1s ease;
+  }
+  .pnum:hover{transform:translateY(-1px);}
+  .pnum.pn-current{border-color:var(--navy); border-width:2px; color:var(--navy);}
+  .pnum.pn-answered{background:#eef0fb; border-color:#c9cdf0; color:var(--navy);}
+  .pnum.pn-correct{background:var(--good-bg); border-color:var(--good); color:var(--good);}
+  .pnum.pn-incorrect{background:var(--bad-bg); border-color:var(--bad); color:var(--bad);}
+
+  .results{
+    display:none; background:var(--paper-card); border:1px solid var(--line); border-radius:14px;
+    padding:24px 26px; margin:24px 0 6px; text-align:center;
+  }
+  .results.show{display:block;}
+  .results .score-big{ font-family:'Fraunces',serif; font-size:48px; font-weight:700; line-height:1; color:var(--navy); margin-bottom:6px; }
+  .results .score-sub{color:var(--muted); font-size:14px; margin-bottom:14px;}
+  .results .score-msg{ font-size:15px; font-weight:600; padding:9px 16px; border-radius:99px; display:inline-block; }
+  .submit-row{margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:8px;}
+  .submit-row .primary{padding:12px 22px; font-size:14.5px;}
+  .submit-row .primary:disabled{opacity:.55; cursor:not-allowed; transform:none;}
+  .send-note{font-family:'JetBrains Mono',monospace; font-size:12.5px; min-height:16px;}
+  .send-note.ok{color:var(--good);}
+  .send-note.err{color:var(--bad);}
+  .retry-send{border-color:var(--bad); color:var(--bad);}
+  .retry-send:hover{background:var(--bad-bg);}
+
+  .stage{margin-top:22px;}
+  .stage-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+  .genre-tag{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.09em; text-transform:uppercase;
+    padding:5px 11px; border-radius:99px; font-weight:600;
+  }
+  .stage-index{ font-family:'JetBrains Mono',monospace; font-size:12.5px; color:var(--muted); }
+
+  .pin-toggle{
+    font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
+    background:#fff; border:1px solid var(--line); color:var(--ink);
+    padding:6px 11px; border-radius:99px; cursor:pointer;
+    display:flex; align-items:center; gap:5px; margin-left:auto; flex-shrink:0;
+    transition:background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .pin-toggle:hover{background:#f3f1ea; border-color:#d7d3c4;}
+  .pin-toggle.active{background:var(--t1-bg); border-color:var(--t1); color:var(--t1);}
+  .pin-toggle .pin-ic{font-size:13px; line-height:1; transform:rotate(0deg); transition:transform .15s ease;}
+  .pin-toggle.active .pin-ic{transform:rotate(35deg);}
+
+  .pin-spacer{display:none;}
+
+  .stage.pin-mode{position:relative;}
+  .stage.pin-mode .passage{padding-bottom:54vh;}
+  .stage.pin-mode .q-card{
+    position:fixed; left:50%; bottom:0; transform:translateX(-50%);
+    width:calc(100% - 40px); max-width:780px; margin:0;
+    height:50vh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    z-index:35; border-radius:16px 16px 0 0;
+    box-shadow:0 -10px 26px rgba(28,27,34,.18);
+    padding-bottom:26px;
+  }
+  @media (max-width:640px){
+    .stage.pin-mode .q-card{width:calc(100% - 20px); height:50vh;}
+    .stage.pin-mode .passage{padding-bottom:52vh;}
+  }
+
+  .passage{
+    background:var(--paper-card); border:1px solid var(--line); border-left-width:5px;
+    border-radius:10px; padding:20px 22px; margin-bottom:20px; font-size:14.5px;
+  }
+  .passage h3{font-size:17px; margin-bottom:10px; font-weight:600;}
+  .passage p{margin:0 0 11px; color:#33313c; text-align:justify; text-indent:1.5em;}
+  .passage p:last-child{margin-bottom:0;}
+  .passage .meta{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--muted); margin-bottom:12px; letter-spacing:.03em;
+  }
+  .passage-img{
+    display:block; width:100%; max-width:420px; margin:0 auto; border-radius:8px;
+    border:1px solid var(--line);
+  }
+  .q-image{
+    display:block; max-width:360px; width:100%; margin:10px 0 14px 44px; border-radius:8px;
+    border:1px solid var(--line);
+  }
+  @media (max-width:640px){ .q-image{ margin-left:0; max-width:100%; } }
+
+  .q-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:12px;
+    padding:20px 22px 22px; transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .q-card.correct{border-color:var(--good); box-shadow:0 0 0 1px var(--good);}
+  .q-card.incorrect{border-color:var(--bad); box-shadow:0 0 0 1px var(--bad);}
+
+  .q-top{display:flex; gap:12px; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap;}
+  .q-num{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px;
+    min-width:32px; height:32px; border-radius:99px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .q-prompt{font-size:16px; font-weight:600; padding-top:4px;}
+  .q-hint{ font-size:12px; color:var(--muted); font-style:italic; margin:-6px 0 12px 44px; }
+
+  .options{display:flex; flex-direction:column; gap:9px; margin-left:44px;}
+  .opt{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 13px; border:1px solid var(--line); border-radius:8px;
+    cursor:pointer; font-size:14.5px; background:#fff; transition:background .15s ease, border-color .15s ease;
+  }
+  .opt:hover{background:#faf9f5;}
+  .opt input{margin-top:3px; accent-color:currentColor; flex-shrink:0;}
+  .opt.selected{background:#f1eefc; border-color:var(--t1);}
+  .opt.opt-correct{background:var(--good-bg); border-color:var(--good);}
+  .opt.opt-wrong{background:var(--bad-bg); border-color:var(--bad);}
+  .opt .tag{
+    margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10.5px;
+    text-transform:uppercase; letter-spacing:.05em; font-weight:700; padding-left:8px;
+  }
+  .opt.opt-correct .tag{color:var(--good);}
+  .opt.opt-wrong .tag{color:var(--bad);}
+  .opt input:disabled{cursor:default;}
+  .opt.locked{cursor:default;}
+  .opt-text-wrap{display:flex; flex-direction:column; gap:7px; flex:1;}
+  .opt-img{display:block; max-width:200px; max-height:160px; border-radius:6px; border:1px solid var(--line); object-fit:contain;}
+
+  @media (max-width:640px){
+    .wrap{padding:0 10px;}
+    .stage{margin-top:16px;}
+    .passage{padding:14px 12px; font-size:15.5px; line-height:1.6;}
+    .passage p{text-indent:1.2em;}
+    .passage h3{font-size:16.5px;}
+    .q-card{padding:16px 14px 18px;}
+    .q-top{gap:10px; margin-bottom:12px;}
+    .q-num{min-width:28px; height:28px; font-size:13px;}
+    .q-prompt{font-size:15.5px; line-height:1.42;}
+    .q-hint{margin-left:0; margin-top:2px; line-height:1.4;}
+    .options{margin-left:0; gap:8px;}
+    .opt{padding:11px 12px; font-size:15px; line-height:1.4; gap:9px;}
+    .matrix{margin-left:0;}
+    .match-box{margin-left:0;}
+    .answer-note{margin-left:0;}
+  }
+
+  .matrix{margin-left:44px; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .matrix table{width:100%; border-collapse:collapse; font-size:14px;}
+  .matrix th{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); background:#faf9f5; padding:9px 10px; text-align:center; border-bottom:1px solid var(--line);
+  }
+  .matrix th:first-child{text-align:left;}
+  .matrix td{padding:10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .matrix tr:last-child td{border-bottom:none;}
+  .matrix td.stmt{color:#33313c;}
+  .matrix td.pick{text-align:center; width:90px;}
+  .matrix td.pick.right-cell{background:var(--good-bg);}
+  .matrix td.pick.wrong-cell{background:var(--bad-bg);}
+  .matrix input{accent-color:currentColor;}
+
+  .match-box{margin-left:44px; border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .match-box table{width:100%; border-collapse:collapse; font-size:14px;}
+  .match-box th{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); background:#faf9f5; padding:9px 10px; text-align:left; border-bottom:1px solid var(--line);
+  }
+  .match-box td{padding:10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .match-box tr:last-child td{border-bottom:none;}
+  .match-box td.word{color:#33313c; font-weight:600; width:150px;}
+  .match-box select{
+    width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--line); font-family:'Inter',sans-serif;
+    font-size:14px; background:#fff; color:var(--ink);
+  }
+  .match-box tr.right-row td.word{background:var(--good-bg);}
+  .match-box tr.wrong-row td.word{background:var(--bad-bg);}
+  .match-choices{margin:10px 0 0 44px; font-size:12.5px; color:var(--muted);}
+  .match-choices div{margin-bottom:2px;}
+
+  .answer-note{
+    margin:12px 0 0 44px; font-size:13px; padding:9px 12px; border-radius:8px;
+    background:var(--bad-bg); color:#8a2e26; display:none;
+  }
+  .answer-note.show{display:block;}
+  .answer-note b{color:var(--bad);}
+
+  .nav-bar{
+    position:fixed; bottom:0; left:0; right:0; z-index:40;
+    background:var(--navy); border-top:1px solid rgba(255,255,255,.1); padding:8px 0;
+  }
+  .nav-inner{ display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:nowrap; }
+  button.navbtn{
+    background:rgba(255,255,255,.08); color:#fff; border:1px solid rgba(255,255,255,.2);
+    padding:9px 14px; border-radius:99px; font-size:13px; cursor:pointer;
+    font-family:'Inter',sans-serif; font-weight:600; transition:background .15s ease;
+    flex:1 1 0; text-align:center; white-space:nowrap;
+  }
+  button.navbtn:hover{background:rgba(255,255,255,.16);}
+  button.navbtn:disabled{opacity:.35; cursor:not-allowed;}
+  button.primary{
+    background:var(--t3); color:#241a05; border:none; font-weight:700;
+    padding:9px 14px; border-radius:99px; font-size:13px; cursor:pointer;
+    font-family:'Inter',sans-serif; transition:transform .12s ease, background .15s ease;
+    flex:1 1 0; white-space:nowrap;
+  }
+  button.primary:hover{transform:translateY(-1px); background:#dc9b28;}
+  button.primary:disabled{opacity:.5; cursor:not-allowed; transform:none;}
+  button.ghost{
+    background:transparent; color:#c9c6da; border:1px solid rgba(255,255,255,.25);
+    padding:9px 12px; border-radius:99px; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+    flex:0 0 auto; white-space:nowrap;
+  }
+  button.ghost:hover{border-color:rgba(255,255,255,.5); color:#fff;}
+
+  @media (max-width:480px){
+    body{padding-bottom:70px;}
+    .nav-bar{padding:7px 0;}
+    .nav-inner{gap:5px;}
+    button.navbtn, button.primary, button.ghost{ padding:8px 6px; font-size:11.5px; }
+    button.ghost{flex:0 0 auto; padding:8px 9px;}
+  }
+
+  ::selection{background:var(--cream);}
+
+  /* Confirmation Modal */
+  .confirm-modal{
+    position:fixed; inset:0; z-index:200; background:rgba(15, 18, 30, 0.75);
+    display:none; align-items:flex-start; justify-content:center; padding:20px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    backdrop-filter: blur(4px);
+  }
+  .confirm-modal.show{ display:flex; }
+  .confirm-card{
+    background:var(--paper-card); border:1px solid var(--line); border-radius:16px;
+    padding:24px 26px; max-width:420px; width:100%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);
+    margin:auto 0; max-height:calc(100vh - 40px); overflow-y:auto; -webkit-overflow-scrolling:touch;
+    text-align:center;
+  }
+  .confirm-card h2{ font-size:20px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+  .confirm-card p{ font-size:14.5px; color:var(--muted); margin-bottom:20px; line-height:1.5; }
+  .confirm-actions{ display:flex; gap:10px; justify-content:center; }
+  .confirm-actions button{ flex:1; padding:10px 16px; font-size:14px; border-radius:99px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
+  .btn-cancel{ background:var(--paper); border:1px solid var(--line); color:var(--ink); }
+  .btn-cancel:hover{ background:#e8e5dc; }
+  .btn-confirm{ background:var(--good); border:none; color:#fff; }
+  .btn-confirm:hover{ background:#198256; }
+
+
+  .passage p.plabel{text-indent:0; margin:14px 0 6px;}
+  .passage ul, .passage ol{margin:0 0 11px; padding-left:28px; color:#33313c;}
+  .passage li{margin-bottom:5px;}
+
+.essay-box{margin-left:44px;width:calc(100% - 44px);padding:10px 12px;border:1px solid var(--line);border-radius:8px;font:15px/1.5 'Inter',sans-serif;resize:vertical;}
+  @media (max-width:640px){.essay-box{margin-left:0;width:100%;}}
+</style>
+</head>
+<body>
+
+<div id="confirmModal" class="confirm-modal">
+  <div class="confirm-card">
+    <h2 id="confirmTitle">Submit Answers</h2>
+    <p id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button type="button" class="btn-cancel" id="cancelSubmitBtn">Cancel</button>
+      <button type="button" class="btn-confirm" id="confirmSubmitBtn">Yes, Submit</button>
+    </div>
+  </div>
+</div>
+
+<div class="progress-shell">
+  <div class="wrap progress-inner">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 40 answered</div>
+    <button type="button" class="palette-toggle" id="paletteToggleBtn"><span>Show all numbers</span></button>
+    <button type="button" class="hide-bar-btn hide-bar-row" id="hideBarBtn"><span>Hide Bar</span></button>
+  </div>
+  <div class="wrap">
+    <div class="palette-panel" id="palettePanel">
+      <div class="palette-legend">
+        <span><span class="legend-dot" style="background:#fff;border:1.5px solid var(--line);"></span>Not answered</span>
+        <span><span class="legend-dot" style="background:#eef0fb;border:1.5px solid #c9cdf0;"></span>Answered</span>
+      </div>
+      <div class="palette-grid" id="paletteGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="resultsBox" class="results">
+    <div class="score-big" id="scoreBig">0</div>
+    <div class="score-sub" id="scoreSub">Final Score (0-100)</div>
+    <div class="score-msg" id="scoreMsg"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+</div>
+
+<div class="nav-bar">
+  <div class="wrap nav-inner">
+    <button class="ghost" id="resetBtn" type="button" style="display:none;">Reset</button>
+    <button class="navbtn" id="prevBtn" type="button">&larr; Prev</button>
+    <button class="navbtn" id="nextBtn" type="button">Next &rarr;</button>
+    <button class="primary" id="submitBtn" type="button">Submit</button>
+  </div>
+</div>
+
+<script>
+/* Latihan PSAS 1 B. Inggris TL Kelas X (Narrative Text): 7 teks x 5 PG + 5 uraian (uraian tidak dinilai otomatis). */
+const DATA = [
+ {
+  "tag": "Legend",
+  "color": "#7c5cd6",
+  "bg": "#f2eefb",
+  "meta": "Text 1 of 7 · Narrative Text (Legend – Korea) · Questions 1–5",
+  "title": "The Legend of the Sun and the Moon",
+  "passage": [
+   "Long ago in Korea, a poor mother lived with her son and her daughter. Every day, she worked in a rich man’s house and came home late at night with some rice cakes. One evening, she was walking home through the mountains when a hungry tiger stopped her.",
+   "The tiger took all the rice cakes. Then he went to the mother’s house and pretended to be her. “Children, open the door,” he said. But the girl saw a big, hairy hand and knew that he was not her mother. The children ran out of the back door and climbed a tall tree.",
+   "The tiger followed them, so the children prayed, “Heaven, please help us!” A strong rope came down from the sky, and they climbed up. When the tiger prayed, his rope was old and broke, and he fell down. The brother became the Sun, and the sister became the Moon. Since then, they have watched over the world day and night."
+  ],
+  "questions": [
+   {
+    "id": "q1",
+    "no": 1,
+    "prompt": "Why did the mother come home late at night?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "She was lost in the mountains."
+     },
+     {
+      "k": "B",
+      "t": "She sold rice cakes in the market."
+     },
+     {
+      "k": "C",
+      "t": "She worked in a rich man’s house."
+     },
+     {
+      "k": "D",
+      "t": "She visited a sick friend."
+     },
+     {
+      "k": "E",
+      "t": "She was hiding from a tiger."
+     }
+    ],
+    "correct": "C"
+   },
+   {
+    "id": "q2",
+    "no": 2,
+    "prompt": "What did the tiger do after he took the rice cakes?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He went to the children’s house and pretended to be their mother."
+     },
+     {
+      "k": "B",
+      "t": "He gave them to the hungry children."
+     },
+     {
+      "k": "C",
+      "t": "He ran back to his cave."
+     },
+     {
+      "k": "D",
+      "t": "He shared them with other animals."
+     },
+     {
+      "k": "E",
+      "t": "He climbed up a tall tree."
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q3",
+    "no": 3,
+    "prompt": "How did the girl know that the tiger was not her mother?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "She heard him roaring loudly."
+     },
+     {
+      "k": "B",
+      "t": "He came to the house in the morning."
+     },
+     {
+      "k": "C",
+      "t": "He did not know the children’s names."
+     },
+     {
+      "k": "D",
+      "t": "He forgot to bring the rice cakes."
+     },
+     {
+      "k": "E",
+      "t": "She saw his big, hairy hand."
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q4",
+    "no": 4,
+    "prompt": "“But the girl saw a big, hairy hand…” (paragraph 2)<br>The word “hairy” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "covered with a lot of mud"
+     },
+     {
+      "k": "B",
+      "t": "covered with a lot of hair"
+     },
+     {
+      "k": "C",
+      "t": "very small and soft"
+     },
+     {
+      "k": "D",
+      "t": "very hot and dry"
+     },
+     {
+      "k": "E",
+      "t": "very old and weak"
+     }
+    ],
+    "correct": "B"
+   },
+   {
+    "id": "q5",
+    "no": 5,
+    "prompt": "What lesson can we learn from the story?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "We should walk alone in the mountains at night."
+     },
+     {
+      "k": "B",
+      "t": "We should open the door to strangers."
+     },
+     {
+      "k": "C",
+      "t": "We should never ask anyone for help."
+     },
+     {
+      "k": "D",
+      "t": "We should stay calm and think clearly when we are in danger."
+     },
+     {
+      "k": "E",
+      "t": "We should work only for rich people."
+     }
+    ],
+    "correct": "D"
+   }
+  ]
+ },
+ {
+  "tag": "Legend",
+  "color": "#0e9488",
+  "bg": "#e9f7f5",
+  "meta": "Text 2 of 7 · Narrative Text (Legend – Greece) · Questions 6–10",
+  "title": "The Legend of King Midas",
+  "passage": [
+   "Long ago in Greece, there lived a king named Midas. He was very rich, but he always wanted more gold. One day, he helped a friend of the god Dionysus. The god was happy and said, “I will give you one wish.” Midas answered, “I want everything I touch to turn into gold!”",
+   "The next morning, Midas touched a table, and it became gold. He picked a flower and an apple, and they turned into gold too. He was so happy! But when he tried to eat his breakfast, the bread became hard gold in his hand. Then his little daughter ran to hug him, and she became a golden statue.",
+   "Midas cried and begged the god to take his wish back. Dionysus told him to wash in a river. When Midas did it, the magic went into the water, and his daughter came back to life. From that day, Midas learned that gold was not the most important thing in life."
+  ],
+  "questions": [
+   {
+    "id": "q6",
+    "no": 6,
+    "prompt": "What did King Midas always want?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "A bigger castle."
+     },
+     {
+      "k": "B",
+      "t": "More gold."
+     },
+     {
+      "k": "C",
+      "t": "A new crown."
+     },
+     {
+      "k": "D",
+      "t": "More friends."
+     },
+     {
+      "k": "E",
+      "t": "A long life."
+     }
+    ],
+    "correct": "B"
+   },
+   {
+    "id": "q7",
+    "no": 7,
+    "prompt": "What was Midas’s wish?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "To become the strongest king in Greece."
+     },
+     {
+      "k": "B",
+      "t": "To live forever."
+     },
+     {
+      "k": "C",
+      "t": "To fly like a bird."
+     },
+     {
+      "k": "D",
+      "t": "That everything he touched would turn into gold."
+     },
+     {
+      "k": "E",
+      "t": "To have a hundred servants."
+     }
+    ],
+    "correct": "D"
+   },
+   {
+    "id": "q8",
+    "no": 8,
+    "prompt": "Why was Midas unhappy at breakfast?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "The bread turned into hard gold in his hand."
+     },
+     {
+      "k": "B",
+      "t": "The food was too cold."
+     },
+     {
+      "k": "C",
+      "t": "The servants did not come."
+     },
+     {
+      "k": "D",
+      "t": "The table broke into pieces."
+     },
+     {
+      "k": "E",
+      "t": "His daughter ate everything."
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q9",
+    "no": 9,
+    "prompt": "“Midas cried and begged the god to take his wish back.” (paragraph 3)<br>The word “begged” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "shouted angrily at someone"
+     },
+     {
+      "k": "B",
+      "t": "laughed happily with someone"
+     },
+     {
+      "k": "C",
+      "t": "gave a strong order to someone"
+     },
+     {
+      "k": "D",
+      "t": "refused to listen to someone"
+     },
+     {
+      "k": "E",
+      "t": "asked again and again because he really needed help"
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q10",
+    "no": 10,
+    "prompt": "What lesson can we learn from the story?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "We should wish for as much gold as possible."
+     },
+     {
+      "k": "B",
+      "t": "We should never wash in a river."
+     },
+     {
+      "k": "C",
+      "t": "Being greedy can bring trouble, and family is more valuable than gold."
+     },
+     {
+      "k": "D",
+      "t": "We should make a new wish every day."
+     },
+     {
+      "k": "E",
+      "t": "We should avoid talking to gods."
+     }
+    ],
+    "correct": "C"
+   }
+  ]
+ },
+ {
+  "tag": "Legend",
+  "color": "#c98a1f",
+  "bg": "#fbf1de",
+  "meta": "Text 3 of 7 · Narrative Text (Legend – England) · Questions 11–15",
+  "title": "The Legend of King Arthur",
+  "passage": [
+   "Long ago in England, the old king died and left no son. Nobody knew who would become the next king. One morning, the people found a big stone in front of a church. In the stone, there was a sword with golden words: “Whoever pulls this sword out of the stone is the true king of England.”",
+   "Many strong knights tried to pull the sword, but none of them could move it. A young boy named Arthur was helping his brother, Sir Kay, at a tournament. Sir Kay forgot his sword, so Arthur ran to find another one. He saw the sword in the stone and pulled it out easily.",
+   "At first, nobody believed it. Arthur put the sword back and pulled it out again in front of everyone. The knights and the people bowed to him. They understood that the kind and brave boy was the true king. Arthur ruled England wisely for many years."
+  ],
+  "questions": [
+   {
+    "id": "q11",
+    "no": 11,
+    "prompt": "Where was the sword?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "In a deep cave under the castle."
+     },
+     {
+      "k": "B",
+      "t": "In a lake near the forest."
+     },
+     {
+      "k": "C",
+      "t": "In the old king’s palace."
+     },
+     {
+      "k": "D",
+      "t": "At the top of a high mountain."
+     },
+     {
+      "k": "E",
+      "t": "In a big stone in front of a church."
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q12",
+    "no": 12,
+    "prompt": "Why did Arthur pull the sword out of the stone?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He wanted to become the king."
+     },
+     {
+      "k": "B",
+      "t": "He wanted to win the tournament."
+     },
+     {
+      "k": "C",
+      "t": "He needed a sword for his brother."
+     },
+     {
+      "k": "D",
+      "t": "A wizard told him to do it."
+     },
+     {
+      "k": "E",
+      "t": "He wanted to sell it for money."
+     }
+    ],
+    "correct": "C"
+   },
+   {
+    "id": "q13",
+    "no": 13,
+    "prompt": "What happened when the strong knights tried to pull the sword?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "They pulled it out easily."
+     },
+     {
+      "k": "B",
+      "t": "They could not move it."
+     },
+     {
+      "k": "C",
+      "t": "They broke the big stone."
+     },
+     {
+      "k": "D",
+      "t": "They gave it to Sir Kay."
+     },
+     {
+      "k": "E",
+      "t": "They threw it into the lake."
+     }
+    ],
+    "correct": "B"
+   },
+   {
+    "id": "q14",
+    "no": 14,
+    "prompt": "“Arthur ruled England wisely for many years.” (paragraph 3)<br>The word “wisely” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "in a smart and careful way"
+     },
+     {
+      "k": "B",
+      "t": "in a cruel and angry way"
+     },
+     {
+      "k": "C",
+      "t": "in a slow and lazy way"
+     },
+     {
+      "k": "D",
+      "t": "in a noisy and funny way"
+     },
+     {
+      "k": "E",
+      "t": "in a poor and sad way"
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q15",
+    "no": 15,
+    "prompt": "Why did the people finally believe that Arthur was the true king?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He had many strong knights with him."
+     },
+     {
+      "k": "B",
+      "t": "He was the old king’s only son."
+     },
+     {
+      "k": "C",
+      "t": "He was a rich boy from a big castle."
+     },
+     {
+      "k": "D",
+      "t": "He pulled the sword out again in front of everyone."
+     },
+     {
+      "k": "E",
+      "t": "He won the tournament in the town."
+     }
+    ],
+    "correct": "D"
+   }
+  ]
+ },
+ {
+  "tag": "Fairy Tale",
+  "color": "#d1477a",
+  "bg": "#fbeaf1",
+  "meta": "Text 4 of 7 · Narrative Text (Fairy Tale) · Questions 16–20",
+  "title": "The Ugly Duckling",
+  "passage": [
+   "One spring, a mother duck had five eggs. Four eggs hatched into small yellow ducklings, but the last one was big and grey. The other animals laughed at him. “You are so ugly!” they said. The poor duckling felt very sad, so he ran away from the farm.",
+   "All summer and autumn, he lived alone by a lake. In winter, it was very cold and he almost froze, but a kind farmer took him home. However, the duckling was afraid of the farmer’s noisy children, so he escaped again and hid in the reeds until spring.",
+   "In spring, the duckling saw three beautiful white birds on the lake. He bent his head, ready for them to laugh at him. Then he saw his reflection in the water. He was not a duckling anymore. He was a graceful white swan! The other swans welcomed him, and he was happy at last."
+  ],
+  "questions": [
+   {
+    "id": "q16",
+    "no": 16,
+    "prompt": "Why did the other animals laugh at the little duckling?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "Because he was big and grey."
+     },
+     {
+      "k": "B",
+      "t": "Because he could not swim."
+     },
+     {
+      "k": "C",
+      "t": "Because he was afraid of the farm."
+     },
+     {
+      "k": "D",
+      "t": "Because he ate too much food."
+     },
+     {
+      "k": "E",
+      "t": "Because he never talked to anyone."
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q17",
+    "no": 17,
+    "prompt": "Why did the duckling run away from the farm?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He wanted to find his father."
+     },
+     {
+      "k": "B",
+      "t": "He was looking for some food."
+     },
+     {
+      "k": "C",
+      "t": "The farmer was very angry with him."
+     },
+     {
+      "k": "D",
+      "t": "His mother did not want him anymore."
+     },
+     {
+      "k": "E",
+      "t": "He felt sad because everyone laughed at him."
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q18",
+    "no": 18,
+    "prompt": "What did the farmer do in winter?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He built a warm nest by the lake."
+     },
+     {
+      "k": "B",
+      "t": "He gave the duckling to the children."
+     },
+     {
+      "k": "C",
+      "t": "He took the duckling to the market."
+     },
+     {
+      "k": "D",
+      "t": "He took the duckling home."
+     },
+     {
+      "k": "E",
+      "t": "He sent the duckling back to his mother."
+     }
+    ],
+    "correct": "D"
+   },
+   {
+    "id": "q19",
+    "no": 19,
+    "prompt": "“He was a graceful white swan!” (paragraph 3)<br>The word “graceful” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "loud and clumsy"
+     },
+     {
+      "k": "B",
+      "t": "small and weak"
+     },
+     {
+      "k": "C",
+      "t": "moving in a smooth and beautiful way"
+     },
+     {
+      "k": "D",
+      "t": "angry and noisy"
+     },
+     {
+      "k": "E",
+      "t": "old and tired"
+     }
+    ],
+    "correct": "C"
+   },
+   {
+    "id": "q20",
+    "no": 20,
+    "prompt": "What lesson can we learn from the story?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "We should always run away from problems."
+     },
+     {
+      "k": "B",
+      "t": "We should not judge other people by how they look."
+     },
+     {
+      "k": "C",
+      "t": "We should only live near a lake."
+     },
+     {
+      "k": "D",
+      "t": "We should laugh at weak animals."
+     },
+     {
+      "k": "E",
+      "t": "We should never go back to our home."
+     }
+    ],
+    "correct": "B"
+   }
+  ]
+ },
+ {
+  "tag": "Fairy Tale",
+  "color": "#7c5cd6",
+  "bg": "#f2eefb",
+  "meta": "Text 5 of 7 · Narrative Text (Fairy Tale) · Questions 21–25",
+  "title": "The Emperor’s New Clothes",
+  "passage": [
+   "Once upon a time, there was an emperor who loved new clothes more than anything. He spent all his money on fine clothes. One day, two cheats came to the city. They said, “We can make magic clothes. Only clever people can see them. Stupid people cannot.”",
+   "The emperor gave them a lot of gold. The cheats pretended to work day and night, but there was no cloth at all. The emperor sent his minister to check. The minister saw nothing, but he was afraid to look stupid, so he said, “The cloth is beautiful!” Finally, the emperor put on the “clothes” and walked through the city in a parade.",
+   "All the people said, “How wonderful the emperor’s clothes are!” They were afraid to be called stupid. Then a small child shouted, “But he isn’t wearing anything!” Soon everyone laughed. The emperor felt embarrassed, but he kept walking proudly."
+  ],
+  "questions": [
+   {
+    "id": "q21",
+    "no": 21,
+    "prompt": "What did the emperor love most?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "Gold and jewels."
+     },
+     {
+      "k": "B",
+      "t": "Long parades."
+     },
+     {
+      "k": "C",
+      "t": "Delicious food."
+     },
+     {
+      "k": "D",
+      "t": "New clothes."
+     },
+     {
+      "k": "E",
+      "t": "Beautiful castles."
+     }
+    ],
+    "correct": "D"
+   },
+   {
+    "id": "q22",
+    "no": 22,
+    "prompt": "What did the two cheats say about the magic clothes?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "They could make the emperor fly."
+     },
+     {
+      "k": "B",
+      "t": "Only clever people could see them."
+     },
+     {
+      "k": "C",
+      "t": "They were made of pure gold."
+     },
+     {
+      "k": "D",
+      "t": "Only children could wear them."
+     },
+     {
+      "k": "E",
+      "t": "They were too expensive to buy."
+     }
+    ],
+    "correct": "B"
+   },
+   {
+    "id": "q23",
+    "no": 23,
+    "prompt": "Why did the minister say that the cloth was beautiful?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He really saw the beautiful cloth."
+     },
+     {
+      "k": "B",
+      "t": "He wanted to buy the cloth himself."
+     },
+     {
+      "k": "C",
+      "t": "He was afraid people would think he was stupid."
+     },
+     {
+      "k": "D",
+      "t": "The cheats gave him some gold."
+     },
+     {
+      "k": "E",
+      "t": "The emperor asked him to lie."
+     }
+    ],
+    "correct": "C"
+   },
+   {
+    "id": "q24",
+    "no": 24,
+    "prompt": "“The cheats pretended to work day and night.” (paragraph 2)<br>The word “pretended” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "acted as if something was real when it was not"
+     },
+     {
+      "k": "B",
+      "t": "worked very hard and carefully"
+     },
+     {
+      "k": "C",
+      "t": "decided to stop working"
+     },
+     {
+      "k": "D",
+      "t": "wanted to help the emperor"
+     },
+     {
+      "k": "E",
+      "t": "asked someone else to work for them"
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q25",
+    "no": 25,
+    "prompt": "What lesson can we learn from the story?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "We should spend all our money on clothes."
+     },
+     {
+      "k": "B",
+      "t": "We should always trust new friends."
+     },
+     {
+      "k": "C",
+      "t": "We should follow what other people say."
+     },
+     {
+      "k": "D",
+      "t": "We should never walk in a parade."
+     },
+     {
+      "k": "E",
+      "t": "We should be honest and brave to tell the truth."
+     }
+    ],
+    "correct": "E"
+   }
+  ]
+ },
+ {
+  "tag": "Fantasy",
+  "color": "#0e9488",
+  "bg": "#e9f7f5",
+  "meta": "Text 6 of 7 · Narrative Text (Fantasy) · Questions 26–30",
+  "title": "The Moonlight Fox",
+  "passage": [
+   "In a forest called Aranel, a boy named Rio lived with his grandfather. Every night, the forest glowed with soft silver light. The villagers said it came from a magic fox that protected the forest. They told Rio never to enter the forest at night because it was dangerous.",
+   "One night, Rio’s grandfather became very sick. Only a blue flower from the heart of the forest could cure him. Rio was scared, but he took a lantern and entered the forest. A silver fox appeared and led him through the dark trees. At the end of the path, Rio found the blue flower beside a small pond.",
+   "Rio picked the flower and ran home. His grandfather drank the tea made from it and became healthy again. The next morning, Rio went back to the forest to say thank you, but the fox had gone. Only a small silver hair was lying on the grass. Rio kept it with him forever."
+  ],
+  "questions": [
+   {
+    "id": "q26",
+    "no": 26,
+    "prompt": "What did the villagers believe about the light in the forest?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "It came from the lanterns of the villagers."
+     },
+     {
+      "k": "B",
+      "t": "It came from a big silver lake."
+     },
+     {
+      "k": "C",
+      "t": "It came from a magic fox that protected the forest."
+     },
+     {
+      "k": "D",
+      "t": "It came from the moon every night."
+     },
+     {
+      "k": "E",
+      "t": "It came from Rio’s grandfather."
+     }
+    ],
+    "correct": "C"
+   },
+   {
+    "id": "q27",
+    "no": 27,
+    "prompt": "Why did Rio enter the forest at night?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He wanted to catch the magic fox."
+     },
+     {
+      "k": "B",
+      "t": "He wanted to see the silver light."
+     },
+     {
+      "k": "C",
+      "t": "He was lost on his way home."
+     },
+     {
+      "k": "D",
+      "t": "The villagers asked him to find a lantern."
+     },
+     {
+      "k": "E",
+      "t": "He needed a blue flower to cure his grandfather."
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q28",
+    "no": 28,
+    "prompt": "Who helped Rio in the forest?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "A silver fox."
+     },
+     {
+      "k": "B",
+      "t": "His grandfather."
+     },
+     {
+      "k": "C",
+      "t": "A kind villager."
+     },
+     {
+      "k": "D",
+      "t": "A little blue bird."
+     },
+     {
+      "k": "E",
+      "t": "An old woman."
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q29",
+    "no": 29,
+    "prompt": "“Only a blue flower from the heart of the forest could cure him.” (paragraph 2)<br>The word “cure” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "make someone angry"
+     },
+     {
+      "k": "B",
+      "t": "make someone sleepy"
+     },
+     {
+      "k": "C",
+      "t": "give someone food"
+     },
+     {
+      "k": "D",
+      "t": "make someone well again"
+     },
+     {
+      "k": "E",
+      "t": "take someone away"
+     }
+    ],
+    "correct": "D"
+   },
+   {
+    "id": "q30",
+    "no": 30,
+    "prompt": "What can we infer about Rio?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "He was lazy and did not obey anyone."
+     },
+     {
+      "k": "B",
+      "t": "He was brave and loved his grandfather."
+     },
+     {
+      "k": "C",
+      "t": "He was greedy and wanted to be rich."
+     },
+     {
+      "k": "D",
+      "t": "He was lonely and wanted a new pet."
+     },
+     {
+      "k": "E",
+      "t": "He was careless and often lost things."
+     }
+    ],
+    "correct": "B"
+   }
+  ]
+ },
+ {
+  "tag": "Legend",
+  "color": "#c98a1f",
+  "bg": "#fbf1de",
+  "meta": "Text 7 of 7 · Narrative Text (Legend – Philippines) · Questions 31–35",
+  "title": "The Legend of the Pineapple",
+  "passage": [
+   "Long ago in the Philippines, there lived a girl named Pina and her mother. Pina was lazy. She always asked her mother to do everything, even when she could do it herself. Her mother was patient, but she often felt tired.",
+   "One day, her mother was sick in bed and asked Pina to cook lunch. Pina did not want to work, so she asked again and again, “Mother, where is the spoon? Where is the salt? Where is the pot?” Her mother became very angry and said, “I wish you had a thousand eyes so you could find things by yourself!”",
+   "Suddenly, Pina disappeared. In the place where she had been standing, a strange plant with a big fruit grew. The fruit was covered with many “eyes”. Her mother cried and understood that Pina was gone. Since then, people have called this fruit “pineapple”."
+  ],
+  "questions": [
+   {
+    "id": "q31",
+    "no": 31,
+    "prompt": "What was Pina’s bad habit?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "She often lied to her mother."
+     },
+     {
+      "k": "B",
+      "t": "She was lazy and always asked her mother for help."
+     },
+     {
+      "k": "C",
+      "t": "She was rude to her neighbors."
+     },
+     {
+      "k": "D",
+      "t": "She liked to run away from home."
+     },
+     {
+      "k": "E",
+      "t": "She spent her money carelessly."
+     }
+    ],
+    "correct": "B"
+   },
+   {
+    "id": "q32",
+    "no": 32,
+    "prompt": "What did Pina’s mother ask her to do when she was sick?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "To cook lunch."
+     },
+     {
+      "k": "B",
+      "t": "To buy some medicine."
+     },
+     {
+      "k": "C",
+      "t": "To clean the house."
+     },
+     {
+      "k": "D",
+      "t": "To call a doctor."
+     },
+     {
+      "k": "E",
+      "t": "To find a spoon in the garden."
+     }
+    ],
+    "correct": "A"
+   },
+   {
+    "id": "q33",
+    "no": 33,
+    "prompt": "Why did Pina’s mother become very angry?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "Pina broke the pot in the kitchen."
+     },
+     {
+      "k": "B",
+      "t": "Pina ate all of the lunch alone."
+     },
+     {
+      "k": "C",
+      "t": "Pina played outside all day long."
+     },
+     {
+      "k": "D",
+      "t": "Pina kept asking where things were instead of helping."
+     },
+     {
+      "k": "E",
+      "t": "Pina did not want to go to school."
+     }
+    ],
+    "correct": "D"
+   },
+   {
+    "id": "q34",
+    "no": 34,
+    "prompt": "“Her mother was patient, but she often felt tired.” (paragraph 1)<br>The word “patient” means …",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "always angry and noisy"
+     },
+     {
+      "k": "B",
+      "t": "very rich and busy"
+     },
+     {
+      "k": "C",
+      "t": "weak and sick"
+     },
+     {
+      "k": "D",
+      "t": "quick and clever"
+     },
+     {
+      "k": "E",
+      "t": "able to wait calmly without getting angry"
+     }
+    ],
+    "correct": "E"
+   },
+   {
+    "id": "q35",
+    "no": 35,
+    "prompt": "What lesson can we learn from the story?",
+    "type": "single",
+    "options": [
+     {
+      "k": "A",
+      "t": "We should not eat strange fruit."
+     },
+     {
+      "k": "B",
+      "t": "We should always ask others for help."
+     },
+     {
+      "k": "C",
+      "t": "We should be independent and help our parents."
+     },
+     {
+      "k": "D",
+      "t": "We should play before we work."
+     },
+     {
+      "k": "E",
+      "t": "We should live far from our mothers."
+     }
+    ],
+    "correct": "C"
+   }
+  ]
+ },
+ {
+  "tag": "Essay",
+  "color": "#d1477a",
+  "bg": "#fbeaf1",
+  "meta": "Part II · Answer the following questions correctly!",
+  "title": "Jack and the Magic Beans",
+  "passage": [
+   "Once upon a time, a poor boy named Jack lived with his mother. They had only one cow. One day, his mother asked him to sell the cow in the market. On the way, Jack met an old man who offered him five magic beans for the cow. Jack agreed and went home happily.",
+   "His mother was very angry and threw the beans out of the window. The next morning, a giant beanstalk had grown in the garden, and it reached the clouds. Jack climbed it and found a huge castle where a giant lived. While the giant was sleeping, Jack took a bag of gold coins and carried it home.",
+   "Jack climbed the beanstalk again and took a hen that laid golden eggs. This time, the giant woke up and chased him. Jack ran down quickly and cut the beanstalk with an axe. The giant fell down, and Jack and his mother were never poor again."
+  ],
+  "questions": [
+   {
+    "id": "q36",
+    "no": 36,
+    "prompt": "Who did Jack meet on the way to the market?",
+    "type": "essay",
+    "model": "Jack met an old man who offered him five magic beans for the cow."
+   },
+   {
+    "id": "q37",
+    "no": 37,
+    "prompt": "What did Jack’s mother do with the magic beans?",
+    "type": "essay",
+    "model": "She was angry and threw the beans out of the window."
+   },
+   {
+    "id": "q38",
+    "no": 38,
+    "prompt": "What did Jack find at the top of the beanstalk?",
+    "type": "essay",
+    "model": "He found a huge castle where a giant lived."
+   },
+   {
+    "id": "q39",
+    "no": 39,
+    "prompt": "What happened to the giant at the end of the story?",
+    "type": "essay",
+    "model": "The giant fell down when Jack cut the beanstalk."
+   },
+   {
+    "id": "q40",
+    "no": 40,
+    "prompt": "Why do you think Jack cut down the beanstalk?",
+    "type": "essay",
+    "model": "Because the giant was chasing him, and Jack wanted to protect himself and his mother. (Accept other logical answers.)"
+   }
+  ]
+ }
+];
+
+const STORAGE_KEY = 'latihan_psas1_bing_tl_narrative_v1';
+
+let FLAT = [];
+let answers = {};
+let submitted = false;
+let currentIndex = 0;
+let paletteOpen = false;
+let pinEnabled = false;
+
+function buildFlat(){
+  FLAT = [];
+  DATA.forEach(section=>{
+    section.questions.forEach(q=>{
+      FLAT.push(Object.assign({}, q, {_section:section}));
+    });
+  });
+}
+
+function isAnsweredQ(q){
+  if(q.type==='matrix'){
+    const a = answers[q.id]||{};
+    return Object.keys(a).length===q.statements.length;
+  }
+  if(q.type==='essay') return !!((answers[q.id]||'').trim());
+  if(q.type==='multi') return !!(answers[q.id] && answers[q.id].length>0);
+  return !!answers[q.id];
+}
+
+function arraysEqual(a,b){
+  if(a.length!==b.length) return false;
+  const sa=[...a].sort(), sb=[...b].sort();
+  return sa.every((v,i)=>v===sb[i]);
+}
+
+function computeResult(q){
+  if(q.type==='essay') return {earned:0,total:0};
+  if(q.type==='single'){
+    const ok = answers[q.id]===q.correct;
+    return {earned: ok?1:0, total:1};
+  }
+  if(q.type==='multi'){
+    const ok = arraysEqual(answers[q.id]||[], q.correct);
+    return {earned: ok?1:0, total:1};
+  }
+  const chosen = answers[q.id]||{};
+  let earned = 0;
+  q.statements.forEach((s,i)=>{ if(chosen[i]===s.correct) earned++; });
+  return {earned, total:q.statements.length};
+}
+
+/* ---------- render soal ---------- */
+const stage = document.getElementById('stage');
+
+function applyPinLayout(){
+  const card = stage.querySelector('.q-card');
+  const passageEl = stage.querySelector('.passage');
+  if(pinEnabled){
+    stage.classList.add('pin-mode');
+    const navH = document.querySelector('.nav-bar').offsetHeight;
+    if(card) card.style.bottom = navH+'px';
+    requestAnimationFrame(()=>{
+      if(card && passageEl) passageEl.style.paddingBottom = (card.offsetHeight + navH + 20)+'px';
+    });
+  } else {
+    stage.classList.remove('pin-mode');
+    if(card) card.style.bottom = '';
+    if(passageEl) passageEl.style.paddingBottom = '';
+  }
+}
+window.addEventListener('resize', ()=>{ if(pinEnabled) applyPinLayout(); });
+
+function renderStage(){
+  const q = FLAT[currentIndex];
+  const section = q._section;
+  stage.innerHTML = '';
+  stage.style.setProperty('--sc', section.color);
+
+  const head = document.createElement('div');
+  head.className='stage-head';
+  head.innerHTML = `
+    <span class="genre-tag" style="background:${section.bg}; color:${section.color};">${section.tag}</span>
+    <span class="stage-index">Question ${currentIndex+1} of ${FLAT.length}</span>
+  `;
+  stage.appendChild(head);
+
+  const passage = document.createElement('div');
+  passage.className='passage';
+  passage.style.borderLeftColor = section.color;
+  passage.innerHTML = `
+    <div class="meta">${section.meta}</div>
+    <h3>${section.title}</h3>
+    ${section.passage.map(p=> p.charAt(0)==='<' ? p : `<p>${p}</p>`).join('')}
+  `;
+  stage.appendChild(passage);
+
+  const card = document.createElement('div');
+  card.className='q-card';
+  card.id='card-'+q.id;
+
+  const top = document.createElement('div');
+  top.className='q-top';
+  top.innerHTML = `
+    <div class="q-num" style="background:${section.bg}; color:${section.color};">${currentIndex+1}</div>
+    <div class="q-prompt">${q.prompt}</div>
+    <button type="button" class="pin-toggle ${pinEnabled?'active':''}" id="pinToggleBtn">
+      <span class="pin-ic">&#128204;</span><span>${pinEnabled ? 'Pinned' : 'Pin'}</span>
+    </button>
+  `;
+  top.querySelector('#pinToggleBtn').addEventListener('click', ()=>{
+    pinEnabled = !pinEnabled;
+    applyPinLayout();
+    const btn = document.getElementById('pinToggleBtn');
+    btn.classList.toggle('active', pinEnabled);
+    btn.innerHTML = `<span class="pin-ic">&#128204;</span><span>${pinEnabled ? 'Pinned' : 'Pin'}</span>`;
+  });
+  card.appendChild(top);
+
+  if(q.hint){
+    const hint = document.createElement('div');
+    hint.className='q-hint';
+    hint.textContent = q.hint;
+    card.appendChild(hint);
+  }
+
+  if(q.type==='single' || q.type==='multi'){
+    const multi = q.type==='multi';
+    const opts = document.createElement('div');
+    opts.className='options';
+    q.options.forEach(o=>{
+      const lbl = document.createElement('label');
+      lbl.className='opt';
+      lbl.dataset.key=o.k;
+      const isChecked = multi ? (answers[q.id]||[]).includes(o.k) : answers[q.id]===o.k;
+      lbl.innerHTML = `<input type="${multi?'checkbox':'radio'}" name="${q.id}" value="${o.k}" ${isChecked?'checked':''} ${submitted?'disabled':''}> <span class="opt-text-wrap"><span><b>${o.k}.</b> ${o.t}</span></span>`;
+      if(isChecked && !submitted) lbl.classList.add('selected');
+      if(submitted) lbl.classList.add('locked');
+      lbl.querySelector('input').addEventListener('change', ()=>{
+        if(multi){
+          const cur = new Set(answers[q.id]||[]);
+          if(lbl.querySelector('input').checked) cur.add(o.k); else cur.delete(o.k);
+          answers[q.id]=Array.from(cur).sort();
+        } else {
+          answers[q.id]=o.k;
+        }
+        card.querySelectorAll('.opt').forEach(l=>{
+          const key = l.dataset.key;
+          const sel = multi ? (answers[q.id]||[]).includes(key) : answers[q.id]===key;
+          l.classList.toggle('selected', !!sel);
+        });
+        updateProgress(); renderPalette(); saveState();
+      });
+      opts.appendChild(lbl);
+    });
+    card.appendChild(opts);
+  }
+
+  if(q.type==='essay'){
+    const ta = document.createElement('textarea');
+    ta.className='essay-box'; ta.rows=4; ta.placeholder='Write your answer here...';
+    ta.value = answers[q.id]||''; ta.disabled = submitted;
+    ta.addEventListener('input', ()=>{ answers[q.id]=ta.value; updateProgress(); renderPalette(); saveState(); });
+    card.appendChild(ta);
+    if(submitted){
+      const note = document.createElement('div');
+      note.className='answer-note show';
+      note.style.background='var(--good-bg)'; note.style.color='#14573b';
+      note.innerHTML = '<b style="color:var(--good)">Model answer:</b> '+q.model;
+      card.appendChild(note);
+    }
+  }
+
+  if(q.type==='matrix'){
+    const box = document.createElement('div');
+    box.className='matrix';
+    const table = document.createElement('table');
+    table.innerHTML = `<thead><tr><th>Statement</th><th>${q.cols[0]}</th><th>${q.cols[1]}</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+    q.statements.forEach((s,i)=>{
+      const tr = document.createElement('tr');
+      const chosenVal = (answers[q.id]||{})[i];
+      const dis = submitted ? 'disabled' : '';
+      tr.innerHTML = `
+        <td class="stmt">${i+1}. ${s.t}</td>
+        <td class="pick"><input type="radio" name="${q.id}-${i}" value="${q.cols[0]}" ${chosenVal===q.cols[0]?'checked':''} ${dis}></td>
+        <td class="pick"><input type="radio" name="${q.id}-${i}" value="${q.cols[1]}" ${chosenVal===q.cols[1]?'checked':''} ${dis}></td>
+      `;
+      tr.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('change', ()=>{
+          if(!answers[q.id]) answers[q.id]={};
+          answers[q.id][i]=inp.value;
+          updateProgress(); renderPalette(); saveState();
+        });
+      });
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    box.appendChild(table);
+    card.appendChild(box);
+  }
+
+  stage.appendChild(card);
+  applyPinLayout();
+  updateNavButtons();
+}
+
+/* ---------- palette & progress ---------- */
+const paletteGrid = document.getElementById('paletteGrid');
+function renderPalette(){
+  paletteGrid.innerHTML='';
+  FLAT.forEach((q,i)=>{
+    const btn = document.createElement('button');
+    btn.type='button';
+    btn.className='pnum';
+    btn.textContent = i+1;
+    if(i===currentIndex) btn.classList.add('pn-current');
+    if(isAnsweredQ(q)) btn.classList.add('pn-answered');
+    btn.addEventListener('click', ()=>{
+      currentIndex = i;
+      renderStage(); renderPalette(); saveState();
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+    paletteGrid.appendChild(btn);
+  });
+}
+
+document.getElementById('paletteToggleBtn').addEventListener('click', ()=>{
+  paletteOpen = !paletteOpen;
+  document.getElementById('palettePanel').classList.toggle('open', paletteOpen);
+});
+
+document.getElementById('hideBarBtn').addEventListener('click', function(){
+  const hidden = document.querySelector('.progress-shell').classList.toggle('bar-hidden');
+  this.querySelector('span').textContent = hidden ? 'Show Bar' : 'Hide Bar';
+});
+
+function updateProgress(){
+  const answered = FLAT.filter(isAnsweredQ).length;
+  document.getElementById('progressFill').style.width = Math.round((answered/FLAT.length)*100)+'%';
+  document.getElementById('progressLabel').textContent = `${answered} / ${FLAT.length} answered`;
+}
+
+function updateNavButtons(){
+  document.getElementById('prevBtn').disabled = currentIndex===0;
+  document.getElementById('nextBtn').disabled = currentIndex===FLAT.length-1;
+  document.getElementById('submitBtn').style.display = currentIndex===FLAT.length-1 ? '' : 'none';
+}
+
+function goTo(i){
+  currentIndex = i;
+  renderStage(); renderPalette(); updateProgress(); saveState();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('prevBtn').addEventListener('click', ()=>{ if(currentIndex>0) goTo(currentIndex-1); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ if(currentIndex<FLAT.length-1) goTo(currentIndex+1); });
+
+/* ---------- penilaian ---------- */
+function computeScore(){
+  let earned=0, total=0;
+  FLAT.forEach(q=>{ const r=computeResult(q); earned+=r.earned; total+=r.total; });
+  return {earned, total, nilai: Math.round((earned/total)*100)};
+}
+
+function showResults(){
+  const {earned,total,nilai} = computeScore();
+  document.getElementById('scoreBig').textContent = nilai;
+  document.getElementById('scoreSub').textContent = `Final Score (0-100) · ${earned} / ${total} points (multiple choice) · Essay 36–40: compare with the model answers`;
+  const msg = document.getElementById('scoreMsg');
+  msg.textContent = nilai > 75
+    ? '🎉 Great job! You got an excellent score.'
+    : '💪 Keep practicing — you will do even better next time.';
+  msg.style.color = nilai > 75 ? 'var(--good)' : 'var(--navy)';
+  msg.style.background = nilai > 75 ? 'var(--good-bg)' : '#eef0fb';
+  document.getElementById('resultsBox').classList.add('show');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('resetBtn').style.display = '';
+}
+
+function grade(){
+  if(submitted) return;
+  submitted = true;
+  showResults();
+  renderStage(); renderPalette(); saveState();
+  document.getElementById('resultsBox').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  if(submitted) return;
+  const unanswered = FLAT.length - FLAT.filter(isAnsweredQ).length;
+  document.getElementById('confirmMsg').innerHTML = unanswered>0
+    ? `You still have <b>${unanswered} unanswered question${unanswered>1?'s':''}</b>.<br>Are you sure you want to submit now?`
+    : `You have answered all <b>${FLAT.length} questions</b>.<br>Are you sure you want to submit now?`;
+  document.getElementById('confirmModal').classList.add('show');
+});
+document.getElementById('cancelSubmitBtn').addEventListener('click', ()=>{
+  document.getElementById('confirmModal').classList.remove('show');
+});
+document.getElementById('confirmSubmitBtn').addEventListener('click', ()=>{
+  document.getElementById('confirmModal').classList.remove('show');
+  grade();
+});
+
+function resetQuiz(){
+  answers = {};
+  submitted = false;
+  currentIndex = 0;
+  document.getElementById('resultsBox').classList.remove('show');
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('resetBtn').style.display = 'none';
+  renderStage(); renderPalette(); updateProgress();
+  saveState();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+
+/* ---------- simpan progres di browser (localStorage) ---------- */
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({answers, currentIndex, submitted}));
+  }catch(e){ /* localStorage tidak tersedia, abaikan */ }
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+/* ---------- mulai: langsung masuk soal, tanpa login ---------- */
+(function init(){
+  buildFlat();
+  const saved = loadState();
+  if(saved && saved.answers){
+    answers = saved.answers;
+    currentIndex = Math.min(saved.currentIndex||0, FLAT.length-1);
+    submitted = !!saved.submitted;
+  }
+  if(submitted) showResults();
+  renderStage();
+  renderPalette();
+  updateProgress();
+  if(!submitted) saveState();
+})();
+</script>
+</body>
+</html>
